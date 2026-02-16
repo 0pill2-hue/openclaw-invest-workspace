@@ -1,0 +1,29 @@
+# Secrets / credentials
+.env
+*.env
+**/.env
+*.session
+**/*.session
+invest/config/dart_api_key.txt
+
+# Runtime / logs
+*.log
+reports/regular/server.log
+invest/logs/*.log
+
+# OS junk
+.DS_Store
+**/.DS_Store
+
+# Large/generated data artifacts
+invest/data/
+invest/results/
+invest/reports/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local virtual env
+.venv/
+invest/venv/

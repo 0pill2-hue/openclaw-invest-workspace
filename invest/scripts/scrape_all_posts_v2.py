@@ -123,7 +123,8 @@ def _extract_posts_from_rss(blog_id: str):
     rss_url = f"https://rss.blog.naver.com/{blog_id}.xml"
     try:
         xml_text = _fetch_html(rss_url, timeout=20)
-    except Exception:
+    except Exception as e:
+        log_msg(f"  WARN: RSS fetch failed for {blog_id}: {e}")
         return []
 
     posts = []
@@ -188,18 +189,33 @@ def _extract_posts_from_html(list_url):
     m = re.search(r'<iframe[^>]+id=["\']mainFrame["\'][^>]+src=["\']([^"\']+)["\']', first, re.I)
     page_html = _fetch_html(urllib.parse.urljoin(list_url, m.group(1)), timeout=20) if m else first
 
-    # Extract href + title roughly from links
-    link_pat = re.compile(r'<a[^>]+href=["\']([^"\']*PostView\.naver[^"\']*logNo=(\d+)[^"\']*)["\'][^>]*>(.*?)</a>', re.I | re.S)
+    # Extract href + title roughly from links (support old PostView + new path-based URLs)
+    link_pat = re.compile(r'<a[^>]+href=["\']([^"\']*(?:PostView\.naver|blog\.naver\.com/[^"\']+/\d{8,})[^"\']*)["\'][^>]*>(.*?)</a>', re.I | re.S)
     date_pat = re.compile(r'(\d{4}\.\s*\d{1,2}\.\s*\d{1,2}\.)')
 
     for mm in link_pat.finditer(page_html):
         href = html.unescape(mm.group(1))
-        log_no = mm.group(2)
-        title = _strip_html_to_text(mm.group(3))[:200] or f"post_{log_no}"
+        mid = re.search(r'logNo=(\d+)', href) or re.search(r'/(\d{8,})(?:[?&#]|$)', href)
+        if not mid:
+            continue
+        log_no = mid.group(1)
+        title = _strip_html_to_text(mm.group(2))[:200] or f"post_{log_no}"
         url = urllib.parse.urljoin(list_url, href)
 
-        # best-effort nearby date extraction
-        span = page_html[max(0, mm.start() - 300): mm.end() + 300]
+        # Prefer local container-scoped date extraction to avoid cross-post date mix
+        block = ""
+        tr_start = page_html.rfind('<tr', 0, mm.start())
+        tr_end = page_html.find('</tr>', mm.end())
+        if tr_start != -1 and tr_end != -1 and tr_end > tr_start:
+            block = page_html[tr_start:tr_end + 5]
+        else:
+            li_start = page_html.rfind('<li', 0, mm.start())
+            li_end = page_html.find('</li>', mm.end())
+            if li_start != -1 and li_end != -1 and li_end > li_start:
+                block = page_html[li_start:li_end + 5]
+
+        # fallback to small neighborhood only when container is unavailable
+        span = block if block else page_html[max(0, mm.start() - 120): mm.end() + 120]
         dm = date_pat.search(span)
         date_str = dm.group(1) if dm else ""
 
@@ -280,13 +296,22 @@ def _extract_posts_with_browser(list_tab_id, bid):
                 const doc = frame ? frame.contentWindow.document : document;
                 const rows = Array.from(doc.querySelectorAll('tr'));
                 const posts = rows.map(row => {
-                    const link = row.querySelector('a[href*="/PostView.naver"]');
+                    const link = row.querySelector('a[href*="/PostView.naver"], a[href*="blog.naver.com/"]');
+                    const href = link?.href || "";
                     const dateStr = row.querySelector('.date')?.innerText || "";
+                    let id = null;
+                    try {
+                        const u = new URL(href);
+                        id = u.searchParams.get('logNo') || (u.pathname.split('/').filter(Boolean).pop() || null);
+                        if (!id || !/^[0-9]{8,}$/.test(id)) id = null;
+                    } catch (_) {
+                        id = null;
+                    }
                     return {
                         title: link?.innerText.trim(),
-                        url: link?.href,
+                        url: href,
                         date: dateStr,
-                        id: link?.href?.split('logNo=')[1]?.split('&')[0]
+                        id
                     };
                 }).filter(p => p.id);
                 return JSON.stringify(posts);
@@ -315,6 +340,7 @@ def _extract_posts_with_browser(list_tab_id, bid):
 
 MAX_BUDDIES_PER_RUN = int(os.environ.get('BLOG_MAX_BUDDIES_PER_RUN', '120'))
 USE_BROWSER_FALLBACK = os.environ.get('BLOG_USE_BROWSER_FALLBACK', '0').strip().lower() not in ('0', 'false', 'no')
+REQUEST_DELAY_SEC = float(os.environ.get('BLOG_REQUEST_DELAY_SEC', '0.15'))
 saved_posts = 0
 error_list = []
 
@@ -333,6 +359,8 @@ if not run_buddies:
     end_idx = min(len(buddies), MAX_BUDDIES_PER_RUN)
 
 for offset, buddy in enumerate(run_buddies, 1):
+    if REQUEST_DELAY_SEC > 0:
+        time.sleep(REQUEST_DELAY_SEC)
     i = start_idx + offset
     bid = buddy['id']
     buddy_dir = os.path.join(base_dir, bid)

@@ -1,0 +1,12 @@
+{
+  "keywords": [],
+  "min_chars": 0,
+  "min_chars_by_source": {
+    "telegram_logs": 0,
+    "blog_logs": 0
+  },
+  "sources": [
+    "invest/data/alternative/telegram_logs",
+    "invest/data/alternative/blog_logs"
+  ]
+}

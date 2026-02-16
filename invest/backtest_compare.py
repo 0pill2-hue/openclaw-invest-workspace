@@ -54,6 +54,10 @@ START_DATE       = '2016-01-01'
 END_DATE         = '2025-12-31'
 # C2: 유니버스 편입 최소 과거 데이터 (거래일 수)
 MIN_HISTORY_DAYS = 120
+# 데이터 정합성 가드
+MIN_VALID_VOLUME = 10           # 너무 작은 거래량(0/1 등) 배제
+MIN_TURNOVER_FOR_SIGNAL = 1e8   # 수급 정규화 분모 하한(1억원)
+MAX_DAILY_RET_ABS = 0.35        # 일간 절대수익률 35% 초과는 이상치 처리
 
 # ─────────────────────────── C2: 유니버스 구성 (동적) ───────────────────────────
 def load_candidate_codes():
@@ -143,6 +147,15 @@ def compute_my_signal(ohlcv_df):
     - 스코어 = 모멘텀 강도 (랭킹용)
     """
     df = ohlcv_df.copy()
+
+    # 정합성 가드: 비정상 캔들/저유동 제거
+    valid = (df['Close'] > 0) & (df['Open'] > 0) & (df['High'] > 0) & (df['Low'] > 0) & (df['Volume'] >= MIN_VALID_VOLUME)
+    df.loc[~valid, ['Open', 'High', 'Low', 'Close', 'Volume']] = np.nan
+
+    # 단일일 급변 이상치 제거 (분할/권리 이벤트 아닌 경우 보호)
+    ret1 = df['Close'].pct_change()
+    df.loc[ret1.abs() > MAX_DAILY_RET_ABS, 'Close'] = np.nan
+
     df['MA20'] = df['Close'].rolling(MA_SHORT).mean()
     df['MA60'] = df['Close'].rolling(MA_LONG).mean()
     df['Mom20'] = df['Close'].pct_change(MA_SHORT)
@@ -158,11 +171,20 @@ def compute_neighbor_signal(ohlcv_df, supply_df):
     - 스코어 = 수급 강도 (가격·거래량 정규화)
     """
     df = ohlcv_df.copy()
-    sup = supply_df.reindex(df.index).fillna(0)
-    sup['Net'] = sup['Inst'] + sup['Foreign']
+
+    # 정합성 가드: 비정상 캔들/저유동 제거
+    valid = (df['Close'] > 0) & (df['Open'] > 0) & (df['High'] > 0) & (df['Low'] > 0) & (df['Volume'] >= MIN_VALID_VOLUME)
+    df.loc[~valid, ['Open', 'High', 'Low', 'Close', 'Volume']] = np.nan
+
+    sup = supply_df.reindex(df.index).copy()
+    sup['Net'] = pd.to_numeric(sup['Inst'], errors='coerce') + pd.to_numeric(sup['Foreign'], errors='coerce')
     sup['Net20'] = sup['Net'].rolling(SUPPLY_WINDOW).sum()
     df['supply_net20'] = sup['Net20']
-    df['supply_signal'] = sup['Net20'] / (df['Close'] * df['Volume'] + 1e-9)
+
+    # 분모 하한 적용: 저유동(Volume=0/1) 폭주 방지
+    turnover = (df['Close'] * df['Volume'])
+    turnover = turnover.where(turnover >= MIN_TURNOVER_FOR_SIGNAL, np.nan)
+    df['supply_signal'] = sup['Net20'] / turnover
     return df
 
 
