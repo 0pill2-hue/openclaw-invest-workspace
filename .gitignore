@@ -9,11 +9,25 @@ invest/config/dart_api_key.txt
 # Runtime / logs
 *.log
 reports/regular/server.log
-invest/logs/*.log
+invest/logs/
 
 # OS junk
 .DS_Store
 **/.DS_Store
+
+# Agent/private docs
+MEMORY.md
+memory/
+SOUL.md
+USER.md
+IDENTITY.md
+HEARTBEAT.md
+TASKS.md
+TOOLS.md
+AGENTS.md
+BRAINS.md
+report_state.json
+reports/
 
 # Large/generated data artifacts
 invest/data/
