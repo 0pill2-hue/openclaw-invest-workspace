@@ -7,6 +7,8 @@ import html
 import fcntl
 import urllib.request
 import urllib.parse
+import xml.etree.ElementTree as ET
+from email.utils import parsedate_to_datetime
 from datetime import datetime, timedelta
 
 from pipeline_logger import append_pipeline_event
@@ -41,9 +43,21 @@ def log_msg(msg):
         lf.write(formatted + "\n")
 
 
+def _safe_url(url: str) -> str:
+    """Normalize URL to ASCII-safe representation for urllib."""
+    try:
+        parts = urllib.parse.urlsplit(url)
+        path = urllib.parse.quote(parts.path, safe='/%:@-._~')
+        query = urllib.parse.quote(parts.query, safe='=&%:@-._~')
+        return urllib.parse.urlunsplit((parts.scheme, parts.netloc, path, query, parts.fragment))
+    except Exception:
+        return url
+
+
 def _fetch_html(url, timeout=20):
+    safe_url = _safe_url(url)
     req = urllib.request.Request(
-        url,
+        safe_url,
         headers={
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
             'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
@@ -104,6 +118,68 @@ def _save_ckpt(next_index):
         log_msg(f"  WARN: failed to save checkpoint: {e}")
 
 
+def _extract_posts_from_rss(blog_id: str):
+    """Prefer RSS for reliable latest ordering/date parsing."""
+    rss_url = f"https://rss.blog.naver.com/{blog_id}.xml"
+    try:
+        xml_text = _fetch_html(rss_url, timeout=20)
+    except Exception:
+        return []
+
+    posts = []
+    try:
+        root = ET.fromstring(xml_text)
+    except Exception:
+        return []
+
+    for item in root.findall('.//item'):
+        title = (item.findtext('title') or '').strip()
+        link = (item.findtext('link') or '').strip()
+        pub = (item.findtext('pubDate') or '').strip()
+
+        m = re.search(r'logNo=(\d+)', link)
+        if not m:
+            # New Naver URL format: /blogId/logNo?fromRss=true&trackingCode=rss
+            m = re.search(r'/(\d{8,})(?:[?&#]|$)', link)
+        if not m:
+            # Also try guid element as fallback
+            guid = (item.findtext('guid') or '').strip()
+            m = re.search(r'logNo=(\d+)', guid) or re.search(r'/(\d{8,})(?:[?&#]|$)', guid)
+        if not m:
+            continue
+        log_no = m.group(1)
+
+        d = None
+        if pub:
+            try:
+                d = parsedate_to_datetime(pub)
+                if d.tzinfo is not None:
+                    d = d.astimezone().replace(tzinfo=None)
+            except Exception:
+                d = None
+
+        date_str = f"{d.year}. {d.month}. {d.day}." if d else ''
+        posts.append({
+            'title': title or f'post_{log_no}',
+            'url': link,
+            'date': date_str,
+            'id': log_no,
+        })
+
+    # RSS is newest-first in most cases, but enforce ordering by parsed date
+    dated = []
+    for p in posts:
+        pd = _parse_post_date((p.get('date') or '').strip())
+        if pd is None:
+            continue
+        p['_parsed_date'] = pd
+        dated.append(p)
+    dated.sort(key=lambda x: x.get('_parsed_date'), reverse=True)
+    for p in dated:
+        p.pop('_parsed_date', None)
+    return dated
+
+
 def _extract_posts_from_html(list_url):
     """HTTP fallback parser for post list (no browser)."""
     posts = []
@@ -139,7 +215,56 @@ def _extract_posts_from_html(list_url):
     for p in posts:
         if p["id"] not in uniq:
             uniq[p["id"]] = p
-    return list(uniq.values())
+
+    # Keep only date-parseable rows and sort newest-first (prevents stale/sidebar links)
+    filtered = []
+    for p in uniq.values():
+        pd = _parse_post_date((p.get('date') or '').strip())
+        if pd is None:
+            continue
+        p['_parsed_date'] = pd
+        filtered.append(p)
+
+    filtered.sort(key=lambda x: x.get('_parsed_date'), reverse=True)
+    for p in filtered:
+        p.pop('_parsed_date', None)
+    return filtered
+
+
+def _parse_post_date(date_raw: str):
+    """Parse naver blog date strings including relative expressions.
+    Supports: YYYY. M. D. / YYYY.MM.DD / 방금 전 / N분 전 / N시간 전 / N일 전
+    """
+    if not date_raw:
+        return None
+
+    s = date_raw.strip()
+    now = datetime.now()
+
+    # absolute flexible forms: 2026. 2. 16. / 2026.2.16 / 2026-02-16
+    m = re.search(r'(20\d{2})\s*[\.\-/]\s*(\d{1,2})\s*[\.\-/]\s*(\d{1,2})', s)
+    if m:
+        try:
+            return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except Exception:
+            pass
+
+    if s == '방금 전':
+        return now
+
+    m = re.match(r'^(\d+)\s*분\s*전$', s)
+    if m:
+        return now - timedelta(minutes=int(m.group(1)))
+
+    m = re.match(r'^(\d+)\s*시간\s*전$', s)
+    if m:
+        return now - timedelta(hours=int(m.group(1)))
+
+    m = re.match(r'^(\d+)\s*일\s*전$', s)
+    if m:
+        return now - timedelta(days=int(m.group(1)))
+
+    return None
 
 
 def _extract_posts_with_browser(list_tab_id, bid):
@@ -189,7 +314,7 @@ def _extract_posts_with_browser(list_tab_id, bid):
 
 
 MAX_BUDDIES_PER_RUN = int(os.environ.get('BLOG_MAX_BUDDIES_PER_RUN', '120'))
-USE_BROWSER_FALLBACK = os.environ.get('BLOG_USE_BROWSER_FALLBACK', '1').strip().lower() not in ('0', 'false', 'no')
+USE_BROWSER_FALLBACK = os.environ.get('BLOG_USE_BROWSER_FALLBACK', '0').strip().lower() not in ('0', 'false', 'no')
 saved_posts = 0
 error_list = []
 
@@ -219,8 +344,10 @@ for offset, buddy in enumerate(run_buddies, 1):
     url = f"https://blog.naver.com/PostList.naver?blogId={bid}&from=postList"
 
     try:
-        # HTTP first (browser is fallback only)
-        posts = _extract_posts_from_html(url)
+        # RSS first for latest ordering/date reliability, then HTTP fallback
+        posts = _extract_posts_from_rss(bid)
+        if not posts:
+            posts = _extract_posts_from_html(url)
 
         if not posts and USE_BROWSER_FALLBACK:
             log_msg(f"  HTTP list empty for {bid}, trying browser fallback")
@@ -228,6 +355,8 @@ for offset, buddy in enumerate(run_buddies, 1):
                 ["openclaw", "browser", "open", "--browser-profile", "background", "--json", url],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',
                 timeout=20,
             )
 
@@ -253,15 +382,16 @@ for offset, buddy in enumerate(run_buddies, 1):
                 continue
 
             date_raw = (post.get('date') or '').strip()
-            if date_raw:
-                try:
-                    p_date = datetime.strptime(date_raw.strip('.'), '%Y. %m. %d')
-                    if p_date < target_date:
-                        continue
-                except Exception:
-                    # Skip only if there is a malformed date string
-                    log_msg(f"  Skipping post with unparseable date: {date_raw}")
-                    continue
+            if not date_raw:
+                log_msg("  Skipping post with empty date")
+                continue
+
+            p_date = _parse_post_date(date_raw)
+            if p_date is None:
+                log_msg(f"  Skipping post with unparseable date: {date_raw}")
+                continue
+            if p_date < target_date:
+                continue
 
             post_path = os.path.join(buddy_dir, f"{post['id']}.md")
             if os.path.exists(post_path):
