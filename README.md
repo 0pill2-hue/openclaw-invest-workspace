@@ -8,6 +8,8 @@
 - 운영 안정화 (수집 파이프라인 + 헬스체크 + 보고 체계)
 
 ## 디렉토리 개요
+> 참고: `invest/data`, `invest/reports`, `invest/results`는 대용량/민감 데이터라 기본적으로 git 추적 제외(.gitignore)되어 레포 웹 화면에는 안 보일 수 있습니다.
+
 - `invest/data/raw/` : 원본 데이터(불변)
 - `invest/data/clean/` : 검수 통과 데이터
 - `invest/data/quarantine/` : 오염/의심 데이터 격리
@@ -17,6 +19,9 @@
 
 ## 빠른 시작
 ```bash
+# 0) 로컬 데이터 디렉토리 초기화(최초 1회)
+mkdir -p invest/data/{raw,clean,quarantine,audit,reports}
+
 # 1) 기존 데이터 정리 (clean/quarantine 분리)
 .venv/bin/python3 invest/scripts/organize_existing_data.py
 
