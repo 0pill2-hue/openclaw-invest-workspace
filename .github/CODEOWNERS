@@ -1,0 +1,7 @@
+# Default owner / reviewer
+* @0pill2-hue
+
+# Critical paths (must be reviewed by owner)
+invest/backtest_compare.py @0pill2-hue
+invest/scripts/ @0pill2-hue
+invest/config/ @0pill2-hue
