@@ -1,0 +1,46 @@
+# WORKSPACE_STRUCTURE.md
+
+Last updated: 2026-02-18 06:24 KST
+Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위치 기준
+
+## Top-level canonical
+- `docs/openclaw/` : OpenClaw 시스템/구조/컨텍스트 재로딩 기준 문서
+- `invest/` : 알고리즘/데이터/전략/스크립트 본체
+- `reports/` : 단계/정기/검증 리포트
+- `memory/` : 일자 메모리
+- `MEMORY.md` : 장기 메모리
+- `DIRECTIVES.md` : 지시사항 추적
+- `TASKS.md` : 보고/작업 큐
+
+## Top-level operational (존재 확인됨)
+- `.venv/` : 루트 Python 가상환경
+- `.openclaw_tmp/` : 임시 작업 디렉터리
+- `scripts/` : 보조 실행 스크립트
+- `automation/` : 운영 자동화 보조
+
+## invest 내부 canonical
+- `invest/strategy/` : 전략 고정 문서(RULEBOOK 등)
+- `invest/strategies/` : 전략 코드 패키지(파이썬 모듈)
+- `invest/scripts/` : 수집/정제/검증/산출 실행 스크립트
+- `invest/data/` : raw/clean/quarantine 데이터 계층
+- `invest/reports/data_quality/` : manifest/품질 리포트
+- `invest/results/` : 결과물(test/validated/prod 분리)
+
+## stage 문서 canonical
+- `reports/stage_updates/stage01_data_collection.md`
+- `reports/stage_updates/stage02_data_cleaning.md`
+- `reports/stage_updates/stage03_cleaning_validation.md`
+- `reports/stage_updates/stage04_validated_value.md`
+- `reports/stage_updates/stage05_baseline_3track.md`
+- `reports/stage_updates/stage06_candidate_gen_v1.md`
+- `reports/stage_updates/stage07_candidate_stage_cut.md`
+- `reports/stage_updates/stage08_purged_cv_oos.md`
+- `reports/stage_updates/stage09_cost_turnover_risk.md`
+- `reports/stage_updates/stage10_cross_review.md`
+- `reports/stage_updates/stage11_adopt_hold_promote.md`
+- 단계 인덱스: `reports/stage_updates/README.md`
+
+## 문서 우선순위
+1. `invest/strategy/RULEBOOK_V1_20260218.md`
+2. `reports/stage_updates/*.md`
+3. 실행 스크립트/보조 문서

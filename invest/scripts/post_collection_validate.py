@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 
 STATUS_PATH = "invest/data/runtime/daily_update_status.json"
 OUT_PATH = "invest/data/runtime/post_collection_validate.json"
-US_DIR = "invest/data/us/ohlcv"
-RSS_DIR = "invest/data/news/rss"
+US_DIR = "invest/data/raw/us/ohlcv"
+RSS_DIR = "invest/data/raw/market/news/rss"
 
 
 def _file_mtime(path):

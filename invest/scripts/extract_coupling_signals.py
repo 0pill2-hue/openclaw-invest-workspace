@@ -3,9 +3,9 @@ import json
 import re
 
 # Paths
-posts_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/alternative/blog_posts'
-premium_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/alternative/premium_contents/startale'
-tg_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/alternative/telegram_logs'
+posts_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/blog'
+premium_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/premium/startale'
+tg_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/telegram'
 output_file = '/Users/jobiseu/.openclaw/workspace/invest/data/master/coupling_map_raw.json'
 
 # Target Keywords for Supply Chain

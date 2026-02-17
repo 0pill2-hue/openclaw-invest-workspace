@@ -6,7 +6,7 @@
     "blog_logs": 0
   },
   "sources": [
-    "invest/data/alternative/telegram_logs",
-    "invest/data/alternative/blog_logs"
+    "invest/data/raw/text/telegram",
+    "invest/data/raw/text/blog"
   ]
 }

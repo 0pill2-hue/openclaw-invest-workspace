@@ -1,10 +1,11 @@
 import os
 import json
+import time
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
 
-OUT_DIR = "invest/data/dart"
+OUT_DIR = "invest/data/raw/kr/dart"
 KEY_FILE = "invest/config/dart_api_key.txt"
 
 
@@ -18,7 +19,7 @@ def load_key():
     return None
 
 
-def fetch_list(api_key, bgn_de, end_de, page_no=1, page_count=100):
+def fetch_list(api_key, bgn_de, end_de, page_no=1, page_count=100, retries=3, timeout=20):
     url = "https://opendart.fss.or.kr/api/list.json"
     params = {
         "crtfc_key": api_key,
@@ -27,9 +28,18 @@ def fetch_list(api_key, bgn_de, end_de, page_no=1, page_count=100):
         "page_no": page_no,
         "page_count": page_count,
     }
-    r = requests.get(url, params=params, timeout=20)
-    r.raise_for_status()
-    return r.json()
+    last_err = None
+    for i in range(retries):
+        try:
+            r = requests.get(url, params=params, timeout=timeout)
+            r.raise_for_status()
+            return r.json()
+        except Exception as e:
+            last_err = e
+            wait = min(5, 1 + i)
+            print(f"DART request retry {i+1}/{retries} page={page_no}: {e}")
+            time.sleep(wait)
+    raise RuntimeError(f"DART request failed page={page_no}: {last_err}")
 
 
 def main():
@@ -39,10 +49,19 @@ def main():
         print("DART key not found. skip")
         return
 
-    # collect last 2 days by default (safe for night runs)
-    end = datetime.now().strftime("%Y%m%d")
-    bgn = (datetime.now() - timedelta(days=2)).strftime("%Y%m%d")
+    # collect window (default 2 days, full run can override with DART_LOOKBACK_DAYS)
+    # optional hard override: DART_BGN_DE / DART_END_DE (YYYYMMDD)
+    bgn_env = os.environ.get('DART_BGN_DE', '').strip()
+    end_env = os.environ.get('DART_END_DE', '').strip()
+    if bgn_env and end_env:
+        bgn = bgn_env
+        end = end_env
+    else:
+        lookback_days = int(os.environ.get('DART_LOOKBACK_DAYS', '2'))
+        end = datetime.now().strftime("%Y%m%d")
+        bgn = (datetime.now() - timedelta(days=max(1, lookback_days))).strftime("%Y%m%d")
 
+    print(f"DART request window: {bgn} ~ {end}")
     first = fetch_list(key, bgn, end, page_no=1, page_count=100)
     status = first.get("status")
     msg = first.get("message", "")
@@ -52,13 +71,21 @@ def main():
 
     total_count = int(first.get("total_count", 0))
     total_page = int(first.get("total_page", 1))
+    max_pages = int(os.environ.get("DART_MAX_PAGES", "1000"))
     rows = first.get("list", [])
+    print(f"DART page 1/{total_page} rows={len(rows)} total_count={total_count}")
 
-    for p in range(2, total_page + 1):
+    page_end = min(total_page, max_pages)
+    if total_page > max_pages:
+        print(f"DART page limit applied: total_page={total_page} max_pages={max_pages}")
+    for p in range(2, page_end + 1):
         data = fetch_list(key, bgn, end, page_no=p, page_count=100)
         if data.get("status") != "000":
+            print(f"DART page stop at {p}: {data.get('status')} {data.get('message','')}")
             break
         rows.extend(data.get("list", []))
+        if p % 10 == 0 or p == page_end:
+            print(f"DART page {p}/{total_page} acc_rows={len(rows)}")
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     raw_path = os.path.join(OUT_DIR, f"dart_list_{ts}.json")

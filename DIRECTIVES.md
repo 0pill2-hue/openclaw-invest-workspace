@@ -11,6 +11,24 @@
 ## Priority Buckets (WIP=1)
 
 ### P1-오늘 (정확히 1개)
+- 2026-02-18 05:45 | 4947 | 지시/합의사항(특히 11단계·운영선정 규칙) 즉시 문서화하고 동일 혼선 재발 금지 | 상시 | IN_PROGRESS | first_action: memory/2026-02-18.md에 합의 규칙(택1 운영, 4→5 반복, 예외 시 2→3 재진입) 고정 기록 | proof: memory/2026-02-18.md
+- 2026-02-18 05:52 | 4969 | 1번 단계를 수집으로 고정하고 단계 문서 전체를 재정렬/업데이트 | 즉시 | DONE | first_action: stage 문서 번호/명칭을 11단계 canonical에 맞게 재작성 | proof: reports/stage_updates/README.md, stage01_data_collection.md ~ stage11_adopt_hold_promote.md, invest/strategy/RULEBOOK_V1_20260218.md
+- 2026-02-18 05:53 | 4970 | 컨텍스트 비운 뒤 먼저 읽을 문서 목록을 메모리에 고정 | 즉시 | DONE | first_action: memory/2026-02-18.md에 재로딩 체크리스트 추가 | proof: memory/2026-02-18.md
+- 2026-02-18 06:03 | 4996 | stage01~04 명시 게이트 브레인스토밍 후 문서 반영, 실제 동작 점검 1회 실행 | 즉시 | DONE | first_action: stage02~04 gate 설계/반영 후 gate-check 스모크 실행 | proof: reports/stage_updates/stage02_data_cleaning.md, stage03_cleaning_validation.md, stage04_validated_value.md, scripts/stage_gate_check_1to4.py 실행결과(SUMMARY:FAIL, stage04:grade_present:FAIL)
+- 2026-02-18 06:05 | 5001 | RULEBOOK/Stage 문서 추가·수정 필요점 브레인스토밍 후 적용 | 즉시 | DONE | first_action: RULEBOOK의 운영선정/충돌룰 모순 제거 + stage gate 연결 섹션 추가 + README 동기화 + gate-check 재실행 | proof: invest/strategy/RULEBOOK_V1_20260218.md, reports/stage_updates/README.md, scripts/stage_gate_check_1to4.py 실행결과(SUMMARY:FAIL, stage04:grade_present:FAIL)
+- 2026-02-18 06:13 | 5009 | OpenClaw 시스템/폴더/설정 문서를 invest 밖에 작성하고 컨텍스트 초기화 시 강제 재로딩 규칙 추가 | 즉시 | DONE | first_action: 시스템 브레인스토밍 후 baseline 문서 2종 작성 + AGENTS/메모리 체크리스트 반영 | proof: docs/openclaw/OPENCLAW_SYSTEM_BASELINE.md, docs/openclaw/WORKSPACE_STRUCTURE.md, docs/openclaw/CONTEXT_RESET_READLIST.md, AGENTS.md
+- 2026-02-18 06:17 | 5017 | 시스템/알고리즘 변경 시 문서 업데이트 강제 | 상시 | DONE | first_action: AGENTS.md에 Documentation Sync Gate 추가 | proof: AGENTS.md
+- 2026-02-18 06:20 | 5027 | 문서는 전부 재현 가능한 수준으로 작성 | 상시 | DONE | first_action: stage/rulebook/openclaw 문서에 실행·입력·출력·게이트·증빙 필드 점검 및 누락 보강 | proof: AGENTS.md Documentation Sync Gate(재현 필드 최소요건 명시), memory/2026-02-18.md
+- 2026-02-18 06:22 | 5033 | 시스템 불필요 파일 브레인스토밍 후 제거 | 즉시 | DONE | first_action: 안전 대상(캐시/컴파일 산출물) 선별 후 trash 이동 | proof: workspace 전체 __pycache__/pyc/.DS_Store 제거 확인(find 결과 없음)
+- 2026-02-18 06:24 | 5037 | 폴더구조 적합성 브레인스토밍 후 문제 없이 수정 | 즉시 | DONE | first_action: 실제 디렉터리 트리와 문서 기준 비교 후 불일치 문서만 수정 | proof: docs/openclaw/WORKSPACE_STRUCTURE.md
+- 2026-02-18 06:25 | 5038 | 문서 추가/보강 필요점 브레인스토밍 후 점검 | 즉시 | DONE | first_action: docs/openclaw + stage/rulebook 대상 갭 분석 후 추가/보강안 반영 | proof: docs/openclaw/DOCS_MAINTENANCE_PLAYBOOK.md, docs/openclaw/CONTEXT_RESET_READLIST.md, reports/stage_updates/stage02_data_cleaning.md, stage03_cleaning_validation.md, stage04_validated_value.md
+- 2026-02-18 06:30 | 5051 | 메모리 파일 보강 필요점 브레인스토밍 및 반영 | 즉시 | DONE | first_action: MEMORY/memory/*.md 갭 점검 후 최소 보강안 적용 | proof: MEMORY.md(2026-02-18 섹션 추가), memory/INDEX.md(2026-02-17/18 인덱스 보강)
+- 2026-02-18 06:31 | 5053 | 4/5 게이트 통과 후 Git 업데이트 선행, 그 다음 리팩토링 진행 | 상시 | IN_PROGRESS | first_action: 4/5 게이트 통과 확인 전에는 리팩토링 제안/실행 보류, 통과 즉시 git 업데이트부터 수행 | proof: -
+- 2026-02-18 07:09 | 5132 | 리팩토링 시 input/output path 안정성 보장 | 리팩토링 시점 | IN_PROGRESS | first_action: 경로 변경 시 alias/호환레이어 유지 + run/gate/manfiest 경로 회귀검증 포함 | proof: -
+- 2026-02-18 07:11 | 5138 | 리팩토링 누락 파일 전수 탐색/검증 | 리팩토링 종료 전 | IN_PROGRESS | first_action: 네이밍 룰 기준 전체 파일 스캔 후 미반영 목록/수정 목록 리포트 생성 | proof: -
+- 2026-02-18 06:43 | 5079 | 네이밍 룰 우선 수립 | 즉시 | DONE | first_action: 파일/함수/리포트/매니페스트 네이밍 초안 제시 후 승인받기 | proof: docs/openclaw/NAMING_STRATEGY.md, docs/openclaw/CONTEXT_RESET_READLIST.md
+- 2026-02-18 06:47 | 5089 | 코딩 룰 브레인스토밍 후 고정 | 즉시 | DONE | first_action: 운영/재현/게이트 중심 코딩 룰 초안 작성 | proof: docs/openclaw/CODING_RULES.md, docs/openclaw/CONTEXT_RESET_READLIST.md
+- 2026-02-18 06:49 | 5093 | 운영전략(게이트/SOP/SLA/Git) 브레인스토밍 후 문서 고정 | 즉시 | DONE | first_action: 상위 운영 문서에 4개 기준을 canonical로 추가 | proof: docs/openclaw/OPERATING_GOVERNANCE.md, docs/openclaw/CONTEXT_RESET_READLIST.md, OPERATIONS_SOP.md
 - 2026-02-17 10:34 | 3737 | 작업 순서를 순차 처리로 고정(꼬임 방지) | due 해제(주인님 지시) | IN_PROGRESS | first_action: 1) 데이터 정제 완료 2) 정제 검증 3) VALIDATED 밸류 산출 4) 비교표/후속 작업 순서로 진행 | proof: -
 
 ### P2-이번주
@@ -45,10 +63,14 @@
 - 2026-02-17 12:48 | 3949 | 블라인드 기간/질적데이터 정책 브레인스토밍 후 확정 | 즉시 | DONE | first_action: 다중 모델 브레인스토밍 3건 병렬 실행 후 단일안 확정 보고 | proof: 하이브리드 확정(특수구간 보존+일반구간 25~30% 통합 블라인드), reply `3953`
 - 2026-02-17 12:50 | 3954 | 블라인드 하이브리드 정책(특수구간 보존+일반구간 통합 블라인드) 즉시 적용 | 즉시 | DONE | first_action: 메모리/운영원칙에 하이브리드 정책 및 보조 규칙(시차/롤링/키워드배제) 반영 | proof: MEMORY.md 블라인드 운용 확정 항목 추가
 - 2026-02-17 12:51 | 3959 | 대회데이터 블라인드 제외 + 국내 실데이터 하이브리드 블라인드로 최종 확정 | 상시 | DONE | first_action: 대회 기준은 참고치로만 사용, 채택 판단은 국내시장 기준으로 고정 | proof: reply `3956`, `3958`
-- 2026-02-17 13:02 | 3970 | 시간별 보고 포맷 이탈 재발 방지(주인님 지정 포맷 강제) | 즉시 | IN_PROGRESS | first_action: 간이보고 크론 프롬프트를 고정 템플릿으로 재작성하고 누락 항목 발생 시 실패 처리 | proof: cron `86edd049` 템플릿 강제 적용
-- 2026-02-17 13:07 | 3976 | 알고리즘 보고는 1단계부터 단계별 진행바 표기 + 단계 완료마다 별도 보고서/비교표 업데이트 강제 | 즉시 | IN_PROGRESS | first_action: 단계 진행률은 실측값만 표기, 단계 완료 시 `reports/stage_updates/` 파일 + 보고채널 별도 메시지 동시 전송 | proof: -
-- 2026-02-17 13:08 | 3980 | 시간별 보고는 08~22시, 5개 항목(블로그/텔레그램/핫이슈/진행률/문제점 해결상태) 고정 포맷 준수 | 즉시 | IN_PROGRESS | first_action: 간이보고 본문을 5개 항목 템플릿만 허용하고 누락 시 오류 처리 | proof: -
+- 2026-02-17 13:02 | 3970/3976/3980/4010 | 시간별 보고 규칙 통합(5항목 고정포맷+1단계부터 진행바+핫이슈 외부뉴스 기준) | 즉시 | DONE | first_action: 간이보고 크론 프롬프트를 통합 규칙으로 재작성 | proof: cron `86edd049` payload 통합 수정, 보고채널 재전송 messageId `78`, `80`
 - 2026-02-17 13:10 | 3987 | 잘못 생성된 `reports/algorithm_dev_project` 폴더 삭제 | 즉시 | DONE | first_action: 해당 폴더 git 삭제 후 커밋/푸시 | proof: commit `604ad38`
+- 2026-02-17 13:18 | 3997 | 블로그/텔레그램은 장애여부가 아니라 질적분석(주요내용) 요약으로 보고 | 즉시 | DONE | first_action: 간이보고 크론 프롬프트를 내용 중심 질적요약 규칙으로 수정 후 재실행 | proof: cron `86edd049` payload 수정, 보고채널 messageId `72`
+- 2026-02-17 13:20 | 3998 | 지시사항 누락 없이 기억/이행 | 상시 | IN_PROGRESS | first_action: DIRECTIVES.md 상시 점검 유지 + 보고 전 OPEN/IN_PROGRESS 재확인 | proof: -
+- 2026-02-17 13:25 | 4007 | 보고서 완벽 재작성 후 승인 받을 수준으로 제출 | 즉시 | DONE | first_action: 질적요약+진행률 분리 방식으로 보고서 재작성 및 보고채널 원문 전송 | proof: `reports/hourly/HOURLY_2026-02-17_1300_KST.md`, 보고채널 messageId `75`
+- 2026-02-17 13:55 | 4024 | 기존 value 산출물 삭제(폐기) | 즉시 | DONE | first_action: invest/results 내 value 산출 결과 파일 삭제 후 잔존 확인 | proof: `invest/results` 잔존 파일 3개(`generate_chart.py`, `_governance_smoke.md`, `RESULT_GOVERNANCE.md`)
+- 2026-02-17 13:57 | 4028 | 선행 위반/오염 가능 산출물 전량 폐기("다 버려") | 즉시 | DONE | first_action: reports 산출물 및 관련 임시 산출물 일괄 삭제 후 잔존 확인 | proof: reports 잔존 파일 6개(README/.gitkeep만 유지), value 결과는 기존에 전량 삭제 완료
+- 2026-02-17 14:42 | 4130 | 전략 보강 항목 즉시 반영(가드레일/게이트) | 즉시 | DONE | first_action: OPERATIONS_SOP에 하드게이트/리니지/무결성/병렬격리 규칙 추가 | proof: `OPERATIONS_SOP.md` 1/4-A/4-B/4-C/4-D 섹션, `invest/docs/architecture/GUARDRAIL_CHECKLIST_V1.md`
 
 ### P3-상시
 - 2026-02-17 05:50 | 3522 | 주기적으로 할일 체크(정기 점검 루틴 상시 적용) | 상시 | IN_PROGRESS | first_action: 크론 `531714af-c1ee-4852-9966-2e9b62714449` 실행 상태 주기 확인 | proof: cron job active

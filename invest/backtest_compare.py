@@ -6,7 +6,7 @@
 내지표(My Indicator): MA 장기추세 + 모멘텀 기반 전략
 이웃지표(Neighbor Indicator): 기관+외국인 수급 모멘텀 기반 전략
 
-데이터: invest/data/ohlcv/*.csv, invest/data/supply/*_supply.csv
+데이터: invest/data/raw/kr/ohlcv/*.csv, invest/data/raw/kr/supply/*_supply.csv
 기간: 2016-01 ~ 2025-12 (최대 10년)
 
 [수정 이력]
@@ -22,10 +22,23 @@ import os
 import glob
 import warnings
 import datetime
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import matplotlib.font_manager as fm
+except Exception:
+    matplotlib = None
+    plt = None
+    fm = None
+import sys
+
+try:
+    from invest.scripts.run_manifest import write_run_manifest
+except ModuleNotFoundError:
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'scripts'))
+    from run_manifest import write_run_manifest
+
 warnings.filterwarnings('ignore')
 
 # ─────────────────────────── C3: 결과 등급 ───────────────────────────
@@ -35,16 +48,18 @@ RESULT_GRADE = 'DRAFT'
 
 # ─────────────────────────── C3: 경로 설정 (results/test/) ───────────────────────────
 BASE_DIR   = '/Users/jobiseu/.openclaw/workspace/invest'
-OHLCV_DIR  = os.path.join(BASE_DIR, 'data/ohlcv')
-SUPPLY_DIR = os.path.join(BASE_DIR, 'data/supply')
+OHLCV_DIR  = os.path.join(BASE_DIR, 'data/clean/production/kr/ohlcv')
+SUPPLY_DIR = os.path.join(BASE_DIR, 'data/clean/production/kr/supply')
 # C3: DRAFT 결과는 반드시 results/test/ 에만 저장
 OUTPUT_DIR = os.path.join(BASE_DIR, 'results/test')
+MANIFEST_DIR = os.path.join(BASE_DIR, 'reports', 'data_quality')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(MANIFEST_DIR, exist_ok=True)
 
 # ─────────────────────────── 파라미터 ───────────────────────────
 UNIVERSE_SIZE    = 200   # 유니버스 종목 수 (속도 vs 품질 균형)
 TOP_N            = 5     # 보유 종목 수
-REBALANCE_FREQ   = 'M'   # 월별 리밸런싱
+REBALANCE_FREQ   = 'ME'  # 월별 리밸런싱 (Pandas 2.2+ fix: M -> ME)
 MA_SHORT         = 20    # 단기 MA
 MA_LONG          = 60    # 장기 MA
 SUPPLY_WINDOW    = 20    # 수급 집계 기간
@@ -89,6 +104,7 @@ def load_all_candidate_ohlcv(candidate_codes, limit=500):
             df = pd.read_csv(path)
             df['Date'] = pd.to_datetime(df['Date'])
             df = df.set_index('Date').sort_index()
+            df = df[~df.index.duplicated(keep='last')]
             df = df[(df.index >= START_DATE) & (df.index <= END_DATE)]
             if len(df) >= MIN_HISTORY_DAYS:
                 cols = [c for c in ['Open', 'High', 'Low', 'Close', 'Volume'] if c in df.columns]
@@ -124,6 +140,7 @@ def load_ohlcv(code):
     df = pd.read_csv(path)
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.set_index('Date').sort_index()
+    df = df[~df.index.duplicated(keep='last')]
     df = df[(df.index >= START_DATE) & (df.index <= END_DATE)]
     return df[['Open', 'High', 'Low', 'Close', 'Volume']]
 
@@ -134,6 +151,7 @@ def load_supply(code):
     df.columns = ['Date', 'Inst', 'Corp', 'Indiv', 'Foreign', 'Total']
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.set_index('Date').sort_index()
+    df = df[~df.index.duplicated(keep='last')]
     df = df[(df.index >= START_DATE) & (df.index <= END_DATE)]
     return df
 
@@ -388,51 +406,55 @@ def main():
     print(f"  CSV: {csv_path}")
 
     # ── PNG 저장: DRAFT 워터마크 포함 ──
-    print("[7] 그래프 생성 (TEST ONLY 워터마크 포함)...")
-    fig, ax = plt.subplots(figsize=(14, 7))
-
-    x           = np.arange(len(rows))
-    width       = 0.35
-    my_vals     = [r['my_algo_return'] or 0 for r in rows]
-    nb_vals     = [r['neighbor_algo_return'] or 0 for r in rows]
-    years_label = [str(r['year']) for r in rows]
-
-    bars1 = ax.bar(x - width/2, my_vals, width, label='내지표 (MA+모멘텀)', color='steelblue', alpha=0.85)
-    bars2 = ax.bar(x + width/2, nb_vals, width, label='이웃지표 (기관+외국인 수급)', color='coral', alpha=0.85)
-
-    for bar in bars1:
-        h = bar.get_height()
-        ax.annotate(f'{h:.1f}%', xy=(bar.get_x() + bar.get_width()/2, h),
-                    xytext=(0, 3), textcoords='offset points', ha='center', va='bottom', fontsize=8)
-    for bar in bars2:
-        h = bar.get_height()
-        ax.annotate(f'{h:.1f}%', xy=(bar.get_x() + bar.get_width()/2, h),
-                    xytext=(0, 3), textcoords='offset points', ha='center', va='bottom', fontsize=8)
-
-    ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
-    ax.set_xlabel('연도', fontsize=12)
-    ax.set_ylabel('연간 수익률 (%)', fontsize=12)
-    ax.set_title(
-        f'[{RESULT_GRADE} - TEST ONLY]  내지표 vs 이웃지표 연도별 수익률 비교 (2016-2025)\n'
-        f'C1 룩어헤드 제거 · C2 동적 유니버스 · C3 거버넌스 적용',
-        fontsize=13, fontweight='bold'
-    )
-    ax.set_xticks(x)
-    ax.set_xticklabels(years_label)
-    ax.legend(fontsize=11)
-    ax.grid(axis='y', alpha=0.4)
-
-    # C3: 워터마크 (대각선 DRAFT)
-    fig.text(0.5, 0.5, 'DRAFT - TEST ONLY',
-             fontsize=52, color='gray', alpha=0.18,
-             ha='center', va='center', rotation=30,
-             fontweight='bold', transform=ax.transAxes)
-
-    plt.tight_layout()
     png_path = os.path.join(OUTPUT_DIR, f'annual_returns_comparison_{run_ts}.png')
-    plt.savefig(png_path, dpi=150, bbox_inches='tight')
-    plt.close()
-    print(f"  PNG: {png_path}")
+    if plt is not None:
+        print("[7] 그래프 생성 (TEST ONLY 워터마크 포함)...")
+        fig, ax = plt.subplots(figsize=(14, 7))
+
+        x           = np.arange(len(rows))
+        width       = 0.35
+        my_vals     = [r['my_algo_return'] or 0 for r in rows]
+        nb_vals     = [r['neighbor_algo_return'] or 0 for r in rows]
+        years_label = [str(r['year']) for r in rows]
+
+        bars1 = ax.bar(x - width/2, my_vals, width, label='내지표 (MA+모멘텀)', color='steelblue', alpha=0.85)
+        bars2 = ax.bar(x + width/2, nb_vals, width, label='이웃지표 (기관+외국인 수급)', color='coral', alpha=0.85)
+
+        for bar in bars1:
+            h = bar.get_height()
+            ax.annotate(f'{h:.1f}%', xy=(bar.get_x() + bar.get_width()/2, h),
+                        xytext=(0, 3), textcoords='offset points', ha='center', va='bottom', fontsize=8)
+        for bar in bars2:
+            h = bar.get_height()
+            ax.annotate(f'{h:.1f}%', xy=(bar.get_x() + bar.get_width()/2, h),
+                        xytext=(0, 3), textcoords='offset points', ha='center', va='bottom', fontsize=8)
+
+        ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
+        ax.set_xlabel('연도', fontsize=12)
+        ax.set_ylabel('연간 수익률 (%)', fontsize=12)
+        ax.set_title(
+            f'[{RESULT_GRADE} - TEST ONLY]  내지표 vs 이웃지표 연도별 수익률 비교 (2016-2025)\n'
+            f'C1 룩어헤드 제거 · C2 동적 유니버스 · C3 거버넌스 적용',
+            fontsize=13, fontweight='bold'
+        )
+        ax.set_xticks(x)
+        ax.set_xticklabels(years_label)
+        ax.legend(fontsize=11)
+        ax.grid(axis='y', alpha=0.4)
+
+        fig.text(0.5, 0.5, 'DRAFT - TEST ONLY',
+                 fontsize=52, color='gray', alpha=0.18,
+                 ha='center', va='center', rotation=30,
+                 fontweight='bold', transform=ax.transAxes)
+
+        plt.tight_layout()
+        plt.savefig(png_path, dpi=150, bbox_inches='tight')
+        plt.close()
+        print(f"  PNG: {png_path}")
+    else:
+        with open(png_path, 'w', encoding='utf-8') as f:
+            f.write('matplotlib not available; png skipped')
+        print(f"  PNG: skipped (matplotlib unavailable) -> {png_path}")
 
     # ── 콘솔 요약 ──
     print("\n" + "=" * 60)
@@ -458,6 +480,29 @@ def main():
     print(f"\n✅ 결과 파일 ({RESULT_GRADE}):")
     print(f"  CSV: {csv_path}")
     print(f"  PNG: {png_path}")
+
+    # Stage5 lineage manifest (mandatory)
+    manifest_ts = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    manifest_path = os.path.join(MANIFEST_DIR, f'manifest_backtest_stage5_{manifest_ts}.json')
+    write_run_manifest(
+        run_type='stage5_backtest_compare',
+        params={
+            'result_grade': RESULT_GRADE,
+            'start_date': START_DATE,
+            'end_date': END_DATE,
+            'universe_size': UNIVERSE_SIZE,
+            'top_n': TOP_N,
+            'rebalance_freq': REBALANCE_FREQ,
+        },
+        inputs=[OHLCV_DIR, SUPPLY_DIR],
+        outputs=[csv_path, png_path],
+        out_path=manifest_path,
+        workdir=BASE_DIR,
+    )
+    if not os.path.exists(manifest_path):
+        raise RuntimeError(f'Stage5 manifest was not generated: {manifest_path}')
+    print(f"  MANIFEST: {manifest_path}")
+
     print("\n⚠️  DRAFT 결과: 검증 완료 후 VALIDATED → PRODUCTION 승격 필요")
 
     return result_df

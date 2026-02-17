@@ -5,8 +5,8 @@ from datetime import datetime
 
 # Paths
 workspace_dir = '/Users/jobiseu/.openclaw/workspace/invest'
-blog_posts_dir = os.path.join(workspace_dir, 'data/alternative/blog_posts')
-tg_logs_dir = os.path.join(workspace_dir, 'data/alternative/telegram_logs')
+blog_posts_dir = os.path.join(workspace_dir, 'data/raw/text/blog')
+tg_logs_dir = os.path.join(workspace_dir, 'data/raw/text/telegram')
 blog_log_path = os.path.join(workspace_dir, 'logs/blog_scrape.log')
 tg_log_path = os.path.join(workspace_dir, 'logs/tg_highspeed.log')
 index_html_path = os.path.join(workspace_dir, 'web/index.html')

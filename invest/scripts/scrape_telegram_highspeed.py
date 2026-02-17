@@ -47,11 +47,11 @@ if not api_id or not api_hash:
     sys.exit(1)
 
 # Save directory
-save_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/alternative/telegram_logs'
+save_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/telegram'
 os.makedirs(save_dir, exist_ok=True)
 
 # Time windows
-target_date = datetime.now(timezone.utc) - timedelta(days=365)
+target_date = datetime.now(timezone.utc) - timedelta(days=365*10)
 bootstrap_lookback_days = int(os.environ.get('TELEGRAM_BOOTSTRAP_LOOKBACK_DAYS', '3'))
 bootstrap_date = datetime.now(timezone.utc) - timedelta(days=max(1, bootstrap_lookback_days))
 
@@ -64,8 +64,8 @@ INVEST_KEYWORDS = (
 )
 
 # Reliability guards (seconds)
-GLOBAL_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_GLOBAL_TIMEOUT_SEC', '270'))
-PER_CHANNEL_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC', '90'))
+GLOBAL_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_GLOBAL_TIMEOUT_SEC', '7200'))
+PER_CHANNEL_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC', '600'))
 DASHBOARD_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_DASHBOARD_TIMEOUT_SEC', '45'))
 INCREMENTAL_ONLY = os.environ.get('TELEGRAM_INCREMENTAL_ONLY', '1').strip().lower() not in ('0', 'false', 'no')
 
@@ -146,12 +146,12 @@ async def scrape_single_channel(client, entity, title, username, fname, checkpoi
     key = str(username)
     last_id = int(checkpoint.get(key, 0) or 0)
 
-    if last_id > 0:
+    if last_id > 0 and INCREMENTAL_ONLY:
         msg_iter = client.iter_messages(entity, min_id=last_id)
         mode = f"incremental(min_id={last_id})"
     else:
         msg_iter = client.iter_messages(entity)
-        mode = f"bootstrap({bootstrap_lookback_days}d)" if INCREMENTAL_ONLY else "full(1y)"
+        mode = f"bootstrap({bootstrap_lookback_days}d)" if (INCREMENTAL_ONLY and last_id <= 0) else "full(10y)"
 
     new_count = 0
     max_seen_id = last_id

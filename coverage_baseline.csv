@@ -1,0 +1,13 @@
+Source,File Count,Min Date,Max Date
+kr/ohlcv,100,2016-01-04,2026-02-13
+kr/supply,100,2016-02-16,2026-02-13
+us/ohlcv,100,2016-01-04,2026-02-13
+kr/dart,2,N/A,N/A
+market/news/rss,41,2026-02-13,2026-02-17
+market/macro,12,2000-01-01,2026-02-13
+market/google_trends,8,2016-02-01,2026-02-01
+text/blog,15357,2018-04-17,2026-02-13
+text/telegram,59,2025-03-27,2026-02-16
+text/premium,21,2026-02-12,2026-02-12
+text/image_map,2,N/A,N/A
+text/images_ocr,8,N/A,N/A

@@ -7,7 +7,7 @@ import feedparser
 
 from pipeline_logger import append_pipeline_event
 
-DATA_DIR = "invest/data/news/rss"
+DATA_DIR = "invest/data/raw/market/news/rss"
 CONFIG_PATH = "invest/config/news_sources.json"
 
 

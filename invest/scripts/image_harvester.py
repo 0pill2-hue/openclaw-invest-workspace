@@ -10,15 +10,20 @@ from datetime import datetime
 import requests
 
 TEXT_DIRS = [
-    "invest/data/alternative/telegram_logs",
+    "invest/data/raw/text/telegram",
+    "invest/data/raw/text/blog",
 ]
 
-MAP_DIR = "invest/data/image_map"
-OUT_DIR = "invest/data/images_ocr"
+MAP_DIR = "invest/data/raw/text/image_map"
+OUT_DIR = "invest/data/raw/text/images_ocr"
 CFG_PATH = "invest/config/image_ocr_keywords.json"
-SEEN_PATH = "invest/data/images_ocr/seen_urls.json"
+SEEN_PATH = "invest/data/raw/text/images_ocr/seen_urls.json"
 
 IMG_MD_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
+IMG_TAG_RE = re.compile(r"<img[^>]+src=[\"']([^\"']+)[\"']", re.IGNORECASE)
+URL_RE = re.compile(r"https?://[^\s\)\]\'\"]+", re.IGNORECASE)
+IMG_EXT_RE = re.compile(r"\.(png|jpe?g|webp|gif|bmp)(\?.*)?$", re.IGNORECASE)
+IMAGE_HINT_RE = re.compile(r"(image|img|photo|pic|cdn|media|telegram)", re.IGNORECASE)
 
 SESSION = requests.Session()
 SESSION.headers.update({
@@ -37,10 +42,31 @@ def load_keywords():
         return json.load(f).get("keywords", [])
 
 
+def _is_image_url(url: str) -> bool:
+    if not url:
+        return False
+    u = url.strip()
+    if u.startswith('//'):
+        u = 'https:' + u
+    if IMG_EXT_RE.search(u):
+        return True
+    return IMAGE_HINT_RE.search(u) is not None
+
+
+def _normalize_url(url: str) -> str:
+    u = (url or '').strip()
+    if u.startswith('//'):
+        u = 'https:' + u
+    return u
+
+
 def build_map():
     ensure_dir(MAP_DIR)
     ts = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
     out = []
+    seen = set()
+    scanned_files = 0
+
     for base in TEXT_DIRS:
         if not os.path.exists(base):
             continue
@@ -48,18 +74,36 @@ def build_map():
             for fn in files:
                 if not fn.endswith(".md"):
                     continue
+                scanned_files += 1
                 path = os.path.join(root, fn)
                 try:
-                    with open(path, "r", encoding="utf-8") as f:
+                    with open(path, "r", encoding="utf-8", errors='ignore') as f:
                         text = f.read()
                 except Exception:
                     continue
-                for m in IMG_MD_RE.findall(text):
-                    out.append({"url": m.strip(), "source": path})
+
+                candidates = []
+                candidates.extend(IMG_MD_RE.findall(text))
+                candidates.extend(IMG_TAG_RE.findall(text))
+                candidates.extend(URL_RE.findall(text))
+
+                for raw in candidates:
+                    u = _normalize_url(raw)
+                    if not (u.startswith('http://') or u.startswith('https://')):
+                        continue
+                    if not _is_image_url(u):
+                        continue
+                    key = (u, path)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    out.append({"url": u, "source": path})
+
     map_path = os.path.join(MAP_DIR, f"image_map_{ts}.json")
     with open(map_path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
-    return map_path, out
+    stats = {"scanned_files": scanned_files, "mapped_urls": len(out)}
+    return map_path, out, stats
 
 
 def keyword_match(text, keywords):
@@ -93,7 +137,7 @@ def ocr_image(path):
 def harvest(limit=50):
     ensure_dir(OUT_DIR)
     keywords = load_keywords()
-    map_path, items = build_map()
+    map_path, items, map_stats = build_map()
 
     seen = set()
     if os.path.exists(SEEN_PATH):
@@ -148,7 +192,12 @@ def harvest(limit=50):
     with open(SEEN_PATH, "w", encoding="utf-8") as f:
         json.dump(sorted(list(seen)), f, ensure_ascii=False, indent=2)
 
-    return {"map": map_path, "processed": processed}
+    return {
+        "map": map_path,
+        "processed": processed,
+        "scanned_files": map_stats.get("scanned_files", 0),
+        "mapped_urls": map_stats.get("mapped_urls", 0),
+    }
 
 
 if __name__ == "__main__":

@@ -6,8 +6,8 @@ from datetime import datetime
 
 import pandas as pd
 
-DART_DIR = "invest/data/dart"
-OUT_DIR = "invest/data/dart/tagged"
+DART_DIR = "invest/data/raw/kr/dart"
+OUT_DIR = "invest/data/raw/kr/dart/tagged"
 
 RISK_RULES = {
     "governance_high": ["최대주주", "경영권", "유상증자", "전환사채", "BW", "CB", "지분", "소송"],

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 def fetch_google_trends(keywords):
     pytrends = TrendReq(hl='ko-KR', tz=540)
     
-    output_dir = 'invest/data/alternative/trends'
+    output_dir = 'invest/data/raw/market/google_trends'
     os.makedirs(output_dir, exist_ok=True)
     
     # 10 years ago to today

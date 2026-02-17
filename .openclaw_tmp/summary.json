@@ -1,0 +1,24 @@
+{
+  "telegram": {
+    "rc": 0,
+    "skip": false,
+    "logfile": "/Users/jobiseu/.openclaw/workspace/.openclaw_tmp/telegram.log",
+    "finished_marker": true
+  },
+  "blog": {
+    "rc": 0,
+    "skip": false,
+    "logfile": "/Users/jobiseu/.openclaw/workspace/.openclaw_tmp/blog.log"
+  },
+  "dashboard": {
+    "rc": 0,
+    "skip": false,
+    "logfile": "/Users/jobiseu/.openclaw/workspace/.openclaw_tmp/dashboard.log"
+  },
+  "ok": {
+    "telegram": true,
+    "blog": true,
+    "dashboard": true
+  },
+  "all_ok": true
+}

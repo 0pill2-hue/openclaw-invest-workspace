@@ -60,6 +60,7 @@ def _sanitize_supply(code: str, df_new: pd.DataFrame):
 
 
 def fetch_supply_data():
+    full_collection = os.environ.get('FULL_COLLECTION', '0').strip().lower() in ('1', 'true', 'yes')
     stock_list_path = 'invest/data/master/kr_stock_list.csv'
     if not os.path.exists(stock_list_path):
         print("Stock list not found.")
@@ -69,7 +70,7 @@ def fetch_supply_data():
     df_stocks['Code'] = df_stocks['Code'].astype(str).str.zfill(6)
     
     raw_output_dir = 'invest/data/raw/kr/supply'
-    legacy_output_dir = 'invest/data/supply'  # backward-compat mirror
+    legacy_output_dir = 'invest/data/raw/kr/supply'  # backward-compat mirror
     os.makedirs(raw_output_dir, exist_ok=True)
     os.makedirs(legacy_output_dir, exist_ok=True)
 
@@ -89,7 +90,7 @@ def fetch_supply_data():
 
         # 증분 수집: 기존 파일이 있으면 마지막 날짜 이후부터 수집
         start_date = base_start_date
-        if os.path.exists(file_path):
+        if (not full_collection) and os.path.exists(file_path):
             try:
                 df_existing = pd.read_csv(file_path)
                 if '날짜' in df_existing.columns:

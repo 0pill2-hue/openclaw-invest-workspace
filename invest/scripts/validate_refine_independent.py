@@ -27,6 +27,18 @@ from datetime import datetime, date
 import pandas as pd
 import numpy as np
 
+try:
+    from invest.scripts.run_manifest import write_run_manifest
+except Exception:
+    from run_manifest import write_run_manifest
+
+# TODO(refactor-phase2): migrate validator building blocks to invest.validation modules in small, behavior-preserving steps.
+try:
+    import invest.validation  # noqa: F401
+except Exception:
+    # import 준비용: 현재 동작 영향 0 유지
+    pass
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 경로 상수
 # ─────────────────────────────────────────────────────────────────────────────
@@ -890,9 +902,20 @@ def main():
     print(f'  JSON    : {json_path}')
     print(f'  Verdict : {verdict_path}  ← GR-2 판정값 전용')
     print(f'  Evidence: {EVIDENCE_DIR}/   ← GR-2 근거 전용')
+
+    manifest_path = os.path.join(WORKSPACE, 'invest', 'reports', 'data_quality', f'manifest_stage2_validate_{timestamp}.json')
+    write_run_manifest(
+        run_type='stage2_validate_refine_independent',
+        params={'folders': FOLDERS, 'l3_ratio_cap': L3_RATIO_CAP},
+        inputs=[CLEAN_PROD, Q_PROD, RAW_BASE],
+        outputs=[md_path, json_path, verdict_path],
+        out_path=manifest_path,
+        workdir=os.path.join(WORKSPACE, 'invest'),
+    )
+    print(f'  Manifest: {manifest_path}')
     print('=' * 65)
 
-    return md_path, json_path, verdict_path
+    return md_path, json_path, verdict_path, manifest_path
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ def _safe_import_matplotlib():
 
 
 def _load_close_series(code: str):
-    path = f"invest/data/ohlcv/{code}.csv"
+    path = f"invest/data/raw/kr/ohlcv/{code}.csv"
     if not os.path.exists(path):
         return None
     df = pd.read_csv(path)

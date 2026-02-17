@@ -3,8 +3,8 @@ import json
 import pandas as pd
 from datetime import datetime
 
-DATA_OHLCV = "invest/data/ohlcv"
-DATA_SUPPLY = "invest/data/supply"
+DATA_OHLCV = "invest/data/raw/kr/ohlcv"
+DATA_SUPPLY = "invest/data/raw/kr/supply"
 STOCK_LIST = "invest/data/master/kr_stock_list.csv"
 QUERY_MAX_CODES = int(os.environ.get("QUERY_MAX_CODES", "800"))
 

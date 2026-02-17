@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 from run_manifest import write_run_manifest
 
 BASE = '/Users/jobiseu/.openclaw/workspace/invest/data'
-BLOG_RAW = os.path.join(BASE, 'alternative/blog_posts')
-TG_RAW = os.path.join(BASE, 'alternative/telegram_logs')
+BLOG_RAW = os.path.join(BASE, 'raw/text/blog')
+TG_RAW = os.path.join(BASE, 'raw/text/telegram')
 
 OUT_CLEAN_BLOG = os.path.join(BASE, 'clean/text/blog/blog_structured.jsonl')
 OUT_CLEAN_TG = os.path.join(BASE, 'clean/text/telegram/telegram_structured.jsonl')

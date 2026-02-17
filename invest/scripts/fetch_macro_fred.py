@@ -4,7 +4,7 @@ import pandas as pd
 from pandas_datareader import data as pdr
 from datetime import datetime
 
-DATA_DIR = "invest/data/macro"
+DATA_DIR = "invest/data/raw/market/macro"
 
 SERIES = {
     "FEDFUNDS": "Fed Funds Rate",

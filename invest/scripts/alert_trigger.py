@@ -5,7 +5,7 @@ from datetime import datetime
 
 HEALTH_PATH = "memory/health-state.json"
 VALIDATE_PATH = "invest/data/runtime/post_collection_validate.json"
-VIX_PATH = "invest/data/macro/VIXCLS.csv"
+VIX_PATH = "invest/data/clean/production/market/macro/VIXCLS.csv"
 VIX_WATCH = float(os.environ.get("VIX_WATCH", "30"))
 VIX_EXTREME = float(os.environ.get("VIX_EXTREME", "40"))
 

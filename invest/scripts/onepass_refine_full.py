@@ -8,6 +8,13 @@ import hashlib
 from datetime import datetime
 import traceback
 
+# TODO(refactor-phase2): move core refine logic into invest.pipeline modules (behavior-preserving migration).
+try:
+    import invest.pipeline  # noqa: F401
+except Exception:
+    # import 준비용: 현재 동작 영향 0 유지
+    pass
+
 # Configuration
 BASE_DATA = '/Users/jobiseu/.openclaw/workspace/invest/data'
 RAW_BASE = os.path.join(BASE_DATA, 'raw')

@@ -13,8 +13,8 @@ from datetime import datetime, timedelta
 
 from pipeline_logger import append_pipeline_event
 
-# Target date: dynamically 1 year ago from now
-target_date = datetime.now() - timedelta(days=365)
+# Target date: dynamically 10 years ago from now
+target_date = datetime.now() - timedelta(days=365*10)
 
 LOCK_FILE = '/Users/jobiseu/.openclaw/workspace/invest/data/runtime/blog_scrape.lock'
 CKPT_FILE = '/Users/jobiseu/.openclaw/workspace/invest/data/runtime/blog_scrape_checkpoint.json'
@@ -29,7 +29,7 @@ except BlockingIOError:
 with open('/Users/jobiseu/.openclaw/workspace/invest/data/master/naver_buddies_full.json', 'r', encoding='utf-8') as f:
     buddies = json.load(f)
 
-base_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/alternative/blog_posts'
+base_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/blog'
 log_path = '/Users/jobiseu/.openclaw/workspace/invest/logs/blog_scrape.log'
 os.makedirs(base_dir, exist_ok=True)
 os.makedirs(os.path.dirname(log_path), exist_ok=True)

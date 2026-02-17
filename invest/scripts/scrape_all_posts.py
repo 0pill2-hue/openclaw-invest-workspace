@@ -7,7 +7,7 @@ import os
 with open('/Users/jobiseu/.openclaw/workspace/invest/data/master/naver_buddies_full.json', 'r', encoding='utf-8') as f:
     buddies = json.load(f)
 
-base_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/alternative/blog_posts'
+base_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/blog'
 os.makedirs(base_dir, exist_ok=True)
 
 # Process first 5 buddies as a start to show progress

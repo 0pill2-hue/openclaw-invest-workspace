@@ -1,0 +1,82 @@
+{
+  "grade": "DRAFT",
+  "watermark": "TEST ONLY",
+  "adoption_gate": "7단계(Purged CV/OOS) 전 채택 금지",
+  "generated_at": "2026-02-18T07:01:45.269033",
+  "status": "SUCCESS",
+  "date_fix": {
+    "issue": "월말 리밸런싱 month-end timestamp와 실제 거래일 인덱스 불일치(KeyError)",
+    "minimal_fix": "resample index 대신 월 그룹 실제 마지막 거래일(date value) 사용"
+  },
+  "comparison_table": [
+    {
+      "track": "Quant",
+      "return": 0.31765443050844744,
+      "cagr": 0.20225182091525773,
+      "mdd": -0.12643111268646245,
+      "sharpe": 1.0540613583791436,
+      "turnover": 0.9620569979434286,
+      "cost_erosion": 0.009620569979434286,
+      "rolling3m_sharpe_min": -0.8183205308676095,
+      "rolling3m_alpha_min": -0.1545394820677315
+    },
+    {
+      "track": "Text",
+      "return": 0.4598264791440192,
+      "cagr": 0.28738775053532994,
+      "mdd": -0.10053998862039892,
+      "sharpe": 1.5007500884663012,
+      "turnover": 0.9657354298562438,
+      "cost_erosion": 0.009657354298562439,
+      "rolling3m_sharpe_min": -0.060147804305340336,
+      "rolling3m_alpha_min": -0.06270276185591539
+    },
+    {
+      "track": "Hybrid",
+      "return": 0.3276378402428235,
+      "cagr": 0.20832660068672526,
+      "mdd": -0.07500948840851629,
+      "sharpe": 1.071016772728456,
+      "turnover": 0.9482568322452095,
+      "cost_erosion": 0.009482568322452095,
+      "rolling3m_sharpe_min": -0.9903441664108745,
+      "rolling3m_alpha_min": -0.11229146790173139
+    }
+  ],
+  "judgment": [
+    {
+      "track": "Quant",
+      "status": "탈락",
+      "hard": [
+        "Rolling3M Sharpe<-0.2 위반 (-0.818)"
+      ],
+      "soft": []
+    },
+    {
+      "track": "Text",
+      "status": "유지",
+      "hard": [],
+      "soft": []
+    },
+    {
+      "track": "Hybrid",
+      "status": "탈락",
+      "hard": [
+        "Rolling3M Sharpe<-0.1 위반 (-0.990)"
+      ],
+      "soft": []
+    }
+  ],
+  "roles": {
+    "operate_candidate": "Text",
+    "monitor_candidate": [
+      "Quant",
+      "Hybrid"
+    ],
+    "rationale": [
+      "후보선정: total_return/sharpe 우선순위 1위 트랙=Text",
+      "후보감시: 비선정 트랙 ['Quant', 'Hybrid']를 경고 레이어로 유지(RULEBOOK 3검증1운영)",
+      "주의: 본 결과는 DRAFT이며 7단계(Purged CV/OOS) 전 채택/실운영 전환 금지"
+    ]
+  }
+}
