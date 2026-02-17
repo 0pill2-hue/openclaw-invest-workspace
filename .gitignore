@@ -28,8 +28,13 @@ AGENTS.md
 BRAINS.md
 report_state.json
 reports/*
-!reports/algorithm_dev_project/
-!reports/algorithm_dev_project/**
+!reports/README.md
+!reports/hourly/
+!reports/hourly/**
+!reports/daily/
+!reports/daily/**
+!reports/weekly/
+!reports/weekly/**
 
 # Large/generated data artifacts
 invest/data/

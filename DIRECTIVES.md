@@ -25,6 +25,8 @@
 - 2026-02-17 11:06 | 3799 | 전체 작업 명칭을 '알고리즘개발프로젝트'로 통일 | 상시 | IN_PROGRESS | first_action: 보고/문서/체크리스트 헤더를 `알고리즘개발프로젝트` 명칭으로 표준화 | proof: -
 - 2026-02-17 11:12 | 3803 | 08:00~22:00 매시 정기 보고 규칙(블로그/텔레 상세·핫이슈 유무·단계%·문제점 해결상태) 고정 | 상시 | IN_PROGRESS | first_action: `간이보고(1시간)` 크론의 시간대/포맷을 새 규칙으로 업데이트 | proof: cron job `86edd049-b00d-4547-b904-1b2d29a5aa20` updated
 - 2026-02-17 11:17 | 3809 | GitHub에 보고 폴더 생성(시간별/일일/주간) 및 알아보기 쉬운 파일명으로 업데이트 | 상시 | DONE | first_action: `reports/algorithm_dev_project/{hourly,daily,weekly}` 생성 후 보고 크론 저장 경로/파일명 규칙 업데이트 | proof: commit `c961ae8`, cron `86edd049` `77f38f52` `84cfae2b` updated
+- 2026-02-17 11:19 | 3813 | 보고는 수집운영 일반현황이 아니라 알고리즘개발프로젝트 중심으로 작성 | 상시 | IN_PROGRESS | first_action: 시간별/일일/주간 보고 프롬프트에 '프로젝트 단계/검증/결정/리스크' 중심 규칙을 강제 반영 | proof: cron `86edd049` `77f38f52` `84cfae2b` updated
+- 2026-02-17 11:21 | 3815 | 폴더명/파일명에서 '알고리즘' 명칭 제거, 단순 시간별/일일/주간 네이밍 사용 | 즉시 | IN_PROGRESS | first_action: 저장 경로를 `reports/{hourly,daily,weekly}`로, 파일명을 중립 규칙으로 변경 | proof: -
 
 ### P3-상시
 - 2026-02-17 05:50 | 3522 | 주기적으로 할일 체크(정기 점검 루틴 상시 적용) | 상시 | IN_PROGRESS | first_action: 크론 `531714af-c1ee-4852-9966-2e9b62714449` 실행 상태 주기 확인 | proof: cron job active
