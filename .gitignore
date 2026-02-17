@@ -27,7 +27,9 @@ TOOLS.md
 AGENTS.md
 BRAINS.md
 report_state.json
-reports/
+reports/*
+!reports/algorithm_dev_project/
+!reports/algorithm_dev_project/**
 
 # Large/generated data artifacts
 invest/data/
