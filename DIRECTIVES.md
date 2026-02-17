@@ -26,7 +26,10 @@
 - 2026-02-17 11:12 | 3803 | 08:00~22:00 매시 정기 보고 규칙(블로그/텔레 상세·핫이슈 유무·단계%·문제점 해결상태) 고정 | 상시 | IN_PROGRESS | first_action: `간이보고(1시간)` 크론의 시간대/포맷을 새 규칙으로 업데이트 | proof: cron job `86edd049-b00d-4547-b904-1b2d29a5aa20` updated
 - 2026-02-17 11:17 | 3809 | GitHub에 보고 폴더 생성(시간별/일일/주간) 및 알아보기 쉬운 파일명으로 업데이트 | 상시 | DONE | first_action: `reports/algorithm_dev_project/{hourly,daily,weekly}` 생성 후 보고 크론 저장 경로/파일명 규칙 업데이트 | proof: commit `c961ae8`, cron `86edd049` `77f38f52` `84cfae2b` updated
 - 2026-02-17 11:19 | 3813 | 보고는 수집운영 일반현황이 아니라 알고리즘개발프로젝트 중심으로 작성 | 상시 | IN_PROGRESS | first_action: 시간별/일일/주간 보고 프롬프트에 '프로젝트 단계/검증/결정/리스크' 중심 규칙을 강제 반영 | proof: cron `86edd049` `77f38f52` `84cfae2b` updated
-- 2026-02-17 11:21 | 3815 | 폴더명/파일명에서 '알고리즘' 명칭 제거, 단순 시간별/일일/주간 네이밍 사용 | 즉시 | IN_PROGRESS | first_action: 저장 경로를 `reports/{hourly,daily,weekly}`로, 파일명을 중립 규칙으로 변경 | proof: -
+- 2026-02-17 11:21 | 3815 | 폴더명/파일명에서 '알고리즘' 명칭 제거, 단순 시간별/일일/주간 네이밍 사용 | 즉시 | DONE | first_action: 저장 경로를 `reports/{hourly,daily,weekly}`로, 파일명을 중립 규칙으로 변경 | proof: commit `9788d1c`, cron `86edd049` `77f38f52` `84cfae2b` updated
+- 2026-02-17 11:22 | 3817 | 3814 메시지 맥락은 보고 내용 수정 지시가 아니었음(의도 오해 금지) | 즉시 | DONE | first_action: 사용자 확인 없이 범위 확장 변경 금지, 애매하면 1문장 확인 후 적용 | proof: reply `3818`(의도 오해 인정/확인 후 수정 원칙 명시)
+- 2026-02-17 11:32 | 3825 | 알고리즘 보고 시 1단계부터 전체 나열 + 단계별 진행바(예: ■■■□□□50%), 단계 완료마다 별도 업데이트 보고서 생성(예: 내지표 vs 이웃지표 표) | 상시 | IN_PROGRESS | first_action: 시간별/일일 보고 포맷과 단계완료 리포트 규칙을 크론 프롬프트/보고 폴더에 반영 | proof: -
+- 2026-02-17 11:33 | 3826 | 단계완료 보고는 GitHub 업데이트 + 보고채널 전송을 동시에 수행 | 상시 | IN_PROGRESS | first_action: `reports/stage_updates/` 생성 후 단계완료 시 별도 파일 저장 및 채널 별도 보고 규칙 추가 | proof: -
 
 ### P3-상시
 - 2026-02-17 05:50 | 3522 | 주기적으로 할일 체크(정기 점검 루틴 상시 적용) | 상시 | IN_PROGRESS | first_action: 크론 `531714af-c1ee-4852-9966-2e9b62714449` 실행 상태 주기 확인 | proof: cron job active
