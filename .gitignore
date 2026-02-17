@@ -37,6 +37,8 @@ reports/*
 !reports/weekly/**
 !reports/stage_updates/
 !reports/stage_updates/**
+!reports/stage_updates/
+!reports/stage_updates/**
 
 # Large/generated data artifacts
 invest/data/

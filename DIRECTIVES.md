@@ -29,7 +29,7 @@
 - 2026-02-17 11:21 | 3815 | 폴더명/파일명에서 '알고리즘' 명칭 제거, 단순 시간별/일일/주간 네이밍 사용 | 즉시 | DONE | first_action: 저장 경로를 `reports/{hourly,daily,weekly}`로, 파일명을 중립 규칙으로 변경 | proof: commit `9788d1c`, cron `86edd049` `77f38f52` `84cfae2b` updated
 - 2026-02-17 11:22 | 3817 | 3814 메시지 맥락은 보고 내용 수정 지시가 아니었음(의도 오해 금지) | 즉시 | DONE | first_action: 사용자 확인 없이 범위 확장 변경 금지, 애매하면 1문장 확인 후 적용 | proof: reply `3818`(의도 오해 인정/확인 후 수정 원칙 명시)
 - 2026-02-17 11:32 | 3825 | 알고리즘 보고 시 1단계부터 전체 나열 + 단계별 진행바(예: ■■■□□□50%), 단계 완료마다 별도 업데이트 보고서 생성(예: 내지표 vs 이웃지표 표) | 상시 | DONE | first_action: 시간별/일일 보고 포맷과 단계완료 리포트 규칙을 크론 프롬프트/보고 폴더에 반영 | proof: cron `86edd049` `77f38f52` updated, commit `d176d97`
-- 2026-02-17 11:33 | 3826 | 단계완료 보고는 GitHub 업데이트 + 보고채널 전송을 동시에 수행 | 상시 | IN_PROGRESS | first_action: `reports/stage_updates/` 생성 후 단계완료 시 별도 파일 저장 및 채널 별도 보고 규칙 추가 | proof: -
+- 2026-02-17 11:33 | 3826 | 단계완료 보고는 GitHub 업데이트 + 보고채널 전송을 동시에 수행 | 상시 | DONE | first_action: `reports/stage_updates/` 생성 후 단계완료 시 별도 파일 저장 및 채널 별도 보고 규칙 추가 | proof: `reports/stage_updates/README.md`, cron `86edd049` 단계완료 별도 메시지 규칙 반영
 
 ### P3-상시
 - 2026-02-17 05:50 | 3522 | 주기적으로 할일 체크(정기 점검 루틴 상시 적용) | 상시 | IN_PROGRESS | first_action: 크론 `531714af-c1ee-4852-9966-2e9b62714449` 실행 상태 주기 확인 | proof: cron job active
