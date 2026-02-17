@@ -24,7 +24,7 @@
 - 2026-02-17 11:05 | 3797 | 단기 사용 목적보다 전 단계 완결 후 최고 성능 모델 목표로 진행 | due 해제(주인님 지시) | IN_PROGRESS | first_action: 중간 타협 없이 정제→검증→밸류→후보컷→질적검증→최종선정 전체 완료 기준으로 계획 고정 | proof: -
 - 2026-02-17 11:06 | 3799 | 전체 작업 명칭을 '알고리즘개발프로젝트'로 통일 | 상시 | IN_PROGRESS | first_action: 보고/문서/체크리스트 헤더를 `알고리즘개발프로젝트` 명칭으로 표준화 | proof: -
 - 2026-02-17 11:12 | 3803 | 08:00~22:00 매시 정기 보고 규칙(블로그/텔레 상세·핫이슈 유무·단계%·문제점 해결상태) 고정 | 상시 | IN_PROGRESS | first_action: `간이보고(1시간)` 크론의 시간대/포맷을 새 규칙으로 업데이트 | proof: cron job `86edd049-b00d-4547-b904-1b2d29a5aa20` updated
-- 2026-02-17 11:17 | 3809 | GitHub에 보고 폴더 생성(시간별/일일/주간) 및 알아보기 쉬운 파일명으로 업데이트 | 상시 | IN_PROGRESS | first_action: `reports/algorithm_dev_project/{hourly,daily,weekly}` 생성 후 보고 크론 저장 경로/파일명 규칙 업데이트 | proof: -
+- 2026-02-17 11:17 | 3809 | GitHub에 보고 폴더 생성(시간별/일일/주간) 및 알아보기 쉬운 파일명으로 업데이트 | 상시 | DONE | first_action: `reports/algorithm_dev_project/{hourly,daily,weekly}` 생성 후 보고 크론 저장 경로/파일명 규칙 업데이트 | proof: commit `c961ae8`, cron `86edd049` `77f38f52` `84cfae2b` updated
 
 ### P3-상시
 - 2026-02-17 05:50 | 3522 | 주기적으로 할일 체크(정기 점검 루틴 상시 적용) | 상시 | IN_PROGRESS | first_action: 크론 `531714af-c1ee-4852-9966-2e9b62714449` 실행 상태 주기 확인 | proof: cron job active
