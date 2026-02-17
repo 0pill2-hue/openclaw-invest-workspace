@@ -179,20 +179,39 @@ def _validate_ohlcv_file(path: str) -> dict:
             neg_close = int((close_s <= 0).sum())
             if neg_close:
                 issues.append(f'range:non_positive_Close_count={neg_close}')
-            # 일간 수익률 이상치
-            ret = close_s.pct_change().abs()
+            # 일간 수익률 이상치: 거래일(Volume>0) 기준으로만 계산
+            if 'Volume' in df.columns:
+                vol = _safe_to_numeric(df['Volume']).fillna(0)
+                trade_mask = vol > 0
+            else:
+                trade_mask = pd.Series(True, index=df.index)
+
+            ret = close_s[trade_mask].pct_change(fill_method=None).abs()
             outlier = int((ret > MAX_DAILY_RET_ABS).sum())
             if outlier:
                 issues.append(f'range:return_outlier_count={outlier}')
 
-        # OHLC 논리: High ≥ Low, High ≥ Close, Low ≤ Close
-        for hi_col, lo_col in [('High', 'Low'), ('High', 'Close'), ('Low', 'Close')]:
-            if hi_col in df.columns and lo_col in df.columns:
-                hi = _safe_to_numeric(df[hi_col])
-                lo = _safe_to_numeric(df[lo_col])
-                viol = int((hi < lo).sum())
-                if viol:
-                    issues.append(f'ohlc:{hi_col}<{lo_col}_count={viol}')
+        # OHLC 논리: High >= Low, High >= Close, Low <= Close
+        if 'High' in df.columns and 'Low' in df.columns:
+            hi = _safe_to_numeric(df['High'])
+            lo = _safe_to_numeric(df['Low'])
+            viol = int((hi < lo).sum())
+            if viol:
+                issues.append(f'ohlc:High<Low_count={viol}')
+
+        if 'High' in df.columns and 'Close' in df.columns:
+            hi = _safe_to_numeric(df['High'])
+            cl = _safe_to_numeric(df['Close'])
+            viol = int((hi < cl).sum())
+            if viol:
+                issues.append(f'ohlc:High<Close_count={viol}')
+
+        if 'Low' in df.columns and 'Close' in df.columns:
+            lo = _safe_to_numeric(df['Low'])
+            cl = _safe_to_numeric(df['Close'])
+            viol = int((lo > cl).sum())
+            if viol:
+                issues.append(f'ohlc:Low>Close_count={viol}')
 
         # 결측률 검사
         for col in ('Open', 'High', 'Low', 'Close', 'Volume'):
