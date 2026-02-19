@@ -84,14 +84,22 @@ def main():
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    model_colors = {
+        replays[0][0]: '#1f77b4',  # blue
+        replays[1][0]: '#ff7f0e',  # orange
+        replays[2][0]: '#2ca02c',  # green
+    }
+    kospi_color = '#d62728'  # red
+    kosdaq_color = '#9467bd'  # purple
+
     # Chart 1: cumulative with top3 + KOSPI/KOSDAQ
     plt.figure(figsize=(12, 6))
     for i, (mid, eq) in enumerate(replays, start=1):
         s = eq.reindex(common_idx).ffill().bfill()
-        plt.plot(common_idx, _to_cum_pct(s), linewidth=2.0, label=f'{i}위 {mid}')
-    plt.plot(common_idx, _to_cum_pct(kospi_eq), linewidth=1.8, linestyle='--', label='KOSPI')
+        plt.plot(common_idx, _to_cum_pct(s), linewidth=2.0, color=model_colors[mid], label=f'{i}위 {mid}')
+    plt.plot(common_idx, _to_cum_pct(kospi_eq), linewidth=1.8, linestyle='--', color=kospi_color, label='KOSPI')
     if not kosdaq_eq.empty:
-        plt.plot(common_idx, _to_cum_pct(kosdaq_eq), linewidth=1.6, linestyle=':', label='KOSDAQ')
+        plt.plot(common_idx, _to_cum_pct(kosdaq_eq), linewidth=1.6, linestyle=':', color=kosdaq_color, label='KOSDAQ')
     plt.axhline(0, color='gray', linewidth=0.8)
     plt.title('Stage05 v3_22 Top3 Cumulative Return (2021+)')
     plt.xlabel('Date')
@@ -108,16 +116,36 @@ def main():
         s = eq.reindex(common_idx).ffill().bfill()
         segs = _year_segments(s)
         for j, (_, yr) in enumerate(segs):
-            plt.plot(yr.index, yr.values, linewidth=2.0, label=(f'{i}위 {mid}' if j == 0 else None))
+            plt.plot(
+                yr.index,
+                yr.values,
+                linewidth=2.0,
+                color=model_colors[mid],
+                label=(f'{i}위 {mid}' if j == 0 else None),
+            )
 
     kospi_segs = _year_segments(kospi_eq)
     for j, (_, yr) in enumerate(kospi_segs):
-        plt.plot(yr.index, yr.values, linewidth=1.8, linestyle='--', label=('KOSPI' if j == 0 else None))
+        plt.plot(
+            yr.index,
+            yr.values,
+            linewidth=1.8,
+            linestyle='--',
+            color=kospi_color,
+            label=('KOSPI' if j == 0 else None),
+        )
 
     if not kosdaq_eq.empty:
         kosdaq_segs = _year_segments(kosdaq_eq)
         for j, (_, yr) in enumerate(kosdaq_segs):
-            plt.plot(yr.index, yr.values, linewidth=1.6, linestyle=':', label=('KOSDAQ' if j == 0 else None))
+            plt.plot(
+                yr.index,
+                yr.values,
+                linewidth=1.6,
+                linestyle=':',
+                color=kosdaq_color,
+                label=('KOSDAQ' if j == 0 else None),
+            )
     years = sorted(set(common_idx.year))
     for y in years:
         plt.axvline(pd.Timestamp(f'{y}-01-01'), color='lightgray', linewidth=0.7, alpha=0.6)
