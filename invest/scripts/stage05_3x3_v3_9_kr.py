@@ -13,10 +13,10 @@ import numpy as np
 import pandas as pd
 
 BASE = Path(__file__).resolve().parents[1]
-RAW_KR = BASE / "invest/data/raw/kr"
+RAW_KR = BASE / "data/raw/kr"
 OHLCV_DIR = RAW_KR / "ohlcv"
 SUPPLY_DIR = RAW_KR / "supply"
-VALIDATED = BASE / "invest/results/validated"
+VALIDATED = BASE / "results/validated"
 REPORTS = BASE / "reports/stage_updates"
 STAGE05_REPORTS = REPORTS / "stage05"
 
