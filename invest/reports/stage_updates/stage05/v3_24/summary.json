@@ -4,12 +4,12 @@
   "track_counts": "10/10/10/6",
   "winner": "hybrid_h10_fee_stress",
   "winner_track": "hybrid",
-  "winner_return": 177.9436280407818,
-  "winner_cagr": 0.6024791415812483,
-  "winner_mdd_full": -0.5367943380460681,
-  "winner_mdd_2021_plus": -0.5367943380460682,
-  "winner_mdd_core": -0.3119529725954514,
-  "replacement_edge": 0.7111140197901493,
+  "winner_return": 87.89158636946024,
+  "winner_cagr": 0.5037275293792054,
+  "winner_mdd_full": -0.5259837987688928,
+  "winner_mdd_2021_plus": -0.5259837987688928,
+  "winner_mdd_core": -0.28859796366350077,
+  "replacement_edge": 0.2969126837377553,
   "replacement_policy": {
     "edge_gate_pass": true,
     "persistence_window": 3,
@@ -43,5 +43,5 @@
   "final_decision": "ADOPT_HOLD_PRIORITY_V324",
   "repeat_counter": 1,
   "stop_reason": "ALL_POLICY_GATES_PASS",
-  "generated_at": "2026-02-19T19:38:58.362730"
+  "generated_at": "2026-02-19T19:45:18.750165"
 }

@@ -38,10 +38,10 @@
 ## winner
 - model_id: hybrid_h10_fee_stress
 - track: hybrid
-- total_return: 17794.36%
-- cagr: 60.25%
-- mdd_full: -53.68%
-- replacement_edge: 71.11%
+- total_return: 8789.16%
+- cagr: 50.37%
+- mdd_full: -52.60%
+- replacement_edge: 29.69%
 - persistence_hits: 2/3
 - confidence_score: 0.67
 
