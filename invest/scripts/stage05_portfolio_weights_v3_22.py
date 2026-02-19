@@ -6,6 +6,7 @@ import re
 import sys
 from pathlib import Path
 import pandas as pd
+from pykrx import stock
 
 BASE = Path(__file__).resolve().parents[2]
 V322_JSON = BASE / 'invest/results/validated/stage05_baselines_v3_22_kr.json'
@@ -22,19 +23,40 @@ def _import(path: Path, name: str):
     return mod
 
 
+def _to_code6(v: str) -> str:
+    s = str(v).strip()
+    if s.isdigit():
+        return s.zfill(6)
+    return s
+
+
+def _name_with_code(label: str) -> tuple[str, str]:
+    code6 = _to_code6(label)
+    name = ''
+    try:
+        name = stock.get_market_ticker_name(code6) or ''
+    except Exception:
+        name = ''
+    if name:
+        return code6, f"{name}({code6})"
+    return code6, f"{label}({code6})"
+
+
 def _parse_weights(desc: str, date: str):
     if not isinstance(desc, str) or desc.strip() in {'', '-'}:
         return []
     out = []
     parts = [x.strip() for x in desc.split(';') if x.strip()]
     for p in parts:
-        # e.g. 삼성전자(21.3%, 44d)
         m = re.match(r'^(.*?)\(([-0-9.]+)%\s*,\s*([0-9]+)d\)$', p)
         if not m:
             continue
+        raw_label = m.group(1).strip()
+        code6, name_code = _name_with_code(raw_label)
         out.append({
             'date': date,
-            'stock_name': m.group(1).strip(),
+            'stock_code': code6,
+            'stock_name': name_code,
             'weight_pct': float(m.group(2)),
             'holding_days': int(m.group(3)),
         })
@@ -51,18 +73,24 @@ def main():
     rep = replay_mod.replay_with_events(stage05_mod, best)
     monthly_df = pd.DataFrame(rep['monthly_rows'])
 
-    if TIMELINE_CSV.exists():
-        tl = pd.read_csv(TIMELINE_CSV)
-        merged = tl.merge(monthly_df[['month_end', 'holdings_weights_days']], left_on='rebalance_date', right_on='month_end', how='left')
-        merged.drop(columns=['month_end'], inplace=True)
-        merged.rename(columns={'holdings_weights_days': 'weights_snapshot'}, inplace=True)
-        merged.to_csv(TIMELINE_CSV, index=False, encoding='utf-8-sig')
-
     rows = []
     for _, r in monthly_df.iterrows():
         rows.extend(_parse_weights(str(r.get('holdings_weights_days', '-')), str(r.get('month_end', ''))))
 
     wdf = pd.DataFrame(rows)
+
+    snapshot_map = {}
+    if not wdf.empty:
+        for d, g in wdf.groupby('date'):
+            g = g.sort_values('weight_pct', ascending=False)
+            snapshot_map[d] = '; '.join(
+                f"{row.stock_name} {row.weight_pct:.1f}%, {int(row.holding_days)}d" for row in g.itertuples()
+            )
+
+    if TIMELINE_CSV.exists():
+        tl = pd.read_csv(TIMELINE_CSV)
+        tl['weights_snapshot'] = tl['rebalance_date'].map(snapshot_map).fillna('-')
+        tl.to_csv(TIMELINE_CSV, index=False, encoding='utf-8-sig')
     if not wdf.empty:
         wdf.sort_values(['date', 'weight_pct'], ascending=[True, False], inplace=True)
     wdf.to_csv(OUT_STRUCTURED, index=False, encoding='utf-8-sig')
