@@ -103,20 +103,6 @@ function renderEventChips() {
   });
 }
 
-function shortText(s, n=72) {
-  if (!s || s === '-') return '-';
-  const t = String(s);
-  return t.length > n ? t.slice(0, n) + '…' : t;
-}
-
-function expandableCell(text) {
-  if (!text || text === '-') return '-';
-  const full = String(text).replaceAll('<','&lt;').replaceAll('>','&gt;');
-  const short = shortText(full);
-  if (short === full) return full;
-  return '<details><summary class="more-btn">▼ 더보기</summary><div style="margin-top:6px;">' + full + '</div></details>';
-}
-
 function render() {
   const d = sel.value;
   const rows = (DATA.weightsByDate[d] || []);
@@ -152,10 +138,10 @@ function render() {
   pageRows.forEach(t => {
     const tr=document.createElement('tr');
     tr.innerHTML = '<td>' + t.date + '</td>'
-      + '<td>' + expandableCell(t.added) + '</td>'
-      + '<td>' + expandableCell(t.removed) + '</td>'
-      + '<td>' + expandableCell(t.reason) + '</td>'
-      + '<td>' + expandableCell(t.current) + '</td>';
+      + '<td>' + (t.added || '-') + '</td>'
+      + '<td>' + (t.removed || '-') + '</td>'
+      + '<td>' + (t.reason || '-') + '</td>'
+      + '<td>' + (t.current || '-') + '</td>';
     tlb.appendChild(tr);
   });
   document.getElementById('pageInfo').textContent = timelinePage + ' / ' + totalPages;
