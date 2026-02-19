@@ -126,8 +126,8 @@
 - [ ] 두 그래프 모두 퍼센트 축(%) + 범례 + 기간 명시
 
 권장 파일명:
-- `invest/reports/stage_updates/charts/stage05_vX_vs_kospi_cum_2021plus.png`
-- `invest/reports/stage_updates/charts/stage05_vX_vs_kospi_yearly_reset_2021plus.png`
+- `invest/reports/stage_updates/charts/stage05_vX_yearly_continuous_2021plus.png`  (누적 평가용)
+- `invest/reports/stage_updates/charts/stage05_vX_yearly_reset_2021plus.png` (연도별 리셋 평가용)
 
 ## 9) 제출 전 체크리스트
 

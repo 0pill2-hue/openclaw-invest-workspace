@@ -14,6 +14,8 @@
 - `invest/reports/stage_updates/stage05/stage05_result_v3_22_kr.md`
 - `invest/reports/stage_updates/stage05/stage05_result_v3_22_kr_readable.md`
 - `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_22_kr.md`
+- `invest/reports/stage_updates/charts/stage05_v3_22_yearly_continuous_2021plus.png` (누적 평가용)
+- `invest/reports/stage_updates/charts/stage05_v3_22_yearly_reset_2021plus.png` (연도별 리셋 평가용)
 
 ## recompute evidence (필수)
 - full_recompute=true: true
