@@ -17,7 +17,10 @@ Last updated: 2026-02-19 18:05 KST
 
 ## v3_23 핵심 파일
 - 결과: `invest/reports/stage_updates/stage05/v3_23/stage05_result_v3_23_kr.md`
+- 읽기요약: `invest/reports/stage_updates/stage05/v3_23/stage05_result_v3_23_kr_readable.md`
 - 요약 JSON: `invest/reports/stage_updates/stage05/v3_23/summary.json`
 - 차트(연속): `invest/reports/stage_updates/stage05/v3_23/charts/stage05_v3_23_yearly_continuous_2021plus.png`
 - 차트(리셋): `invest/reports/stage_updates/stage05/v3_23/charts/stage05_v3_23_yearly_reset_2021plus.png`
-- UI: `invest/reports/stage_updates/stage05/v3_23/ui/dashboard.html`
+- 평가 템플릿 차트: `invest/reports/stage_updates/stage05/v3_23/charts/stage05_eval_yearly_continuous_2021plus.png`, `stage05_eval_yearly_reset_2021plus.png`
+- UI: `invest/reports/stage_updates/stage05/v3_23/ui/index.html`
+- 템플릿 적용 스크립트: `invest/scripts/stage05_apply_template_v3_23.py`
