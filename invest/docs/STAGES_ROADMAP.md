@@ -24,17 +24,19 @@ Scope: Rulebook V3.3 aligned lifecycle
 - 베이스라인 성능 및 동작 검증
 - 코드-문서 동기화 증거 고정
 
-## Stage 06 — Candidate Generation
-- 후보 전략/파라미터 생성
-- 규칙 위반 후보 자동 제외
+## Stage 06 — Baseline Expansion & Screening
+- baseline 후보군 확장/정렬 (track별 확장 포함)
+- 최소 게이트(규칙 위반/데이터 결함) 선별
 
-## Stage 07 — Cost / Turnover / Risk Cut
-- 거래비용/회전율/리스크 컷오프
-- 실거래 가능성 기준 선별
+## Stage 07 — Single-Model Refinement (Non-mixed)
+- 안 섞인 단일모델 고도화 (numeric/qual/hybrid 개별 개선)
+- 과교체/과민반응 억제 룰 점검
+- 단일모델 자체 품질을 먼저 고정
 
-## Stage 08 — Purged CV / OOS Validation
-- 시간누수 방지 검증
-- Out-of-sample 일관성 확인
+## Stage 08 — Composite Model Development
+- 복합모델(앙상블/게이팅/혼합) 개발
+- 단일모델 통과본만 결합 대상으로 사용
+- 결합 후 누수/일관성/안정성 검증
 
 ## Stage 09 — Cross Review / Auditor Gate
 - 다중 감사자 교차 검토
