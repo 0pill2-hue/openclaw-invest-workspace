@@ -6,7 +6,7 @@
       "docs/openclaw/CONTEXT_RESET_READLIST.md",
       "docs/openclaw/OPENCLAW_SYSTEM_BASELINE.md",
       "docs/openclaw/OPERATING_GOVERNANCE.md",
-      "invest/docs/strategy/RULEBOOK_V1_20260218.md",
+      "invest/docs/strategy/RULEBOOK_MASTER.md",
       "DIRECTIVES.md",
       "memory/2026-02-18.md",
       "MEMORY.md"
@@ -22,11 +22,11 @@
       "invest/reports/stage_updates/stage02/stage02_data_cleaning.md",
       "invest/reports/stage_updates/stage03/stage03_cleaning_validation.md",
       "invest/reports/stage_updates/stage04/stage04_validated_value.md",
-      "invest/reports/stage_updates/stage05/stage05_baselines_v3_4_kr.md",
-      "invest/reports/stage_updates/stage06/stage06_candidates_v3_4_kr.md",
-      "invest/reports/stage_updates/stage07/stage07_cutoff_v3_4_kr.md",
-      "invest/reports/stage_updates/stage08/stage08_value_v3_4_kr.md",
-      "invest/reports/stage_updates/stage09/stage09_cross_review_v3_4_kr.md",
+      "invest/reports/stage_updates/stage05/",
+      "invest/reports/stage_updates/stage06/",
+      "invest/reports/stage_updates/stage07/",
+      "invest/reports/stage_updates/stage08/",
+      "invest/reports/stage_updates/stage09/",
       "invest/reports/stage_updates/stage11/stage11_adopt_hold_promote.md",
       "memory/2026-02-17.md"
     ]

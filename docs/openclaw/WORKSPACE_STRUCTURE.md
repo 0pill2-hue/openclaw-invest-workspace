@@ -1,6 +1,6 @@
 # WORKSPACE_STRUCTURE.md
 
-Last updated: 2026-02-19 15:15 KST
+Last updated: 2026-02-19 17:28 KST
 Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위치 기준
 
 ## Top-level canonical
@@ -16,7 +16,7 @@ Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위
 ## Top-level operational (존재 확인됨)
 - `.venv/` : 루트 Python 가상환경
 - `.openclaw_tmp/` : 임시 작업 디렉터리
-- `invest/scripts/` : (비워둠/예약) 루트 스크립트 사용 금지, 투자 실행은 invest/scripts만 사용
+- `scripts/` : 루트 스크립트(사용 금지/예약)
 - `automation/` : 운영 자동화 보조
 
 ## invest 내부 canonical
@@ -27,17 +27,9 @@ Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위
 - `invest/results/` : 결과물(test/validated/prod 분리)
 
 ## stage 문서 canonical
-- `invest/reports/stage_updates/stage01/stage01_data_collection.md`
-- `invest/reports/stage_updates/stage02/stage02_data_cleaning.md`
-- `invest/reports/stage_updates/stage03/stage03_cleaning_validation.md`
-- `invest/reports/stage_updates/stage04/stage04_validated_value.md`
-- `invest/reports/stage_updates/stage05/stage05_baselines_v3_4_kr.md`
-- `invest/reports/stage_updates/stage06/stage06_candidates_v3_4_kr.md`
-- `invest/reports/stage_updates/stage07/stage07_cutoff_v3_4_kr.md`
-- `invest/reports/stage_updates/stage08/stage08_value_v3_4_kr.md`
-- `invest/reports/stage_updates/stage09/stage09_cross_review_v3_4_kr.md`
-- `invest/reports/stage_updates/stage11/stage11_adopt_hold_promote.md`
 - 단계 인덱스: `invest/reports/stage_updates/README.md`
+- 단계 문서 루트: `invest/reports/stage_updates/stage01~stage11/`
+- stage05 버전 산출물 루트: `invest/reports/stage_updates/stage05/v*/`
 
 ## 문서 우선순위
 1. `invest/docs/strategy/RULEBOOK_MASTER.md`
