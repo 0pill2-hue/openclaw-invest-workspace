@@ -14,11 +14,11 @@
 
 ## 조치 내역
 ### A) 12-baseline 강제 가드
-- 공용 가드 모듈 추가: `scripts/stage05_baseline_guard.py`
+- 공용 가드 모듈 추가: `invest/scripts/stage05_baseline_guard.py`
 - 적용 스크립트:
-  - `scripts/stage05_incremental_external_v3_20_kr.py`
-  - `scripts/stage05_incremental_external_v3_21_kr.py`
-  - `scripts/stage05_full_recompute_v3_22_kr.py`
+  - `invest/scripts/stage05_incremental_external_v3_20_kr.py`
+  - `invest/scripts/stage05_incremental_external_v3_21_kr.py`
+  - `invest/scripts/stage05_full_recompute_v3_22_kr.py`
 - 강제 정책:
   - `track_counts != {numeric:3, qualitative:3, hybrid:3, external-pretrained:3}` → **FAIL_STOP**
   - 결과 JSON 필수 기록:
@@ -32,7 +32,7 @@
 ### C) 경로 전수 동기화
 - 구형 참조 `reports/stage_updates/stageNN_...` 전수 치환
   - → `reports/stage_updates/stageNN/stageNN_...`
-- 대상 범위: `scripts/`, `docs/`, `invest/strategy/`, `reports` 문서/템플릿
+- 대상 범위: `invest/scripts/`, `docs/`, `invest/strategy/`, `reports` 문서/템플릿
 - canonical 문서 경로 보정 + 누락 링크 placeholder 2건 보완
 
 ---
@@ -43,9 +43,9 @@
 - 결과: **0건**
 
 ### 2) Stage05 최소 실행
-- `python3 scripts/stage05_incremental_external_v3_20_kr.py` → PASS
+- `python3 invest/scripts/stage05_incremental_external_v3_20_kr.py` → PASS
   - 출력: `reports/stage_updates/stage05/stage05_result_v3_20_kr.md` 등
-- `python3 scripts/stage05_incremental_external_v3_21_kr.py` → PASS
+- `python3 invest/scripts/stage05_incremental_external_v3_21_kr.py` → PASS
   - 출력: `reports/stage_updates/stage05/stage05_result_v3_21_kr.md` 등
 
 ### 3) 12-baseline 가드 검증

@@ -7,7 +7,7 @@
 - chosen_plan: medium_12 (12 candidates)
 
 ## run_command(or process)
-- `python3 scripts/stage06_candidates_v4_kr.py`
+- `python3 invest/scripts/stage06_candidates_v4_kr.py`
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v4_kr.json
@@ -26,7 +26,7 @@
 
 ## proof
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v4_kr.json
-- /Users/jobiseu/.openclaw/workspace/scripts/stage06_candidates_v4_kr.py
+- /Users/jobiseu/.openclaw/workspace/invest/scripts/stage06_candidates_v4_kr.py
 
 ## summary
 - version: v4_kr

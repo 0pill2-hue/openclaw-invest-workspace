@@ -2,19 +2,19 @@
 
 ## inputs
 - design source: `reports/stage_updates/stage05/stage05_overfit_brainstorm_v3_15_kr.md` (E안 채택: 레짐 게이트 + 멀티팩터 앙상블)
-- baseline reference code: `scripts/stage05_rerun_v3_14_kr.py`
+- baseline reference code: `invest/scripts/stage05_rerun_v3_14_kr.py`
 - policy sync (2026-02-19 10:28 KST):
   - high-density 구간에서 non-numeric 우위 임계 `+25%p`
   - MDD/turnover 동시 우위 요구 (turnover `<= 1.05x`)
   - 결과 리포트에 `high_density_advantage_pass` + 수치 근거 필수
 
 ## run_command(or process)
-- `python3 -m py_compile scripts/stage05_rerun_v3_15_kr.py`
-- `python3 scripts/stage05_rerun_v3_15_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
+- `python3 -m py_compile invest/scripts/stage05_rerun_v3_15_kr.py`
+- `python3 invest/scripts/stage05_rerun_v3_15_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
 
 ## outputs
 - new config: `invest/config/stage05_auto_capture_v3_15_kr.yaml`
-- new runner: `scripts/stage05_rerun_v3_15_kr.py`
+- new runner: `invest/scripts/stage05_rerun_v3_15_kr.py`
 - static scan log: `reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
 - dynamic universe log: `reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
 - validated result: `invest/results/validated/stage05_baselines_v3_15_kr.json`
@@ -35,9 +35,9 @@
 - Gate2 high-density 모드에서 `advantage < 0.25` 또는 `MDD/turnover 우위` 미충족 시 Gate2 FAIL
 
 ## proof
-- code: `scripts/stage05_rerun_v3_15_kr.py`
+- code: `invest/scripts/stage05_rerun_v3_15_kr.py`
 - config: `invest/config/stage05_auto_capture_v3_15_kr.yaml`
-- compile proof: `python3 -m py_compile scripts/stage05_rerun_v3_15_kr.py` (success)
+- compile proof: `python3 -m py_compile invest/scripts/stage05_rerun_v3_15_kr.py` (success)
 - run log: `reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
 - static scan proof: `reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
 - dynamic universe proof: `reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
@@ -59,7 +59,7 @@
     - `high_density_turnover_ratio_max=1.05`
 
 ### 2) v3_15 실행기 신규 생성
-- `scripts/stage05_rerun_v3_15_kr.py`
+- `invest/scripts/stage05_rerun_v3_15_kr.py`
   - config 기반 round 생성 + search-space deterministic sampling(`max_trials=6`)
   - 레짐 판정기(`RISK_ON/TRANSITION/RISK_OFF`) 추가
   - 멀티팩터 앙상블(`momentum/breakout/flow/volatility_stability/qualitative_lagged`) + median rank

@@ -332,7 +332,7 @@ def main() -> int:
     F_STAGE05_MD.write_text(md_block(
         "stage05_baselines_v3_4_kr",
         inputs=["invest/data/raw/kr/ohlcv/*.csv", "invest/data/raw/kr/supply/*_supply.csv"],
-        run_cmd="python3 scripts/run_stage05_09_v3_4_kr.py",
+        run_cmd="python3 invest/scripts/run_stage05_09_v3_4_kr.py",
         outputs=[str(F_STAGE05_JSON), str(F_STAGE05_MD)],
         quality_gates=["KRX ONLY hard guard PASS", "보유 1~6 적용", "수치=JSON 일치"],
         failure_policy="US 경로/티커 감지 시 즉시 FAIL 종료",
@@ -343,7 +343,7 @@ def main() -> int:
     F_STAGE05_REVIEW_MD.write_text(md_block(
         "stage05_cross_review_v3_4_kr",
         inputs=[str(F_STAGE05_JSON)],
-        run_cmd="python3 scripts/run_stage05_09_v3_4_kr.py",
+        run_cmd="python3 invest/scripts/run_stage05_09_v3_4_kr.py",
         outputs=[str(F_STAGE05_REVIEW_MD)],
         quality_gates=["Opus/Sonnet/AgPro 역할 분리", "교차검증 기록"],
         failure_policy="중대한 누수/정합성 이슈 시 FAIL",
@@ -362,7 +362,7 @@ def main() -> int:
     F_STAGE06_MD.write_text(md_block(
         "stage06_candidates_v3_4_kr",
         inputs=[str(F_STAGE05_JSON)],
-        run_cmd="python3 scripts/run_stage05_09_v3_4_kr.py",
+        run_cmd="python3 invest/scripts/run_stage05_09_v3_4_kr.py",
         outputs=[str(F_STAGE06_JSON), str(F_STAGE06_MD)],
         quality_gates=["후보군 생성 완료", "수치=JSON 일치"],
         failure_policy="후보 0건이면 FAIL",
@@ -405,7 +405,7 @@ def main() -> int:
     F_STAGE07_MD.write_text(md_block(
         "stage07_cutoff_v3_4_kr",
         inputs=[str(F_STAGE06_JSON)],
-        run_cmd="python3 scripts/run_stage05_09_v3_4_kr.py",
+        run_cmd="python3 invest/scripts/run_stage05_09_v3_4_kr.py",
         outputs=[str(F_STAGE07_JSON), str(F_STAGE07_MD)],
         quality_gates=["컷오프 규칙 적용(Return>2000%, MDD>-40%)", "0건 시 재탐색"],
         failure_policy="재탐색 후에도 0건이면 최고수익 후보를 조건부 승격",
@@ -423,7 +423,7 @@ def main() -> int:
     F_STAGE08_MD.write_text(md_block(
         "stage08_value_v3_4_kr",
         inputs=[str(F_STAGE07_JSON)],
-        run_cmd="python3 scripts/run_stage05_09_v3_4_kr.py",
+        run_cmd="python3 invest/scripts/run_stage05_09_v3_4_kr.py",
         outputs=[str(F_STAGE08_JSON), str(F_STAGE08_MD)],
         quality_gates=["챔피언 1개 선정", "수치=JSON 일치"],
         failure_policy="챔피언 미선정 시 FAIL",
@@ -443,7 +443,7 @@ def main() -> int:
     F_STAGE09_MD.write_text(md_block(
         "stage09_cross_review_v3_4_kr",
         inputs=[str(F_STAGE08_JSON)],
-        run_cmd="python3 scripts/run_stage05_09_v3_4_kr.py",
+        run_cmd="python3 invest/scripts/run_stage05_09_v3_4_kr.py",
         outputs=[str(F_STAGE09_JSON), str(F_STAGE09_MD)],
         quality_gates=["Opus/Sonnet/AgPro 최종 PASS/FAIL"],
         failure_policy="1개라도 FAIL이면 최종 FAIL",

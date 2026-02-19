@@ -328,7 +328,7 @@ def parse_config() -> tuple[dict[str, Any], str, str]:
 
 def run_static_hardcode_scan() -> dict[str, Any]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    target_files = sorted([*BASE.glob("scripts/stage05*kr.py"), BASE / "invest/scripts/stage05_backtest_engine.py"])
+    target_files = sorted([*BASE.glob("invest/scripts/stage05*kr.py"), BASE / "invest/scripts/stage05_backtest_engine.py"])
 
     allowlist_list_hits: list[dict[str, Any]] = []
     favorites_list_hits: list[dict[str, Any]] = []

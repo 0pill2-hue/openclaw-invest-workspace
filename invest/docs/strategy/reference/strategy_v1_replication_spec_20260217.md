@@ -95,7 +95,7 @@ source .venv/bin/activate
 ---
 
 ## F. 4단계 밸류 산출 스펙 (핵심)
-스크립트: `scripts/calculate_stage3_values.py`
+스크립트: `invest/scripts/calculate_stage3_values.py`
 출력 루트: `invest/data/value/stage3/{kr|us}/ohlcv/*.csv`
 
 ### F-1. 팩터 정의
@@ -149,7 +149,7 @@ source .venv/bin/activate
 .venv/bin/python3 invest/scripts/validate_refine_independent.py
 
 # 3) 4단계 밸류 산출
-.venv/bin/python3 scripts/calculate_stage3_values.py
+.venv/bin/python3 invest/scripts/calculate_stage3_values.py
 ```
 
 ---

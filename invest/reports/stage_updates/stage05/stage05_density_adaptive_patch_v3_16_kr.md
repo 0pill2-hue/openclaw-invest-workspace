@@ -1,18 +1,18 @@
 # stage05_density_adaptive_patch_v3_16_kr
 
 ## inputs
-- base script: `scripts/stage05_rerun_v3_15_kr.py`
+- base script: `invest/scripts/stage05_rerun_v3_15_kr.py`
 - base config: `invest/config/stage05_auto_capture_v3_15_kr.yaml`
 - target policy: `reports/stage_updates/stage05/stage05_density_adaptive_brainstorm_v3_16_kr.md`
 - 사용자 강화 지시: high-density gate `+0.25 / MDD / turnover<=1.05x`
 
 ## run_command(or process)
-- `cp scripts/stage05_rerun_v3_15_kr.py scripts/stage05_rerun_v3_16_kr.py`
+- `cp invest/scripts/stage05_rerun_v3_15_kr.py invest/scripts/stage05_rerun_v3_16_kr.py`
 - `cp invest/config/stage05_auto_capture_v3_15_kr.yaml invest/config/stage05_auto_capture_v3_16_kr.yaml`
-- `python3 -m py_compile scripts/stage05_rerun_v3_16_kr.py`
+- `python3 -m py_compile invest/scripts/stage05_rerun_v3_16_kr.py`
 
 ## outputs
-- `scripts/stage05_rerun_v3_16_kr.py`
+- `invest/scripts/stage05_rerun_v3_16_kr.py`
 - `invest/config/stage05_auto_capture_v3_16_kr.yaml`
 - `reports/stage_updates/stage05/stage05_density_adaptive_patch_v3_16_kr.md`
 
@@ -29,9 +29,9 @@
 - `non_numeric_top_valid` 산정에서 고밀도 게이트 미연동 시 `FAIL_STOP`
 
 ## proof
-- code: `scripts/stage05_rerun_v3_16_kr.py` (핵심 라인: 467, 478, 504~584, 615~714, 970~1021, 1270~1369, 1540~1580, 1642~1678)
+- code: `invest/scripts/stage05_rerun_v3_16_kr.py` (핵심 라인: 467, 478, 504~584, 615~714, 970~1021, 1270~1369, 1540~1580, 1642~1678)
 - config: `invest/config/stage05_auto_capture_v3_16_kr.yaml`
-- compile: `python3 -m py_compile scripts/stage05_rerun_v3_16_kr.py`
+- compile: `python3 -m py_compile invest/scripts/stage05_rerun_v3_16_kr.py`
 
 ---
 

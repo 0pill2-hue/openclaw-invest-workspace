@@ -12,24 +12,24 @@
   - `reports/stage_updates/stageNN_...`
   - → `reports/stage_updates/stageNN/stageNN_...`
 - 적용 범위:
-  - `scripts/`
+  - `invest/scripts/`
   - `docs/`
   - `invest/strategy/`
   - `reports/` (템플릿/운영 문서 범위)
 
 ### 2) 스크립트 출력 경로 동기화
 - Stage05/06 관련 스크립트에서 폴더형 경로로 고정:
-  - `scripts/stage05_incremental_external_v3_20_kr.py`
-  - `scripts/stage05_incremental_external_v3_21_kr.py`
-  - `scripts/stage05_generate_readable_detailed_v3_20_kr.py`
-  - `scripts/stage05_tuning_loop_v3_6_kr.py`
-  - `scripts/stage05_3x3_v3_9_kr.py`
-  - `scripts/stage05_09_v3_3_pipeline.py`
-  - `scripts/run_stage05_09_v3_4_kr.py`
-  - `scripts/stage06_candidates_v4_kr.py`
-  - `scripts/stage06_candidates_v5_kr.py`
-  - `scripts/stage06_candidate_gen_v3.py` (기본 output path)
-  - `scripts/extract_real_top_picks.py`, `scripts/extract_real_top5_picks.py` (기본 output path)
+  - `invest/scripts/stage05_incremental_external_v3_20_kr.py`
+  - `invest/scripts/stage05_incremental_external_v3_21_kr.py`
+  - `invest/scripts/stage05_generate_readable_detailed_v3_20_kr.py`
+  - `invest/scripts/stage05_tuning_loop_v3_6_kr.py`
+  - `invest/scripts/stage05_3x3_v3_9_kr.py`
+  - `invest/scripts/stage05_09_v3_3_pipeline.py`
+  - `invest/scripts/run_stage05_09_v3_4_kr.py`
+  - `invest/scripts/stage06_candidates_v4_kr.py`
+  - `invest/scripts/stage06_candidates_v5_kr.py`
+  - `invest/scripts/stage06_candidate_gen_v3.py` (기본 output path)
+  - `invest/scripts/extract_real_top_picks.py`, `invest/scripts/extract_real_top5_picks.py` (기본 output path)
 - 필요한 parent 디렉토리 생성 로직(`mkdir(parents=True, exist_ok=True)`) 보강.
 
 ### 3) 문서 canonical 경로 보정
@@ -58,11 +58,11 @@
   - 미존재: 7
 
 허용목록(의도적/동적/템플릿):
-1. `scripts/stage05_tuning_loop_v3_6_kr.py`의 `stage05_tuning_round_rXX.md` (템플릿 경로)
-2. `scripts/stage05_tuning_loop_v3_6_kr.py`의 `stage05_tuning_progress_v3_6_kr.md` (실행 전 미생성 가능)
-3. `scripts/extract_real_top_picks.py`의 `stage06_real_top_picks.md` (실행 산출물)
-4. `scripts/stage06_candidate_gen_v3.py`의 `stage06_candidates_v3.md` (실행 산출물)
-5. `scripts/extract_real_top5_picks.py`의 `stage06_real_top5_picks.md` (실행 산출물)
+1. `invest/scripts/stage05_tuning_loop_v3_6_kr.py`의 `stage05_tuning_round_rXX.md` (템플릿 경로)
+2. `invest/scripts/stage05_tuning_loop_v3_6_kr.py`의 `stage05_tuning_progress_v3_6_kr.md` (실행 전 미생성 가능)
+3. `invest/scripts/extract_real_top_picks.py`의 `stage06_real_top_picks.md` (실행 산출물)
+4. `invest/scripts/stage06_candidate_gen_v3.py`의 `stage06_candidates_v3.md` (실행 산출물)
+5. `invest/scripts/extract_real_top5_picks.py`의 `stage06_real_top5_picks.md` (실행 산출물)
 6. `reports/stage_updates/stage05/stage05_readable_report_template_v3_19_kr.md`의 `stage05_trade_events_vX_kr.csv` (템플릿 placeholder)
 7. `reports/stage_updates/stage05/stage05_readable_report_template_v3_19_kr.md`의 `stage05_portfolio_timeline_vX_kr.csv` (템플릿 placeholder)
 

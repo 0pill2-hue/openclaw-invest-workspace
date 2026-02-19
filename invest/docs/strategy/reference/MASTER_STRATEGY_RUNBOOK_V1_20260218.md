@@ -42,7 +42,7 @@ source .venv/bin/activate
 .venv/bin/python3 invest/scripts/validate_refine_independent.py
 
 # 밸류 산출
-.venv/bin/python3 scripts/calculate_stage3_values.py
+.venv/bin/python3 invest/scripts/calculate_stage3_values.py
 ```
 
 ## 5) 탈락기준 v1(보수형 요약)

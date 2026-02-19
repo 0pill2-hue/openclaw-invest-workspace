@@ -6,7 +6,7 @@
 - `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_brainstorm_plan_v4_kr.md`
 
 ## run_command(or process)
-- `python3 scripts/stage06_candidates_v4_kr.py`
+- `python3 invest/scripts/stage06_candidates_v4_kr.py`
 
 ## outputs
 - `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_crosscheck_v4_kr.md`
@@ -22,7 +22,7 @@
 
 ## proof
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v4_kr.json`
-- `/Users/jobiseu/.openclaw/workspace/scripts/stage06_candidates_v4_kr.py`
+- `/Users/jobiseu/.openclaw/workspace/invest/scripts/stage06_candidates_v4_kr.py`
 
 ---
 

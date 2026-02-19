@@ -4,7 +4,7 @@
 - design doc: `reports/stage_updates/stage05/stage05_overfit_brainstorm_v3_15_kr.md`
 - patch spec: `reports/stage_updates/stage05/stage05_patch_diff_v3_15_kr.md`
 - config: `invest/config/stage05_auto_capture_v3_15_kr.yaml`
-- runner: `scripts/stage05_rerun_v3_15_kr.py`
+- runner: `invest/scripts/stage05_rerun_v3_15_kr.py`
 - data:
   - `invest/data/raw/kr/ohlcv/*.csv`
   - `invest/data/raw/kr/supply/*_supply.csv`
@@ -12,8 +12,8 @@
   - `invest/data/raw/text/telegram/*.md`
 
 ## run_command(or process)
-- `python3 -m py_compile scripts/stage05_rerun_v3_15_kr.py`
-- `python3 scripts/stage05_rerun_v3_15_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
+- `python3 -m py_compile invest/scripts/stage05_rerun_v3_15_kr.py`
+- `python3 invest/scripts/stage05_rerun_v3_15_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_15_kr.json`

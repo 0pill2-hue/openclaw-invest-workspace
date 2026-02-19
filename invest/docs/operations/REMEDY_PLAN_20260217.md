@@ -1,13 +1,13 @@
 # 워크스페이스 즉시 적용안 (Refine-Validate-Value)
 
 ## 1. 우선 수정 스크립트 선정
-- **1순위 (정제):** `scripts/refine_quant_data.py` (OHLCV 이상치/결측치 처리 로직 강화)
-- **2순위 (검증):** `scripts/validate_quant_data.py` (수익률 이상치 검출 기준 정교화)
-- **3순위 (밸류):** `scripts/calculate_stage3_values.py` (정제된 데이터 기반 팩터 계산 무결성 확보)
+- **1순위 (정제):** `invest/scripts/refine_quant_data.py` (OHLCV 이상치/결측치 처리 로직 강화)
+- **2순위 (검증):** `invest/scripts/validate_quant_data.py` (수익률 이상치 검출 기준 정교화)
+- **3순위 (밸류):** `invest/scripts/calculate_stage3_values.py` (정제된 데이터 기반 팩터 계산 무결성 확보)
 
 ## 2. 최소 코드 변경안
 
-### 2.1 scripts/refine_quant_data.py 수정
+### 2.1 invest/scripts/refine_quant_data.py 수정
 - `fix_ohlcv` 함수에 수익률 이상치(>80%) 및 0 가격(Halt 제외) 보정 로직 추가.
 ```python
 def fix_ohlcv(df, market='KR'):
@@ -21,7 +21,7 @@ def fix_ohlcv(df, market='KR'):
     return df
 ```
 
-### 2.2 scripts/validate_quant_data.py 수정
+### 2.2 invest/scripts/validate_quant_data.py 수정
 - WARN 상태인 수익률 이상치 검출 로직을 `validate_ohlcv`에 명시적으로 추가.
 ```python
 def validate_ohlcv(df, market='KR'):

@@ -19,7 +19,7 @@
 
 ```bash
 # 0) 크론 블록 확인
-bash scripts/cron/install_data_automation_cron.sh print
+bash invest/scripts/cron/install_data_automation_cron.sh print
 
 # 1) 이슈별 단독 실행
 .venv/bin/python3 invest/scripts/stage01_supply_autorepair.py --dry-run --max-repair 3
@@ -28,9 +28,9 @@ bash scripts/cron/install_data_automation_cron.sh print
 .venv/bin/python3 invest/scripts/stage01_telegram_undated_repair.py
 
 # 2) 크론 래퍼(알림정책 포함) 실행
-bash scripts/cron/cron_supply_autorepair.sh
-bash scripts/cron/cron_dart_backfill_autopilot.sh
-bash scripts/cron/cron_rss_telegram_date_fix.sh
+bash invest/scripts/cron/cron_supply_autorepair.sh
+bash invest/scripts/cron/cron_dart_backfill_autopilot.sh
+bash invest/scripts/cron/cron_rss_telegram_date_fix.sh
 ```
 
 ---

@@ -45,7 +45,7 @@
 ---
 **보고자:** 조비스 서브에이전트 (Execute Priority Integrity)
 **증빙:** 
-- `scripts/validate_quant_data.py`
-- `scripts/refine_quant_data.py`
-- `scripts/refine_text_data.py`
+- `invest/scripts/validate_quant_data.py`
+- `invest/scripts/refine_quant_data.py`
+- `invest/scripts/refine_text_data.py`
 - `invest/data/clean/`

@@ -6,7 +6,7 @@
 - `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v5_kr.md`
 
 ## run_command(or process)
-- `python3 scripts/stage07_cutoff_v5_kr.py` (설계 반영 대상)
+- `python3 invest/scripts/stage07_cutoff_v5_kr.py` (설계 반영 대상)
 
 ## outputs
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage07_candidates_cut_v5_kr.json`

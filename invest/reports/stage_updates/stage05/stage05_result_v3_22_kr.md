@@ -6,8 +6,8 @@
 - 공식 평가 윈도우: official(2021~현재), core(2023~2025), reference(2016~현재)
 
 ## run_command(or process)
-- `python3 -m py_compile scripts/stage05_full_recompute_v3_22_kr.py`
-- `python3 scripts/stage05_full_recompute_v3_22_kr.py`
+- `python3 -m py_compile invest/scripts/stage05_full_recompute_v3_22_kr.py`
+- `python3 invest/scripts/stage05_full_recompute_v3_22_kr.py`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_22_kr.json`

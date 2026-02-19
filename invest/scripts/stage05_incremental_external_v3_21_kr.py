@@ -67,7 +67,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 
 def import_stage05_3x3_module():
-    mod_path = BASE / "scripts/stage05_3x3_v3_9_kr.py"
+    mod_path = BASE / "invest/scripts/stage05_3x3_v3_9_kr.py"
     name = "stage05_3x3_v3_9_kr_mod_v321"
     spec = importlib.util.spec_from_file_location(name, mod_path)
     if spec is None or spec.loader is None:
@@ -293,13 +293,13 @@ def write_result_md(payload: dict[str, Any]) -> None:
         "",
         "## inputs",
         "- 기존 9개(내부 3x3) 결과 재사용: `invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`",
-        "- 신규 3개 external/pretrained 증분 실행: `scripts/stage05_incremental_external_v3_21_kr.py`",
+        "- 신규 3개 external/pretrained 증분 실행: `invest/scripts/stage05_incremental_external_v3_21_kr.py`",
         "- v3_19 FAIL 마킹 재확인: `invest/results/test/stage05_baselines_v3_19_kr_fail.json`",
         "- 정책 반영: official_scope=2021~현재, core_high_density=2023~2025(가중), legacy(2016~2020)=reference/low-weight",
         "",
         "## run_command(or process)",
-        "- `python3 -m py_compile scripts/stage05_incremental_external_v3_21_kr.py`",
-        "- `python3 scripts/stage05_incremental_external_v3_21_kr.py`",
+        "- `python3 -m py_compile invest/scripts/stage05_incremental_external_v3_21_kr.py`",
+        "- `python3 invest/scripts/stage05_incremental_external_v3_21_kr.py`",
         "",
         "## outputs",
         "- `invest/results/validated/stage05_baselines_v3_21_kr.json`",
@@ -322,7 +322,7 @@ def write_result_md(payload: dict[str, Any]) -> None:
         "## proof",
         "- result json: `invest/results/validated/stage05_baselines_v3_21_kr.json`",
         "- log: `reports/stage_updates/logs/stage05_incremental_external_v3_21_kr.log`",
-        "- code: `scripts/stage05_incremental_external_v3_21_kr.py`",
+        "- code: `invest/scripts/stage05_incremental_external_v3_21_kr.py`",
         "",
         "---",
         "",

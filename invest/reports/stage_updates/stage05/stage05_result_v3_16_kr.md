@@ -1,7 +1,7 @@
 # stage05_result_v3_16_kr
 
 ## inputs
-- 실행 스크립트: `scripts/stage05_rerun_v3_16_kr.py`
+- 실행 스크립트: `invest/scripts/stage05_rerun_v3_16_kr.py`
 - 설정: `invest/config/stage05_auto_capture_v3_16_kr.yaml`
 - 비교 기준:
   - `invest/results/validated/stage05_baselines_v3_12_kr.json`
@@ -13,7 +13,7 @@
   - `invest/data/raw/text/telegram/*.md`
 
 ## run_command(or process)
-- `python3 scripts/stage05_rerun_v3_16_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_16_kr.log`
+- `python3 invest/scripts/stage05_rerun_v3_16_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_16_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_16_kr.json`
@@ -40,7 +40,7 @@
 ## proof
 - JSON: `invest/results/validated/stage05_baselines_v3_16_kr.json`
 - log: `reports/stage_updates/logs/stage05_rerun_v3_16_kr.log`
-- code: `scripts/stage05_rerun_v3_16_kr.py`
+- code: `invest/scripts/stage05_rerun_v3_16_kr.py`
 
 ---
 

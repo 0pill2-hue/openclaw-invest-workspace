@@ -4,10 +4,10 @@
 - RULEBOOK: `invest/docs/strategy/RULEBOOK_V3.md` (V3.5)
 - 데이터 범위: `invest/data/raw/kr/ohlcv/*.csv`, `invest/data/raw/kr/supply/*_supply.csv`
 - 고정 정책: KRX only, `external_proxy` 비교군 전용, Stage05 단독 실행(Stage06 미실행)
-- 실행 스크립트: `scripts/stage05_finalize_v3_11_kr.py`
+- 실행 스크립트: `invest/scripts/stage05_finalize_v3_11_kr.py`
 
 ## run_command(or process)
-- `python3 scripts/stage05_finalize_v3_11_kr.py | tee reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
+- `python3 invest/scripts/stage05_finalize_v3_11_kr.py | tee reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_11_kr.json`
@@ -32,7 +32,7 @@
 
 ## proof
 - `invest/results/validated/stage05_baselines_v3_11_kr.json`
-- `scripts/stage05_finalize_v3_11_kr.py`
+- `invest/scripts/stage05_finalize_v3_11_kr.py`
 - `reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
 - `reports/stage_updates/logs/stage05_verify_v3_11_kr.log`
 - `invest/docs/strategy/RULEBOOK_V3.md`
@@ -56,7 +56,7 @@
 - 채택 이유: numeric 훼손 없이 qual/hybrid 동시 개선 가능성이 가장 높음
 
 ## 2) 문서반영 (실행 전)
-- Stage05 확정 라운드 전용 실행 스크립트 작성: `scripts/stage05_finalize_v3_11_kr.py`
+- Stage05 확정 라운드 전용 실행 스크립트 작성: `invest/scripts/stage05_finalize_v3_11_kr.py`
 - V3.11 산출물 경로/버전 고정:
   - `invest/results/validated/stage05_baselines_v3_11_kr.json`
 - 하드게이트 반영 명시:

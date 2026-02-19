@@ -2,7 +2,7 @@
 
 > **문서 등급:** INTERNAL AUDIT  
 > **감사 일시:** 2026-02-18 01:05 KST  
-> **감사 범위:** `invest/**/*.py`, `scripts/**/*.py`, `reports/stage_updates/*.md`  
+> **감사 범위:** `invest/**/*.py`, `invest/scripts/**/*.py`, `reports/stage_updates/*.md`  
 > **총 점검 파일:** Python 62개, Markdown 10개  
 
 ---
@@ -28,7 +28,7 @@
 
 ### P1 — 백테스트가 raw 데이터 직접 읽음 【즉시조치】
 
-**파일:** `invest/backtest_compare.py` (→ `scripts/stage5_baseline_fixed_run_20260218.py`도 동일 경로 상속)
+**파일:** `invest/backtest_compare.py` (→ `invest/scripts/stage5_baseline_fixed_run_20260218.py`도 동일 경로 상속)
 
 ```python
 OHLCV_DIR  = os.path.join(BASE_DIR, 'data/raw/kr/ohlcv')   # 위반
@@ -129,22 +129,22 @@ OUTPUT_DIR = '.../invest/results/test'  # 변경
 
 ---
 
-### P5 — scripts/refine_quant_data.py, validate_quant_data.py, refine_text_data.py → clean/ 직접 사용 【48시간】
+### P5 — invest/scripts/refine_quant_data.py, validate_quant_data.py, refine_text_data.py → clean/ 직접 사용 【48시간】
 
 **파일들:**
 
 | 파일 | 위반 경로 |
 |------|-----------|
-| `scripts/refine_quant_data.py` | `clean/kr/ohlcv`, `clean/us/ohlcv`, `clean/kr/supply` 직접 저장 |
-| `scripts/validate_quant_data.py` | `clean/kr/ohlcv`, `clean/us/ohlcv`, `clean/kr/supply` 직접 읽기 |
-| `scripts/refine_text_data.py` | `clean/text/` 직접 저장 |
+| `invest/scripts/refine_quant_data.py` | `clean/kr/ohlcv`, `clean/us/ohlcv`, `clean/kr/supply` 직접 저장 |
+| `invest/scripts/validate_quant_data.py` | `clean/kr/ohlcv`, `clean/us/ohlcv`, `clean/kr/supply` 직접 읽기 |
+| `invest/scripts/refine_text_data.py` | `clean/text/` 직접 저장 |
 | `invest/scripts/qc_cleaning_10pct.py` | `clean/kr_ohlcv`, `clean/us_ohlcv` 직접 저장 |
 
 **올바른 경로:** `clean/production/` 하위 사용 필수  
 `onepass_refine_full.py`, `feature_engineer.py`, `validate_refine_independent.py` 등 메인 스크립트들은 `clean/production/` 올바르게 사용.
 
 **위험:**  
-`scripts/` 의 구형 스크립트들이 `clean/` 루트에 쓰면 `clean/production/`과 다른 정제 기준의 파일이 공존. 어떤 것이 공식 정제 데이터인지 혼동 발생. 특히 `validate_quant_data.py`가 `clean/` 루트를 읽으면 production 외 파일을 검증 통과로 처리할 수 있음.
+`invest/scripts/` 의 구형 스크립트들이 `clean/` 루트에 쓰면 `clean/production/`과 다른 정제 기준의 파일이 공존. 어떤 것이 공식 정제 데이터인지 혼동 발생. 특히 `validate_quant_data.py`가 `clean/` 루트를 읽으면 production 외 파일을 검증 통과로 처리할 수 있음.
 
 **조치:** 경로를 `clean/production/` 하위로 통일. 기존 `clean/kr/`, `clean/us/`, `clean/text/` 디렉토리를 `clean/production/` 내부로 마이그레이션 또는 deprecated 표시.
 
@@ -346,7 +346,7 @@ AGENTS.md: `"Test/validated/production outputs must be physically separated"`
 | P2 — 핵심 스크립트 manifest 추가 | **즉시** | 1~4단계 스크립트 전체 |
 | P3 — 5단계 운영 지정 표현 정정 | **즉시** | STAGE05 MD 파일 |
 | P4 — generate_chart.py 경로+등급 수정 | **즉시** | results/generate_chart.py |
-| P5 — scripts/ 경로 clean/production 통일 | 48h | 4개 파일 |
+| P5 — invest/scripts/ 경로 clean/production 통일 | 48h | 4개 파일 |
 | P6 — stage MD status 표준화 | 48h | 3개 파일 |
 | P7 — daily_update.py critical 게이트 | 48h | daily_update.py |
 | P8~P10 | 후순위 | 각 해당 파일 |

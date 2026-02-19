@@ -27,7 +27,7 @@ OUT_STAGE06_JSON = VALIDATED / "stage06_candidates_v5_kr.json"
 OUT_STAGE06_MD = REPORTS / "stage06/stage06_candidates_v5_kr.md"
 
 VERSION = "v5_kr"
-RUN_COMMAND = "python3 scripts/stage06_candidates_v5_kr.py"
+RUN_COMMAND = "python3 invest/scripts/stage06_candidates_v5_kr.py"
 
 RULEBOOK_FIXED = {
     "max_pos": 6,
@@ -402,7 +402,7 @@ def write_report(payload: dict[str, Any]) -> None:
         "",
         "## proof",
         f"- {OUT_STAGE06_JSON}",
-        f"- {BASE / 'scripts/stage06_candidates_v5_kr.py'}",
+        f"- {BASE / 'invest/scripts/stage06_candidates_v5_kr.py'}",
         "",
         "## summary",
         f"- version: {payload['version']}",

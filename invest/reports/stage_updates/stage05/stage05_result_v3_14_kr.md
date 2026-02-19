@@ -10,7 +10,7 @@
   - `invest/data/raw/text/telegram/*.md`
 
 ## run_command(or process)
-- `python3 scripts/stage05_rerun_v3_14_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_14_kr.log`
+- `python3 invest/scripts/stage05_rerun_v3_14_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_14_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_14_kr.json`
@@ -32,7 +32,7 @@
 - clone_detected=true: 즉시 FAIL 라운드 처리
 
 ## proof
-- script: `scripts/stage05_rerun_v3_14_kr.py`
+- script: `invest/scripts/stage05_rerun_v3_14_kr.py`
 - log: `reports/stage_updates/logs/stage05_rerun_v3_14_kr.log`
 - result json: `invest/results/validated/stage05_baselines_v3_14_kr.json`
 

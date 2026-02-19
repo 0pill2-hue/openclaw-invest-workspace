@@ -6,7 +6,7 @@
 - model_matrix: numeric3 / qualitative3 / hybrid3
 
 ## run_command(or process)
-- `python3 scripts/stage05_3x3_v3_9_kr.py`
+- `python3 invest/scripts/stage05_3x3_v3_9_kr.py`
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_3x3_v3_9_kr.json
@@ -25,7 +25,7 @@
 
 ## proof
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_3x3_v3_9_kr.json
-- /Users/jobiseu/.openclaw/workspace/scripts/stage05_3x3_v3_9_kr.py
+- /Users/jobiseu/.openclaw/workspace/invest/scripts/stage05_3x3_v3_9_kr.py
 
 ## 모델별 성과표
 | model_id | track | cumulative_return | MDD | CAGR | turnover_proxy |

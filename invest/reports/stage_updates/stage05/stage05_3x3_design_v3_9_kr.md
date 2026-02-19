@@ -7,7 +7,7 @@
 - 내부 모델 9개(3x3) + external_proxy 비교군 1개
 
 ## run_command(or process)
-- `python3 scripts/stage05_3x3_v3_9_kr.py`
+- `python3 invest/scripts/stage05_3x3_v3_9_kr.py`
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_3x3_v3_9_kr.json
@@ -25,7 +25,7 @@
 - internal 3000% gate 미충족 시 Stage06 진입 금지
 
 ## proof
-- /Users/jobiseu/.openclaw/workspace/scripts/stage05_3x3_v3_9_kr.py
+- /Users/jobiseu/.openclaw/workspace/invest/scripts/stage05_3x3_v3_9_kr.py
 
 ## Stage05-3x3 모델 설계
 | track | model_id | changed_params | why | expected_risk |

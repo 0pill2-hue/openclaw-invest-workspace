@@ -27,7 +27,7 @@ OUT_CHART_KOSPI_KOSDAQ = OUT_CHART_DIR / "stage05_v3_20_vs_kospi_kosdaq.png"
 
 
 def import_stage05_module():
-    mod_path = BASE / "scripts/stage05_3x3_v3_9_kr.py"
+    mod_path = BASE / "invest/scripts/stage05_3x3_v3_9_kr.py"
     name = "stage05_3x3_v3_9_kr_mod_for_detail"
     spec = importlib.util.spec_from_file_location(name, mod_path)
     if spec is None or spec.loader is None:

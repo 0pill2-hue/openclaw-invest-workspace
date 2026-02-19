@@ -8,7 +8,7 @@
 - rulebook: `invest/docs/strategy/RULEBOOK_V3.md`
 
 ## run_command(or process)
-- `python3 scripts/stage05_density_repeat_v3_12_kr.py | tee reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
+- `python3 invest/scripts/stage05_density_repeat_v3_12_kr.py | tee reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_12_kr.json`
@@ -29,7 +29,7 @@
 - `changed_params/why/proof` 누락 라운드는 무효
 
 ## proof
-- `scripts/stage05_density_repeat_v3_12_kr.py`
+- `invest/scripts/stage05_density_repeat_v3_12_kr.py`
 - `reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
 - `invest/results/validated/stage05_baselines_v3_12_kr.json`
 - `invest/docs/strategy/RULEBOOK_V3.md`

@@ -7,12 +7,12 @@ inputs:
   clean_root:
     - invest/data/clean/production/kr/ohlcv
     - invest/data/clean/production/kr/supply
-  value_script: scripts/calculate_stage3_values.py
+  value_script: invest/scripts/calculate_stage3_values.py
 outputs:
   value_report: reports/stage_updates/STAGE3_VALUE_RUN_*.json
   value_manifest: invest/reports/data_quality/manifest_stage3_value_*.json
 run_command:
-  - python3 scripts/calculate_stage3_values.py
+  - python3 invest/scripts/calculate_stage3_values.py
 proof:
   - reports/stage_updates/STAGE3_VALUE_RUN_*.json
   - invest/reports/data_quality/manifest_stage3_value_*.json
@@ -40,7 +40,7 @@ failure_policy:
     condition: "value_script exit code != 0"
 
 repro_checklist:
-  - script: "scripts/calculate_stage3_values.py"
+  - script: "invest/scripts/calculate_stage3_values.py"
   - baseline: "Ensure invest/data/clean/production state is locked"
   - verification: "Compare VALUE_SCORE_RAW with local calc for 1 asset"
 

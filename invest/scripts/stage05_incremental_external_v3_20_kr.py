@@ -50,7 +50,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 
 def import_stage05_3x3_module():
-    mod_path = BASE / "scripts/stage05_3x3_v3_9_kr.py"
+    mod_path = BASE / "invest/scripts/stage05_3x3_v3_9_kr.py"
     name = "stage05_3x3_v3_9_kr_mod"
     spec = importlib.util.spec_from_file_location(name, mod_path)
     if spec is None or spec.loader is None:
@@ -159,7 +159,7 @@ def write_v319_fail_marker() -> dict[str, Any]:
         "evidence": {
             "traceback_key": "TypeError: ModelRun.__init__() missing 4 required positional arguments",
             "missing_fields": ["monthly_holdings", "replacement_logs", "supercycle_trace", "strategy_summary"],
-            "script": "scripts/stage05_rerun_v3_19_kr.py",
+            "script": "invest/scripts/stage05_rerun_v3_19_kr.py",
             "failure_line_hint": "run_model() return ModelRun(...) signature mismatch",
         },
     }
@@ -176,13 +176,13 @@ def write_result_md(payload: dict[str, Any]) -> None:
         "",
         "## inputs",
         "- 기존 9개(내부 3x3) 결과 재사용: `invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`",
-        "- 신규 3개 external/pretrained 증분 실행: `scripts/stage05_incremental_external_v3_20_kr.py`",
+        "- 신규 3개 external/pretrained 증분 실행: `invest/scripts/stage05_incremental_external_v3_20_kr.py`",
         "- v3_19 FAIL 마킹: `invest/results/test/stage05_baselines_v3_19_kr_fail.json`",
         "- 규칙 기준: Rulebook 하드룰 + official_scope=effective_window(reference/full 분리 유지)",
         "",
         "## run_command(or process)",
-        "- `python3 -m py_compile scripts/stage05_incremental_external_v3_20_kr.py`",
-        "- `python3 scripts/stage05_incremental_external_v3_20_kr.py`",
+        "- `python3 -m py_compile invest/scripts/stage05_incremental_external_v3_20_kr.py`",
+        "- `python3 invest/scripts/stage05_incremental_external_v3_20_kr.py`",
         "",
         "## outputs",
         "- `invest/results/validated/stage05_baselines_v3_20_kr.json`",
@@ -206,7 +206,7 @@ def write_result_md(payload: dict[str, Any]) -> None:
         "- result json: `invest/results/validated/stage05_baselines_v3_20_kr.json`",
         "- fail marker: `invest/results/test/stage05_baselines_v3_19_kr_fail.json`",
         "- log: `reports/stage_updates/logs/stage05_incremental_external_v3_20_kr.log`",
-        "- code: `scripts/stage05_incremental_external_v3_20_kr.py`",
+        "- code: `invest/scripts/stage05_incremental_external_v3_20_kr.py`",
         "",
         "---",
         "",
@@ -356,11 +356,11 @@ def write_patch_md(payload: dict[str, Any]) -> None:
         "## inputs",
         "- base internal results: `invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`",
         "- previous official gate anchor: `invest/results/validated/stage05_baselines_v3_18_kr.json`",
-        "- failed cycle marker source: `scripts/stage05_rerun_v3_19_kr.py` runtime error",
+        "- failed cycle marker source: `invest/scripts/stage05_rerun_v3_19_kr.py` runtime error",
         "",
         "## run_command(or process)",
-        "- `python3 -m py_compile scripts/stage05_incremental_external_v3_20_kr.py`",
-        "- `python3 scripts/stage05_incremental_external_v3_20_kr.py`",
+        "- `python3 -m py_compile invest/scripts/stage05_incremental_external_v3_20_kr.py`",
+        "- `python3 invest/scripts/stage05_incremental_external_v3_20_kr.py`",
         "",
         "## outputs",
         "- `invest/results/validated/stage05_baselines_v3_20_kr.json`",
@@ -381,7 +381,7 @@ def write_patch_md(payload: dict[str, Any]) -> None:
         "- track 라벨 불일치(numeric/qualitative/hybrid/external-pretrained) 시 FAIL_STOP",
         "",
         "## proof",
-        "- code: `scripts/stage05_incremental_external_v3_20_kr.py`",
+        "- code: `invest/scripts/stage05_incremental_external_v3_20_kr.py`",
         "- log: `reports/stage_updates/logs/stage05_incremental_external_v3_20_kr.log`",
         "- result: `invest/results/validated/stage05_baselines_v3_20_kr.json`",
         "",

@@ -6,7 +6,7 @@ PY="$ROOT/.venv/bin/python3"
 [ -x "$PY" ] || PY="$ROOT/invest/venv/bin/python"
 [ -x "$PY" ] || PY="python3"
 
-exec "$ROOT/scripts/cron/cron_notify_on_failure.sh" \
+exec "$ROOT/invest/scripts/cron/cron_notify_on_failure.sh" \
   "rss_telegram_date_fix" \
   bash -lc "\
     '$PY' '$ROOT/invest/scripts/stage01_rss_date_repair.py' && \

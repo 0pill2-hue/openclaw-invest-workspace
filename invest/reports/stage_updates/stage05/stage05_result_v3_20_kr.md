@@ -2,13 +2,13 @@
 
 ## inputs
 - 기존 9개(내부 3x3) 결과 재사용: `invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`
-- 신규 3개 external/pretrained 증분 실행: `scripts/stage05_incremental_external_v3_20_kr.py`
+- 신규 3개 external/pretrained 증분 실행: `invest/scripts/stage05_incremental_external_v3_20_kr.py`
 - v3_19 FAIL 마킹: `invest/results/test/stage05_baselines_v3_19_kr_fail.json`
 - 규칙 기준: Rulebook 하드룰 + official_scope=effective_window(reference/full 분리 유지)
 
 ## run_command(or process)
-- `python3 -m py_compile scripts/stage05_incremental_external_v3_20_kr.py`
-- `python3 scripts/stage05_incremental_external_v3_20_kr.py`
+- `python3 -m py_compile invest/scripts/stage05_incremental_external_v3_20_kr.py`
+- `python3 invest/scripts/stage05_incremental_external_v3_20_kr.py`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_20_kr.json`
@@ -32,7 +32,7 @@
 - result json: `invest/results/validated/stage05_baselines_v3_20_kr.json`
 - fail marker: `invest/results/test/stage05_baselines_v3_19_kr_fail.json`
 - log: `reports/stage_updates/logs/stage05_incremental_external_v3_20_kr.log`
-- code: `scripts/stage05_incremental_external_v3_20_kr.py`
+- code: `invest/scripts/stage05_incremental_external_v3_20_kr.py`
 
 ---
 

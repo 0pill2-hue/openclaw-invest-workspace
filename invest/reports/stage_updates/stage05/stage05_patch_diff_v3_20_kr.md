@@ -3,11 +3,11 @@
 ## inputs
 - base internal results: `invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`
 - previous official gate anchor: `invest/results/validated/stage05_baselines_v3_18_kr.json`
-- failed cycle marker source: `scripts/stage05_rerun_v3_19_kr.py` runtime error
+- failed cycle marker source: `invest/scripts/stage05_rerun_v3_19_kr.py` runtime error
 
 ## run_command(or process)
-- `python3 -m py_compile scripts/stage05_incremental_external_v3_20_kr.py`
-- `python3 scripts/stage05_incremental_external_v3_20_kr.py`
+- `python3 -m py_compile invest/scripts/stage05_incremental_external_v3_20_kr.py`
+- `python3 invest/scripts/stage05_incremental_external_v3_20_kr.py`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_20_kr.json`
@@ -28,7 +28,7 @@
 - track 라벨 불일치(numeric/qualitative/hybrid/external-pretrained) 시 FAIL_STOP
 
 ## proof
-- code: `scripts/stage05_incremental_external_v3_20_kr.py`
+- code: `invest/scripts/stage05_incremental_external_v3_20_kr.py`
 - log: `reports/stage_updates/logs/stage05_incremental_external_v3_20_kr.log`
 - result: `invest/results/validated/stage05_baselines_v3_20_kr.json`
 

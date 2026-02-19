@@ -1,6 +1,6 @@
 # FULL_AUDIT_RAW_PATHS_20260218
 
-- Scope: `invest/**/*.py`, `scripts/**/*.py`
+- Scope: `invest/**/*.py`, `invest/scripts/**/*.py`
 - Generated: 2026-02-18T01:06:54.512868
 - SOP 기준: `invest/docs/operations/OPERATIONS_SOP.md` 4-A (clean-only violation)
 
@@ -54,23 +54,23 @@
 |36|LOW|N|`invest/scripts/image_harvester.py:20`|`SEEN_PATH = "invest/data/raw/text/images_ocr/seen_urls.json"`|
 |37|LOW|N|`invest/scripts/fetch_dart_disclosures.py:8`|`OUT_DIR = "invest/data/raw/kr/dart"`|
 |38|LOW|N|`invest/scripts/fetch_macro_fred.py:7`|`DATA_DIR = "invest/data/raw/market/macro"`|
-|39|LOW|N|`scripts/qc_text_sample.py:71`|`'invest/data/raw/text/blog',`|
-|40|LOW|N|`scripts/qc_text_sample.py:72`|`'invest/data/raw/text/telegram'`|
-|41|LOW|N|`scripts/qc_text_sample.py:89`|`rel_dir = os.path.dirname(os.path.relpath(file_path, 'invest/data/raw/text'))`|
-|42|LOW|N|`scripts/qc_rerun_all.py:75`|`"kr/ohlcv": "invest/data/raw/kr/ohlcv/*.csv",`|
-|43|LOW|N|`scripts/qc_rerun_all.py:76`|`"kr/supply": "invest/data/raw/kr/supply/*.csv",`|
-|44|LOW|N|`scripts/qc_rerun_all.py:77`|`"kr/dart": "invest/data/raw/kr/dart/*.*",`|
-|45|LOW|N|`scripts/qc_rerun_all.py:78`|`"us/ohlcv": "invest/data/raw/us/ohlcv/*.csv",`|
-|46|LOW|N|`scripts/qc_rerun_all.py:79`|`"market/news/rss": "invest/data/raw/market/news/rss/*.*",`|
-|47|LOW|N|`scripts/qc_rerun_all.py:80`|`"market/macro": "invest/data/raw/market/macro/*.csv",`|
-|48|LOW|N|`scripts/qc_rerun_all.py:81`|`"market/google_trends": "invest/data/raw/market/google_trends/*.csv",`|
-|49|LOW|N|`scripts/qc_rerun_all.py:82`|`"text/blog": "invest/data/raw/text/blog/**/*.md",`|
-|50|LOW|N|`scripts/qc_rerun_all.py:83`|`"text/telegram": "invest/data/raw/text/telegram/*.md",`|
-|51|LOW|N|`scripts/qc_rerun_all.py:84`|`"text/image_map": "invest/data/raw/text/image_map/*.json",`|
-|52|LOW|N|`scripts/qc_rerun_all.py:85`|`"text/images_ocr": "invest/data/raw/text/images_ocr/*.json",`|
-|53|LOW|N|`scripts/qc_rerun_all.py:86`|`"text/premium/startale": "invest/data/raw/text/premium/startale/*.md"`|
-|54|LOW|N|`scripts/refine_quant_data.py:75`|`raw_base = Path("invest/data/raw")`|
-|55|LOW|N|`scripts/refine_text_data.py:28`|`raw_base = Path("invest/data/raw/text")`|
+|39|LOW|N|`invest/scripts/qc_text_sample.py:71`|`'invest/data/raw/text/blog',`|
+|40|LOW|N|`invest/scripts/qc_text_sample.py:72`|`'invest/data/raw/text/telegram'`|
+|41|LOW|N|`invest/scripts/qc_text_sample.py:89`|`rel_dir = os.path.dirname(os.path.relpath(file_path, 'invest/data/raw/text'))`|
+|42|LOW|N|`invest/scripts/qc_rerun_all.py:75`|`"kr/ohlcv": "invest/data/raw/kr/ohlcv/*.csv",`|
+|43|LOW|N|`invest/scripts/qc_rerun_all.py:76`|`"kr/supply": "invest/data/raw/kr/supply/*.csv",`|
+|44|LOW|N|`invest/scripts/qc_rerun_all.py:77`|`"kr/dart": "invest/data/raw/kr/dart/*.*",`|
+|45|LOW|N|`invest/scripts/qc_rerun_all.py:78`|`"us/ohlcv": "invest/data/raw/us/ohlcv/*.csv",`|
+|46|LOW|N|`invest/scripts/qc_rerun_all.py:79`|`"market/news/rss": "invest/data/raw/market/news/rss/*.*",`|
+|47|LOW|N|`invest/scripts/qc_rerun_all.py:80`|`"market/macro": "invest/data/raw/market/macro/*.csv",`|
+|48|LOW|N|`invest/scripts/qc_rerun_all.py:81`|`"market/google_trends": "invest/data/raw/market/google_trends/*.csv",`|
+|49|LOW|N|`invest/scripts/qc_rerun_all.py:82`|`"text/blog": "invest/data/raw/text/blog/**/*.md",`|
+|50|LOW|N|`invest/scripts/qc_rerun_all.py:83`|`"text/telegram": "invest/data/raw/text/telegram/*.md",`|
+|51|LOW|N|`invest/scripts/qc_rerun_all.py:84`|`"text/image_map": "invest/data/raw/text/image_map/*.json",`|
+|52|LOW|N|`invest/scripts/qc_rerun_all.py:85`|`"text/images_ocr": "invest/data/raw/text/images_ocr/*.json",`|
+|53|LOW|N|`invest/scripts/qc_rerun_all.py:86`|`"text/premium/startale": "invest/data/raw/text/premium/startale/*.md"`|
+|54|LOW|N|`invest/scripts/refine_quant_data.py:75`|`raw_base = Path("invest/data/raw")`|
+|55|LOW|N|`invest/scripts/refine_text_data.py:28`|`raw_base = Path("invest/data/raw/text")`|
 
 ## 3) SOP 위반 핵심 포인트
 - **HARD** `invest/backtest_compare.py:9` — Stage5 백테스트가 raw를 직접 입력으로 사용(4-A clean-only 위반)

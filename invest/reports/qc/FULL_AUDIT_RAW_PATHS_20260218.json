@@ -3,7 +3,7 @@
   "generated_at": "2026-02-18T01:06:54.512868",
   "scope": [
     "invest/**/*.py",
-    "scripts/**/*.py"
+    "invest/scripts/**/*.py"
   ],
   "sop_reference": [
     "invest/docs/operations/OPERATIONS_SOP.md 4-A clean-only violation"
@@ -359,7 +359,7 @@
     },
     {
       "id": 39,
-      "file": "scripts/qc_text_sample.py",
+      "file": "invest/scripts/qc_text_sample.py",
       "line": 71,
       "snippet": "'invest/data/raw/text/blog',",
       "severity": "LOW",
@@ -368,7 +368,7 @@
     },
     {
       "id": 40,
-      "file": "scripts/qc_text_sample.py",
+      "file": "invest/scripts/qc_text_sample.py",
       "line": 72,
       "snippet": "'invest/data/raw/text/telegram'",
       "severity": "LOW",
@@ -377,7 +377,7 @@
     },
     {
       "id": 41,
-      "file": "scripts/qc_text_sample.py",
+      "file": "invest/scripts/qc_text_sample.py",
       "line": 89,
       "snippet": "rel_dir = os.path.dirname(os.path.relpath(file_path, 'invest/data/raw/text'))",
       "severity": "LOW",
@@ -386,7 +386,7 @@
     },
     {
       "id": 42,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 75,
       "snippet": "\"kr/ohlcv\": \"invest/data/raw/kr/ohlcv/*.csv\",",
       "severity": "LOW",
@@ -395,7 +395,7 @@
     },
     {
       "id": 43,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 76,
       "snippet": "\"kr/supply\": \"invest/data/raw/kr/supply/*.csv\",",
       "severity": "LOW",
@@ -404,7 +404,7 @@
     },
     {
       "id": 44,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 77,
       "snippet": "\"kr/dart\": \"invest/data/raw/kr/dart/*.*\",",
       "severity": "LOW",
@@ -413,7 +413,7 @@
     },
     {
       "id": 45,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 78,
       "snippet": "\"us/ohlcv\": \"invest/data/raw/us/ohlcv/*.csv\",",
       "severity": "LOW",
@@ -422,7 +422,7 @@
     },
     {
       "id": 46,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 79,
       "snippet": "\"market/news/rss\": \"invest/data/raw/market/news/rss/*.*\",",
       "severity": "LOW",
@@ -431,7 +431,7 @@
     },
     {
       "id": 47,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 80,
       "snippet": "\"market/macro\": \"invest/data/raw/market/macro/*.csv\",",
       "severity": "LOW",
@@ -440,7 +440,7 @@
     },
     {
       "id": 48,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 81,
       "snippet": "\"market/google_trends\": \"invest/data/raw/market/google_trends/*.csv\",",
       "severity": "LOW",
@@ -449,7 +449,7 @@
     },
     {
       "id": 49,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 82,
       "snippet": "\"text/blog\": \"invest/data/raw/text/blog/**/*.md\",",
       "severity": "LOW",
@@ -458,7 +458,7 @@
     },
     {
       "id": 50,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 83,
       "snippet": "\"text/telegram\": \"invest/data/raw/text/telegram/*.md\",",
       "severity": "LOW",
@@ -467,7 +467,7 @@
     },
     {
       "id": 51,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 84,
       "snippet": "\"text/image_map\": \"invest/data/raw/text/image_map/*.json\",",
       "severity": "LOW",
@@ -476,7 +476,7 @@
     },
     {
       "id": 52,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 85,
       "snippet": "\"text/images_ocr\": \"invest/data/raw/text/images_ocr/*.json\",",
       "severity": "LOW",
@@ -485,7 +485,7 @@
     },
     {
       "id": 53,
-      "file": "scripts/qc_rerun_all.py",
+      "file": "invest/scripts/qc_rerun_all.py",
       "line": 86,
       "snippet": "\"text/premium/startale\": \"invest/data/raw/text/premium/startale/*.md\"",
       "severity": "LOW",
@@ -494,7 +494,7 @@
     },
     {
       "id": 54,
-      "file": "scripts/refine_quant_data.py",
+      "file": "invest/scripts/refine_quant_data.py",
       "line": 75,
       "snippet": "raw_base = Path(\"invest/data/raw\")",
       "severity": "LOW",
@@ -503,7 +503,7 @@
     },
     {
       "id": 55,
-      "file": "scripts/refine_text_data.py",
+      "file": "invest/scripts/refine_text_data.py",
       "line": 28,
       "snippet": "raw_base = Path(\"invest/data/raw/text\")",
       "severity": "LOW",

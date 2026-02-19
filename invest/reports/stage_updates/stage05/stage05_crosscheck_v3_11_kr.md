@@ -6,7 +6,7 @@
 - `invest/docs/strategy/RULEBOOK_V3.md`
 
 ## run_command(or process)
-- `python3 scripts/stage05_finalize_v3_11_kr.py | tee reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
+- `python3 invest/scripts/stage05_finalize_v3_11_kr.py | tee reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
 
 ## outputs
 - `reports/stage_updates/stage05/stage05_crosscheck_v3_11_kr.md`
@@ -24,7 +24,7 @@
 
 ## proof
 - `invest/results/validated/stage05_baselines_v3_11_kr.json`
-- `scripts/stage05_finalize_v3_11_kr.py`
+- `invest/scripts/stage05_finalize_v3_11_kr.py`
 - `reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
 - `reports/stage_updates/logs/stage05_verify_v3_11_kr.log`
 

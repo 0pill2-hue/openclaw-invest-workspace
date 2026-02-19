@@ -1,15 +1,15 @@
 # stage05_result_v3_18_kr
 
 ## inputs
-- 실행 스크립트: `scripts/stage05_rerun_v3_18_kr.py`
+- 실행 스크립트: `invest/scripts/stage05_rerun_v3_18_kr.py`
 - 설정: `invest/config/stage05_auto_capture_v3_18_kr.yaml`
 - 정책 문서: `reports/stage_updates/stage05/stage05_effective_window_policy_v3_18_kr.md`
 - 결과 JSON: `invest/results/validated/stage05_baselines_v3_18_kr.json`
 - 로그: `reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
 
 ## run_command(or process)
-- `python3 -m py_compile scripts/stage05_rerun_v3_18_kr.py`
-- `python3 scripts/stage05_rerun_v3_18_kr.py | tee -a reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
+- `python3 -m py_compile invest/scripts/stage05_rerun_v3_18_kr.py`
+- `python3 invest/scripts/stage05_rerun_v3_18_kr.py | tee -a reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_18_kr.json`
@@ -32,7 +32,7 @@
 ## proof
 - JSON: `invest/results/validated/stage05_baselines_v3_18_kr.json`
 - log: `reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
-- code: `scripts/stage05_rerun_v3_18_kr.py`
+- code: `invest/scripts/stage05_rerun_v3_18_kr.py`
 - config: `invest/config/stage05_auto_capture_v3_18_kr.yaml`
 
 ---

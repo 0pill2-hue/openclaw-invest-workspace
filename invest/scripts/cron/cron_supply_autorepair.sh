@@ -6,6 +6,6 @@ PY="$ROOT/.venv/bin/python3"
 [ -x "$PY" ] || PY="$ROOT/invest/venv/bin/python"
 [ -x "$PY" ] || PY="python3"
 
-exec "$ROOT/scripts/cron/cron_notify_on_failure.sh" \
+exec "$ROOT/invest/scripts/cron/cron_notify_on_failure.sh" \
   "kr_supply_autorepair" \
   "$PY" "$ROOT/invest/scripts/stage01_supply_autorepair.py" --max-repair 3

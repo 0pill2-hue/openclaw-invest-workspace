@@ -30,13 +30,13 @@
   - 상태 출력: `invest/data/runtime/telegram_date_index.json`
 
 ### D. 크론 + 실패 알림/정상 무소음
-- 신규: `scripts/cron/cron_notify_on_failure.sh`
+- 신규: `invest/scripts/cron/cron_notify_on_failure.sh`
   - 성공: 무메시지(no reply)
   - 실패: Telegram 알림(`openclaw message send --channel telegram`)
-- 신규: `scripts/cron/cron_supply_autorepair.sh`
-- 신규: `scripts/cron/cron_dart_backfill_autopilot.sh`
-- 신규: `scripts/cron/cron_rss_telegram_date_fix.sh`
-- 신규: `scripts/cron/install_data_automation_cron.sh`
+- 신규: `invest/scripts/cron/cron_supply_autorepair.sh`
+- 신규: `invest/scripts/cron/cron_dart_backfill_autopilot.sh`
+- 신규: `invest/scripts/cron/cron_rss_telegram_date_fix.sh`
+- 신규: `invest/scripts/cron/install_data_automation_cron.sh`
   - print/apply 모드 지원
 
 ---
@@ -65,14 +65,14 @@ python3 -m py_compile \
 
 ### 크론 엔트리 템플릿 출력
 ```bash
-bash scripts/cron/install_data_automation_cron.sh print
+bash invest/scripts/cron/install_data_automation_cron.sh print
 ```
 
 ### 크론 래퍼 단독 실행(실패알림/성공무소음 정책 확인)
 ```bash
-bash scripts/cron/cron_supply_autorepair.sh
-bash scripts/cron/cron_dart_backfill_autopilot.sh
-bash scripts/cron/cron_rss_telegram_date_fix.sh
+bash invest/scripts/cron/cron_supply_autorepair.sh
+bash invest/scripts/cron/cron_dart_backfill_autopilot.sh
+bash invest/scripts/cron/cron_rss_telegram_date_fix.sh
 ```
 
 ---

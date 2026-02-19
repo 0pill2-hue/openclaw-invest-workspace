@@ -1,7 +1,7 @@
 # stage05_overfit_brainstorm_v3_15_kr
 
 ## inputs
-- 기존 Stage05 엔진/라운드 구조: `scripts/stage05_rerun_v3_14_kr.py`, `scripts/stage05_density_repeat_v3_12_kr.py`
+- 기존 Stage05 엔진/라운드 구조: `invest/scripts/stage05_rerun_v3_14_kr.py`, `invest/scripts/stage05_density_repeat_v3_12_kr.py`
 - 기존 Stage05 결과/정책: `invest/results/validated/stage05_baselines_v3_12_kr.json`, `reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
 - 운영 룰북: `invest/docs/strategy/RULEBOOK_V3.md`
 
@@ -153,11 +153,11 @@
 ## E) Stage05 바로 실행 가능한 패치 제안
 
 ### E-1) 변경 대상 파일
-- 스크립트: `scripts/stage05_rerun_v3_14_kr.py` (v3_15로 분기 권장)
+- 스크립트: `invest/scripts/stage05_rerun_v3_14_kr.py` (v3_15로 분기 권장)
 - 신규 설정: `invest/config/stage05_auto_capture_v3_15_kr.yaml` (신규)
 - 결과 필드 확장: `invest/results/validated/stage05_baselines_v3_15_kr.json` (신규)
 
-### E-2) scripts/config에서 바꿀 파라미터 목록
+### E-2) invest/scripts/config에서 바꿀 파라미터 목록
 
 #### (1) Universe 자동화/비맞춤형 고정
 - `universe_mode`: `liquidity_top_n`
@@ -239,7 +239,7 @@
 - `search_space_freeze_and_hash_logging`
 
 ## next_steps
-1. `scripts/stage05_rerun_v3_15_kr.py` 분기 생성 후 config 로더 연결
+1. `invest/scripts/stage05_rerun_v3_15_kr.py` 분기 생성 후 config 로더 연결
 2. `invest/config/stage05_auto_capture_v3_15_kr.yaml` 추가 및 기본값 세팅
 3. Gate3(서브기간 안정성), Gate4(Purged CV/OOS) 구현
 4. `stage05_baselines_v3_15_kr.json`에 `anti_overfit_audit` 블록 출력

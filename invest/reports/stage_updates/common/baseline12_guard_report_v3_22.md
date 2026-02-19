@@ -8,7 +8,7 @@
 
 ## 무엇을 고쳤는가
 ### 1) 공용 가드 모듈 추가
-- 파일: `scripts/stage05_baseline_guard.py`
+- 파일: `invest/scripts/stage05_baseline_guard.py`
 - 추가 내용:
   - `EXPECTED_TRACK_COUNTS_12_BASELINE = {numeric:3, qualitative:3, hybrid:3, external-pretrained:3}`
   - `enforce_track_counts_or_fail_stop(...)`
@@ -16,9 +16,9 @@
     - 일치 시: `protocol_enforced=true`, `track_counts_assertion=pass` 메타 반환
 
 ### 2) Stage05 실행 스크립트 적용
-- `scripts/stage05_incremental_external_v3_20_kr.py`
-- `scripts/stage05_incremental_external_v3_21_kr.py`
-- `scripts/stage05_full_recompute_v3_22_kr.py` (후속 공용 적용)
+- `invest/scripts/stage05_incremental_external_v3_20_kr.py`
+- `invest/scripts/stage05_incremental_external_v3_21_kr.py`
+- `invest/scripts/stage05_full_recompute_v3_22_kr.py` (후속 공용 적용)
 
 적용 방식:
 - `track_counts` 계산 직후 `enforce_track_counts_or_fail_stop(...)` 호출
@@ -35,14 +35,14 @@
 
 ## 검증
 ### A. 컴파일 검증
-- `python3 -m py_compile scripts/stage05_baseline_guard.py scripts/stage05_incremental_external_v3_20_kr.py scripts/stage05_incremental_external_v3_21_kr.py scripts/stage05_full_recompute_v3_22_kr.py`
+- `python3 -m py_compile invest/scripts/stage05_baseline_guard.py invest/scripts/stage05_incremental_external_v3_20_kr.py invest/scripts/stage05_incremental_external_v3_21_kr.py invest/scripts/stage05_full_recompute_v3_22_kr.py`
 - 결과: PASS
 
 ### B. 최소 실행 검증(Stage05)
-- `python3 scripts/stage05_incremental_external_v3_20_kr.py`
+- `python3 invest/scripts/stage05_incremental_external_v3_20_kr.py`
   - 출력 경로: `reports/stage_updates/stage05/stage05_result_v3_20_kr.md` 등
   - gate1: PASS
-- `python3 scripts/stage05_incremental_external_v3_21_kr.py`
+- `python3 invest/scripts/stage05_incremental_external_v3_21_kr.py`
   - 출력 경로: `reports/stage_updates/stage05/stage05_result_v3_21_kr.md` 등
   - gate1: PASS
 

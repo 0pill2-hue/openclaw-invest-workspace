@@ -2,7 +2,7 @@
 
 ## inputs
 - 기준 Rulebook: `invest/strategy/RULEBOOK_V1_20260218.md`
-- 기반 Stage05: `scripts/stage05_rerun_v3_16_kr.py`
+- 기반 Stage05: `invest/scripts/stage05_rerun_v3_16_kr.py`
 - 사용자 확정 지시: "Stage05부터 재시작, 평가 로직만 유효구간 기준 적용"
 
 ## policy_patch_scope (평가 한정)
@@ -42,5 +42,5 @@
 
 ## proof
 - 설정 반영: `invest/config/stage05_auto_capture_v3_18_kr.yaml`
-- 코드 반영: `scripts/stage05_rerun_v3_18_kr.py`
+- 코드 반영: `invest/scripts/stage05_rerun_v3_18_kr.py`
 - 실행 결과: `invest/results/validated/stage05_baselines_v3_18_kr.json`

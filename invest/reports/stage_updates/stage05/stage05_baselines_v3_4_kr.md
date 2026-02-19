@@ -5,7 +5,7 @@
 - invest/data/raw/kr/supply/*_supply.csv
 
 ## run_command(or process)
-- `python3 scripts/run_stage05_09_v3_4_kr.py`
+- `python3 invest/scripts/run_stage05_09_v3_4_kr.py`
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_v3_4_kr.json

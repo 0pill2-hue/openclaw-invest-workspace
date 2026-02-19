@@ -1,17 +1,17 @@
 # stage05_patch_diff_v3_18_kr
 
 ## inputs
-- base runner: `scripts/stage05_rerun_v3_16_kr.py`
+- base runner: `invest/scripts/stage05_rerun_v3_16_kr.py`
 - base config: `invest/config/stage05_auto_capture_v3_16_kr.yaml`
 - policy doc: `reports/stage_updates/stage05/stage05_effective_window_policy_v3_18_kr.md`
 
 ## run_command(or process)
-- `cp scripts/stage05_rerun_v3_16_kr.py scripts/stage05_rerun_v3_18_kr.py`
-- `python3 -m py_compile scripts/stage05_rerun_v3_18_kr.py`
-- `python3 scripts/stage05_rerun_v3_18_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
+- `cp invest/scripts/stage05_rerun_v3_16_kr.py invest/scripts/stage05_rerun_v3_18_kr.py`
+- `python3 -m py_compile invest/scripts/stage05_rerun_v3_18_kr.py`
+- `python3 invest/scripts/stage05_rerun_v3_18_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
 
 ## outputs
-- `scripts/stage05_rerun_v3_18_kr.py`
+- `invest/scripts/stage05_rerun_v3_18_kr.py`
 - `invest/config/stage05_auto_capture_v3_18_kr.yaml`
 - `reports/stage_updates/stage05/stage05_patch_diff_v3_18_kr.md`
 
@@ -28,7 +28,7 @@
 - gate1~gate4/high_density_advantage_pass 누락 시 `FAIL_STOP`
 
 ## proof
-- code: `scripts/stage05_rerun_v3_18_kr.py`
+- code: `invest/scripts/stage05_rerun_v3_18_kr.py`
 - config: `invest/config/stage05_auto_capture_v3_18_kr.yaml`
 - run log: `reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
 - result: `invest/results/validated/stage05_baselines_v3_18_kr.json`

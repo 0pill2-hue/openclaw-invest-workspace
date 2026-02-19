@@ -4,7 +4,7 @@
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_v3_4_kr.json
 
 ## run_command(or process)
-- `python3 scripts/run_stage05_09_v3_4_kr.py`
+- `python3 invest/scripts/run_stage05_09_v3_4_kr.py`
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05/stage05_cross_review_v3_4_kr.md

@@ -92,7 +92,7 @@
 ---
 
 ## run_command(or process)
-- `python3 scripts/stage06_candidates_v5_kr.py`
+- `python3 invest/scripts/stage06_candidates_v5_kr.py`
 
 ## outputs
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v5_kr.json`
@@ -107,5 +107,5 @@
 - external_proxy가 선발 후보로 유입되면 FAIL_STOP
 
 ## proof
-- `/Users/jobiseu/.openclaw/workspace/scripts/stage06_candidates_v5_kr.py`
+- `/Users/jobiseu/.openclaw/workspace/invest/scripts/stage06_candidates_v5_kr.py`
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v5_kr.json`

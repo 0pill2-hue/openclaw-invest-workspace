@@ -1,7 +1,7 @@
 # RULEBOOK V3.5 (Code-Synced, Trust-Rebuild)
 
 Version: 2026-02-19 (V3.5)
-Source of truth: `invest/scripts/stage05_backtest_engine.py`, `scripts/stage05_tuning_loop_v3_7_kr.py`
+Source of truth: `invest/scripts/stage05_backtest_engine.py`, `invest/scripts/stage05_tuning_loop_v3_7_kr.py`
 
 ---
 

@@ -247,7 +247,7 @@ def main() -> int:
     stage05_md = REPORTS / "stage05/stage05_baselines_v3_3.md"
     write_md(stage05_md, "stage05_baselines_v3_3", {
         "inputs": f"- data: {RAW_US} (US OHLCV)\n- news: {NEWS_DIR}\n- dart: {DART_DIR}\n- baseline_count: 4",
-        "run_command(or process)": "- python3 scripts/stage05_09_v3_3_pipeline.py",
+        "run_command(or process)": "- python3 invest/scripts/stage05_09_v3_3_pipeline.py",
         "outputs": f"- {stage05_json}\n- {stage05_md}",
         "quality_gates": "- 4 baselines generated\n- Rulebook engine(invest/scripts/stage05_backtest_engine.py) used\n- external_pretrained proxy explicitly labeled",
         "failure_policy": "- if any baseline missing or json write fail -> rerun Stage05 from design",
@@ -313,7 +313,7 @@ def main() -> int:
     stage06_md = REPORTS / "stage06/stage06_candidates_v3_3.md"
     write_md(stage06_md, "stage06_candidates_v3_3", {
         "inputs": f"- {stage05_json}",
-        "run_command(or process)": "- python3 scripts/stage05_09_v3_3_pipeline.py (Stage06 block)",
+        "run_command(or process)": "- python3 invest/scripts/stage05_09_v3_3_pipeline.py (Stage06 block)",
         "outputs": f"- {stage06_json}\n- {stage06_md}",
         "quality_gates": "- candidates generated from Stage05 top baselines\n- param diversification(rebalance/stop/topn)",
         "failure_policy": "- candidate_count==0면 Stage05/param grid 재설계",
@@ -335,7 +335,7 @@ def main() -> int:
     stage07_md = REPORTS / "stage07/stage07_cutoff_v3_3.md"
     write_md(stage07_md, "stage07_cutoff_v3_3", {
         "inputs": f"- {stage06_json}",
-        "run_command(or process)": "- python3 scripts/stage05_09_v3_3_pipeline.py (Stage07 block)",
+        "run_command(or process)": "- python3 invest/scripts/stage05_09_v3_3_pipeline.py (Stage07 block)",
         "outputs": f"- {stage07_json}\n- {stage07_md}",
         "quality_gates": f"- pass_count={len(pass_cut)} (must be >0)",
         "failure_policy": "- pass 0건이면 Stage06 param 재탐색 후 반복",
@@ -367,7 +367,7 @@ def main() -> int:
     stage08_md = REPORTS / "stage08/stage08_value_v3_3.md"
     write_md(stage08_md, "stage08_value_v3_3", {
         "inputs": f"- {stage07_json}",
-        "run_command(or process)": "- python3 scripts/stage05_09_v3_3_pipeline.py (Stage08 block)",
+        "run_command(or process)": "- python3 invest/scripts/stage05_09_v3_3_pipeline.py (Stage08 block)",
         "outputs": f"- {stage08_json}\n- {stage08_md}",
         "quality_gates": f"- champion selected: {champion['candidate_id']}",
         "failure_policy": "- no candidate면 Stage07 실패로 롤백",
@@ -397,7 +397,7 @@ def main() -> int:
     stage09_md = REPORTS / "stage09/stage09_cross_review_v3_3.md"
     write_md(stage09_md, "stage09_cross_review_v3_3", {
         "inputs": f"- {stage08_json}",
-        "run_command(or process)": "- python3 scripts/stage05_09_v3_3_pipeline.py (Stage09 block)",
+        "run_command(or process)": "- python3 invest/scripts/stage05_09_v3_3_pipeline.py (Stage09 block)",
         "outputs": f"- {stage09_json}\n- {stage09_md}",
         "quality_gates": f"- Opus={opus}, Sonnet={sonnet}, AgPro={agpro}, Final={final}",
         "failure_policy": "- FAIL시 실패 원인 단계로 롤백",

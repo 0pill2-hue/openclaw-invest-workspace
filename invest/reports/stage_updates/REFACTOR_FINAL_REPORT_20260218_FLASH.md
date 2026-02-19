@@ -44,4 +44,4 @@
 
 ## 4. Verification (Smoke Test)
 - `stage01_daily_update.py` 실행 검증을 통해 파이프라인 연쇄 호출 정상 작동 확인.
-- `python3 scripts/stage_gate_check_1to4.py` 재실행 결과 `SUMMARY:PASS` 확인 (`stage04:grade_present:PASS` 포함).
+- `python3 invest/scripts/stage_gate_check_1to4.py` 재실행 결과 `SUMMARY:PASS` 확인 (`stage04:grade_present:PASS` 포함).

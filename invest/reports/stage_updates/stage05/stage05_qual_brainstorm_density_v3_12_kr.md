@@ -9,7 +9,7 @@
 - `invest/docs/strategy/RULEBOOK_V3.md` (V3.5 + v3_13 종료조건 반영)
 
 ## run_command(or process)
-- `python3 scripts/stage05_density_repeat_v3_12_kr.py | tee reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
+- `python3 invest/scripts/stage05_density_repeat_v3_12_kr.py | tee reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
 
 ## outputs
 - `reports/stage_updates/stage05/stage05_qual_brainstorm_density_v3_12_kr.md`
@@ -30,7 +30,7 @@
 - `changed_params/why/proof` 누락 라운드는 무효 처리
 
 ## proof
-- `scripts/stage05_density_repeat_v3_12_kr.py`
+- `invest/scripts/stage05_density_repeat_v3_12_kr.py`
 - `reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
 - `invest/results/validated/stage05_baselines_v3_12_kr.json`
 - `invest/docs/strategy/RULEBOOK_V3.md`

@@ -426,7 +426,7 @@ def main() -> int:
         out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
         next_plan = "유니버스/모멘텀 창/qual 가중치 재조정"
-        cmd = f"python3 scripts/stage05_tuning_loop_v3_6_kr.py (round={i})"
+        cmd = f"python3 invest/scripts/stage05_tuning_loop_v3_6_kr.py (round={i})"
         write_round_report(i, cmd, cfg, payload, gate_pass, next_plan)
 
         progress.append(
@@ -452,7 +452,7 @@ def main() -> int:
         "- Stage05 round-by-round validated JSONs (rXX)",
         "",
         "## run_command(or process)",
-        "- `python3 scripts/stage05_tuning_loop_v3_6_kr.py`",
+        "- `python3 invest/scripts/stage05_tuning_loop_v3_6_kr.py`",
         "",
         "## outputs",
         "- invest/results/validated/stage05_baselines_v3_6_kr_rXX.json",
@@ -489,7 +489,7 @@ def main() -> int:
             f"- {best['result_file']}",
             "",
             "## run_command(or process)",
-            "- `python3 scripts/stage05_tuning_loop_v3_6_kr.py`",
+            "- `python3 invest/scripts/stage05_tuning_loop_v3_6_kr.py`",
             "",
             "## outputs",
             "- Stage06 진입 준비 상태",

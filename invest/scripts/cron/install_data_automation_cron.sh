@@ -8,9 +8,9 @@ END="# <<< DATA_AUTOMATION_V3_22_KR <<<"
 BLOCK=$(cat <<'CRON'
 # >>> DATA_AUTOMATION_V3_22_KR >>>
 PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-*/30 * * * * /Users/jobiseu/.openclaw/workspace/scripts/cron/cron_supply_autorepair.sh
-15 * * * * /Users/jobiseu/.openclaw/workspace/scripts/cron/cron_dart_backfill_autopilot.sh
-25 */3 * * * /Users/jobiseu/.openclaw/workspace/scripts/cron/cron_rss_telegram_date_fix.sh
+*/30 * * * * /Users/jobiseu/.openclaw/workspace/invest/scripts/cron/cron_supply_autorepair.sh
+15 * * * * /Users/jobiseu/.openclaw/workspace/invest/scripts/cron/cron_dart_backfill_autopilot.sh
+25 */3 * * * /Users/jobiseu/.openclaw/workspace/invest/scripts/cron/cron_rss_telegram_date_fix.sh
 # <<< DATA_AUTOMATION_V3_22_KR <<<
 CRON
 )

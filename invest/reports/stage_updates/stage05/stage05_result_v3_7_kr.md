@@ -4,10 +4,10 @@
 - `invest/data/raw/kr/ohlcv/*.csv`
 - `invest/data/raw/kr/supply/*_supply.csv`
 - lock reference: `invest/results/validated/stage05_baselines_v3_6_kr_r03.json`
-- execution script: `scripts/stage05_tuning_loop_v3_7_kr.py`
+- execution script: `invest/scripts/stage05_tuning_loop_v3_7_kr.py`
 
 ## run_command(or process)
-- `python3 scripts/stage05_tuning_loop_v3_7_kr.py`
+- `python3 invest/scripts/stage05_tuning_loop_v3_7_kr.py`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_7_kr.json`
@@ -29,7 +29,7 @@
 
 ## proof
 - `invest/results/validated/stage05_baselines_v3_7_kr.json`
-- `scripts/stage05_tuning_loop_v3_7_kr.py`
+- `invest/scripts/stage05_tuning_loop_v3_7_kr.py`
 - `invest/docs/strategy/RULEBOOK_V3.md`
 
 ---

@@ -3,7 +3,7 @@
 ## inputs
 - `invest/results/validated/stage05_baselines_v3_12_kr.json`
 - `invest/results/validated/stage05_baselines_v3_14_kr.json`
-- `scripts/stage05_rerun_v3_15_kr.py`
+- `invest/scripts/stage05_rerun_v3_15_kr.py`
 - `invest/config/stage05_auto_capture_v3_15_kr.yaml`
 - 사용자 추가 하드조건 (high-density advantage gate 강화: +0.25, MDD, turnover)
 
@@ -12,7 +12,7 @@
 
 ## outputs
 - `reports/stage_updates/stage05/stage05_density_adaptive_brainstorm_v3_16_kr.md`
-- (후속 적용) `scripts/stage05_rerun_v3_16_kr.py`, `invest/config/stage05_auto_capture_v3_16_kr.yaml`
+- (후속 적용) `invest/scripts/stage05_rerun_v3_16_kr.py`, `invest/config/stage05_auto_capture_v3_16_kr.yaml`
 
 ## quality_gates
 - density band 3단계 이상 제안: PASS (`low/mid/high`)
@@ -27,7 +27,7 @@
 
 ## proof
 - 본 문서 `A/B/C/D/E` 섹션
-- 후속 반영 코드: `scripts/stage05_rerun_v3_16_kr.py`
+- 후속 반영 코드: `invest/scripts/stage05_rerun_v3_16_kr.py`
 
 ---
 
