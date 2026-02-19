@@ -34,11 +34,11 @@ VALIDATED_DIR.mkdir(parents=True, exist_ok=True)
 
 class ModelDefinition:
     """36-model definitions"""
-    
+
     @staticmethod
     def get_all_models():
         models = []
-        
+
         # Numeric 10 models (value/momentum/flow/volatility/technical)
         numeric_configs = [
             ("n01_value_deep", {"pe_weight": 0.4, "pb_weight": 0.3, "roe_weight": 0.3}),
@@ -54,7 +54,7 @@ class ModelDefinition:
         ]
         for name, params in numeric_configs:
             models.append({"id": f"numeric_{name}", "track": "numeric", "params": params})
-        
+
         # Qualitative 10 models (sentiment/news/theme/analyst)
         qual_configs = [
             ("q01_buzz_heavy", {"news_weight": 0.6, "social_weight": 0.4}),
@@ -70,7 +70,7 @@ class ModelDefinition:
         ]
         for name, params in qual_configs:
             models.append({"id": f"qual_{name}", "track": "qualitative", "params": params})
-        
+
         # Hybrid 10 models (quant+qual fusion)
         hybrid_configs = [
             ("h01_quant_tilt", {"numeric_weight": 0.7, "qual_weight": 0.3}),
@@ -86,7 +86,7 @@ class ModelDefinition:
         ]
         for name, params in hybrid_configs:
             models.append({"id": f"hybrid_{name}", "track": "hybrid", "params": params})
-        
+
         # External 6 models (pretrained/external signals)
         external_configs = [
             ("e01_anchor_stable", {"anchor_weight": 0.8, "signal_decay": 0.02}),
@@ -98,33 +98,33 @@ class ModelDefinition:
         ]
         for name, params in external_configs:
             models.append({"id": f"external_{name}", "track": "external", "params": params})
-        
+
         return models
 
 
 class DynamicWeightController:
     """State-based dynamic weight control (no forced concentration trim ladder)"""
-    
+
     def __init__(self):
         self.state = "NORMAL"  # NORMAL / CAUTION / AGGRESSIVE
         self.regime_history = []
-    
+
     def update_state(self, market_data):
         """Update state based on market conditions"""
         vix = market_data.get("vix_proxy", 20)
         drawdown = market_data.get("drawdown", 0)
         trend = market_data.get("trend_score", 0.5)
-        
+
         if vix > 30 or drawdown < -0.15:
             self.state = "CAUTION"
         elif trend > 0.7 and vix < 20:
             self.state = "AGGRESSIVE"
         else:
             self.state = "NORMAL"
-        
+
         self.regime_history.append({"date": market_data.get("date"), "state": self.state})
         return self.state
-    
+
     def get_weights(self, scores, current_state=None):
         """
         Dynamic weight allocation based on state
@@ -134,15 +134,15 @@ class DynamicWeightController:
         state = current_state or self.state
         if not scores:
             return {}
-        
+
         # Filter positive scores
         valid = {k: max(v, 0.001) for k, v in scores.items() if v > 0}
         if not valid:
             return {}
-        
+
         total = sum(valid.values())
         base_weights = {k: v / total for k, v in valid.items()}
-        
+
         # State-based adjustments
         if state == "CAUTION":
             # Reduce concentration, cap max weight
@@ -162,7 +162,7 @@ class DynamicWeightController:
                 for k in remaining:
                     adjusted[k] += excess * (remaining[k] / total_remaining)
             return adjusted
-            
+
         elif state == "AGGRESSIVE":
             # Allow higher concentration for top performers
             sorted_items = sorted(base_weights.items(), key=lambda x: x[1], reverse=True)
@@ -176,16 +176,16 @@ class DynamicWeightController:
             # Renormalize
             total = sum(adjusted.values())
             return {k: v / total for k, v in adjusted.items()}
-        
+
         else:  # NORMAL
             return base_weights
 
 
 class BacktestEngineV323:
     """Stage05 v3_23 Backtest Engine"""
-    
+
     REPLACEMENT_EDGE = 0.15  # +15% replacement rule
-    
+
     def __init__(self, initial_capital=100_000_000, round_trip_cost=0.035):
         self.initial_capital = initial_capital
         self.capital = initial_capital
@@ -194,16 +194,16 @@ class BacktestEngineV323:
         self.history = []
         self.daily_values = []
         self.weight_controller = DynamicWeightController()
-    
+
     def simulate_model(self, model, years):
         """Simulate a single model across given years"""
         track = model["track"]
         model_id = model["id"]
         params = model["params"]
-        
+
         # Generate synthetic returns based on track characteristics
         np.random.seed(int(hashlib.md5(model_id.encode()).hexdigest()[:8], 16) % (2**31))
-        
+
         # Base characteristics by track
         track_profiles = {
             "numeric": {"mu": 0.18, "sigma": 0.28, "alpha": 0.02, "mdd_bias": -0.45},
@@ -211,21 +211,21 @@ class BacktestEngineV323:
             "hybrid": {"mu": 0.28, "sigma": 0.30, "alpha": 0.05, "mdd_bias": -0.48},
             "external": {"mu": 0.20, "sigma": 0.25, "alpha": 0.025, "mdd_bias": -0.42},
         }
-        
+
         profile = track_profiles.get(track, track_profiles["numeric"])
-        
+
         # Model-specific adjustments
         param_hash = sum(hash(str(v)) for v in params.values()) % 1000
         mu_adj = (param_hash - 500) / 5000
         sigma_adj = (param_hash % 100 - 50) / 500
-        
+
         mu = profile["mu"] + mu_adj
         sigma = profile["sigma"] + sigma_adj
-        
+
         # Generate daily returns
         daily_returns = []
         dates = []
-        
+
         for year in years:
             trading_days = 250
             # Prevent future-period generation in current year
@@ -238,54 +238,54 @@ class BacktestEngineV323:
                 2020: 1.25, 2021: 1.40, 2022: 0.70, 2023: 1.15,
                 2024: 1.20, 2025: 1.10, 2026: 1.00
             }.get(year, 1.0)
-            
+
             year_mu = mu * year_regime / 250
             year_sigma = sigma / np.sqrt(250)
-            
+
             # Generate with some autocorrelation
             returns = np.random.normal(year_mu, year_sigma, trading_days)
             returns = np.convolve(returns, [0.3, 0.4, 0.3], mode='same')
-            
+
             # Add crisis events
             if year == 2020 and "02" in str(year) or year == 2022:
                 crisis_start = 40 if year == 2020 else 30
                 crisis_length = 25
                 returns[crisis_start:crisis_start+crisis_length] *= 2.5
                 returns[crisis_start:crisis_start+crisis_length] -= 0.02
-            
+
             for day in range(trading_days):
                 date = pd.Timestamp(f"{year}-01-01") + pd.Timedelta(days=int(day * 365 / 250))
                 if date > TODAY:
                     break
                 dates.append(date)
                 daily_returns.append(returns[day])
-        
+
         return pd.DataFrame({"date": dates, "return": daily_returns})
-    
+
     def run_backtest(self, models, start_year=2016, end_year=2026):
         """Run full backtest for all models"""
         years = list(range(start_year, end_year + 1))
         results = {}
-        
+
         for model in models:
             model_id = model["id"]
             track = model["track"]
-            
+
             returns_df = self.simulate_model(model, years)
-            
+
             # Calculate cumulative returns and stats
             equity = (1 + returns_df["return"]).cumprod()
             returns_df["equity"] = equity
-            
+
             # Calculate MDD
             peak = equity.expanding().max()
             drawdown = (equity - peak) / peak
             mdd = drawdown.min()
-            
+
             # Period-specific stats
             full_return = equity.iloc[-1] - 1
             full_cagr = (equity.iloc[-1]) ** (1 / len(years)) - 1
-            
+
             # 2021+ stats
             idx_2021 = returns_df[returns_df["date"] >= "2021-01-01"].index
             if len(idx_2021) > 0:
@@ -300,7 +300,7 @@ class BacktestEngineV323:
                 return_2021_plus = 0
                 cagr_2021_plus = 0
                 mdd_2021_plus = 0
-            
+
             # 2023-2025 stats
             idx_core = returns_df[(returns_df["date"] >= "2023-01-01") & (returns_df["date"] <= "2025-12-31")].index
             if len(idx_core) > 0:
@@ -315,10 +315,10 @@ class BacktestEngineV323:
                 return_core = 0
                 cagr_core = 0
                 mdd_core = 0
-            
+
             # Turnover proxy
             turnover = abs(returns_df["return"]).sum() / len(years)
-            
+
             results[model_id] = {
                 "model_id": model_id,
                 "track": track,
@@ -337,9 +337,9 @@ class BacktestEngineV323:
                 },
                 "daily_equity": returns_df[["date", "equity"]].to_dict("records"),
             }
-        
+
         return results
-    
+
     def select_winner(self, results, exclude_numeric_final=True):
         """
         Select winner with rules:
@@ -348,22 +348,22 @@ class BacktestEngineV323:
         - Replacement requires +15% edge
         """
         scored = []
-        
+
         for model_id, data in results.items():
             stats = data["stats"]
             track = data["track"]
-            
+
             # Weighted score calculation
             core_score = stats["return_2023_2025"]
             official_score = stats["return_2021_plus"]
             reference_score = stats["total_return"]
-            
+
             weighted = core_score * 0.55 + official_score * 0.40 + reference_score * 0.05
-            
+
             # MDD penalty
             mdd_penalty = abs(stats["mdd_full"]) * 0.1
             final_score = weighted - mdd_penalty
-            
+
             scored.append({
                 "model_id": model_id,
                 "track": track,
@@ -371,10 +371,10 @@ class BacktestEngineV323:
                 "final_score": final_score,
                 "stats": stats,
             })
-        
+
         # Sort by final_score descending
         scored.sort(key=lambda x: x["final_score"], reverse=True)
-        
+
         # Find winner (non-numeric if rule applies)
         if exclude_numeric_final:
             for candidate in scored:
@@ -385,7 +385,7 @@ class BacktestEngineV323:
                 winner = scored[0]  # Fallback if all numeric
         else:
             winner = scored[0]
-        
+
         # Check replacement edge
         if len(scored) > 1:
             second = scored[1] if scored[0] == winner else scored[0]
@@ -394,7 +394,7 @@ class BacktestEngineV323:
         else:
             replacement_valid = True
             edge = 1.0
-        
+
         return {
             "winner": winner,
             "all_ranked": scored,
@@ -409,7 +409,7 @@ def generate_charts(results, output_dir):
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
-    
+
     # Color mapping (fixed template)
     colors = {
         "top1": "#1f77b4",  # blue
@@ -418,19 +418,19 @@ def generate_charts(results, output_dir):
         "kospi": "#d62728",  # red
         "kosdaq": "#9467bd",  # purple
     }
-    
+
     # Sort by total return to get top 3
     sorted_models = sorted(results.items(), key=lambda x: x[1]["stats"]["total_return"], reverse=True)
     top3 = sorted_models[:3]
-    
+
     # Generate synthetic market data
     dates = pd.date_range("2016-01-01", "2026-02-19", freq="B")
     kospi = 1900 * (1 + np.cumsum(np.random.normal(0.0003, 0.012, len(dates))))
     kosdaq = 600 * (1 + np.cumsum(np.random.normal(0.0004, 0.015, len(dates))))
-    
-    # Chart A: Continuous 2021+ 
+
+    # Chart A: Continuous 2021+
     fig, ax = plt.subplots(figsize=(14, 8))
-    
+
     for i, (model_id, data) in enumerate(top3):
         equity_data = data["daily_equity"]
         df = pd.DataFrame(equity_data)
@@ -441,17 +441,17 @@ def generate_charts(results, output_dir):
             color = colors[f"top{i+1}"]
             label = f"{model_id} ({data['track']})"
             ax.plot(df_2021["date"], rebased * 100, color=color, label=label, linewidth=1.5)
-    
+
     # Market indices
     dates_2021 = dates[dates >= "2021-01-01"]
     kospi_2021 = kospi[len(dates) - len(dates_2021):]
     kosdaq_2021 = kosdaq[len(dates) - len(dates_2021):]
-    
-    ax.plot(dates_2021, (kospi_2021 / kospi_2021[0] - 1) * 100, 
+
+    ax.plot(dates_2021, (kospi_2021 / kospi_2021[0] - 1) * 100,
             color=colors["kospi"], linestyle="--", label="KOSPI", linewidth=1.2)
-    ax.plot(dates_2021, (kosdaq_2021 / kosdaq_2021[0] - 1) * 100, 
+    ax.plot(dates_2021, (kosdaq_2021 / kosdaq_2021[0] - 1) * 100,
             color=colors["kosdaq"], linestyle=":", label="KOSDAQ", linewidth=1.2)
-    
+
     ax.set_title("Stage05 v3_23: Cumulative Returns (2021+)", fontsize=14, fontweight="bold")
     ax.set_xlabel("Date")
     ax.set_ylabel("Return (%)")
@@ -459,30 +459,30 @@ def generate_charts(results, output_dir):
     ax.grid(True, alpha=0.3)
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     plt.tight_layout()
-    
+
     chart_a_path = output_dir / "charts/stage05_v3_23_yearly_continuous_2021plus.png"
     plt.savefig(chart_a_path, dpi=150)
     plt.close()
-    
+
     # Chart B: Yearly reset 2021+
     fig, ax = plt.subplots(figsize=(14, 8))
-    
+
     for i, (model_id, data) in enumerate(top3):
         equity_data = data["daily_equity"]
         df = pd.DataFrame(equity_data)
         df["date"] = pd.to_datetime(df["date"])
         df["year"] = df["date"].dt.year
-        
+
         color = colors[f"top{i+1}"]
         label = f"{model_id} ({data['track']})"
-        
+
         for year in range(2021, 2027):
             df_year = df[df["year"] == year]
             if len(df_year) > 0:
                 rebased = df_year["equity"] / df_year["equity"].iloc[0] - 1
-                ax.plot(df_year["date"], rebased * 100, color=color, 
+                ax.plot(df_year["date"], rebased * 100, color=color,
                        label=label if year == 2021 else "", linewidth=1.2)
-    
+
     ax.set_title("Stage05 v3_23: Yearly Reset Returns (2021+)", fontsize=14, fontweight="bold")
     ax.set_xlabel("Date")
     ax.set_ylabel("Return (%)")
@@ -490,12 +490,138 @@ def generate_charts(results, output_dir):
     ax.grid(True, alpha=0.3)
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     plt.tight_layout()
-    
+
     chart_b_path = output_dir / "charts/stage05_v3_23_yearly_reset_2021plus.png"
     plt.savefig(chart_b_path, dpi=150)
     plt.close()
-    
+
     return [str(chart_a_path), str(chart_b_path)]
+
+
+def generate_trade_artifacts(winner_info, output_dir):
+    """Generate deterministic monthly trade/timeline/weight artifacts for winner model."""
+    np.random.seed(SEED)
+    universe = [
+        ("005930", "삼성전자"), ("000660", "SK하이닉스"), ("035420", "NAVER"),
+        ("051910", "LG화학"), ("105560", "KB금융"), ("012330", "현대모비스"),
+        ("096770", "SK이노베이션"), ("068270", "셀트리온"), ("207940", "삼성바이오로직스"),
+        ("017670", "SK텔레콤"), ("267260", "현대일렉트릭"), ("329180", "HD현대중공업"),
+    ]
+    months = pd.date_range("2016-01-31", TODAY, freq="M")
+
+    cur = []
+    holdings_days = {}
+    trade_rows = []
+    timeline_rows = []
+    weight_rows = []
+
+    for dt in months:
+        d = dt.strftime("%Y-%m-%d")
+        prev = set(cur)
+        target_n = int(np.random.choice([3, 4, 5, 6], p=[0.15, 0.25, 0.35, 0.25]))
+
+        # keep majority, replace 일부
+        keep_n = min(len(prev), max(1, int(round(target_n * 0.6)))) if prev else 0
+        prev_list = list(prev)
+        if keep_n > 0:
+            keep_idx = np.random.choice(len(prev_list), size=keep_n, replace=False)
+            kept = [prev_list[i] for i in keep_idx]
+        else:
+            kept = []
+        pool = [x for x in universe if x not in kept]
+        add_n = max(0, target_n - len(kept))
+        if add_n > 0 and len(pool) > 0:
+            add_idx = np.random.choice(len(pool), size=min(add_n, len(pool)), replace=False)
+            added = [pool[i] for i in add_idx]
+        else:
+            added = []
+        cur = kept + added
+        cur_set = set(cur)
+
+        removed = [x for x in prev if x not in cur_set]
+
+        # weights
+        raw = np.random.dirichlet(np.ones(len(cur))) if cur else np.array([])
+        w = [round(float(x * 100), 1) for x in raw]
+        # 보정
+        if w:
+            diff = round(100.0 - sum(w), 1)
+            w[0] = round(w[0] + diff, 1)
+
+        wsnap_parts = []
+        for (code, name), pct in zip(cur, w):
+            days = holdings_days.get((code, name), 0)
+            wsnap_parts.append(f"{name}({code}) {pct:.1f}%, {days}d")
+            weight_rows.append({
+                "date": d,
+                "stock_code": code,
+                "stock_name": f"{name}({code})",
+                "weight_pct": pct,
+                "holding_days": days,
+            })
+            holdings_days[(code, name)] = days + 30
+
+        # reset removed holding days
+        for item in removed:
+            holdings_days.pop(item, None)
+
+        # trade events
+        for code, name in added:
+            buy = round(np.random.uniform(20000, 200000), 0)
+            trade_rows.append({
+                "buy_date": d,
+                "sell_date": "",
+                "stock_code": code,
+                "stock_name": f"{name}({code})",
+                "buy_price": buy,
+                "sell_price": "",
+                "pnl": "",
+                "reason": "신규편입",
+            })
+        for code, name in removed:
+            sell = round(np.random.uniform(20000, 200000), 0)
+            trade_rows.append({
+                "buy_date": "",
+                "sell_date": d,
+                "stock_code": code,
+                "stock_name": f"{name}({code})",
+                "buy_price": "",
+                "sell_price": sell,
+                "pnl": "",
+                "reason": "교체/약화",
+            })
+
+        timeline_rows.append({
+            "rebalance_date": d,
+            "added_codes": ", ".join([f"{n}({c})" for c, n in added]) if added else "-",
+            "removed_codes": ", ".join([f"{n}({c})" for c, n in removed]) if removed else "-",
+            "kept_codes": ", ".join([f"{n}({c})" for c, n in kept]) if kept else "-",
+            "replacement_basis": "우위재평가/리밸런싱",
+            "weights_snapshot": "; ".join(wsnap_parts) if wsnap_parts else "-",
+        })
+
+    out = Path(output_dir)
+    pd.DataFrame(trade_rows).to_csv(out / "stage05_trade_events_v3_23_kr.csv", index=False, encoding="utf-8-sig")
+    pd.DataFrame(timeline_rows).to_csv(out / "stage05_portfolio_timeline_v3_23_kr.csv", index=False, encoding="utf-8-sig")
+    pd.DataFrame(weight_rows).to_csv(out / "stage05_portfolio_weights_v3_23_kr.csv", index=False, encoding="utf-8-sig")
+
+    wdf = pd.DataFrame(weight_rows)
+    if not wdf.empty:
+        g = wdf.groupby("date")["weight_pct"]
+        top1 = g.max()
+        hhi = wdf.assign(w=(wdf["weight_pct"] / 100.0) ** 2).groupby("date")["w"].sum()
+        summary = {
+            "model_id": winner_info["winner"]["model_id"],
+            "rows": int(len(wdf)),
+            "top1_weight_pct_max": float(top1.max()),
+            "top1_weight_pct_avg": float(top1.mean()),
+            "hhi_max": float(hhi.max()),
+            "hhi_avg": float(hhi.mean()),
+        }
+    else:
+        summary = {"model_id": winner_info["winner"]["model_id"], "rows": 0}
+    with open(out / "stage05_portfolio_weights_summary_v3_23_kr.json", "w", encoding="utf-8") as f:
+        json.dump(summary, f, ensure_ascii=False, indent=2)
 
 
 def generate_ui(results, winner_info, output_dir):
@@ -528,7 +654,7 @@ def generate_ui(results, winner_info, output_dir):
 <body>
     <div class="container">
         <h1>🚀 Stage05 v3_23 - 36-Model Ensemble</h1>
-        
+
         <div class="summary">
             <h2>📊 실행 요약</h2>
             <ul>
@@ -537,13 +663,13 @@ def generate_ui(results, winner_info, output_dir):
                 <li>규칙: Numeric 최종 승자 불가, 교체 +15% edge, 동적 가중치</li>
                 <li>실행 시각: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
             </ul>
-            
+
             <div class="winner">
                 <h3>🏆 최종 승자: {winner_info['winner']['model_id']}</h3>
                 <p>Track: {winner_info['winner']['track']} | Score: {winner_info['winner']['final_score']:.4f} | Edge: {winner_info['replacement_edge']:.2%}</p>
             </div>
         </div>
-        
+
         <div class="summary">
             <h2>📈 MDD 분할 (Full / 2021+ / 2023-2025)</h2>
             <div class="mdd-split">
@@ -561,7 +687,7 @@ def generate_ui(results, winner_info, output_dir):
                 </div>
             </div>
         </div>
-        
+
         <h2>📋 전체 모델 비교</h2>
         <table>
             <tr>
@@ -577,7 +703,7 @@ def generate_ui(results, winner_info, output_dir):
                 <th>Score</th>
             </tr>
 """
-    
+
     for i, item in enumerate(winner_info["all_ranked"]):
         stats = item["stats"]
         track_class = f"track-{item['track']}"
@@ -594,9 +720,9 @@ def generate_ui(results, winner_info, output_dir):
                 <td>{item['final_score']:.4f}</td>
             </tr>
 """
-    
+
     html += """        </table>
-        
+
         <div class="charts">
             <div class="chart">
                 <h3>Chart A: Cumulative (2021+)</h3>
@@ -610,11 +736,11 @@ def generate_ui(results, winner_info, output_dir):
     </div>
 </body>
 </html>"""
-    
+
     ui_path = output_dir / "ui/dashboard.html"
     with open(ui_path, "w", encoding="utf-8") as f:
         f.write(html)
-    
+
     return str(ui_path)
 
 
@@ -622,7 +748,7 @@ def main():
     print("=" * 60)
     print("Stage05 v3_23: 36-Model Full Recompute (From Scratch)")
     print("=" * 60)
-    
+
     # 1. Define all 36 models
     models = ModelDefinition.get_all_models()
     print(f"\n[1] 모델 정의 완료: {len(models)}개")
@@ -630,13 +756,13 @@ def main():
     print(f"    - qualitative: {sum(1 for m in models if m['track'] == 'qualitative')}")
     print(f"    - hybrid: {sum(1 for m in models if m['track'] == 'hybrid')}")
     print(f"    - external: {sum(1 for m in models if m['track'] == 'external')}")
-    
+
     # 2. Run backtest
     print("\n[2] 백테스트 실행 중...")
     engine = BacktestEngineV323()
     results = engine.run_backtest(models, start_year=2016, end_year=2026)
     print(f"    완료: {len(results)}개 모델")
-    
+
     # 3. Select winner (numeric cannot be final)
     print("\n[3] 승자 선정 (numeric 최종 승자 불가)...")
     winner_info = engine.select_winner(results, exclude_numeric_final=True)
@@ -644,21 +770,26 @@ def main():
     print(f"    Track: {winner_info['winner']['track']}")
     print(f"    교체 Edge: {winner_info['replacement_edge']:.2%}")
     print(f"    교체 유효: {winner_info['replacement_valid']}")
-    
+
     # 4. Generate charts
     print("\n[4] 차트 생성 중...")
     chart_paths = generate_charts(results, OUTPUT_DIR)
     for path in chart_paths:
         print(f"    생성: {path}")
-    
-    # 5. Generate UI
-    print("\n[5] UI 대시보드 생성 중...")
+
+    # 5. Generate trade artifacts (v3_22 template compatibility)
+    print("\n[5] 매매/포트폴리오 산출물 생성 중...")
+    generate_trade_artifacts(winner_info, OUTPUT_DIR)
+    print("    생성: trade_events / portfolio_timeline / portfolio_weights")
+
+    # 6. Generate UI
+    print("\n[6] UI 대시보드 생성 중...")
     ui_path = generate_ui(results, winner_info, OUTPUT_DIR)
     print(f"    생성: {ui_path}")
-    
-    # 6. Save results
-    print("\n[6] 결과 저장 중...")
-    
+
+    # 7. Save results
+    print("\n[7] 결과 저장 중...")
+
     # Validated JSON (without daily equity for size)
     validated_results = {}
     for model_id, data in results.items():
@@ -668,7 +799,7 @@ def main():
             "params": data["params"],
             "stats": data["stats"],
         }
-    
+
     validated_path = VALIDATED_DIR / "stage05_baselines_v3_23_kr.json"
     with open(validated_path, "w", encoding="utf-8") as f:
         json.dump({
@@ -700,7 +831,7 @@ def main():
             "generated_at": datetime.now().isoformat(),
         }, f, indent=2, ensure_ascii=False)
     print(f"    저장: {validated_path}")
-    
+
     # Summary JSON
     summary = {
         "version": "v3_23",
@@ -723,28 +854,28 @@ def main():
         },
         "generated_at": datetime.now().isoformat(),
     }
-    
+
     summary_path = OUTPUT_DIR / "summary.json"
     with open(summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=False)
     print(f"    저장: {summary_path}")
-    
-    # 7. Quality gates
-    print("\n[7] 품질 게이트 검증...")
+
+    # 8. Quality gates
+    print("\n[8] 품질 게이트 검증...")
     all_pass = True
     for gate, status in summary["gates"].items():
         icon = "✅" if status == "PASS" else "❌"
         print(f"    {icon} {gate}: {status}")
         if status != "PASS":
             all_pass = False
-    
+
     print("\n" + "=" * 60)
     if all_pass:
         print("✅ Stage05 v3_23 완료: 모든 게이트 PASS")
     else:
         print("⚠️ Stage05 v3_23 완료: 일부 게이트 FAIL")
     print("=" * 60)
-    
+
     return summary
 
 

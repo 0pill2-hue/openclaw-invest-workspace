@@ -1,4 +1,8 @@
 {
-  "status": "DRAFT_TEMPLATE_ONLY",
-  "note": "v3_23 engine extension required for weight snapshots"
+  "model_id": "hybrid_h07_risk_parity",
+  "rows": 574,
+  "top1_weight_pct_max": 96.1,
+  "top1_weight_pct_avg": 48.078512396694215,
+  "hhi_max": 0.9242499999999999,
+  "hhi_avg": 0.3603497520661157
 }

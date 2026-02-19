@@ -1,9 +1,9 @@
 # stage05_result_v3_23_kr_readable
 
-- 1위 모델: **hybrid_h10_fee_stress** (hybrid)
-- 수익률: **24329.30%**
-- CAGR: **64.85%**
-- MDD(2021+): **-54.09%**
+- 1위 모델: **hybrid_h07_risk_parity** (hybrid)
+- 수익률: **3618.44%**
+- CAGR: **38.92%**
+- MDD(2021+): **-54.88%**
 
 ## 게이트 요약
 - gate1_36_models: PASS
