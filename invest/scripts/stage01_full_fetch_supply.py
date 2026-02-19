@@ -11,5 +11,5 @@ import subprocess
 import sys
 
 os.environ['FULL_COLLECTION'] = '1'
-ret = subprocess.call([sys.executable, 'invest/scripts/fetch_supply.py'])
+ret = subprocess.call([sys.executable, 'invest/scripts/stage01_fetch_supply.py'])
 sys.exit(ret)

@@ -2,14 +2,14 @@ import subprocess
 import sys
 
 COLLECTION_SCRIPTS = [
-    'invest/scripts/full_fetch_ohlcv.py',
-    'invest/scripts/full_fetch_supply.py',
+    'invest/scripts/stage01_full_fetch_ohlcv.py',
+    'invest/scripts/stage01_full_fetch_supply.py',
     'invest/scripts/full_fetch_dart_disclosures.py',
-    'invest/scripts/full_fetch_us_ohlcv.py',
+    'invest/scripts/stage01_full_fetch_us_ohlcv.py',
     'invest/scripts/fetch_news_rss.py',
     'invest/scripts/fetch_macro_fred.py',
     'invest/scripts/fetch_trends.py',
-    'invest/scripts/scrape_all_posts_v2.py',
+    'invest/scripts/stage01_scrape_all_posts_v2.py',
     'invest/scripts/full_scrape_telegram.py',
 ]
 
