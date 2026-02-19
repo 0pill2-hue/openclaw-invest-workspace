@@ -1,0 +1,21 @@
+{
+  "version": "v3_23",
+  "total_models": 36,
+  "track_counts": "10/10/10/6",
+  "winner": "qual_q09_governance_score",
+  "winner_track": "qualitative",
+  "winner_return": 100.27671841867887,
+  "winner_cagr": 0.5216650174056165,
+  "winner_mdd_full": -0.3935548004026454,
+  "winner_mdd_2021_plus": -0.36722071990492927,
+  "winner_mdd_core": -0.23475434567287426,
+  "replacement_edge": 0.7852410643810579,
+  "gates": {
+    "gate1_36_models": "PASS",
+    "gate2_weighted_selection": "PASS",
+    "gate3_numeric_not_final": "PASS",
+    "gate4_replacement_edge": "PASS",
+    "gate5_mdd_split": "PASS"
+  },
+  "generated_at": "2026-02-19T17:46:05.830319"
+}
