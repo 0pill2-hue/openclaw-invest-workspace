@@ -22,6 +22,7 @@ import pandas as pd
 SEED = 20260219
 np.random.seed(SEED)
 random.seed(SEED)
+TODAY = pd.Timestamp.now().normalize()
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -227,6 +228,10 @@ class BacktestEngineV323:
         
         for year in years:
             trading_days = 250
+            # Prevent future-period generation in current year
+            if year == TODAY.year:
+                day_of_year = int(TODAY.strftime('%j'))
+                trading_days = max(1, int(250 * day_of_year / 365))
             # Year-specific regime
             year_regime = {
                 2016: 0.95, 2017: 1.10, 2018: 0.85, 2019: 1.05,
@@ -250,6 +255,8 @@ class BacktestEngineV323:
             
             for day in range(trading_days):
                 date = pd.Timestamp(f"{year}-01-01") + pd.Timedelta(days=int(day * 365 / 250))
+                if date > TODAY:
+                    break
                 dates.append(date)
                 daily_returns.append(returns[day])
         

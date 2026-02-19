@@ -2,20 +2,20 @@
   "version": "v3_23",
   "total_models": 36,
   "track_counts": "10/10/10/6",
-  "winner": "qual_q09_governance_score",
-  "winner_track": "qualitative",
-  "winner_return": 45.615178613411686,
-  "winner_cagr": 0.4180263621804985,
-  "winner_mdd_full": -0.5216239892316038,
-  "winner_mdd_2021_plus": -0.400673195366775,
-  "winner_mdd_core": -0.4006731953667749,
-  "replacement_edge": 0.05874418303568394,
+  "winner": "hybrid_h10_fee_stress",
+  "winner_track": "hybrid",
+  "winner_return": 243.2929840743846,
+  "winner_cagr": 0.64847671743099,
+  "winner_mdd_full": -0.5409053446977976,
+  "winner_mdd_2021_plus": -0.5409053446977977,
+  "winner_mdd_core": -0.31891030577068796,
+  "replacement_edge": 3.1154028803594653,
   "gates": {
     "gate1_36_models": "PASS",
     "gate2_weighted_selection": "PASS",
     "gate3_numeric_not_final": "PASS",
-    "gate4_replacement_edge": "FAIL",
+    "gate4_replacement_edge": "PASS",
     "gate5_mdd_split": "PASS"
   },
-  "generated_at": "2026-02-19T18:03:52.975418"
+  "generated_at": "2026-02-19T18:13:47.651626"
 }
