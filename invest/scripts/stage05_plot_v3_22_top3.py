@@ -10,7 +10,7 @@ import pandas as pd
 
 BASE = Path(__file__).resolve().parents[2]
 IN_JSON = BASE / 'invest/results/validated/stage05_baselines_v3_22_kr.json'
-OUT_DIR = BASE / 'invest/reports/stage_updates/charts'
+OUT_DIR = BASE / 'invest/reports/stage_updates/stage05/v3_22/charts'
 OUT_CUM = OUT_DIR / 'stage05_v3_22_cum_2021plus.png'
 OUT_YEAR = OUT_DIR / 'stage05_v3_22_yearly_reset_2021plus.png'
 

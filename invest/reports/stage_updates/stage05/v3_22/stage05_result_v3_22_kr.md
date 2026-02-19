@@ -11,13 +11,13 @@
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_22_kr.json`
-- `invest/reports/stage_updates/stage05/stage05_result_v3_22_kr.md`
-- `invest/reports/stage_updates/stage05/stage05_result_v3_22_kr_readable.md`
-- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_22_kr.md`
-- `invest/reports/stage_updates/charts/stage05_v3_22_yearly_continuous_2021plus.png` (누적 평가용)
-- `invest/reports/stage_updates/charts/stage05_v3_22_yearly_reset_2021plus.png` (연도별 리셋 평가용)
-- `invest/reports/stage_updates/stage05/stage05_portfolio_weights_v3_22_kr.csv` (리밸런싱별 종목 비중 스냅샷)
-- `invest/reports/stage_updates/stage05/stage05_portfolio_weights_summary_v3_22_kr.json` (비중 집중도 요약)
+- `invest/reports/stage_updates/stage05/v3_22/stage05_result_v3_22_kr.md`
+- `invest/reports/stage_updates/stage05/v3_22/stage05_result_v3_22_kr_readable.md`
+- `invest/reports/stage_updates/stage05/v3_22/stage05_patch_diff_v3_22_kr.md`
+- `invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_continuous_2021plus.png` (누적 평가용)
+- `invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_reset_2021plus.png` (연도별 리셋 평가용)
+- `invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_v3_22_kr.csv` (리밸런싱별 종목 비중 스냅샷)
+- `invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_summary_v3_22_kr.json` (비중 집중도 요약)
 
 ## recompute evidence (필수)
 - full_recompute=true: true
@@ -93,15 +93,15 @@
 - Top3 선정 규칙: `stats.total_return` 내림차순 상위 3개(트랙 고정 없음)
 
 ### 차트 A (누적 평가용)
-- 원본: `invest/reports/stage_updates/charts/stage05_v3_22_yearly_continuous_2021plus.png`
-- 평가 템플릿 고정: `invest/reports/stage_updates/charts/stage05_eval_yearly_continuous_2021plus.png`
+- 원본: `invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_continuous_2021plus.png`
+- 평가 템플릿 고정: `invest/reports/stage_updates/stage05/v3_22/charts/stage05_eval_yearly_continuous_2021plus.png`
 - 기간: 2021+ (일간 축)
 - 형태: 일간 연속 곡선(지글지글), 연도 리셋 없음
 - 포함선: Top1/Top2/Top3 + KOSPI + KOSDAQ
 
 ### 차트 B (연도별 리셋 평가용)
-- 원본: `invest/reports/stage_updates/charts/stage05_v3_22_yearly_reset_2021plus.png`
-- 평가 템플릿 고정: `invest/reports/stage_updates/charts/stage05_eval_yearly_reset_2021plus.png`
+- 원본: `invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_reset_2021plus.png`
+- 평가 템플릿 고정: `invest/reports/stage_updates/stage05/v3_22/charts/stage05_eval_yearly_reset_2021plus.png`
 - 기간: 2021+ (일간 축)
 - 형태: **연도 경계에서 선을 끊고** 각 연도 1월 첫 거래일을 0%로 리베이스
 - 포함선: Top1/Top2/Top3 + KOSPI + KOSDAQ
@@ -116,8 +116,8 @@
 
 ## 7) 포트폴리오 비중/집중도 평가 반영
 - 생성 스크립트: `./venv/bin/python invest/scripts/stage05_portfolio_weights_v3_22.py`
-- 종목 비중 스냅샷 CSV: `invest/reports/stage_updates/stage05/stage05_portfolio_weights_v3_22_kr.csv`
-- 집중도 요약 JSON: `invest/reports/stage_updates/stage05/stage05_portfolio_weights_summary_v3_22_kr.json`
+- 종목 비중 스냅샷 CSV: `invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_v3_22_kr.csv`
+- 집중도 요약 JSON: `invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_summary_v3_22_kr.json`
 - 현재 요약(Top1 모델 기준):
   - top1_weight_pct_max: **99.90%**
   - top1_weight_pct_avg: **72.17%**

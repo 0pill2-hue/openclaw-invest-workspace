@@ -10,9 +10,9 @@ from pykrx import stock
 
 BASE = Path(__file__).resolve().parents[2]
 V322_JSON = BASE / 'invest/results/validated/stage05_baselines_v3_22_kr.json'
-TIMELINE_CSV = BASE / 'invest/reports/stage_updates/stage05/stage05_portfolio_timeline_v3_22_kr.csv'
-OUT_STRUCTURED = BASE / 'invest/reports/stage_updates/stage05/stage05_portfolio_weights_v3_22_kr.csv'
-OUT_SUMMARY = BASE / 'invest/reports/stage_updates/stage05/stage05_portfolio_weights_summary_v3_22_kr.json'
+TIMELINE_CSV = BASE / 'invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_timeline_v3_22_kr.csv'
+OUT_STRUCTURED = BASE / 'invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_v3_22_kr.csv'
+OUT_SUMMARY = BASE / 'invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_summary_v3_22_kr.json'
 
 
 def _import(path: Path, name: str):
