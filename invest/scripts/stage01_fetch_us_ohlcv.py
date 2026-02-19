@@ -1,6 +1,7 @@
 import os
 import time
 import signal
+from typing import List
 
 import pandas as pd
 import yfinance as yf
@@ -14,6 +15,8 @@ PER_TICKER_TIMEOUT_SEC = int(os.environ.get('US_OHLCV_PER_TICKER_TIMEOUT_SEC', '
 DOWNLOAD_RETRIES = int(os.environ.get('US_OHLCV_RETRIES', '3'))
 MAX_TICKERS_PER_RUN = int(os.environ.get('US_OHLCV_MAX_TICKERS_PER_RUN', '80'))
 CURSOR_PATH = os.environ.get('US_OHLCV_CURSOR_PATH', 'invest/data/raw/us/ohlcv/_cursor.txt')
+SP500_FETCH_RETRIES = int(os.environ.get('US_OHLCV_SP500_FETCH_RETRIES', '3'))
+SP500_FETCH_RETRY_SLEEP_SEC = int(os.environ.get('US_OHLCV_SP500_FETCH_RETRY_SLEEP_SEC', '3'))
 
 
 def ensure_dir(path):
@@ -127,6 +130,47 @@ def _save_cursor(i):
         f.write(str(int(i)))
 
 
+def _load_cached_us_tickers(limit: int = 503) -> List[str]:
+    """Fallback tickers from local US OHLCV cache when remote ticker source is blocked."""
+    if not os.path.isdir(DATA_DIR):
+        return []
+    tickers = []
+    for name in os.listdir(DATA_DIR):
+        if not name.endswith('.csv'):
+            continue
+        if name.startswith('_'):
+            continue
+        tickers.append(name[:-4])
+    tickers = sorted(set(tickers))
+    if limit > 0:
+        tickers = tickers[:limit]
+    return tickers
+
+
+def _get_tickers_with_auto_bypass():
+    """Try remote S&P500 fetch, then automatically bypass to local cached universe."""
+    errors = []
+    for i in range(SP500_FETCH_RETRIES):
+        try:
+            sp500 = fetch_sp500_list()
+            tickers = sp500['Symbol'].dropna().astype(str).tolist()
+            if tickers:
+                return tickers, "remote_sp500_ok", errors
+            errors.append("remote_sp500_empty")
+        except Exception as e:
+            errors.append(f"remote_sp500_try{i+1}: {e}")
+
+        if i < SP500_FETCH_RETRIES - 1:
+            time.sleep(SP500_FETCH_RETRY_SLEEP_SEC * (i + 1))
+
+    cached = _load_cached_us_tickers(limit=503)
+    if cached:
+        errors.append(f"fallback_cache_used:{len(cached)}")
+        return cached, "fallback_cached_universe", errors
+
+    raise RuntimeError("S&P500 fetch failed and local fallback cache is empty: " + " | ".join(errors))
+
+
 def fetch_and_append(ticker, start=None, retries=DOWNLOAD_RETRIES, full_collection=False):
     """
     Role: fetch_and_append 함수 역할 설명
@@ -182,15 +226,14 @@ if __name__ == "__main__":
     ensure_dir(DATA_DIR)
 
     try:
-        sp500 = fetch_sp500_list()
-        tickers = sp500['Symbol'].tolist()
+        tickers, ticker_source, ticker_fetch_errors = _get_tickers_with_auto_bypass()
     except Exception as e:
         append_pipeline_event(
             source="fetch_us_ohlcv",
             status="FAILED",
             count=0,
             errors=[str(e)],
-            note="S&P500 ticker list fetch failed",
+            note="S&P500 ticker list fetch failed (no fallback available)",
         )
         raise
 
@@ -203,7 +246,7 @@ if __name__ == "__main__":
     start_idx = _load_cursor(0) % max(1, n)
     run_limit = max(1, min(MAX_TICKERS_PER_RUN, n))
 
-    print(f"US OHLCV chunk run: start_idx={start_idx} limit={run_limit} total={n}")
+    print(f"US OHLCV chunk run: source={ticker_source} start_idx={start_idx} limit={run_limit} total={n}")
 
     for step in range(run_limit):
         i = (start_idx + step) % n
@@ -225,12 +268,13 @@ if __name__ == "__main__":
     next_idx = (start_idx + run_limit) % n
     _save_cursor(next_idx)
 
-    status = "OK" if fail == 0 else "WARN"
+    status = "OK" if (fail == 0 and ticker_source == "remote_sp500_ok") else "WARN"
+    merged_errors = ticker_fetch_errors + errors
     append_pipeline_event(
         source="fetch_us_ohlcv",
         status=status,
         count=ok,
-        errors=errors[:20],
-        note=f"Chunk done. processed={run_limit}/{n} start={start_idx} next={next_idx} ok={ok} fail={fail}",
+        errors=merged_errors[:20],
+        note=f"Chunk done. source={ticker_source} processed={run_limit}/{n} start={start_idx} next={next_idx} ok={ok} fail={fail}",
     )
-    print(f"Chunk done. processed={run_limit}/{n} next={next_idx} ok={ok} fail={fail}")
+    print(f"Chunk done. source={ticker_source} processed={run_limit}/{n} next={next_idx} ok={ok} fail={fail}")
