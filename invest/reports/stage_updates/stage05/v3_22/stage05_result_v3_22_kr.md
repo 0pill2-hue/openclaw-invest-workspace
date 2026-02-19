@@ -91,6 +91,7 @@
 - 실행 커맨드: `./venv/bin/python invest/scripts/stage05_plot_v3_22_top3.py`
 - 입력: `invest/results/validated/stage05_baselines_v3_22_kr.json`
 - Top3 선정 규칙: `stats.total_return` 내림차순 상위 3개(트랙 고정 없음)
+- **평가 산출물 canonical 폴더:** `invest/reports/stage_updates/stage05/v3_22/` (분산 경로 사용 금지)
 
 ### 차트 A (누적 평가용)
 - 원본: `invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_continuous_2021plus.png`
