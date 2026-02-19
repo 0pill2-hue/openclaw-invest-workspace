@@ -8,6 +8,10 @@ BASE = Path(__file__).resolve().parents[2]
 W_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_v3_22_kr.csv"
 T_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_timeline_v3_22_kr.csv"
 OUT = BASE / "invest/reports/stage_updates/stage05/v3_22/ui/index.html"
+CHART_CUM = "../charts/stage05_v3_22_yearly_continuous_2021plus.png"
+CHART_RESET = "../charts/stage05_v3_22_yearly_reset_2021plus.png"
+CHART_EVAL_CUM = "../charts/stage05_eval_yearly_continuous_2021plus.png"
+CHART_EVAL_RESET = "../charts/stage05_eval_yearly_reset_2021plus.png"
 
 
 def main():
@@ -97,6 +101,20 @@ def main():
     <div class='card kpi'><div class='muted'>보유 종목수</div><div id='kHold'></div></div>
     <div class='card kpi'><div class='muted'>Top1 비중</div><div id='kTop1'></div></div>
     <div class='card kpi'><div class='muted'>HHI</div><div id='kHhi'></div></div>
+  </div>
+
+  <div class='card' style='margin-top:12px;'>
+    <h3>평가 차트 (고정)</h3>
+    <div class='muted'>기존 생성 차트를 이 페이지에서 바로 확인합니다.</div>
+    <div style='margin-top:10px;'>
+      <div><b>누적 평가용 (yearly_continuous)</b></div>
+      <img src='{CHART_EVAL_CUM}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
+    </div>
+    <div style='margin-top:14px;'>
+      <div><b>연도별 리셋 평가용 (yearly_reset)</b></div>
+      <img src='{CHART_EVAL_RESET}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
+    </div>
+    <div class='muted' style='margin-top:8px;'>원본: {CHART_CUM}, {CHART_RESET}</div>
   </div>
 
   <div class='card' style='margin-top:12px;'>
