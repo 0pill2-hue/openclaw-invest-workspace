@@ -1,7 +1,7 @@
 # RULEBOOK_MASTER
 
 > canonical: 규칙 전용 단일 파일
-> location: invest/strategy/
+> location: docs/invest/strategy/
 
 ## 하드룰
 - KRX only

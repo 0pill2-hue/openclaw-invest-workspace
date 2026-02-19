@@ -1,4 +1,4 @@
-# invest/strategy 문서 운영 기준
+# docs/invest/strategy 문서 운영 기준
 
 ## 1) 이 폴더에서 어디를 보면 되는가 (최우선)
 항상 아래 3개만 **운영 기준(canonical)** 으로 사용합니다.

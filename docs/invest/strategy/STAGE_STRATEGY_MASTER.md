@@ -1,7 +1,7 @@
 # STAGE_STRATEGY_MASTER
 
 > canonical: 스테이지별 운영전략 전용 단일 파일
-> location: invest/strategy/
+> location: docs/invest/strategy/
 
 ## Stage01
 - 증분 수집 + 누락 자동복구 + 백필 자동전환
