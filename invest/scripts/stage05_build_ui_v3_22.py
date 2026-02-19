@@ -186,11 +186,18 @@ def main():
   <div class='card' style='margin-top:12px;'>
     <h3>리밸런싱 변화표</h3>
     <table id='tl'><thead><tr><th>일자</th><th>편입</th><th>편출</th><th>근거</th><th>현재 포트폴리오(비중)</th></tr></thead><tbody></tbody></table>
+    <div style='display:flex;justify-content:center;gap:8px;align-items:center;margin-top:10px;'>
+      <button id='prevPage' class='more-btn'>◀ 이전</button>
+      <span id='pageInfo' class='muted'>1 / 1</span>
+      <button id='nextPage' class='more-btn'>다음 ▶</button>
+    </div>
   </div>
 
 <script>
 const DATA = {json.dumps(payload, ensure_ascii=False)};
 const sel = document.getElementById('dateSel');
+const PAGE_SIZE = 20;
+let timelinePage = 1;
 DATA.dates.forEach(d => {{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); }});
 sel.value = DATA.latest;
 
@@ -261,7 +268,12 @@ function render() {{
   }});
 
   const tlb = document.querySelector('#tl tbody'); tlb.innerHTML='';
-  DATA.timeline.slice(-20).reverse().forEach(t => {{
+  const ordered = [...(DATA.timeline || [])].reverse(); // latest first
+  const totalPages = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
+  if (timelinePage > totalPages) timelinePage = totalPages;
+  const start = (timelinePage - 1) * PAGE_SIZE;
+  const pageRows = ordered.slice(start, start + PAGE_SIZE);
+  pageRows.forEach(t => {{
     const tr=document.createElement('tr');
     tr.innerHTML = '<td>' + t.date + '</td>'
       + '<td>' + expandableCell(t.added) + '</td>'
@@ -270,8 +282,16 @@ function render() {{
       + '<td>' + expandableCell(t.current) + '</td>';
     tlb.appendChild(tr);
   }});
+  document.getElementById('pageInfo').textContent = timelinePage + ' / ' + totalPages;
+  document.getElementById('prevPage').disabled = timelinePage <= 1;
+  document.getElementById('nextPage').disabled = timelinePage >= totalPages;
 }}
 sel.addEventListener('change', render);
+document.getElementById('prevPage').addEventListener('click', () => {{ if (timelinePage > 1) {{ timelinePage -= 1; render(); }} }});
+document.getElementById('nextPage').addEventListener('click', () => {{
+  const totalPages = Math.max(1, Math.ceil((DATA.timeline || []).length / PAGE_SIZE));
+  if (timelinePage < totalPages) {{ timelinePage += 1; render(); }}
+}});
 renderEventChips();
 render();
 </script>
