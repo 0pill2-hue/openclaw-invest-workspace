@@ -1,0 +1,18 @@
+{
+  "status": "ok",
+  "version": "v3_16_kr",
+  "repeat_counter_start": 13,
+  "repeat_counter_final": 18,
+  "stop_reason": "MAX_REPEAT_REACHED_REDESIGN",
+  "final_decision": "REDESIGN",
+  "numeric_return": -0.13284233017440072,
+  "qualitative_return": 1.6760637688777829,
+  "hybrid_return": 0.5829074612205356,
+  "non_numeric_top_valid": false,
+  "gate1_pass": false,
+  "gate2_pass": true,
+  "gate3_pass": false,
+  "gate4_pass": true,
+  "high_density_advantage_pass": true,
+  "output": "invest/results/validated/stage05_baselines_v3_16_kr.json"
+}

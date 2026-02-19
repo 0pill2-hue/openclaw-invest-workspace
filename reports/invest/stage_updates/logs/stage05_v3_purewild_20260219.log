@@ -1,0 +1,55 @@
+동적 max_pos 설정: 2 (regime_score=0.10)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+동적 max_pos 설정: 2 (regime_score=0.18)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+동적 max_pos 설정: 2 (regime_score=0.26)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+동적 max_pos 설정: 3 (regime_score=0.34)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+매수 허용: 투자경고 (Overheated) - 경고과열주 [A556]
+소형주(Small Cap) 매수 허용 - 경고과열주 [A556]
+매수 거부: 아난티 (Blacklist)
+동적 max_pos 설정: 3 (regime_score=0.42)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+매수 허용: 투자경고 (Overheated) - 경고과열주 [A556]
+소형주(Small Cap) 매수 허용 - 경고과열주 [A556]
+매수 거부: 아난티 (Blacklist)
+동적 max_pos 설정: 4 (regime_score=0.50)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+매수 허용: 투자경고 (Overheated) - 경고과열주 [A556]
+소형주(Small Cap) 매수 허용 - 경고과열주 [A556]
+매수 거부: 아난티 (Blacklist)
+동적 max_pos 설정: 4 (regime_score=0.58)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+매수 허용: 투자경고 (Overheated) - 경고과열주 [A556]
+소형주(Small Cap) 매수 허용 - 경고과열주 [A556]
+매수 거부: 아난티 (Blacklist)
+동적 max_pos 설정: 4 (regime_score=0.66)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+매수 허용: 투자경고 (Overheated) - 경고과열주 [A556]
+소형주(Small Cap) 매수 허용 - 경고과열주 [A556]
+매수 거부: 아난티 (Blacklist)
+동적 max_pos 설정: 5 (regime_score=0.74)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+매수 허용: 투자경고 (Overheated) - 경고과열주 [A556]
+소형주(Small Cap) 매수 허용 - 경고과열주 [A556]
+매수 거부: 아난티 (Blacklist)
+동적 max_pos 설정: 5 (regime_score=0.82)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+매수 허용: 투자경고 (Overheated) - 경고과열주 [A556]
+소형주(Small Cap) 매수 허용 - 경고과열주 [A556]
+매수 거부: 아난티 (Blacklist)
+동적 max_pos 설정: 6 (regime_score=0.90)
+매수 거부: 관리종목 (Delisting Risk) - 리스크기업 [A555]
+매수 허용: 투자경고 (Overheated) - 경고과열주 [A556]
+소형주(Small Cap) 매수 허용 - 경고과열주 [A556]
+매수 거부: 아난티 (Blacklist)
+
+=== STAGE05 RULEBOOK V3 CHECK ===
+Years simulated: 2016-2026
+Final capital: 16,140,700 KRW
+Final total value: 12,985,300,800 KRW
+Baseline return: 12,885.30%
+Target(>=2000%): PASS
+Open positions: ['A111', 'A556', 'A222', 'A444']
+Trade records: 4

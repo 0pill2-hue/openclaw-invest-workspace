@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-02-19T12:15:36",
+  "target_files": [
+    "invest/scripts/stage05_backtest_engine.py",
+    "scripts/stage05_3x3_v3_9_kr.py",
+    "scripts/stage05_density_repeat_v3_12_kr.py",
+    "scripts/stage05_finalize_v3_11_kr.py",
+    "scripts/stage05_rerun_v3_14_kr.py",
+    "scripts/stage05_rerun_v3_15_kr.py",
+    "scripts/stage05_rerun_v3_16_kr.py",
+    "scripts/stage05_rerun_v3_18_kr.py",
+    "scripts/stage05_tuning_loop_v3_6_kr.py",
+    "scripts/stage05_tuning_loop_v3_7_kr.py"
+  ],
+  "allowlist_list_hits": [],
+  "favorites_list_hits": [],
+  "ticker_literal_hits": [],
+  "scan_pass": true
+}

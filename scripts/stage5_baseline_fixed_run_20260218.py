@@ -63,9 +63,9 @@ except ModuleNotFoundError:
         load_supply,
     )
 
-OUT_MD = Path("invest/doc/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.md")
-OUT_JSON = Path("invest/doc/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json")
-LOG_DIR = Path("invest/doc/reports/stage_updates/logs")
+OUT_MD = Path("reports/invest/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.md")
+OUT_JSON = Path("reports/invest/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json")
+LOG_DIR = Path("reports/invest/stage_updates/logs")
 
 
 @dataclass

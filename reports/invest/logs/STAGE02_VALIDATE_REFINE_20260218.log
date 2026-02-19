@@ -1,0 +1,27 @@
+[validate_refine_independent] START @ 20260218_011721
+  대상 폴더: 12개 (clean/production)
+
+=================================================================
+  [결과 요약]
+=================================================================
+  PASS: 8  WARN: 2  FAIL: 2
+
+  ⚠️ kr/ohlcv                              WARN
+  ✅ kr/supply                             PASS
+  ❌ kr/dart                               FAIL [GR1:FAIL]
+  ⚠️ us/ohlcv                              WARN
+  ✅ market/news/rss                       PASS
+  ✅ market/macro                          PASS
+  ✅ market/google_trends                  PASS
+  ❌ text/blog                             FAIL [GR1:FAIL]
+  ✅ text/telegram                         PASS
+  ✅ text/image_map                        PASS
+  ✅ text/images_ocr                       PASS
+  ✅ text/premium/startale                 PASS
+
+  [리포트 경로]
+  MD      : /Users/jobiseu/.openclaw/workspace/reports/qc/VALIDATION_INDEPENDENT_20260218_011721.md
+  JSON    : /Users/jobiseu/.openclaw/workspace/reports/qc/VALIDATION_INDEPENDENT_20260218_011721.json
+  Verdict : /Users/jobiseu/.openclaw/workspace/reports/qc/verdict_20260218_011721.json  ← GR-2 판정값 전용
+  Evidence: /Users/jobiseu/.openclaw/workspace/reports/qc/evidence/   ← GR-2 근거 전용
+=================================================================

@@ -1,0 +1,309 @@
+[2026-02-19 11:04:17.446232] batch2 start windows=18
+[2026-02-19 11:04:17.446313] [1/18] 20180401~20180430 attempt=1
+DART request window: 20180401 ~ 20180430
+DART page 1/381 rows=100 total_count=38078
+DART page 10/381 acc_rows=1000
+DART page 20/381 acc_rows=2000
+DART page 30/381 acc_rows=3000
+DART page 40/381 acc_rows=4000
+DART page 50/381 acc_rows=5000
+DART page 60/381 acc_rows=6000
+DART page 70/381 acc_rows=7000
+DART page 80/381 acc_rows=8000
+DART page 90/381 acc_rows=9000
+DART page 100/381 acc_rows=10000
+DART page 110/381 acc_rows=11000
+DART page 120/381 acc_rows=12000
+DART page 130/381 acc_rows=13000
+DART page 140/381 acc_rows=14000
+DART page 150/381 acc_rows=15000
+DART page 160/381 acc_rows=16000
+DART page 170/381 acc_rows=17000
+DART page 180/381 acc_rows=18000
+DART page 190/381 acc_rows=19000
+DART page 200/381 acc_rows=20000
+DART page 210/381 acc_rows=21000
+DART page 220/381 acc_rows=22000
+DART page 230/381 acc_rows=23000
+DART page 240/381 acc_rows=24000
+DART page 250/381 acc_rows=25000
+DART page 260/381 acc_rows=26000
+DART page 270/381 acc_rows=27000
+DART page 280/381 acc_rows=28000
+DART page 290/381 acc_rows=29000
+DART page 300/381 acc_rows=30000
+DART page 310/381 acc_rows=31000
+DART page 320/381 acc_rows=32000
+DART page 330/381 acc_rows=33000
+DART page 340/381 acc_rows=34000
+DART page 350/381 acc_rows=35000
+DART page 360/381 acc_rows=36000
+DART page 370/381 acc_rows=37000
+DART page 380/381 acc_rows=38000
+DART page 381/381 acc_rows=38078
+Saved DART disclosures: 38078 rows -> invest/data/raw/kr/dart/dart_list_20260219_111038.csv
+[2026-02-19 11:10:39.058531] [2/18] 20180501~20180531 attempt=1
+DART request window: 20180501 ~ 20180531
+DART page 1/177 rows=100 total_count=17632
+DART page 10/177 acc_rows=1000
+DART page 20/177 acc_rows=2000
+DART page 30/177 acc_rows=3000
+DART page 40/177 acc_rows=4000
+DART page 50/177 acc_rows=5000
+DART page 60/177 acc_rows=6000
+DART page 70/177 acc_rows=7000
+DART page 80/177 acc_rows=8000
+DART page 90/177 acc_rows=9000
+DART page 100/177 acc_rows=10000
+DART page 110/177 acc_rows=11000
+DART page 120/177 acc_rows=12000
+DART page 130/177 acc_rows=13000
+DART page 140/177 acc_rows=14000
+DART page 150/177 acc_rows=15000
+DART page 160/177 acc_rows=16000
+DART page 170/177 acc_rows=17000
+DART page 177/177 acc_rows=17632
+Saved DART disclosures: 17632 rows -> invest/data/raw/kr/dart/dart_list_20260219_111221.csv
+[2026-02-19 11:12:21.179827] [3/18] 20180601~20180630 attempt=1
+DART request window: 20180601 ~ 20180630
+DART page 1/123 rows=100 total_count=12279
+DART page 10/123 acc_rows=1000
+DART page 20/123 acc_rows=2000
+DART page 30/123 acc_rows=3000
+DART page 40/123 acc_rows=4000
+DART page 50/123 acc_rows=5000
+DART page 60/123 acc_rows=6000
+DART page 70/123 acc_rows=7000
+DART page 80/123 acc_rows=8000
+DART page 90/123 acc_rows=9000
+DART page 100/123 acc_rows=10000
+DART page 110/123 acc_rows=11000
+DART page 120/123 acc_rows=12000
+DART page 123/123 acc_rows=12279
+Saved DART disclosures: 12279 rows -> invest/data/raw/kr/dart/dart_list_20260219_111311.csv
+[2026-02-19 11:13:11.481183] [4/18] 20180701~20180731 attempt=1
+DART request window: 20180701 ~ 20180731
+DART page 1/130 rows=100 total_count=12943
+DART page 10/130 acc_rows=1000
+DART page 20/130 acc_rows=2000
+DART page 30/130 acc_rows=3000
+DART page 40/130 acc_rows=4000
+DART page 50/130 acc_rows=5000
+DART page 60/130 acc_rows=6000
+DART page 70/130 acc_rows=7000
+DART page 80/130 acc_rows=8000
+DART page 90/130 acc_rows=9000
+DART page 100/130 acc_rows=10000
+DART page 110/130 acc_rows=11000
+DART page 120/130 acc_rows=12000
+DART page 130/130 acc_rows=12943
+Saved DART disclosures: 12943 rows -> invest/data/raw/kr/dart/dart_list_20260219_111404.csv
+[2026-02-19 11:14:04.428998] [5/18] 20180801~20180831 attempt=1
+DART request window: 20180801 ~ 20180831
+DART page 1/158 rows=100 total_count=15778
+DART page 10/158 acc_rows=1000
+DART page 20/158 acc_rows=2000
+DART page 30/158 acc_rows=3000
+DART page 40/158 acc_rows=4000
+DART page 50/158 acc_rows=5000
+DART page 60/158 acc_rows=6000
+DART page 70/158 acc_rows=7000
+DART page 80/158 acc_rows=8000
+DART page 90/158 acc_rows=9000
+DART page 100/158 acc_rows=10000
+DART page 110/158 acc_rows=11000
+DART page 120/158 acc_rows=12000
+DART page 130/158 acc_rows=13000
+DART page 140/158 acc_rows=14000
+DART page 150/158 acc_rows=15000
+DART page 158/158 acc_rows=15778
+Saved DART disclosures: 15778 rows -> invest/data/raw/kr/dart/dart_list_20260219_111519.csv
+[2026-02-19 11:15:19.418169] [6/18] 20180901~20180930 attempt=1
+DART request window: 20180901 ~ 20180930
+DART page 1/97 rows=100 total_count=9622
+DART page 10/97 acc_rows=1000
+DART page 20/97 acc_rows=2000
+DART page 30/97 acc_rows=3000
+DART page 40/97 acc_rows=4000
+DART page 50/97 acc_rows=5000
+DART page 60/97 acc_rows=6000
+DART page 70/97 acc_rows=7000
+DART page 80/97 acc_rows=8000
+DART page 90/97 acc_rows=9000
+DART page 97/97 acc_rows=9622
+Saved DART disclosures: 9622 rows -> invest/data/raw/kr/dart/dart_list_20260219_111551.csv
+[2026-02-19 11:15:51.394912] [7/18] 20181001~20181031 attempt=1
+DART request window: 20181001 ~ 20181031
+DART page 1/126 rows=100 total_count=12542
+DART page 10/126 acc_rows=1000
+DART page 20/126 acc_rows=2000
+DART page 30/126 acc_rows=3000
+DART page 40/126 acc_rows=4000
+DART page 50/126 acc_rows=5000
+DART page 60/126 acc_rows=6000
+DART page 70/126 acc_rows=7000
+DART page 80/126 acc_rows=8000
+DART page 90/126 acc_rows=9000
+DART page 100/126 acc_rows=10000
+DART page 110/126 acc_rows=11000
+DART page 120/126 acc_rows=12000
+DART page 126/126 acc_rows=12542
+Saved DART disclosures: 12542 rows -> invest/data/raw/kr/dart/dart_list_20260219_111639.csv
+[2026-02-19 11:16:39.702584] [8/18] 20181101~20181130 attempt=1
+DART request window: 20181101 ~ 20181130
+DART page 1/164 rows=100 total_count=16396
+DART page 10/164 acc_rows=1000
+DART page 20/164 acc_rows=2000
+DART page 30/164 acc_rows=3000
+DART page 40/164 acc_rows=4000
+DART page 50/164 acc_rows=5000
+DART page 60/164 acc_rows=6000
+DART page 70/164 acc_rows=7000
+DART page 80/164 acc_rows=8000
+DART page 90/164 acc_rows=9000
+DART page 100/164 acc_rows=10000
+DART page 110/164 acc_rows=11000
+DART page 120/164 acc_rows=12000
+DART page 130/164 acc_rows=13000
+DART page 140/164 acc_rows=14000
+DART page 150/164 acc_rows=15000
+DART page 160/164 acc_rows=16000
+DART page 164/164 acc_rows=16396
+Saved DART disclosures: 16396 rows -> invest/data/raw/kr/dart/dart_list_20260219_111759.csv
+[2026-02-19 11:17:59.770329] [9/18] 20181201~20181231 attempt=1
+DART request window: 20181201 ~ 20181231
+DART page 1/138 rows=100 total_count=13715
+DART page 10/138 acc_rows=1000
+DART page 20/138 acc_rows=2000
+DART page 30/138 acc_rows=3000
+DART page 40/138 acc_rows=4000
+DART page 50/138 acc_rows=5000
+DART page 60/138 acc_rows=6000
+DART page 70/138 acc_rows=7000
+DART page 80/138 acc_rows=8000
+DART page 90/138 acc_rows=9000
+DART page 100/138 acc_rows=10000
+DART page 110/138 acc_rows=11000
+DART page 120/138 acc_rows=12000
+DART page 130/138 acc_rows=13000
+DART page 138/138 acc_rows=13715
+Saved DART disclosures: 13715 rows -> invest/data/raw/kr/dart/dart_list_20260219_111857.csv
+[2026-02-19 11:18:57.539377] [10/18] 20190101~20190131 attempt=1
+DART request window: 20190101 ~ 20190131
+DART page 1/130 rows=100 total_count=12909
+DART page 10/130 acc_rows=1000
+DART page 20/130 acc_rows=2000
+DART page 30/130 acc_rows=3000
+DART page 40/130 acc_rows=4000
+DART page 50/130 acc_rows=5000
+DART page 60/130 acc_rows=6000
+DART page 70/130 acc_rows=7000
+DART page 80/130 acc_rows=8000
+DART page 90/130 acc_rows=9000
+DART page 100/130 acc_rows=10000
+DART page 110/130 acc_rows=11000
+DART page 120/130 acc_rows=12000
+DART page 130/130 acc_rows=12909
+Saved DART disclosures: 12909 rows -> invest/data/raw/kr/dart/dart_list_20260219_111950.csv
+[2026-02-19 11:19:50.652636] [11/18] 20190201~20190228 attempt=1
+DART request window: 20190201 ~ 20190228
+DART page 1/168 rows=100 total_count=16790
+DART page 10/168 acc_rows=1000
+DART page 20/168 acc_rows=2000
+DART page 30/168 acc_rows=3000
+DART page 40/168 acc_rows=4000
+DART page 50/168 acc_rows=5000
+DART page 60/168 acc_rows=6000
+DART page 70/168 acc_rows=7000
+DART page 80/168 acc_rows=8000
+DART page 90/168 acc_rows=9000
+DART page 100/168 acc_rows=10000
+DART page 110/168 acc_rows=11000
+DART page 120/168 acc_rows=12000
+DART page 130/168 acc_rows=13000
+DART page 140/168 acc_rows=14000
+DART page 150/168 acc_rows=15000
+DART page 160/168 acc_rows=16000
+DART page 168/168 acc_rows=16790
+Saved DART disclosures: 16790 rows -> invest/data/raw/kr/dart/dart_list_20260219_112118.csv
+[2026-02-19 11:21:18.268018] [12/18] 20190301~20190331 attempt=1
+DART request window: 20190301 ~ 20190331
+DART page 1/291 rows=100 total_count=29063
+DART page 10/291 acc_rows=1000
+DART page 20/291 acc_rows=2000
+DART page 30/291 acc_rows=3000
+DART page 40/291 acc_rows=4000
+DART page 50/291 acc_rows=5000
+DART page 60/291 acc_rows=6000
+DART page 70/291 acc_rows=7000
+DART page 80/291 acc_rows=8000
+DART page 90/291 acc_rows=9000
+DART page 100/291 acc_rows=10000
+DART page 110/291 acc_rows=11000
+DART page 120/291 acc_rows=12000
+DART page 130/291 acc_rows=13000
+DART page 140/291 acc_rows=14000
+DART page 150/291 acc_rows=15000
+DART page 160/291 acc_rows=16000
+DART page 170/291 acc_rows=17000
+DART page 180/291 acc_rows=18000
+DART page 190/291 acc_rows=19000
+DART page 200/291 acc_rows=20000
+DART page 210/291 acc_rows=21000
+DART page 220/291 acc_rows=22000
+DART page 230/291 acc_rows=23000
+DART page 240/291 acc_rows=24000
+DART page 250/291 acc_rows=25000
+DART page 260/291 acc_rows=26000
+DART page 270/291 acc_rows=27000
+DART page 280/291 acc_rows=28000
+DART page 290/291 acc_rows=29000
+DART page 291/291 acc_rows=29063
+Saved DART disclosures: 29063 rows -> invest/data/raw/kr/dart/dart_list_20260219_112513.csv
+[2026-02-19 11:25:13.355754] [13/18] 20190401~20190430 attempt=1
+DART request window: 20190401 ~ 20190430
+DART page 1/413 rows=100 total_count=41249
+DART page 10/413 acc_rows=1000
+DART page 20/413 acc_rows=2000
+DART page 30/413 acc_rows=3000
+DART page 40/413 acc_rows=4000
+DART page 50/413 acc_rows=5000
+DART page 60/413 acc_rows=6000
+DART page 70/413 acc_rows=7000
+DART page 80/413 acc_rows=8000
+DART page 90/413 acc_rows=9000
+DART page 100/413 acc_rows=10000
+DART page 110/413 acc_rows=11000
+DART page 120/413 acc_rows=12000
+DART page 130/413 acc_rows=13000
+DART page 140/413 acc_rows=14000
+DART page 150/413 acc_rows=15000
+DART page 160/413 acc_rows=16000
+DART page 170/413 acc_rows=17000
+DART page 180/413 acc_rows=18000
+DART page 190/413 acc_rows=19000
+DART page 200/413 acc_rows=20000
+DART page 210/413 acc_rows=21000
+DART page 220/413 acc_rows=22000
+DART page 230/413 acc_rows=23000
+DART page 240/413 acc_rows=24000
+DART page 250/413 acc_rows=25000
+DART page 260/413 acc_rows=26000
+DART page 270/413 acc_rows=27000
+DART page 280/413 acc_rows=28000
+DART page 290/413 acc_rows=29000
+DART page 300/413 acc_rows=30000
+DART page 310/413 acc_rows=31000
+DART page 320/413 acc_rows=32000
+DART page 330/413 acc_rows=33000
+DART page 340/413 acc_rows=34000
+DART page 350/413 acc_rows=35000
+DART page 360/413 acc_rows=36000
+DART page 370/413 acc_rows=37000
+DART page 380/413 acc_rows=38000
+DART page 390/413 acc_rows=39000
+DART page 400/413 acc_rows=40000
+DART page 410/413 acc_rows=41000
+DART page 413/413 acc_rows=41249
+Saved DART disclosures: 41249 rows -> invest/data/raw/kr/dart/dart_list_20260219_113232.csv
+[2026-02-19 11:32:33.113052] [14/18] 20190501~20190531 attempt=1

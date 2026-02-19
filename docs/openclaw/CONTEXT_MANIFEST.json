@@ -1,0 +1,34 @@
+{
+  "version": "2026-02-18",
+  "tiers": {
+    "L1": [
+      "docs/openclaw/RESET_CORE.md",
+      "docs/openclaw/CONTEXT_RESET_READLIST.md",
+      "docs/openclaw/OPENCLAW_SYSTEM_BASELINE.md",
+      "docs/openclaw/OPERATING_GOVERNANCE.md",
+      "invest/strategy/RULEBOOK_V1_20260218.md",
+      "DIRECTIVES.md",
+      "memory/2026-02-18.md",
+      "MEMORY.md"
+    ],
+    "L2": [
+      "docs/openclaw/WORKSPACE_STRUCTURE.md",
+      "docs/openclaw/DOCS_MAINTENANCE_PLAYBOOK.md",
+      "docs/openclaw/NAMING_STRATEGY.md",
+      "docs/openclaw/CODING_RULES.md",
+      "docs/openclaw/DOC_TEMPLATES.md",
+      "reports/stage_updates/README.md",
+      "reports/stage_updates/stage01/stage01_data_collection.md",
+      "reports/stage_updates/stage02/stage02_data_cleaning.md",
+      "reports/stage_updates/stage03/stage03_cleaning_validation.md",
+      "reports/stage_updates/stage04/stage04_validated_value.md",
+      "reports/stage_updates/stage05/stage05_baselines_v3_4_kr.md",
+      "reports/stage_updates/stage06/stage06_candidates_v3_4_kr.md",
+      "reports/stage_updates/stage07/stage07_cutoff_v3_4_kr.md",
+      "reports/stage_updates/stage08/stage08_value_v3_4_kr.md",
+      "reports/stage_updates/stage09/stage09_cross_review_v3_4_kr.md",
+      "reports/stage_updates/stage11/stage11_adopt_hold_promote.md",
+      "memory/2026-02-17.md"
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+# CONTEXT_LOAD_POLICY.md
+
+Last updated: 2026-02-18 KST
+Purpose: 컨텍스트 절감 + 안전성 유지 로딩 정책
+
+## Tier 정의
+- L1 (Always): 안전/재현성 핵심
+- L2 (On-demand): 작업 유형별 상세 문서
+
+## 기본 원칙
+- 문서 삭제보다 계층 로딩을 우선
+- L1은 짧고 안정적으로 유지
+- L2는 트리거 발생 시 로드
+- 고위험 작업(삭제/외부전송/전략변경) 직전 관련 원문 재확인
+
+## On-demand 트리거
+- 전략 변경/게이트 판단: RULEBOOK + stage 상세
+- 코드 수정/리팩토링: CODING_RULES + NAMING_STRATEGY
+- 보고/운영 이슈: OPERATING_GOVERNANCE + DIRECTIVES 원문
+- 시스템/구조 변경: OPENCLAW_SYSTEM_BASELINE + WORKSPACE_STRUCTURE
+
+## 운영 KPI (권장)
+- 리셋 후 작업시작시간(TTR)
+- 필수 규칙 누락률(MRR)
+- 작업당 참조 문서수(DDR)
+- 문서 충돌/중복 건수(CRR)

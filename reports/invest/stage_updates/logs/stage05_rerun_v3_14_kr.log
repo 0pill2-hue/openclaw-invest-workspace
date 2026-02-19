@@ -1,0 +1,17 @@
+{
+  "status": "ok",
+  "version": "v3_14_kr",
+  "repeat_counter_start": 7,
+  "repeat_counter_final": 12,
+  "stop_reason": "MAX_REPEAT_REACHED_REDESIGN",
+  "final_decision": "REDESIGN",
+  "numeric_return": 26.8169446381085,
+  "qualitative_return": 7.292952727787069,
+  "hybrid_return": 15.213547747097582,
+  "non_numeric_top_valid": false,
+  "gate1_pass": true,
+  "gate2_pass": false,
+  "tie_detected": false,
+  "clone_detected": false,
+  "output": "invest/results/validated/stage05_baselines_v3_14_kr.json"
+}

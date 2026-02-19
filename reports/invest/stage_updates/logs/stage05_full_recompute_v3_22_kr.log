@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-02-19T14:08:49",
+  "version": "v3_22_kr",
+  "full_recompute": true,
+  "recompute_evidence": {
+    "mode": "full_recompute",
+    "full_recompute": true,
+    "reused_models": 0,
+    "recomputed_models": 12,
+    "reused_sources": [],
+    "forbidden_reuse_versions": [
+      "v3_20_kr",
+      "v3_21_kr"
+    ],
+    "previous_versions_loaded_for_metadata_only": {
+      "v3_21_exists": true,
+      "v3_20_exists": true
+    },
+    "run_inputs": {
+      "universe_size": 120,
+      "rebalance_points": 122
+    },
+    "track_counts": {
+      "numeric": 3,
+      "qualitative": 3,
+      "hybrid": 3,
+      "external-pretrained": 3
+    }
+  },
+  "gate_status": {
+    "gate1": "PASS",
+    "gate2": "PASS",
+    "gate3": "PASS",
+    "gate4": "PASS",
+    "high_density": "PASS"
+  },
+  "final_decision": "ADOPT_FULL_RECOMPUTE_12_BASELINE_PROTOCOL_V322",
+  "repeat_counter": 38,
+  "stop_reason": "OFFICIAL_2021_CORE_2023_REFERENCE_2016_GATE_PASS"
+}
