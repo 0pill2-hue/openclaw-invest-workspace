@@ -4,17 +4,17 @@
   "track_counts": "10/10/10/6",
   "winner": "qual_q09_governance_score",
   "winner_track": "qualitative",
-  "winner_return": 121.65260346839648,
-  "winner_cagr": 0.5483876776503487,
-  "winner_mdd_full": -0.46526712877242427,
-  "winner_mdd_2021_plus": -0.37267414838769136,
-  "winner_mdd_core": -0.3467850663223348,
-  "replacement_edge": 0.412622451454624,
+  "winner_return": 26.45125126045915,
+  "winner_cagr": 0.351382768123482,
+  "winner_mdd_full": -0.5627579905268699,
+  "winner_mdd_2021_plus": -0.4374081423262618,
+  "winner_mdd_core": -0.4374081423262618,
+  "replacement_edge": -0.14922894845955398,
   "replacement_policy": {
-    "edge_gate_pass": true,
+    "edge_gate_pass": false,
     "persistence_window": 3,
-    "persistence_hits": 1,
-    "persistence_gate_pass": false,
+    "persistence_hits": 2,
+    "persistence_gate_pass": true,
     "confidence_score": 0.6666666666666666,
     "confidence_gate_threshold": 0.6,
     "confidence_gate_pass": true,
@@ -43,5 +43,5 @@
   "final_decision": "HOLD_V324_REVIEW_REQUIRED",
   "repeat_counter": 1,
   "stop_reason": "REPLACEMENT_COMPOSITE_GATE_FAIL",
-  "generated_at": "2026-02-19T20:49:31.355865"
+  "generated_at": "2026-02-19T21:10:55.587083"
 }

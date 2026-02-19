@@ -38,11 +38,11 @@
 ## winner
 - model_id: qual_q09_governance_score
 - track: qualitative
-- total_return: 12165.26%
-- cagr: 54.84%
-- mdd_full: -46.53%
-- replacement_edge: 41.26%
-- persistence_hits: 1/3
+- total_return: 2645.13%
+- cagr: 35.14%
+- mdd_full: -56.28%
+- replacement_edge: -14.92%
+- persistence_hits: 2/3
 - confidence_score: 0.67
 
 ## final
