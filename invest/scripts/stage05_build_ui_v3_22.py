@@ -65,6 +65,7 @@ def main():
                 "removed": str(r.removed_codes),
                 "kept": str(r.kept_codes),
                 "reason": str(r.replacement_basis),
+                "current": str(getattr(r, 'weights_snapshot', '-')),
             }
         )
 
@@ -157,7 +158,7 @@ def main():
 
   <div class='card' style='margin-top:12px;'>
     <h3>리밸런싱 변화표</h3>
-    <table id='tl'><thead><tr><th>일자</th><th>편입</th><th>편출</th><th>근거</th></tr></thead><tbody></tbody></table>
+    <table id='tl'><thead><tr><th>일자</th><th>편입</th><th>편출</th><th>근거</th><th>현재 포트폴리오(비중)</th></tr></thead><tbody></tbody></table>
   </div>
 
 <script>
@@ -221,7 +222,7 @@ function render() {{
   const tlb = document.querySelector('#tl tbody'); tlb.innerHTML='';
   DATA.timeline.slice(-20).reverse().forEach(t => {{
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${{t.date}}</td><td>${{t.added}}</td><td>${{t.removed}}</td><td>${{t.reason}}</td>`;
+    tr.innerHTML = `<td>${{t.date}}</td><td>${{t.added}}</td><td>${{t.removed}}</td><td>${{t.reason}}</td><td>${{t.current}}</td>`;
     tlb.appendChild(tr);
   }});
 }}
