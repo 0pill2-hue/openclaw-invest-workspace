@@ -8,6 +8,7 @@ import pandas as pd
 BASE = Path(__file__).resolve().parents[2]
 W_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_v3_22_kr.csv"
 T_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_timeline_v3_22_kr.csv"
+E_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_trade_events_v3_22_kr.csv"
 OUT = BASE / "invest/reports/stage_updates/stage05/v3_22/ui/index.html"
 CHART_CUM = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_continuous_2021plus.png"
 CHART_RESET = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_reset_2021plus.png"
@@ -25,6 +26,7 @@ def _img_data_uri(path: Path) -> str:
 def main():
     wdf = pd.read_csv(W_CSV)
     tdf = pd.read_csv(T_CSV)
+    edf = pd.read_csv(E_CSV) if E_CSV.exists() else pd.DataFrame()
 
     if "stock_code" not in wdf.columns:
         wdf["stock_code"] = ""
@@ -71,6 +73,18 @@ def main():
     dates = sorted(by_date.keys())
     latest = dates[-1] if dates else ""
 
+    events = []
+    if not edf.empty:
+        for _, r in edf.fillna('').iterrows():
+            bd = str(r.get('buy_date', '')).strip()
+            sd = str(r.get('sell_date', '')).strip()
+            nm = str(r.get('stock_name', '')).strip() or str(r.get('stock_code', '')).strip()
+            if bd:
+                events.append({'date': bd, 'type': 'BUY', 'name': nm})
+            if sd:
+                events.append({'date': sd, 'type': 'SELL', 'name': nm})
+    events = sorted(events, key=lambda x: x['date'], reverse=True)[:80]
+
     payload = {
         "dates": dates,
         "latest": latest,
@@ -78,6 +92,7 @@ def main():
         "timeline": timeline,
         "hhiSeries": hhi_series,
         "top1Series": top1_series,
+        "events": events,
     }
 
     chart_eval_cum_src = _img_data_uri(CHART_EVAL_CUM) or _img_data_uri(CHART_CUM)
@@ -105,9 +120,6 @@ def main():
 <body>
   <h2>Stage05 v3_22 포트폴리오 비중 UI</h2>
   <div class='muted'>읽기용 카드 + 변화표 + 집중도 지표</div>
-  <div style='margin-top:10px;'>
-    기준일: <select id='dateSel'></select>
-  </div>
   <div class='row' style='margin-top:10px;'>
     <div class='card kpi'><div class='muted'>보유 종목수</div><div id='kHold'></div></div>
     <div class='card kpi'><div class='muted'>Top1 비중</div><div id='kTop1'></div></div>
@@ -124,6 +136,13 @@ def main():
     <div style='margin-top:14px;'>
       <div><b>연도별 리셋 평가용 (yearly_reset)</b></div>
       <img src='{chart_eval_reset_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
+    </div>
+    <div style='margin-top:12px;'>
+      기준일: <select id='dateSel'></select>
+    </div>
+    <div style='margin-top:10px;'>
+      <div class='muted'>이벤트 클릭 시 기준일 자동 선택</div>
+      <div id='eventChips' style='display:flex;flex-wrap:wrap;gap:6px;max-height:120px;overflow:auto;'></div>
     </div>
     <div class='muted' style='margin-top:8px;'>원본: {CHART_CUM}, {CHART_RESET}</div>
   </div>
@@ -148,6 +167,32 @@ const DATA = {json.dumps(payload, ensure_ascii=False)};
 const sel = document.getElementById('dateSel');
 DATA.dates.forEach(d => {{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); }});
 sel.value = DATA.latest;
+
+function nearestDate(target) {{
+  if (!DATA.dates || DATA.dates.length === 0) return null;
+  const t = new Date(target).getTime();
+  let best = DATA.dates[0], bestDiff = Math.abs(new Date(DATA.dates[0]).getTime() - t);
+  for (const d of DATA.dates) {{
+    const diff = Math.abs(new Date(d).getTime() - t);
+    if (diff < bestDiff) {{ best = d; bestDiff = diff; }}
+  }}
+  return best;
+}}
+
+function renderEventChips() {{
+  const box = document.getElementById('eventChips');
+  box.innerHTML = '';
+  (DATA.events || []).slice(0, 60).forEach(ev => {{
+    const b = document.createElement('button');
+    b.textContent = `${{ev.date}} ${{ev.type}} ${{ev.name}}`;
+    b.style.cssText = 'background:#202634;color:#dbe7ff;border:1px solid #32435e;border-radius:999px;padding:4px 8px;cursor:pointer;font-size:12px;';
+    b.onclick = () => {{
+      const nd = nearestDate(ev.date);
+      if (nd) {{ sel.value = nd; render(); }}
+    }};
+    box.appendChild(b);
+  }});
+}}
 
 function render() {{
   const d = sel.value;
@@ -183,6 +228,7 @@ function render() {{
   }});
 }}
 sel.addEventListener('change', render);
+renderEventChips();
 render();
 </script>
 </body></html>"""
