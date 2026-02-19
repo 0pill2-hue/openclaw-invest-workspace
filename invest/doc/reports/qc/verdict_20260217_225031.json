@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-02-17T22:50:55.446305",
+  "timestamp": "20260217_225031",
+  "note": "BLIND_REVIEW_VERDICT_ONLY — see evidence/ for rationale",
+  "verdicts": {
+    "kr/ohlcv": "WARN",
+    "kr/supply": "PASS",
+    "kr/dart": "PASS",
+    "us/ohlcv": "WARN",
+    "market/news/rss": "PASS",
+    "market/macro": "PASS",
+    "market/google_trends": "PASS",
+    "text/blog": "PASS",
+    "text/telegram": "PASS",
+    "text/image_map": "PASS",
+    "text/images_ocr": "PASS",
+    "text/premium/startale": "PASS"
+  },
+  "summary": {
+    "PASS": 10,
+    "WARN": 2,
+    "FAIL": 0,
+    "total": 12
+  }
+}

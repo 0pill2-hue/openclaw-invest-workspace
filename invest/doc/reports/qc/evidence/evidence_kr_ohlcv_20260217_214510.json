@@ -1,0 +1,8722 @@
+{
+  "folder_key": "kr/ohlcv",
+  "clean_dir": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production/kr/ohlcv",
+  "issues_by_file": {
+    "000020.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "000040.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "000050.csv": [
+      "ohlc:Low<Close_count=2248"
+    ],
+    "000070.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "000080.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "000087.csv": [
+      "ohlc:Low<Close_count=2265"
+    ],
+    "000100.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "000105.csv": [
+      "ohlc:Low<Close_count=2039"
+    ],
+    "000120.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "000140.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "000145.csv": [
+      "ohlc:Low<Close_count=1942"
+    ],
+    "000150.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "000155.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "000157.csv": [
+      "ohlc:Low<Close_count=2204"
+    ],
+    "000180.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "0001A0.csv": [
+      "ohlc:Low<Close_count=11"
+    ],
+    "000210.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "000215.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "000220.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "000225.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "000227.csv": [
+      "ohlc:Low<Close_count=2088"
+    ],
+    "000230.csv": [
+      "ohlc:Low<Close_count=2293"
+    ],
+    "000240.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "000250.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "000270.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "000300.csv": [
+      "ohlc:Low<Close_count=1858"
+    ],
+    "000320.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "000325.csv": [
+      "ohlc:Low<Close_count=2096"
+    ],
+    "000370.csv": [
+      "ohlc:Low<Close_count=2376"
+    ],
+    "000390.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "000400.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "000430.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "000440.csv": [
+      "ohlc:Low<Close_count=2276"
+    ],
+    "000480.csv": [
+      "ohlc:Low<Close_count=2264"
+    ],
+    "000490.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "0004V0.csv": [
+      "ohlc:Low<Close_count=23"
+    ],
+    "0004Y0.csv": [
+      "ohlc:Low<Close_count=120"
+    ],
+    "000500.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "000520.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "000540.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "000545.csv": [
+      "ohlc:Low<Close_count=2154"
+    ],
+    "000590.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "000640.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "000650.csv": [
+      "ohlc:Low<Close_count=2245"
+    ],
+    "000660.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "000670.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "000680.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "000700.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "000720.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "000725.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2178"
+    ],
+    "000760.csv": [
+      "ohlc:Low<Close_count=2220"
+    ],
+    "0007C0.csv": [
+      "ohlc:Low<Close_count=34"
+    ],
+    "000810.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "000815.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "000850.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "000860.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "000880.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "00088K.csv": [
+      "ohlc:Low<Close_count=2165"
+    ],
+    "000890.csv": [
+      "ohlc:Low<Close_count=2280"
+    ],
+    "0008Z0.csv": [
+      "ohlc:Low<Close_count=117"
+    ],
+    "000910.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "000950.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "000970.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "000990.csv": [
+      "ohlc:Low<Close_count=2379"
+    ],
+    "0009K0.csv": [
+      "ohlc:Low<Close_count=47"
+    ],
+    "001000.csv": [
+      "ohlc:Low<Close_count=2274"
+    ],
+    "001020.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "001040.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "001045.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "00104K.csv": [
+      "ohlc:Low<Close_count=1528"
+    ],
+    "001060.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "001065.csv": [
+      "ohlc:Low<Close_count=2069"
+    ],
+    "001067.csv": [
+      "ohlc:Low<Close_count=1912"
+    ],
+    "001070.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "001080.csv": [
+      "ohlc:Low<Close_count=2066"
+    ],
+    "0010V0.csv": [
+      "ohlc:Low<Close_count=115"
+    ],
+    "001120.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "001130.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "001200.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "001210.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "001230.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "001250.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "001260.csv": [
+      "ohlc:Low<Close_count=2289"
+    ],
+    "001270.csv": [
+      "ohlc:Low<Close_count=2241"
+    ],
+    "001275.csv": [
+      "ohlc:Low<Close_count=1918"
+    ],
+    "001290.csv": [
+      "ohlc:Low<Close_count=2192"
+    ],
+    "001340.csv": [
+      "ohlc:Low<Close_count=2185"
+    ],
+    "001360.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "001380.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "001390.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "0013V0.csv": [
+      "ohlc:Low<Close_count=36"
+    ],
+    "001420.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "001430.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "001440.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "001450.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "001460.csv": [
+      "ohlc:Low<Close_count=2233"
+    ],
+    "001465.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2193"
+    ],
+    "001470.csv": [
+      "ohlc:Low<Close_count=2093"
+    ],
+    "001500.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "001510.csv": [
+      "ohlc:Low<Close_count=2254"
+    ],
+    "001515.csv": [
+      "ohlc:Low<Close_count=2156"
+    ],
+    "001520.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "001525.csv": [
+      "ohlc:Low<Close_count=1993"
+    ],
+    "001527.csv": [
+      "ohlc:Low<Close_count=1986"
+    ],
+    "001530.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "001540.csv": [
+      "ohlc:Low<Close_count=2296"
+    ],
+    "001550.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "001560.csv": [
+      "ohlc:Low<Close_count=2275"
+    ],
+    "001570.csv": [
+      "ohlc:Low<Close_count=2161"
+    ],
+    "0015G0.csv": [
+      "ohlc:Low<Close_count=58"
+    ],
+    "0015N0.csv": [
+      "ohlc:Low<Close_count=53"
+    ],
+    "0015S0.csv": [
+      "ohlc:Low<Close_count=41"
+    ],
+    "001620.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "001630.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "001680.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "001685.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "001720.csv": [
+      "ohlc:Low<Close_count=2256"
+    ],
+    "001740.csv": [
+      "ohlc:Low<Close_count=2291"
+    ],
+    "001750.csv": [
+      "ohlc:Low<Close_count=2385"
+    ],
+    "001755.csv": [
+      "ohlc:Low<Close_count=2213"
+    ],
+    "001770.csv": [
+      "ohlc:Low<Close_count=2278"
+    ],
+    "001780.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "001790.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "001795.csv": [
+      "ohlc:Low<Close_count=2183"
+    ],
+    "001800.csv": [
+      "ohlc:Low<Close_count=2275"
+    ],
+    "001810.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "001820.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "001840.csv": [
+      "ohlc:Low<Close_count=2124"
+    ],
+    "001940.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "002020.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "002025.csv": [
+      "ohlc:Low<Close_count=2298"
+    ],
+    "002030.csv": [
+      "ohlc:Low<Close_count=2364"
+    ],
+    "002070.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2291"
+    ],
+    "002100.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "002140.csv": [
+      "ohlc:Low<Close_count=2294"
+    ],
+    "002150.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "002170.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "002200.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "002210.csv": [
+      "ohlc:Low<Close_count=2159"
+    ],
+    "002220.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "002230.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "002240.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "002290.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "002310.csv": [
+      "ohlc:Low<Close_count=2389"
+    ],
+    "002320.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "002350.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "002355.csv": [
+      "ohlc:Low<Close_count=2142"
+    ],
+    "002360.csv": [
+      "ohlc:Low<Close_count=2233"
+    ],
+    "002380.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "002390.csv": [
+      "ohlc:Low<Close_count=2381"
+    ],
+    "002410.csv": [
+      "ohlc:Low<Close_count=2056"
+    ],
+    "002420.csv": [
+      "ohlc:Low<Close_count=2034"
+    ],
+    "002450.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "002460.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "002600.csv": [
+      "ohlc:Low<Close_count=2077"
+    ],
+    "002620.csv": [
+      "ohlc:Low<Close_count=2238"
+    ],
+    "002630.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "002680.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "002690.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "002700.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "002710.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "002720.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "002760.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "002780.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "002785.csv": [
+      "ohlc:Low<Close_count=2019"
+    ],
+    "002787.csv": [
+      "ohlc:Low<Close_count=1961"
+    ],
+    "002790.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "002795.csv": [
+      "ohlc:Low<Close_count=2381"
+    ],
+    "00279K.csv": [
+      "ohlc:Low<Close_count=1418"
+    ],
+    "002800.csv": [
+      "ohlc:Low<Close_count=2039"
+    ],
+    "002810.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "002820.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "002840.csv": [
+      "ohlc:Low<Close_count=1994"
+    ],
+    "002870.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "002880.csv": [
+      "ohlc:Low<Close_count=2276"
+    ],
+    "002900.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "002920.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "002960.csv": [
+      "ohlc:Low<Close_count=2266"
+    ],
+    "002990.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "002995.csv": [
+      "ohlc:Low<Close_count=2079"
+    ],
+    "003000.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "003010.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "003030.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "003060.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "003070.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "003075.csv": [
+      "ohlc:Low<Close_count=2106"
+    ],
+    "003080.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "003090.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "0030R0.csv": [
+      "ohlc:Low<Close_count=137"
+    ],
+    "003100.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "003120.csv": [
+      "ohlc:Low<Close_count=2253"
+    ],
+    "003160.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "003200.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "003220.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "003230.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "003240.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "003280.csv": [
+      "ohlc:Low<Close_count=2019"
+    ],
+    "003300.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "003310.csv": [
+      "ohlc:Low<Close_count=2309"
+    ],
+    "003350.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "003380.csv": [
+      "ohlc:Low<Close_count=1985"
+    ],
+    "003460.csv": [
+      "ohlc:Low<Close_count=2228"
+    ],
+    "003465.csv": [
+      "ohlc:Low<Close_count=1591"
+    ],
+    "003470.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "003475.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "003480.csv": [
+      "ohlc:Low<Close_count=2377"
+    ],
+    "003490.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "003495.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "003520.csv": [
+      "ohlc:Low<Close_count=2256"
+    ],
+    "003530.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "003535.csv": [
+      "ohlc:Low<Close_count=2127"
+    ],
+    "003540.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "003545.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "003547.csv": [
+      "ohlc:Low<Close_count=2392"
+    ],
+    "003550.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "003555.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "003570.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "003580.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "003610.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "003620.csv": [
+      "ohlc:Low<Close_count=1789"
+    ],
+    "003650.csv": [
+      "ohlc:Low<Close_count=2277"
+    ],
+    "003670.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "003680.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "003690.csv": [
+      "ohlc:Low<Close_count=2288"
+    ],
+    "003720.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "003780.csv": [
+      "ohlc:Low<Close_count=2384"
+    ],
+    "0037T0.csv": [
+      "ohlc:Low<Close_count=142"
+    ],
+    "003800.csv": [
+      "ohlc:Low<Close_count=2276"
+    ],
+    "003830.csv": [
+      "ohlc:Low<Close_count=2285"
+    ],
+    "003850.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "003920.csv": [
+      "ohlc:Low<Close_count=2314"
+    ],
+    "003925.csv": [
+      "ohlc:Low<Close_count=1817"
+    ],
+    "003960.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "004000.csv": [
+      "ohlc:Low<Close_count=2368"
+    ],
+    "004020.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "004060.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "004080.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "004090.csv": [
+      "ohlc:Low<Close_count=2265"
+    ],
+    "004100.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "004105.csv": [
+      "ohlc:Low<Close_count=2262"
+    ],
+    "004140.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2326"
+    ],
+    "004150.csv": [
+      "ohlc:Low<Close_count=2384"
+    ],
+    "004170.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "0041B0.csv": [
+      "ohlc:Low<Close_count=98"
+    ],
+    "0041J0.csv": [
+      "ohlc:Low<Close_count=120"
+    ],
+    "0041L0.csv": [
+      "ohlc:Low<Close_count=117"
+    ],
+    "004250.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "004255.csv": [
+      "ohlc:Low<Close_count=2268"
+    ],
+    "004270.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "004310.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "004360.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "004365.csv": [
+      "ohlc:Low<Close_count=1955"
+    ],
+    "004370.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "004380.csv": [
+      "ohlc:Low<Close_count=2146"
+    ],
+    "004410.csv": [
+      "ohlc:Low<Close_count=2229"
+    ],
+    "004415.csv": [
+      "ohlc:Low<Close_count=2162"
+    ],
+    "004430.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "004440.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "004450.csv": [
+      "ohlc:Low<Close_count=2247"
+    ],
+    "004490.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "0044K0.csv": [
+      "ohlc:Low<Close_count=109"
+    ],
+    "004540.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "004545.csv": [
+      "ohlc:Low<Close_count=2114"
+    ],
+    "004560.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "004590.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "004650.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "004690.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "004700.csv": [
+      "ohlc:Low<Close_count=2288"
+    ],
+    "004710.csv": [
+      "ohlc:Low<Close_count=2296"
+    ],
+    "004720.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "004770.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "004780.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "004800.csv": [
+      "ohlc:Low<Close_count=2278"
+    ],
+    "004830.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "004835.csv": [
+      "ohlc:Low<Close_count=2309"
+    ],
+    "004840.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "004870.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "004890.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "004910.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "004920.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "004960.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "004970.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "004980.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "004985.csv": [
+      "ohlc:Low<Close_count=2293"
+    ],
+    "004990.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "00499K.csv": [
+      "ohlc:Low<Close_count=1868"
+    ],
+    "005010.csv": [
+      "ohlc:Low<Close_count=2293"
+    ],
+    "005030.csv": [
+      "ohlc:Low<Close_count=1697"
+    ],
+    "005070.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "005090.csv": [
+      "ohlc:Low<Close_count=2388"
+    ],
+    "005110.csv": [
+      "ohlc:Low<Close_count=1917"
+    ],
+    "005160.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "005180.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "005250.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "005257.csv": [
+      "ohlc:Low<Close_count=1973"
+    ],
+    "005290.csv": [
+      "ohlc:Low<Close_count=2388"
+    ],
+    "005300.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "005305.csv": [
+      "ohlc:Low<Close_count=2223"
+    ],
+    "005320.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "005360.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "005380.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "005385.csv": [
+      "ohlc:Low<Close_count=2260"
+    ],
+    "005387.csv": [
+      "ohlc:Low<Close_count=2240"
+    ],
+    "005389.csv": [
+      "ohlc:Low<Close_count=2379"
+    ],
+    "005420.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "005430.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "005440.csv": [
+      "ohlc:Low<Close_count=2276"
+    ],
+    "005490.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "0054V0.csv": [
+      "ohlc:Low<Close_count=35"
+    ],
+    "005500.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "005610.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "005670.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "005680.csv": [
+      "ohlc:Low<Close_count=2283"
+    ],
+    "005690.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "005710.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "005720.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "005725.csv": [
+      "ohlc:Low<Close_count=1977"
+    ],
+    "005740.csv": [
+      "ohlc:Low<Close_count=2247"
+    ],
+    "005745.csv": [
+      "ohlc:Low<Close_count=2151"
+    ],
+    "005750.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "005800.csv": [
+      "ohlc:Low<Close_count=2158"
+    ],
+    "005810.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "005820.csv": [
+      "ohlc:Low<Close_count=2229"
+    ],
+    "005830.csv": [
+      "ohlc:Low<Close_count=2382"
+    ],
+    "005850.csv": [
+      "ohlc:Low<Close_count=2309"
+    ],
+    "005860.csv": [
+      "ohlc:Low<Close_count=2269"
+    ],
+    "005870.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "005880.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "005930.csv": [
+      "ohlc:Low<Close_count=2226"
+    ],
+    "005935.csv": [
+      "ohlc:Low<Close_count=2143"
+    ],
+    "005940.csv": [
+      "ohlc:Low<Close_count=2296"
+    ],
+    "005945.csv": [
+      "ohlc:Low<Close_count=2384"
+    ],
+    "005950.csv": [
+      "ohlc:Low<Close_count=2282"
+    ],
+    "005960.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "005965.csv": [
+      "ohlc:Low<Close_count=2035"
+    ],
+    "005990.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "006040.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "006050.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "006060.csv": [
+      "ohlc:Low<Close_count=2389"
+    ],
+    "006090.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "006110.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "006120.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "006125.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "006140.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "006200.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "006220.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "006260.csv": [
+      "ohlc:Low<Close_count=2395"
+    ],
+    "006280.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "006340.csv": [
+      "ohlc:Low<Close_count=2285"
+    ],
+    "006345.csv": [
+      "ohlc:Low<Close_count=2257"
+    ],
+    "006360.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "006370.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "006380.csv": [
+      "ohlc:Low<Close_count=1899"
+    ],
+    "006400.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "006405.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "006490.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "006570.csv": [
+      "ohlc:Low<Close_count=2203"
+    ],
+    "006620.csv": [
+      "ohlc:Low<Close_count=1867"
+    ],
+    "006650.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "006660.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "006730.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "006740.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "006800.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "006805.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "00680K.csv": [
+      "ohlc:Low<Close_count=1853"
+    ],
+    "006840.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "006880.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "006890.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "0068Y0.csv": [
+      "ohlc:Low<Close_count=53"
+    ],
+    "006910.csv": [
+      "ohlc:Low<Close_count=2277"
+    ],
+    "006920.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "006980.csv": [
+      "ohlc:Low<Close_count=2261"
+    ],
+    "007070.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "007110.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "007120.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "007160.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "0071M0.csv": [
+      "ohlc:Low<Close_count=82"
+    ],
+    "007210.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "007280.csv": [
+      "ohlc:Low<Close_count=2177"
+    ],
+    "0072Z0.csv": [
+      "ohlc:Low<Close_count=81"
+    ],
+    "007310.csv": [
+      "ohlc:Low<Close_count=2279"
+    ],
+    "007330.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "007340.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "007370.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "007390.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "007460.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2343"
+    ],
+    "007530.csv": [
+      "ohlc:Low<Close_count=2205"
+    ],
+    "007540.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "007570.csv": [
+      "ohlc:Low<Close_count=2214"
+    ],
+    "007575.csv": [
+      "ohlc:Low<Close_count=1980"
+    ],
+    "007590.csv": [
+      "ohlc:Low<Close_count=2265"
+    ],
+    "007610.csv": [
+      "ohlc:Low<Close_count=1445"
+    ],
+    "007660.csv": [
+      "ohlc:Low<Close_count=2399"
+    ],
+    "007680.csv": [
+      "ohlc:Low<Close_count=1866"
+    ],
+    "007690.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "007700.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "007720.csv": [
+      "ohlc:Low<Close_count=2294"
+    ],
+    "007770.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "007810.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "007815.csv": [
+      "ohlc:Low<Close_count=2230"
+    ],
+    "00781K.csv": [
+      "ohlc:Low<Close_count=2091"
+    ],
+    "007820.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "007860.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "007980.csv": [
+      "ohlc:Low<Close_count=2392"
+    ],
+    "008040.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "008060.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "00806K.csv": [
+      "ohlc:Low<Close_count=1542"
+    ],
+    "008110.csv": [
+      "ohlc:Low<Close_count=1889"
+    ],
+    "008250.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "008260.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "008290.csv": [
+      "ohlc:Low<Close_count=2285"
+    ],
+    "008350.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "008355.csv": [
+      "ohlc:Low<Close_count=2165"
+    ],
+    "008370.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "008420.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "008470.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "008490.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "008500.csv": [
+      "ohlc:Low<Close_count=1894"
+    ],
+    "008600.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "008700.csv": [
+      "ohlc:Low<Close_count=2255"
+    ],
+    "008730.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "008770.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "008775.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "008830.csv": [
+      "ohlc:Low<Close_count=2211"
+    ],
+    "008870.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "0088D0.csv": [
+      "ohlc:Low<Close_count=41"
+    ],
+    "008930.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "008970.csv": [
+      "ohlc:Low<Close_count=2285"
+    ],
+    "009070.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "009140.csv": [
+      "ohlc:Low<Close_count=2285"
+    ],
+    "009150.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "009155.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "009160.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "009180.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "009190.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "0091W0.csv": [
+      "ohlc:Low<Close_count=55"
+    ],
+    "009200.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "009240.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "009270.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "009290.csv": [
+      "ohlc:Low<Close_count=2276"
+    ],
+    "009300.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "009310.csv": [
+      "ohlc:Low<Close_count=2244"
+    ],
+    "009320.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "0093G0.csv": [
+      "ohlc:Low<Close_count=47"
+    ],
+    "009410.csv": [
+      "ohlc:Low<Close_count=2206"
+    ],
+    "009415.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2113"
+    ],
+    "009420.csv": [
+      "ohlc:Low<Close_count=2389"
+    ],
+    "009440.csv": [
+      "ohlc:Low<Close_count=2144"
+    ],
+    "009450.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "009460.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "009470.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "009520.csv": [
+      "ohlc:Low<Close_count=2289"
+    ],
+    "009540.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "009580.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "009620.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "009680.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "0096B0.csv": [
+      "ohlc:Low<Close_count=48"
+    ],
+    "0096D0.csv": [
+      "ohlc:Low<Close_count=46"
+    ],
+    "009730.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1835"
+    ],
+    "009770.csv": [
+      "ohlc:Low<Close_count=2262"
+    ],
+    "009780.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "0097F0.csv": [
+      "ohlc:Low<Close_count=34"
+    ],
+    "009810.csv": [
+      "ohlc:Low<Close_count=2307"
+    ],
+    "009830.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "009835.csv": [
+      "range:return_outlier_count=2",
+      "ohlc:Low<Close_count=2274"
+    ],
+    "0098T0.csv": [
+      "ohlc:Low<Close_count=34"
+    ],
+    "009900.csv": [
+      "ohlc:Low<Close_count=1192"
+    ],
+    "009970.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "0099W0.csv": [
+      "ohlc:Low<Close_count=35"
+    ],
+    "0099X0.csv": [
+      "ohlc:Low<Close_count=34"
+    ],
+    "010040.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "010060.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "010100.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "010120.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "010130.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "010140.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "010170.csv": [
+      "ohlc:Low<Close_count=2368"
+    ],
+    "0101C0.csv": [
+      "ohlc:Low<Close_count=35"
+    ],
+    "010240.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "010280.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "010400.csv": [
+      "ohlc:Low<Close_count=1649"
+    ],
+    "010470.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "010580.csv": [
+      "ohlc:Low<Close_count=1743"
+    ],
+    "0105P0.csv": [
+      "ohlc:Low<Close_count=43"
+    ],
+    "010640.csv": [
+      "ohlc:Low<Close_count=2137"
+    ],
+    "010660.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "010690.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "010770.csv": [
+      "ohlc:Low<Close_count=2293"
+    ],
+    "010780.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "010820.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "010950.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "010955.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "010960.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "011000.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "011040.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "011070.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "011080.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2313"
+    ],
+    "011090.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "011150.csv": [
+      "ohlc:Low<Close_count=2284"
+    ],
+    "011155.csv": [
+      "ohlc:Low<Close_count=2139"
+    ],
+    "011170.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "011200.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2364"
+    ],
+    "011210.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "011230.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "011280.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "011300.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2127"
+    ],
+    "011320.csv": [
+      "ohlc:Low<Close_count=2318"
+    ],
+    "011330.csv": [
+      "ohlc:Low<Close_count=2198"
+    ],
+    "011370.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "011390.csv": [
+      "ohlc:Low<Close_count=2309"
+    ],
+    "011420.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "011500.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "011560.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "0115H0.csv": [
+      "ohlc:Low<Close_count=16"
+    ],
+    "011690.csv": [
+      "ohlc:Low<Close_count=1824"
+    ],
+    "011700.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "011760.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "011780.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "011785.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "011790.csv": [
+      "ohlc:Low<Close_count=2399"
+    ],
+    "011810.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1895"
+    ],
+    "011930.csv": [
+      "ohlc:Low<Close_count=2274"
+    ],
+    "012030.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "0120G0.csv": [
+      "ohlc:Low<Close_count=55"
+    ],
+    "012160.csv": [
+      "ohlc:Low<Close_count=2279"
+    ],
+    "012170.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1953"
+    ],
+    "012200.csv": [
+      "ohlc:Low<Close_count=2238"
+    ],
+    "012205.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2098"
+    ],
+    "012210.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=364"
+    ],
+    "012280.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "012320.csv": [
+      "ohlc:Low<Close_count=2274"
+    ],
+    "012330.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "012340.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "012450.csv": [
+      "ohlc:Low<Close_count=2385"
+    ],
+    "012510.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "012610.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "012620.csv": [
+      "ohlc:Low<Close_count=2270"
+    ],
+    "012630.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "012690.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "0126Z0.csv": [
+      "ohlc:Low<Close_count=52"
+    ],
+    "012700.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "012750.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "012790.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2340"
+    ],
+    "012800.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "012860.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "013000.csv": [
+      "ohlc:Low<Close_count=2177"
+    ],
+    "013030.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "013120.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "013310.csv": [
+      "ohlc:Low<Close_count=2298"
+    ],
+    "013360.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "013520.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "013570.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "013580.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "013700.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "013720.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "013810.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "013870.csv": [
+      "ohlc:Low<Close_count=2309"
+    ],
+    "013890.csv": [
+      "ohlc:Low<Close_count=1472"
+    ],
+    "013990.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "014100.csv": [
+      "ohlc:Low<Close_count=1826"
+    ],
+    "014130.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "014160.csv": [
+      "ohlc:Low<Close_count=2269"
+    ],
+    "014190.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "014280.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "014285.csv": [
+      "ohlc:Low<Close_count=2089"
+    ],
+    "014440.csv": [
+      "ohlc:Low<Close_count=2409"
+    ],
+    "014470.csv": [
+      "ohlc:Low<Close_count=2281"
+    ],
+    "014530.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "014570.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "014580.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "014620.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "014680.csv": [
+      "ohlc:Low<Close_count=2414"
+    ],
+    "014710.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "014790.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "014820.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "014825.csv": [
+      "ohlc:Low<Close_count=1946"
+    ],
+    "014830.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "014910.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "014915.csv": [
+      "ohlc:Low<Close_count=2037"
+    ],
+    "014940.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "014950.csv": [
+      "ohlc:Low<Close_count=76"
+    ],
+    "014970.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "014990.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "015020.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "015230.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "015260.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "015360.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "015590.csv": [
+      "ohlc:Low<Close_count=2085"
+    ],
+    "015710.csv": [
+      "ohlc:Low<Close_count=2273"
+    ],
+    "015750.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "015760.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "015860.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "015890.csv": [
+      "ohlc:Low<Close_count=2376"
+    ],
+    "016090.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "016100.csv": [
+      "ohlc:Low<Close_count=2280"
+    ],
+    "016250.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "016360.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "016380.csv": [
+      "ohlc:Low<Close_count=2247"
+    ],
+    "016450.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "016580.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "016590.csv": [
+      "ohlc:Low<Close_count=2358"
+    ],
+    "016600.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "016610.csv": [
+      "ohlc:Low<Close_count=2408"
+    ],
+    "016670.csv": [
+      "ohlc:Low<Close_count=1900"
+    ],
+    "016710.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "016740.csv": [
+      "ohlc:Low<Close_count=2223"
+    ],
+    "016790.csv": [
+      "ohlc:Low<Close_count=1298"
+    ],
+    "016800.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "016880.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "016920.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "017000.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "017040.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "017180.csv": [
+      "ohlc:Low<Close_count=2310"
+    ],
+    "017250.csv": [
+      "ohlc:Low<Close_count=2288"
+    ],
+    "017370.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "017390.csv": [
+      "ohlc:Low<Close_count=2199"
+    ],
+    "017480.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "017510.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "017550.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "017650.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "017670.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "017800.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "017810.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "017860.csv": [
+      "ohlc:Low<Close_count=487"
+    ],
+    "017890.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "017900.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "017940.csv": [
+      "ohlc:Low<Close_count=2393"
+    ],
+    "017960.csv": [
+      "ohlc:Low<Close_count=2391"
+    ],
+    "018000.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "018120.csv": [
+      "ohlc:Low<Close_count=2230"
+    ],
+    "018250.csv": [
+      "ohlc:Low<Close_count=1818"
+    ],
+    "018260.csv": [
+      "ohlc:Low<Close_count=2287"
+    ],
+    "018290.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "018310.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "018470.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "018500.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "018620.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "018670.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "018680.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "018700.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "018880.csv": [
+      "ohlc:Low<Close_count=2289"
+    ],
+    "019010.csv": [
+      "ohlc:Low<Close_count=2392"
+    ],
+    "019170.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "019175.csv": [
+      "ohlc:Low<Close_count=2164"
+    ],
+    "019180.csv": [
+      "ohlc:Low<Close_count=2392"
+    ],
+    "019210.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "019440.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "019490.csv": [
+      "ohlc:Low<Close_count=1877"
+    ],
+    "019540.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "019550.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "019570.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2327"
+    ],
+    "019660.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "019680.csv": [
+      "ohlc:Low<Close_count=2307"
+    ],
+    "019685.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "019770.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "019990.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "020000.csv": [
+      "ohlc:Low<Close_count=2402"
+    ],
+    "020120.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "020150.csv": [
+      "ohlc:Low<Close_count=2358"
+    ],
+    "020180.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "020400.csv": [
+      "ohlc:Low<Close_count=2270"
+    ],
+    "020560.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2257"
+    ],
+    "020710.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "020760.csv": [
+      "ohlc:Low<Close_count=2273"
+    ],
+    "021040.csv": [
+      "ohlc:Low<Close_count=2240"
+    ],
+    "021045.csv": [
+      "ohlc:Low<Close_count=2178"
+    ],
+    "021050.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "021080.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "021240.csv": [
+      "ohlc:Low<Close_count=2383"
+    ],
+    "021320.csv": [
+      "ohlc:Low<Close_count=2364"
+    ],
+    "021650.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "021820.csv": [
+      "ohlc:Low<Close_count=1498"
+    ],
+    "021880.csv": [
+      "ohlc:Low<Close_count=2269"
+    ],
+    "022100.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "022220.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "023000.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "023150.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "023160.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "023350.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "023410.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "023440.csv": [
+      "ohlc:Low<Close_count=2176"
+    ],
+    "023450.csv": [
+      "ohlc:Low<Close_count=1999"
+    ],
+    "023530.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "023590.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "023600.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "023760.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "023770.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2321"
+    ],
+    "023790.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "023800.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "023810.csv": [
+      "ohlc:Low<Close_count=2397"
+    ],
+    "023900.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "023910.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "023960.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "024060.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "024070.csv": [
+      "ohlc:Low<Close_count=2289"
+    ],
+    "024090.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "024110.csv": [
+      "ohlc:Low<Close_count=2272"
+    ],
+    "024120.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "024720.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "024740.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "024800.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "024830.csv": [
+      "ohlc:Low<Close_count=1469"
+    ],
+    "024840.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "024850.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "024880.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "024890.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "024900.csv": [
+      "ohlc:Low<Close_count=2280"
+    ],
+    "024910.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "024940.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "024950.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "025000.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "025320.csv": [
+      "ohlc:Low<Close_count=2254"
+    ],
+    "025440.csv": [
+      "ohlc:Low<Close_count=2289"
+    ],
+    "025530.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "025540.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "025550.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "025560.csv": [
+      "ohlc:Low<Close_count=2251"
+    ],
+    "025620.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "025750.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "025770.csv": [
+      "ohlc:Low<Close_count=2273"
+    ],
+    "025820.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "025860.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "025870.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "025880.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "025890.csv": [
+      "ohlc:Low<Close_count=2288"
+    ],
+    "025900.csv": [
+      "ohlc:Low<Close_count=2318"
+    ],
+    "025950.csv": [
+      "ohlc:Low<Close_count=2314"
+    ],
+    "025980.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "026040.csv": [
+      "ohlc:Low<Close_count=2392"
+    ],
+    "026150.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "026890.csv": [
+      "ohlc:Low<Close_count=2310"
+    ],
+    "026910.csv": [
+      "ohlc:Low<Close_count=2263"
+    ],
+    "026940.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "026960.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "027040.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "027050.csv": [
+      "ohlc:Low<Close_count=2283"
+    ],
+    "027360.csv": [
+      "ohlc:Low<Close_count=1661"
+    ],
+    "027410.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "027580.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "027710.csv": [
+      "ohlc:Low<Close_count=2287"
+    ],
+    "027740.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "027830.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "027970.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "028050.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "028080.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "028100.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "028260.csv": [
+      "ohlc:Low<Close_count=2273"
+    ],
+    "02826K.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "028300.csv": [
+      "ohlc:Low<Close_count=2386"
+    ],
+    "028670.csv": [
+      "ohlc:Low<Close_count=2384"
+    ],
+    "029460.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "029480.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "029530.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "029780.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "030000.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "030190.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "030200.csv": [
+      "ohlc:Low<Close_count=2165"
+    ],
+    "030210.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "030350.csv": [
+      "ohlc:Low<Close_count=2147"
+    ],
+    "030520.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "030530.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "030610.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "030720.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "030960.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "031210.csv": [
+      "ohlc:Low<Close_count=221"
+    ],
+    "031310.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "031330.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "031430.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "031440.csv": [
+      "ohlc:Low<Close_count=2374"
+    ],
+    "031510.csv": [
+      "ohlc:Low<Close_count=2307"
+    ],
+    "031820.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "031860.csv": [
+      "ohlc:Low<Close_count=2287"
+    ],
+    "031980.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "032080.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "032190.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "032280.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "032300.csv": [
+      "ohlc:Low<Close_count=1220"
+    ],
+    "032350.csv": [
+      "ohlc:Low<Close_count=2379"
+    ],
+    "032500.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "032540.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "032560.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "032580.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "032620.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "032640.csv": [
+      "ohlc:Low<Close_count=2250"
+    ],
+    "032680.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "032685.csv": [
+      "ohlc:Low<Close_count=2118"
+    ],
+    "032750.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "032790.csv": [
+      "ohlc:Low<Close_count=1548"
+    ],
+    "032800.csv": [
+      "ohlc:Low<Close_count=2195"
+    ],
+    "032820.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "032830.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "032850.csv": [
+      "ohlc:Low<Close_count=2221"
+    ],
+    "032860.csv": [
+      "ohlc:Low<Close_count=1541"
+    ],
+    "032940.csv": [
+      "ohlc:Low<Close_count=2385"
+    ],
+    "032960.csv": [
+      "ohlc:Low<Close_count=2136"
+    ],
+    "032980.csv": [
+      "ohlc:Low<Close_count=2112"
+    ],
+    "033050.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "033100.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "033130.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "033160.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "033170.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "033200.csv": [
+      "ohlc:Low<Close_count=2270"
+    ],
+    "033230.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "033240.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "033250.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "033270.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "033290.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "033310.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "033320.csv": [
+      "ohlc:Low<Close_count=2248"
+    ],
+    "033340.csv": [
+      "ohlc:Low<Close_count=1601"
+    ],
+    "033500.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "033530.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "033540.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "033560.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "033640.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "033780.csv": [
+      "ohlc:Low<Close_count=2288"
+    ],
+    "033790.csv": [
+      "ohlc:Low<Close_count=1611"
+    ],
+    "033830.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "033920.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "034020.csv": [
+      "ohlc:Low<Close_count=2388"
+    ],
+    "034120.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "034220.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "034230.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "034310.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "034590.csv": [
+      "ohlc:Low<Close_count=2212"
+    ],
+    "034730.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "03473K.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "034810.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "03481K.csv": [
+      "ohlc:Low<Close_count=924"
+    ],
+    "034830.csv": [
+      "ohlc:Low<Close_count=2308"
+    ],
+    "034940.csv": [
+      "ohlc:Low<Close_count=2286"
+    ],
+    "034950.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "035000.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "035080.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "035150.csv": [
+      "ohlc:Low<Close_count=2408"
+    ],
+    "035200.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "035250.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "035290.csv": [
+      "ohlc:Low<Close_count=1702"
+    ],
+    "035420.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "035460.csv": [
+      "ohlc:Low<Close_count=2299"
+    ],
+    "035510.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "035600.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "035610.csv": [
+      "ohlc:Low<Close_count=2293"
+    ],
+    "035620.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "035720.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "035760.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "035810.csv": [
+      "ohlc:Low<Close_count=2310"
+    ],
+    "035890.csv": [
+      "ohlc:Low<Close_count=2176"
+    ],
+    "035900.csv": [
+      "ohlc:Low<Close_count=2391"
+    ],
+    "036000.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "036010.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "036030.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "036090.csv": [
+      "ohlc:Low<Close_count=2275"
+    ],
+    "036120.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "036170.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "036180.csv": [
+      "ohlc:Low<Close_count=1725"
+    ],
+    "036190.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "036200.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "036220.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=463"
+    ],
+    "036420.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "036460.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "036480.csv": [
+      "ohlc:Low<Close_count=2318"
+    ],
+    "036530.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "036540.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "036560.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "036570.csv": [
+      "ohlc:Low<Close_count=2379"
+    ],
+    "036580.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "036620.csv": [
+      "ohlc:Low<Close_count=2383"
+    ],
+    "036630.csv": [
+      "ohlc:Low<Close_count=2200"
+    ],
+    "036640.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "036670.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "036690.csv": [
+      "ohlc:Low<Close_count=1887"
+    ],
+    "036710.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "036800.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "036810.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "036830.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "036890.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "036930.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "037030.csv": [
+      "ohlc:Low<Close_count=1740"
+    ],
+    "037070.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "037230.csv": [
+      "ohlc:Low<Close_count=2298"
+    ],
+    "037270.csv": [
+      "ohlc:Low<Close_count=2391"
+    ],
+    "037330.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "037350.csv": [
+      "ohlc:Low<Close_count=2391"
+    ],
+    "037370.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "037400.csv": [
+      "ohlc:Low<Close_count=2310"
+    ],
+    "037440.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "037460.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "037560.csv": [
+      "ohlc:Low<Close_count=2277"
+    ],
+    "037710.csv": [
+      "ohlc:Low<Close_count=2286"
+    ],
+    "037760.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "037950.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "038010.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "038060.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "038070.csv": [
+      "ohlc:Low<Close_count=2284"
+    ],
+    "038110.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "038290.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "038390.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "038460.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "038500.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "038530.csv": [
+      "ohlc:Low<Close_count=2225"
+    ],
+    "038540.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "038620.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "038680.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "038870.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "038880.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "038950.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "039010.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "039020.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "039030.csv": [
+      "ohlc:Low<Close_count=2396"
+    ],
+    "039130.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "039200.csv": [
+      "ohlc:Low<Close_count=2399"
+    ],
+    "039240.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "039290.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "039310.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "039340.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "039420.csv": [
+      "ohlc:Low<Close_count=2279"
+    ],
+    "039440.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "039490.csv": [
+      "ohlc:Low<Close_count=2376"
+    ],
+    "039560.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "039570.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "039610.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "039740.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "039830.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "039840.csv": [
+      "ohlc:Low<Close_count=2368"
+    ],
+    "039860.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "039980.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "040160.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "040300.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "040350.csv": [
+      "ohlc:Low<Close_count=2279"
+    ],
+    "040420.csv": [
+      "ohlc:Low<Close_count=2377"
+    ],
+    "040610.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "040910.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "041020.csv": [
+      "ohlc:Low<Close_count=2310"
+    ],
+    "041190.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "041440.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "041460.csv": [
+      "ohlc:Low<Close_count=2274"
+    ],
+    "041510.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "041520.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "041590.csv": [
+      "ohlc:Low<Close_count=1944"
+    ],
+    "041650.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "041830.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "041910.csv": [
+      "ohlc:Low<Close_count=2299"
+    ],
+    "041920.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "041930.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "041960.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "042000.csv": [
+      "ohlc:Low<Close_count=1869"
+    ],
+    "042040.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "042110.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "042370.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "042420.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "042500.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "042510.csv": [
+      "ohlc:Low<Close_count=2281"
+    ],
+    "042520.csv": [
+      "ohlc:Low<Close_count=2396"
+    ],
+    "042600.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "042660.csv": [
+      "ohlc:Low<Close_count=2079"
+    ],
+    "042700.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "042940.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "043090.csv": [
+      "ohlc:Low<Close_count=2121"
+    ],
+    "043100.csv": [
+      "ohlc:Low<Close_count=2011"
+    ],
+    "043150.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "043200.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "043220.csv": [
+      "ohlc:Low<Close_count=2004"
+    ],
+    "043260.csv": [
+      "ohlc:Low<Close_count=2289"
+    ],
+    "043340.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "043360.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "043370.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "043590.csv": [
+      "ohlc:Low<Close_count=1568"
+    ],
+    "043610.csv": [
+      "ohlc:Low<Close_count=2309"
+    ],
+    "043650.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "043710.csv": [
+      "ohlc:Low<Close_count=2194"
+    ],
+    "043910.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "044180.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1923"
+    ],
+    "044340.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "044380.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "044450.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "044480.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "044490.csv": [
+      "ohlc:Low<Close_count=2091"
+    ],
+    "044780.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "044820.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "044960.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "044990.csv": [
+      "ohlc:Low<Close_count=1325"
+    ],
+    "045060.csv": [
+      "ohlc:Low<Close_count=2275"
+    ],
+    "045100.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "045300.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "045340.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "045390.csv": [
+      "ohlc:Low<Close_count=2286"
+    ],
+    "045510.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "045520.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "045660.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "045970.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "046070.csv": [
+      "ohlc:Low<Close_count=1618"
+    ],
+    "046120.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "046210.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "046310.csv": [
+      "ohlc:Low<Close_count=2380"
+    ],
+    "046390.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "046440.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "046890.csv": [
+      "ohlc:Low<Close_count=2257"
+    ],
+    "046940.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "046970.csv": [
+      "ohlc:Low<Close_count=2100"
+    ],
+    "047040.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "047050.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "047080.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "047310.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "047400.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "047560.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "047770.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "047810.csv": [
+      "ohlc:Low<Close_count=2351"
+    ],
+    "047820.csv": [
+      "ohlc:Low<Close_count=1957"
+    ],
+    "047920.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "048410.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "048430.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "048470.csv": [
+      "ohlc:Low<Close_count=2318"
+    ],
+    "048530.csv": [
+      "ohlc:Low<Close_count=2318"
+    ],
+    "048550.csv": [
+      "ohlc:Low<Close_count=2308"
+    ],
+    "048770.csv": [
+      "ohlc:Low<Close_count=2314"
+    ],
+    "048830.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "048870.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "048910.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "049070.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "049080.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "049120.csv": [
+      "ohlc:Low<Close_count=2283"
+    ],
+    "049180.csv": [
+      "ohlc:Low<Close_count=1988"
+    ],
+    "049430.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "049470.csv": [
+      "ohlc:Low<Close_count=2210"
+    ],
+    "049480.csv": [
+      "ohlc:Low<Close_count=2235"
+    ],
+    "049520.csv": [
+      "ohlc:Low<Close_count=2382"
+    ],
+    "049550.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "049630.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "049720.csv": [
+      "ohlc:Low<Close_count=2386"
+    ],
+    "049800.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "049830.csv": [
+      "ohlc:Low<Close_count=2276"
+    ],
+    "049950.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "049960.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "050090.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2312"
+    ],
+    "050110.csv": [
+      "ohlc:Low<Close_count=2287"
+    ],
+    "050120.csv": [
+      "ohlc:Low<Close_count=2291"
+    ],
+    "050760.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "050860.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "050890.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "050960.csv": [
+      "ohlc:Low<Close_count=2166"
+    ],
+    "051160.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "051360.csv": [
+      "ohlc:Low<Close_count=2388"
+    ],
+    "051370.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "051380.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "051390.csv": [
+      "ohlc:Low<Close_count=2294"
+    ],
+    "051490.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "051500.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "051600.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "051630.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "051780.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "051900.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "051905.csv": [
+      "ohlc:Low<Close_count=2227"
+    ],
+    "051910.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "051915.csv": [
+      "ohlc:Low<Close_count=2231"
+    ],
+    "051980.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "052020.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "052220.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "052260.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "052300.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "052330.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "052400.csv": [
+      "ohlc:Low<Close_count=2240"
+    ],
+    "052420.csv": [
+      "ohlc:Low<Close_count=2215"
+    ],
+    "052460.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "052600.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "052670.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1756"
+    ],
+    "052690.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "052710.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "052770.csv": [
+      "ohlc:Low<Close_count=1299"
+    ],
+    "052790.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "052860.csv": [
+      "ohlc:Low<Close_count=2379"
+    ],
+    "052900.csv": [
+      "ohlc:Low<Close_count=2276"
+    ],
+    "052960.csv": [
+      "ohlc:Low<Close_count=229"
+    ],
+    "053030.csv": [
+      "ohlc:Low<Close_count=2235"
+    ],
+    "053050.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "053060.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "053080.csv": [
+      "ohlc:Low<Close_count=1245"
+    ],
+    "053160.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "053210.csv": [
+      "ohlc:Low<Close_count=2293"
+    ],
+    "053260.csv": [
+      "ohlc:Low<Close_count=2286"
+    ],
+    "053270.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "053280.csv": [
+      "ohlc:Low<Close_count=2314"
+    ],
+    "053290.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "053300.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "053350.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "053450.csv": [
+      "ohlc:Low<Close_count=2233"
+    ],
+    "053580.csv": [
+      "ohlc:Low<Close_count=1627"
+    ],
+    "053610.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "053620.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "053690.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "053700.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "053800.csv": [
+      "ohlc:Low<Close_count=2298"
+    ],
+    "053950.csv": [
+      "ohlc:Low<Close_count=1926"
+    ],
+    "053980.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "054040.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "054050.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "054090.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "054180.csv": [
+      "ohlc:Low<Close_count=2213"
+    ],
+    "054210.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "054220.csv": [
+      "ohlc:Low<Close_count=1543"
+    ],
+    "054300.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "054410.csv": [
+      "ohlc:Low<Close_count=2251"
+    ],
+    "054450.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "054540.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "054620.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "054670.csv": [
+      "ohlc:Low<Close_count=2296"
+    ],
+    "054780.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "054800.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "054920.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "054930.csv": [
+      "ohlc:Low<Close_count=2291"
+    ],
+    "054940.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "054950.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "055490.csv": [
+      "ohlc:Low<Close_count=1951"
+    ],
+    "055550.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "056080.csv": [
+      "ohlc:Low<Close_count=2364"
+    ],
+    "056090.csv": [
+      "ohlc:Low<Close_count=1968"
+    ],
+    "056190.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "056360.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "056700.csv": [
+      "ohlc:Low<Close_count=2383"
+    ],
+    "056730.csv": [
+      "ohlc:Low<Close_count=1368"
+    ],
+    "057030.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "057050.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "057540.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "057680.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "058110.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "058400.csv": [
+      "ohlc:Low<Close_count=2257"
+    ],
+    "058430.csv": [
+      "ohlc:Low<Close_count=2310"
+    ],
+    "058450.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1851"
+    ],
+    "058470.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "058610.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "058630.csv": [
+      "ohlc:Low<Close_count=2318"
+    ],
+    "058650.csv": [
+      "ohlc:Low<Close_count=2149"
+    ],
+    "058730.csv": [
+      "ohlc:Low<Close_count=2383"
+    ],
+    "058820.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "058850.csv": [
+      "ohlc:Low<Close_count=2376"
+    ],
+    "058860.csv": [
+      "ohlc:Low<Close_count=2374"
+    ],
+    "058970.csv": [
+      "ohlc:Low<Close_count=1849"
+    ],
+    "059090.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "059100.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "059120.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "059210.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "059270.csv": [
+      "ohlc:Low<Close_count=1107"
+    ],
+    "060150.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "060230.csv": [
+      "ohlc:Low<Close_count=2257"
+    ],
+    "060240.csv": [
+      "ohlc:Low<Close_count=2148"
+    ],
+    "060250.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "060260.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2179"
+    ],
+    "060280.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "060310.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "060370.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "060380.csv": [
+      "ohlc:Low<Close_count=2299"
+    ],
+    "060480.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "060540.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "060560.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "060570.csv": [
+      "ohlc:Low<Close_count=2299"
+    ],
+    "060590.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "060720.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "060850.csv": [
+      "ohlc:Low<Close_count=1271"
+    ],
+    "060900.csv": [
+      "ohlc:Low<Close_count=2027"
+    ],
+    "060980.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "061040.csv": [
+      "ohlc:Low<Close_count=2380"
+    ],
+    "061090.csv": [
+      "ohlc:Low<Close_count=57"
+    ],
+    "061250.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "061970.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "062040.csv": [
+      "ohlc:Low<Close_count=359"
+    ],
+    "062970.csv": [
+      "ohlc:Low<Close_count=1431"
+    ],
+    "063080.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "063160.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "063170.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "063440.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "063570.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "063760.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "064090.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "064240.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "064260.csv": [
+      "ohlc:Low<Close_count=2296"
+    ],
+    "064290.csv": [
+      "ohlc:Low<Close_count=2388"
+    ],
+    "064350.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "064400.csv": [
+      "ohlc:Low<Close_count=239"
+    ],
+    "064480.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "064520.csv": [
+      "ohlc:Low<Close_count=1532"
+    ],
+    "064550.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "064760.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "064800.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "064820.csv": [
+      "ohlc:Low<Close_count=2358"
+    ],
+    "064850.csv": [
+      "ohlc:Low<Close_count=1690"
+    ],
+    "064960.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "065060.csv": [
+      "ohlc:Low<Close_count=2267"
+    ],
+    "065130.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "065150.csv": [
+      "ohlc:Low<Close_count=1076"
+    ],
+    "065170.csv": [
+      "ohlc:Low<Close_count=2270"
+    ],
+    "065350.csv": [
+      "ohlc:Low<Close_count=2385"
+    ],
+    "065370.csv": [
+      "ohlc:Low<Close_count=1681"
+    ],
+    "065420.csv": [
+      "ohlc:Low<Close_count=1617"
+    ],
+    "065440.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "065450.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "065500.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "065510.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "065530.csv": [
+      "ohlc:Low<Close_count=2274"
+    ],
+    "065570.csv": [
+      "ohlc:Low<Close_count=2105"
+    ],
+    "065650.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "065660.csv": [
+      "ohlc:Low<Close_count=2294"
+    ],
+    "065680.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "065690.csv": [
+      "ohlc:Low<Close_count=2284"
+    ],
+    "065710.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "065770.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "065950.csv": [
+      "ohlc:Low<Close_count=2285"
+    ],
+    "066130.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "066310.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "066360.csv": [
+      "ohlc:Low<Close_count=1901"
+    ],
+    "066410.csv": [
+      "ohlc:Low<Close_count=1654"
+    ],
+    "066430.csv": [
+      "ohlc:Low<Close_count=1991"
+    ],
+    "066570.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "066575.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "066590.csv": [
+      "ohlc:Low<Close_count=2282"
+    ],
+    "066620.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "066670.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "066700.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "066790.csv": [
+      "ohlc:Low<Close_count=1570"
+    ],
+    "066830.csv": [
+      "ohlc:Low<Close_count=1223"
+    ],
+    "066900.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "066910.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "066970.csv": [
+      "ohlc:Low<Close_count=2380"
+    ],
+    "066980.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "067000.csv": [
+      "ohlc:Low<Close_count=2283"
+    ],
+    "067010.csv": [
+      "ohlc:Low<Close_count=2310"
+    ],
+    "067080.csv": [
+      "ohlc:Low<Close_count=2228"
+    ],
+    "067160.csv": [
+      "ohlc:Low<Close_count=2383"
+    ],
+    "067170.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "067280.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "067290.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "067310.csv": [
+      "ohlc:Low<Close_count=2382"
+    ],
+    "067370.csv": [
+      "ohlc:Low<Close_count=2254"
+    ],
+    "067390.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "067570.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "067630.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2373"
+    ],
+    "067730.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "067770.csv": [
+      "ohlc:Low<Close_count=2298"
+    ],
+    "067830.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "067900.csv": [
+      "ohlc:Low<Close_count=2382"
+    ],
+    "067920.csv": [
+      "ohlc:Low<Close_count=2381"
+    ],
+    "067990.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "068050.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "068100.csv": [
+      "ohlc:Low<Close_count=422"
+    ],
+    "068240.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "068270.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "068290.csv": [
+      "ohlc:Low<Close_count=2248"
+    ],
+    "068330.csv": [
+      "ohlc:Low<Close_count=2207"
+    ],
+    "068760.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "068790.csv": [
+      "ohlc:Low<Close_count=2177"
+    ],
+    "068930.csv": [
+      "ohlc:Low<Close_count=2368"
+    ],
+    "068940.csv": [
+      "ohlc:Low<Close_count=1676"
+    ],
+    "069080.csv": [
+      "ohlc:Low<Close_count=2308"
+    ],
+    "069140.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "069260.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "069330.csv": [
+      "ohlc:Low<Close_count=2025"
+    ],
+    "069410.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "069460.csv": [
+      "ohlc:Low<Close_count=2220"
+    ],
+    "069510.csv": [
+      "ohlc:Low<Close_count=2307"
+    ],
+    "069540.csv": [
+      "ohlc:Low<Close_count=1763"
+    ],
+    "069620.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "069640.csv": [
+      "ohlc:Low<Close_count=2287"
+    ],
+    "069730.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "069920.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "069960.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "070300.csv": [
+      "ohlc:Low<Close_count=2166"
+    ],
+    "070590.csv": [
+      "ohlc:Low<Close_count=2219"
+    ],
+    "070960.csv": [
+      "ohlc:Low<Close_count=2285"
+    ],
+    "071050.csv": [
+      "ohlc:Low<Close_count=2400"
+    ],
+    "071055.csv": [
+      "ohlc:Low<Close_count=2384"
+    ],
+    "071090.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "071200.csv": [
+      "ohlc:Low<Close_count=2240"
+    ],
+    "071280.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "071320.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "071670.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "071840.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "071850.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "071950.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "071970.csv": [
+      "ohlc:Low<Close_count=2280"
+    ],
+    "072020.csv": [
+      "ohlc:Low<Close_count=2308"
+    ],
+    "072130.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "072470.csv": [
+      "ohlc:Low<Close_count=2285"
+    ],
+    "072710.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "072770.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "072870.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "072950.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "072990.csv": [
+      "ohlc:Low<Close_count=2173"
+    ],
+    "073010.csv": [
+      "ohlc:Low<Close_count=1740"
+    ],
+    "073110.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "073190.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "073240.csv": [
+      "ohlc:Low<Close_count=2396"
+    ],
+    "073490.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "073540.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "073560.csv": [
+      "ohlc:Low<Close_count=2227"
+    ],
+    "073570.csv": [
+      "ohlc:Low<Close_count=2280"
+    ],
+    "073640.csv": [
+      "ohlc:Low<Close_count=1923"
+    ],
+    "074430.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "074600.csv": [
+      "ohlc:Low<Close_count=2400"
+    ],
+    "074610.csv": [
+      "ohlc:Low<Close_count=2170"
+    ],
+    "075130.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "075180.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "075580.csv": [
+      "ohlc:Low<Close_count=2409"
+    ],
+    "075970.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "076080.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "076340.csv": [
+      "ohlc:Low<Close_count=1111"
+    ],
+    "076610.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "077360.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "077500.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "077970.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "078000.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "078020.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "078070.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "078130.csv": [
+      "ohlc:Low<Close_count=1745"
+    ],
+    "078140.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "078150.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "078160.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "078340.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "078350.csv": [
+      "ohlc:Low<Close_count=2388"
+    ],
+    "078520.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "078590.csv": [
+      "ohlc:Low<Close_count=1733"
+    ],
+    "078600.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "078860.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2284"
+    ],
+    "078890.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "078930.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "078935.csv": [
+      "ohlc:Low<Close_count=2358"
+    ],
+    "079000.csv": [
+      "ohlc:Low<Close_count=2273"
+    ],
+    "079160.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "079170.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "079190.csv": [
+      "ohlc:Low<Close_count=1624"
+    ],
+    "079370.csv": [
+      "ohlc:Low<Close_count=2376"
+    ],
+    "079430.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "079550.csv": [
+      "ohlc:Low<Close_count=2392"
+    ],
+    "079650.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "079810.csv": [
+      "ohlc:Low<Close_count=2382"
+    ],
+    "079900.csv": [
+      "ohlc:Low<Close_count=347"
+    ],
+    "079940.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "079950.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "079960.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "079970.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2136"
+    ],
+    "079980.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "080010.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "080160.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "080220.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "080420.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "080470.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "080520.csv": [
+      "ohlc:Low<Close_count=2307"
+    ],
+    "080530.csv": [
+      "ohlc:Low<Close_count=1792"
+    ],
+    "080580.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "080720.csv": [
+      "ohlc:Low<Close_count=1435"
+    ],
+    "081000.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "081150.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "081180.csv": [
+      "ohlc:Low<Close_count=186"
+    ],
+    "081580.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "081660.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "082210.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "082270.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "082640.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "082660.csv": [
+      "ohlc:Low<Close_count=1963"
+    ],
+    "082740.csv": [
+      "ohlc:Low<Close_count=2417"
+    ],
+    "082800.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "082850.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "082920.csv": [
+      "ohlc:Low<Close_count=2101"
+    ],
+    "083310.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "083420.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "083450.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "083470.csv": [
+      "ohlc:Low<Close_count=1452"
+    ],
+    "083500.csv": [
+      "ohlc:Low<Close_count=2085"
+    ],
+    "083550.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "083640.csv": [
+      "ohlc:Low<Close_count=2275"
+    ],
+    "083650.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "083660.csv": [
+      "ohlc:Low<Close_count=1988"
+    ],
+    "083790.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "083930.csv": [
+      "ohlc:Low<Close_count=2385"
+    ],
+    "084010.csv": [
+      "ohlc:Low<Close_count=2358"
+    ],
+    "084110.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "084180.csv": [
+      "ohlc:Low<Close_count=2007"
+    ],
+    "084370.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "084440.csv": [
+      "ohlc:Low<Close_count=1612"
+    ],
+    "084650.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "084670.csv": [
+      "ohlc:Low<Close_count=2261"
+    ],
+    "084680.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "084690.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "084695.csv": [
+      "ohlc:Low<Close_count=2161"
+    ],
+    "084730.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "084850.csv": [
+      "ohlc:Low<Close_count=1448"
+    ],
+    "084870.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "084990.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "085310.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "085620.csv": [
+      "ohlc:Low<Close_count=2296"
+    ],
+    "085660.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "085670.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "085810.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "085910.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "086040.csv": [
+      "ohlc:Low<Close_count=2283"
+    ],
+    "086060.csv": [
+      "ohlc:Low<Close_count=2368"
+    ],
+    "086220.csv": [
+      "ohlc:Low<Close_count=1008"
+    ],
+    "086280.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "086390.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "086450.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "086520.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "086670.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "086710.csv": [
+      "ohlc:Low<Close_count=1182"
+    ],
+    "086790.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "086820.csv": [
+      "ohlc:Low<Close_count=1737"
+    ],
+    "086890.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "086900.csv": [
+      "ohlc:Low<Close_count=2373"
+    ],
+    "086960.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "086980.csv": [
+      "ohlc:Low<Close_count=2323"
+    ],
+    "087010.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "087260.csv": [
+      "ohlc:Low<Close_count=2054"
+    ],
+    "087600.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "088130.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "088260.csv": [
+      "ohlc:Low<Close_count=1797"
+    ],
+    "088280.csv": [
+      "ohlc:Low<Close_count=517"
+    ],
+    "088290.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "088340.csv": [
+      "ohlc:Low<Close_count=334"
+    ],
+    "088350.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "088390.csv": [
+      "ohlc:Low<Close_count=2318"
+    ],
+    "088790.csv": [
+      "ohlc:Low<Close_count=2274"
+    ],
+    "088800.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "088910.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "088980.csv": [
+      "ohlc:Low<Close_count=2077"
+    ],
+    "089010.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "089030.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "089140.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "089150.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "089230.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "089470.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "089590.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "089600.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "089790.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "089850.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "089860.csv": [
+      "ohlc:Low<Close_count=1048"
+    ],
+    "089890.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "089970.csv": [
+      "ohlc:Low<Close_count=1770"
+    ],
+    "089980.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "090080.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "090150.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "090350.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "090355.csv": [
+      "ohlc:Low<Close_count=2068"
+    ],
+    "090360.csv": [
+      "ohlc:Low<Close_count=2286"
+    ],
+    "090370.csv": [
+      "ohlc:Low<Close_count=2317"
+    ],
+    "090410.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "090430.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "090435.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "090460.csv": [
+      "ohlc:Low<Close_count=2386"
+    ],
+    "090470.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "090710.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "090850.csv": [
+      "ohlc:Low<Close_count=2401"
+    ],
+    "091120.csv": [
+      "ohlc:Low<Close_count=2362"
+    ],
+    "091340.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "091440.csv": [
+      "ohlc:Low<Close_count=2358"
+    ],
+    "091580.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "091590.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "091700.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "091810.csv": [
+      "ohlc:Low<Close_count=1751"
+    ],
+    "091970.csv": [
+      "ohlc:Low<Close_count=1985"
+    ],
+    "092040.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "092070.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "092130.csv": [
+      "ohlc:Low<Close_count=2388"
+    ],
+    "092190.csv": [
+      "ohlc:Low<Close_count=1341"
+    ],
+    "092200.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "092220.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "092230.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "092300.csv": [
+      "ohlc:Low<Close_count=2374"
+    ],
+    "092440.csv": [
+      "ohlc:Low<Close_count=2368"
+    ],
+    "092460.csv": [
+      "ohlc:Low<Close_count=2374"
+    ],
+    "092590.csv": [
+      "ohlc:Low<Close_count=1155"
+    ],
+    "092600.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "092730.csv": [
+      "ohlc:Low<Close_count=2407"
+    ],
+    "092780.csv": [
+      "ohlc:Low<Close_count=1893"
+    ],
+    "092790.csv": [
+      "ohlc:Low<Close_count=568"
+    ],
+    "092870.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "093050.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "093190.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "093240.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "093320.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "093370.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "093380.csv": [
+      "ohlc:Low<Close_count=2310"
+    ],
+    "093510.csv": [
+      "ohlc:Low<Close_count=357"
+    ],
+    "093520.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "093640.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "093920.csv": [
+      "ohlc:Low<Close_count=2358"
+    ],
+    "094170.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "094280.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "094360.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "094480.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "094800.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "094820.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "094840.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "094850.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "094860.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "094940.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "094970.csv": [
+      "ohlc:Low<Close_count=2391"
+    ],
+    "095190.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "095270.csv": [
+      "ohlc:Low<Close_count=2374"
+    ],
+    "095340.csv": [
+      "ohlc:Low<Close_count=2383"
+    ],
+    "095500.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "095570.csv": [
+      "ohlc:Low<Close_count=2388"
+    ],
+    "095610.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "095660.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "095700.csv": [
+      "ohlc:Low<Close_count=2367"
+    ],
+    "095720.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "095910.csv": [
+      "ohlc:Low<Close_count=2364"
+    ],
+    "096240.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "096250.csv": [
+      "ohlc:Low<Close_count=245"
+    ],
+    "096350.csv": [
+      "ohlc:Low<Close_count=2380"
+    ],
+    "096530.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "096610.csv": [
+      "ohlc:Low<Close_count=1864"
+    ],
+    "096630.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "096690.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2088"
+    ],
+    "096760.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "096770.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "096775.csv": [
+      "ohlc:Low<Close_count=2311"
+    ],
+    "096870.csv": [
+      "ohlc:Low<Close_count=2318"
+    ],
+    "097230.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "097520.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "097780.csv": [
+      "ohlc:Low<Close_count=2175"
+    ],
+    "097800.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "097870.csv": [
+      "ohlc:Low<Close_count=2277"
+    ],
+    "097950.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "097955.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "098070.csv": [
+      "ohlc:Low<Close_count=213"
+    ],
+    "098120.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "098460.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "098660.csv": [
+      "ohlc:Low<Close_count=2264"
+    ],
+    "099190.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "099220.csv": [
+      "ohlc:Low<Close_count=2283"
+    ],
+    "099320.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "099390.csv": [
+      "ohlc:Low<Close_count=1027"
+    ],
+    "099410.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "099430.csv": [
+      "ohlc:Low<Close_count=1043"
+    ],
+    "099440.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "099520.csv": [
+      "ohlc:Low<Close_count=1202"
+    ],
+    "099750.csv": [
+      "ohlc:Low<Close_count=1599"
+    ],
+    "100030.csv": [
+      "ohlc:Low<Close_count=2377"
+    ],
+    "100090.csv": [
+      "ohlc:Low<Close_count=2389"
+    ],
+    "100120.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "100130.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "100220.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "100250.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "100590.csv": [
+      "ohlc:Low<Close_count=1649"
+    ],
+    "100660.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "100700.csv": [
+      "ohlc:Low<Close_count=2275"
+    ],
+    "100790.csv": [
+      "ohlc:Low<Close_count=1620"
+    ],
+    "100840.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "101000.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2023"
+    ],
+    "101140.csv": [
+      "ohlc:Low<Close_count=1955"
+    ],
+    "101160.csv": [
+      "ohlc:Low<Close_count=2401"
+    ],
+    "101170.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "101240.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "101330.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "101360.csv": [
+      "ohlc:Low<Close_count=1695"
+    ],
+    "101390.csv": [
+      "ohlc:Low<Close_count=2149"
+    ],
+    "101400.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "101490.csv": [
+      "ohlc:Low<Close_count=2386"
+    ],
+    "101530.csv": [
+      "ohlc:Low<Close_count=2214"
+    ],
+    "101670.csv": [
+      "ohlc:Low<Close_count=2364"
+    ],
+    "101680.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1435"
+    ],
+    "101730.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "101930.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "101970.csv": [
+      "ohlc:Low<Close_count=210"
+    ],
+    "102120.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "102260.csv": [
+      "ohlc:Low<Close_count=2372"
+    ],
+    "102370.csv": [
+      "ohlc:Low<Close_count=930"
+    ],
+    "102460.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "102710.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "102940.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "102950.csv": [
+      "ohlc:Low<Close_count=607"
+    ],
+    "103140.csv": [
+      "ohlc:Low<Close_count=2385"
+    ],
+    "103230.csv": [
+      "ohlc:Low<Close_count=1850"
+    ],
+    "103590.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "103660.csv": [
+      "ohlc:Low<Close_count=950"
+    ],
+    "103840.csv": [
+      "ohlc:Low<Close_count=1460"
+    ],
+    "104040.csv": [
+      "ohlc:Low<Close_count=2269"
+    ],
+    "104200.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "104460.csv": [
+      "ohlc:Low<Close_count=2384"
+    ],
+    "104480.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "104540.csv": [
+      "ohlc:Low<Close_count=2108"
+    ],
+    "104620.csv": [
+      "ohlc:Low<Close_count=1639"
+    ],
+    "104700.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "104830.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "105330.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "105550.csv": [
+      "ohlc:Low<Close_count=2290"
+    ],
+    "105560.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "105630.csv": [
+      "ohlc:Low<Close_count=2389"
+    ],
+    "105740.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "105760.csv": [
+      "ohlc:Low<Close_count=459"
+    ],
+    "105840.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "106080.csv": [
+      "ohlc:Low<Close_count=1347"
+    ],
+    "106190.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "106240.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "106520.csv": [
+      "ohlc:Low<Close_count=1679"
+    ],
+    "107590.csv": [
+      "ohlc:Low<Close_count=2217"
+    ],
+    "107600.csv": [
+      "ohlc:Low<Close_count=787"
+    ],
+    "107640.csv": [
+      "ohlc:Low<Close_count=1374"
+    ],
+    "108230.csv": [
+      "ohlc:Low<Close_count=2279"
+    ],
+    "108320.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "108380.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "108490.csv": [
+      "ohlc:Low<Close_count=1704"
+    ],
+    "108670.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "108675.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "108860.csv": [
+      "ohlc:Low<Close_count=2099"
+    ],
+    "109070.csv": [
+      "ohlc:Low<Close_count=1008"
+    ],
+    "109080.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "109610.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "109670.csv": [
+      "ohlc:Low<Close_count=482"
+    ],
+    "109740.csv": [
+      "ohlc:Low<Close_count=2214"
+    ],
+    "109820.csv": [
+      "ohlc:Low<Close_count=2314"
+    ],
+    "109860.csv": [
+      "ohlc:Low<Close_count=2233"
+    ],
+    "109960.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2350"
+    ],
+    "110020.csv": [
+      "ohlc:Low<Close_count=1645"
+    ],
+    "110790.csv": [
+      "ohlc:Low<Close_count=1681"
+    ],
+    "110990.csv": [
+      "ohlc:Low<Close_count=1770"
+    ],
+    "111110.csv": [
+      "ohlc:Low<Close_count=2117"
+    ],
+    "111380.csv": [
+      "ohlc:Low<Close_count=522"
+    ],
+    "111710.csv": [
+      "ohlc:Low<Close_count=1659"
+    ],
+    "111770.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "112040.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "112190.csv": [
+      "ohlc:Low<Close_count=1853"
+    ],
+    "112290.csv": [
+      "ohlc:Low<Close_count=824"
+    ],
+    "112610.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "113810.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "114090.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "114190.csv": [
+      "ohlc:Low<Close_count=1864"
+    ],
+    "114450.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "114630.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "114810.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "114840.csv": [
+      "ohlc:Low<Close_count=1017"
+    ],
+    "114920.csv": [
+      "ohlc:Low<Close_count=785"
+    ],
+    "115160.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "115180.csv": [
+      "ohlc:Low<Close_count=2037"
+    ],
+    "115310.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "115440.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "115450.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "115480.csv": [
+      "ohlc:Low<Close_count=2387"
+    ],
+    "115500.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "115530.csv": [
+      "ohlc:Low<Close_count=1466"
+    ],
+    "115570.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "115610.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "116100.csv": [
+      "ohlc:Low<Close_count=1136"
+    ],
+    "117580.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "117670.csv": [
+      "ohlc:Low<Close_count=1750"
+    ],
+    "117730.csv": [
+      "ohlc:Low<Close_count=1706"
+    ],
+    "118000.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "118990.csv": [
+      "ohlc:Low<Close_count=1937"
+    ],
+    "119500.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "119610.csv": [
+      "ohlc:Low<Close_count=2109"
+    ],
+    "119650.csv": [
+      "ohlc:Low<Close_count=2154"
+    ],
+    "119830.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "119850.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "120030.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "120110.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "120115.csv": [
+      "ohlc:Low<Close_count=2381"
+    ],
+    "120240.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "121060.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1121"
+    ],
+    "121440.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "121600.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "121800.csv": [
+      "ohlc:Low<Close_count=1583"
+    ],
+    "121850.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "121890.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1514"
+    ],
+    "122310.csv": [
+      "ohlc:Low<Close_count=1794"
+    ],
+    "122350.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "122450.csv": [
+      "ohlc:Low<Close_count=2376"
+    ],
+    "122640.csv": [
+      "ohlc:Low<Close_count=2383"
+    ],
+    "122690.csv": [
+      "ohlc:Low<Close_count=2349"
+    ],
+    "122830.csv": [
+      "ohlc:Low<Close_count=1121"
+    ],
+    "122870.csv": [
+      "ohlc:Low<Close_count=2384"
+    ],
+    "122900.csv": [
+      "ohlc:Low<Close_count=2286"
+    ],
+    "122990.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "123010.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2317"
+    ],
+    "123040.csv": [
+      "ohlc:Low<Close_count=2333"
+    ],
+    "123330.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "123410.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "123420.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "123570.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "123690.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "123700.csv": [
+      "ohlc:Low<Close_count=2314"
+    ],
+    "123750.csv": [
+      "ohlc:Low<Close_count=2297"
+    ],
+    "123840.csv": [
+      "ohlc:Low<Close_count=2293"
+    ],
+    "123860.csv": [
+      "ohlc:Low<Close_count=2392"
+    ],
+    "123890.csv": [
+      "ohlc:Low<Close_count=2212"
+    ],
+    "124500.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "124560.csv": [
+      "ohlc:Low<Close_count=1440"
+    ],
+    "125020.csv": [
+      "ohlc:Low<Close_count=179"
+    ],
+    "125210.csv": [
+      "ohlc:Low<Close_count=1607"
+    ],
+    "125490.csv": [
+      "ohlc:Low<Close_count=118"
+    ],
+    "126340.csv": [
+      "ohlc:Low<Close_count=1760"
+    ],
+    "126560.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "126600.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "126640.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "126700.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "126720.csv": [
+      "ohlc:Low<Close_count=834"
+    ],
+    "126730.csv": [
+      "ohlc:Low<Close_count=402"
+    ],
+    "126880.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "127120.csv": [
+      "ohlc:Low<Close_count=2364"
+    ],
+    "127710.csv": [
+      "ohlc:Low<Close_count=2288"
+    ],
+    "127980.csv": [
+      "ohlc:Low<Close_count=670"
+    ],
+    "128540.csv": [
+      "ohlc:Low<Close_count=1662"
+    ],
+    "128660.csv": [
+      "ohlc:Low<Close_count=2348"
+    ],
+    "128820.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "128940.csv": [
+      "ohlc:Low<Close_count=2379"
+    ],
+    "129260.csv": [
+      "ohlc:Low<Close_count=2380"
+    ],
+    "129890.csv": [
+      "ohlc:Low<Close_count=1191"
+    ],
+    "129920.csv": [
+      "ohlc:Low<Close_count=827"
+    ],
+    "130500.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "130580.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "130660.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "130740.csv": [
+      "ohlc:Low<Close_count=2313"
+    ],
+    "131030.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "131090.csv": [
+      "ohlc:Low<Close_count=2249"
+    ],
+    "131100.csv": [
+      "ohlc:Low<Close_count=2240"
+    ],
+    "131180.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "131220.csv": [
+      "ohlc:Low<Close_count=2331"
+    ],
+    "131290.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "131370.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "131400.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "131760.csv": [
+      "ohlc:Low<Close_count=2386"
+    ],
+    "131970.csv": [
+      "ohlc:Low<Close_count=2394"
+    ],
+    "133750.csv": [
+      "ohlc:Low<Close_count=2291"
+    ],
+    "133820.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "134060.csv": [
+      "ohlc:Low<Close_count=2238"
+    ],
+    "134380.csv": [
+      "ohlc:Low<Close_count=1992"
+    ],
+    "134580.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "134790.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "136150.csv": [
+      "ohlc:Low<Close_count=179"
+    ],
+    "136410.csv": [
+      "ohlc:Low<Close_count=942"
+    ],
+    "136480.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "136490.csv": [
+      "ohlc:Low<Close_count=2382"
+    ],
+    "136540.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "136660.csv": [
+      "range:return_outlier_count=2",
+      "ohlc:Low<Close_count=1375"
+    ],
+    "137080.csv": [
+      "ohlc:Low<Close_count=906"
+    ],
+    "137310.csv": [
+      "ohlc:Low<Close_count=1035"
+    ],
+    "137400.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "137940.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "137950.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "138040.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "138070.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "138080.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "138360.csv": [
+      "ohlc:Low<Close_count=1458"
+    ],
+    "138490.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "138610.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "138930.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "139050.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1905"
+    ],
+    "139130.csv": [
+      "ohlc:Low<Close_count=2295"
+    ],
+    "139480.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "139670.csv": [
+      "ohlc:Low<Close_count=2287"
+    ],
+    "139990.csv": [
+      "ohlc:Low<Close_count=1023"
+    ],
+    "140070.csv": [
+      "ohlc:Low<Close_count=2097"
+    ],
+    "140410.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "140430.csv": [
+      "ohlc:Low<Close_count=393"
+    ],
+    "140520.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "140610.csv": [
+      "ohlc:Low<Close_count=1733"
+    ],
+    "140660.csv": [
+      "ohlc:Low<Close_count=632"
+    ],
+    "140670.csv": [
+      "ohlc:Low<Close_count=1968"
+    ],
+    "140860.csv": [
+      "ohlc:Low<Close_count=2407"
+    ],
+    "140910.csv": [
+      "ohlc:Low<Close_count=1845"
+    ],
+    "141000.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "141080.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "142210.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "142280.csv": [
+      "ohlc:Low<Close_count=2286"
+    ],
+    "142760.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "143160.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "143210.csv": [
+      "ohlc:Low<Close_count=2108"
+    ],
+    "143240.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "143540.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "144510.csv": [
+      "ohlc:Low<Close_count=2166"
+    ],
+    "144960.csv": [
+      "ohlc:Low<Close_count=2157"
+    ],
+    "145020.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "145170.csv": [
+      "ohlc:Low<Close_count=389"
+    ],
+    "145210.csv": [
+      "ohlc:Low<Close_count=1826"
+    ],
+    "145270.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "145720.csv": [
+      "ohlc:Low<Close_count=2108"
+    ],
+    "145990.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "145995.csv": [
+      "ohlc:Low<Close_count=2043"
+    ],
+    "146060.csv": [
+      "ohlc:Low<Close_count=569"
+    ],
+    "146320.csv": [
+      "ohlc:Low<Close_count=933"
+    ],
+    "147760.csv": [
+      "ohlc:Low<Close_count=2137"
+    ],
+    "147830.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "148150.csv": [
+      "ohlc:Low<Close_count=1528"
+    ],
+    "148250.csv": [
+      "ohlc:Low<Close_count=2271"
+    ],
+    "148780.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1647"
+    ],
+    "148930.csv": [
+      "ohlc:Low<Close_count=792"
+    ],
+    "149010.csv": [
+      "ohlc:Low<Close_count=1136"
+    ],
+    "149300.csv": [
+      "ohlc:Low<Close_count=1439"
+    ],
+    "149950.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "149980.csv": [
+      "ohlc:Low<Close_count=2169"
+    ],
+    "150900.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "151860.csv": [
+      "ohlc:Low<Close_count=2316"
+    ],
+    "152550.csv": [
+      "ohlc:Low<Close_count=1121"
+    ],
+    "153460.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "153490.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "153710.csv": [
+      "ohlc:Low<Close_count=1699"
+    ],
+    "154030.csv": [
+      "ohlc:Low<Close_count=2072"
+    ],
+    "154040.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "155650.csv": [
+      "ohlc:Low<Close_count=2392"
+    ],
+    "155660.csv": [
+      "ohlc:Low<Close_count=2321"
+    ],
+    "156100.csv": [
+      "ohlc:Low<Close_count=2098"
+    ],
+    "158430.csv": [
+      "ohlc:Low<Close_count=1478"
+    ],
+    "159010.csv": [
+      "ohlc:Low<Close_count=1005"
+    ],
+    "159580.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "159910.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1911"
+    ],
+    "160190.csv": [
+      "ohlc:Low<Close_count=378"
+    ],
+    "160550.csv": [
+      "ohlc:Low<Close_count=2340"
+    ],
+    "160980.csv": [
+      "ohlc:Low<Close_count=2399"
+    ],
+    "161000.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "161390.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "161580.csv": [
+      "ohlc:Low<Close_count=2054"
+    ],
+    "161890.csv": [
+      "ohlc:Low<Close_count=2395"
+    ],
+    "162120.csv": [
+      "ohlc:Low<Close_count=1322"
+    ],
+    "162300.csv": [
+      "ohlc:Low<Close_count=702"
+    ],
+    "163280.csv": [
+      "ohlc:Low<Close_count=287"
+    ],
+    "163560.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "163730.csv": [
+      "ohlc:Low<Close_count=1138"
+    ],
+    "166090.csv": [
+      "ohlc:Low<Close_count=2100"
+    ],
+    "166480.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "168330.csv": [
+      "ohlc:Low<Close_count=1977"
+    ],
+    "168360.csv": [
+      "ohlc:Low<Close_count=763"
+    ],
+    "169330.csv": [
+      "ohlc:Low<Close_count=1273"
+    ],
+    "169670.csv": [
+      "ohlc:Low<Close_count=845"
+    ],
+    "170030.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "170790.csv": [
+      "ohlc:Low<Close_count=2305"
+    ],
+    "170900.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "170920.csv": [
+      "ohlc:Low<Close_count=2347"
+    ],
+    "171010.csv": [
+      "ohlc:Low<Close_count=2346"
+    ],
+    "171090.csv": [
+      "ohlc:Low<Close_count=1925"
+    ],
+    "171120.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "172670.csv": [
+      "ohlc:Low<Close_count=600"
+    ],
+    "173130.csv": [
+      "ohlc:Low<Close_count=1826"
+    ],
+    "173940.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "174900.csv": [
+      "ohlc:Low<Close_count=1944"
+    ],
+    "175140.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "175250.csv": [
+      "ohlc:Low<Close_count=1662"
+    ],
+    "175330.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "176590.csv": [
+      "ohlc:Low<Close_count=825"
+    ],
+    "176750.csv": [
+      "ohlc:Low<Close_count=1821"
+    ],
+    "177350.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "177830.csv": [
+      "ohlc:Low<Close_count=2360"
+    ],
+    "177900.csv": [
+      "ohlc:Low<Close_count=257"
+    ],
+    "178320.csv": [
+      "ohlc:Low<Close_count=2110"
+    ],
+    "178600.csv": [
+      "ohlc:Low<Close_count=1045"
+    ],
+    "178780.csv": [
+      "ohlc:Low<Close_count=1455"
+    ],
+    "178920.csv": [
+      "ohlc:Low<Close_count=2345"
+    ],
+    "179290.csv": [
+      "ohlc:Low<Close_count=1660"
+    ],
+    "179530.csv": [
+      "ohlc:Low<Close_count=1237"
+    ],
+    "179720.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=841"
+    ],
+    "179900.csv": [
+      "ohlc:Low<Close_count=1976"
+    ],
+    "180060.csv": [
+      "ohlc:Low<Close_count=1711"
+    ],
+    "180400.csv": [
+      "ohlc:Low<Close_count=1413"
+    ],
+    "180640.csv": [
+      "ohlc:Low<Close_count=2389"
+    ],
+    "18064K.csv": [
+      "ohlc:Low<Close_count=2194"
+    ],
+    "181710.csv": [
+      "ohlc:Low<Close_count=2339"
+    ],
+    "182360.csv": [
+      "ohlc:Low<Close_count=2370"
+    ],
+    "182400.csv": [
+      "ohlc:Low<Close_count=1916"
+    ],
+    "183190.csv": [
+      "ohlc:Low<Close_count=2368"
+    ],
+    "183300.csv": [
+      "ohlc:Low<Close_count=2098"
+    ],
+    "183490.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2391"
+    ],
+    "184230.csv": [
+      "ohlc:Low<Close_count=2319"
+    ],
+    "185190.csv": [
+      "ohlc:Low<Close_count=818"
+    ],
+    "185490.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "185750.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "186230.csv": [
+      "ohlc:Low<Close_count=1884"
+    ],
+    "187220.csv": [
+      "ohlc:Low<Close_count=2334"
+    ],
+    "187270.csv": [
+      "ohlc:Low<Close_count=2332"
+    ],
+    "187420.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "187660.csv": [
+      "ohlc:Low<Close_count=1089"
+    ],
+    "187790.csv": [
+      "ohlc:Low<Close_count=2079"
+    ],
+    "187870.csv": [
+      "ohlc:Low<Close_count=1898"
+    ],
+    "188040.csv": [
+      "ohlc:Low<Close_count=180"
+    ],
+    "188260.csv": [
+      "ohlc:Low<Close_count=513"
+    ],
+    "189300.csv": [
+      "ohlc:Low<Close_count=2195"
+    ],
+    "189330.csv": [
+      "ohlc:Low<Close_count=1558"
+    ],
+    "189350.csv": [
+      "ohlc:Low<Close_count=796"
+    ],
+    "189690.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "189860.csv": [
+      "ohlc:Low<Close_count=2343"
+    ],
+    "189980.csv": [
+      "ohlc:Low<Close_count=2314"
+    ],
+    "190510.csv": [
+      "ohlc:Low<Close_count=2365"
+    ],
+    "190650.csv": [
+      "ohlc:Low<Close_count=1440"
+    ],
+    "191410.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "191420.csv": [
+      "ohlc:Low<Close_count=2276"
+    ],
+    "191600.csv": [
+      "ohlc:Low<Close_count=441"
+    ],
+    "192080.csv": [
+      "ohlc:Low<Close_count=2371"
+    ],
+    "192250.csv": [
+      "ohlc:Low<Close_count=2262"
+    ],
+    "192390.csv": [
+      "ohlc:Low<Close_count=2350"
+    ],
+    "192400.csv": [
+      "ohlc:Low<Close_count=2302"
+    ],
+    "192410.csv": [
+      "range:return_outlier_count=2",
+      "ohlc:Low<Close_count=1739"
+    ],
+    "192440.csv": [
+      "ohlc:Low<Close_count=2324"
+    ],
+    "192650.csv": [
+      "ohlc:Low<Close_count=1595"
+    ],
+    "192820.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "193250.csv": [
+      "ohlc:Low<Close_count=2283"
+    ],
+    "194370.csv": [
+      "ohlc:Low<Close_count=2341"
+    ],
+    "194480.csv": [
+      "ohlc:Low<Close_count=2380"
+    ],
+    "194700.csv": [
+      "ohlc:Low<Close_count=1711"
+    ],
+    "195500.csv": [
+      "ohlc:Low<Close_count=1495"
+    ],
+    "195870.csv": [
+      "ohlc:Low<Close_count=2234"
+    ],
+    "195940.csv": [
+      "ohlc:Low<Close_count=1033"
+    ],
+    "195990.csv": [
+      "ohlc:Low<Close_count=2298"
+    ],
+    "196170.csv": [
+      "ohlc:Low<Close_count=2383"
+    ],
+    "196300.csv": [
+      "ohlc:Low<Close_count=2119"
+    ],
+    "196450.csv": [
+      "ohlc:Low<Close_count=2167"
+    ],
+    "196490.csv": [
+      "ohlc:Low<Close_count=1909"
+    ],
+    "196700.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "197140.csv": [
+      "ohlc:Low<Close_count=2078"
+    ],
+    "198080.csv": [
+      "ohlc:Low<Close_count=1357"
+    ],
+    "198440.csv": [
+      "ohlc:Low<Close_count=2181"
+    ],
+    "198940.csv": [
+      "ohlc:Low<Close_count=747"
+    ],
+    "199150.csv": [
+      "ohlc:Low<Close_count=1361"
+    ],
+    "199290.csv": [
+      "ohlc:Low<Close_count=643"
+    ],
+    "199430.csv": [
+      "ohlc:Low<Close_count=441"
+    ],
+    "199480.csv": [
+      "ohlc:Low<Close_count=334"
+    ],
+    "199550.csv": [
+      "ohlc:Low<Close_count=456"
+    ],
+    "199730.csv": [
+      "ohlc:Low<Close_count=671"
+    ],
+    "199800.csv": [
+      "ohlc:Low<Close_count=2378"
+    ],
+    "199820.csv": [
+      "ohlc:Low<Close_count=1204"
+    ],
+    "200130.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "200230.csv": [
+      "ohlc:Low<Close_count=2283"
+    ],
+    "200350.csv": [
+      "ohlc:Low<Close_count=1899"
+    ],
+    "200470.csv": [
+      "ohlc:Low<Close_count=2352"
+    ],
+    "200580.csv": [
+      "ohlc:Low<Close_count=1522"
+    ],
+    "200670.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "200710.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "200780.csv": [
+      "ohlc:Low<Close_count=2344"
+    ],
+    "200880.csv": [
+      "ohlc:Low<Close_count=2355"
+    ],
+    "201490.csv": [
+      "ohlc:Low<Close_count=2155"
+    ],
+    "202960.csv": [
+      "ohlc:Low<Close_count=1561"
+    ],
+    "203400.csv": [
+      "ohlc:Low<Close_count=2267"
+    ],
+    "203450.csv": [
+      "ohlc:Low<Close_count=2255"
+    ],
+    "203650.csv": [
+      "ohlc:Low<Close_count=2195"
+    ],
+    "203690.csv": [
+      "ohlc:Low<Close_count=2073"
+    ],
+    "204020.csv": [
+      "ohlc:Low<Close_count=1730"
+    ],
+    "204210.csv": [
+      "ohlc:Low<Close_count=1900"
+    ],
+    "204270.csv": [
+      "ohlc:Low<Close_count=1404"
+    ],
+    "204320.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "204610.csv": [
+      "ohlc:Low<Close_count=746"
+    ],
+    "204620.csv": [
+      "ohlc:Low<Close_count=2191"
+    ],
+    "204630.csv": [
+      "ohlc:Low<Close_count=1912"
+    ],
+    "204840.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2324"
+    ],
+    "205100.csv": [
+      "ohlc:Low<Close_count=2299"
+    ],
+    "205470.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2143"
+    ],
+    "205500.csv": [
+      "ohlc:Low<Close_count=2404"
+    ],
+    "206400.csv": [
+      "ohlc:Low<Close_count=2379"
+    ],
+    "206560.csv": [
+      "ohlc:Low<Close_count=2299"
+    ],
+    "206640.csv": [
+      "ohlc:Low<Close_count=2291"
+    ],
+    "206650.csv": [
+      "ohlc:Low<Close_count=2115"
+    ],
+    "206950.csv": [
+      "ohlc:Low<Close_count=899"
+    ],
+    "207490.csv": [
+      "ohlc:Low<Close_count=325"
+    ],
+    "207760.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "207940.csv": [
+      "ohlc:Low<Close_count=2102"
+    ],
+    "208140.csv": [
+      "ohlc:Low<Close_count=2342"
+    ],
+    "208350.csv": [
+      "ohlc:Low<Close_count=2194"
+    ],
+    "208370.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2259"
+    ],
+    "208640.csv": [
+      "ohlc:Low<Close_count=2336"
+    ],
+    "208710.csv": [
+      "ohlc:Low<Close_count=2325"
+    ],
+    "208850.csv": [
+      "ohlc:Low<Close_count=610"
+    ],
+    "208860.csv": [
+      "ohlc:Low<Close_count=1222"
+    ],
+    "208890.csv": [
+      "ohlc:Low<Close_count=541"
+    ],
+    "209640.csv": [
+      "ohlc:Low<Close_count=312"
+    ],
+    "210120.csv": [
+      "ohlc:Low<Close_count=1253"
+    ],
+    "210540.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "210980.csv": [
+      "ohlc:Low<Close_count=2335"
+    ],
+    "211050.csv": [
+      "ohlc:Low<Close_count=1569"
+    ],
+    "211270.csv": [
+      "ohlc:Low<Close_count=2300"
+    ],
+    "212310.csv": [
+      "ohlc:Low<Close_count=1398"
+    ],
+    "212560.csv": [
+      "ohlc:Low<Close_count=2322"
+    ],
+    "212710.csv": [
+      "ohlc:Low<Close_count=240"
+    ],
+    "213420.csv": [
+      "ohlc:Low<Close_count=2354"
+    ],
+    "213500.csv": [
+      "ohlc:Low<Close_count=2320"
+    ],
+    "214150.csv": [
+      "ohlc:Low<Close_count=2201"
+    ],
+    "214180.csv": [
+      "ohlc:Low<Close_count=2361"
+    ],
+    "214260.csv": [
+      "ohlc:Low<Close_count=1453"
+    ],
+    "214270.csv": [
+      "ohlc:Low<Close_count=2212"
+    ],
+    "214320.csv": [
+      "ohlc:Low<Close_count=2390"
+    ],
+    "214330.csv": [
+      "ohlc:Low<Close_count=2294"
+    ],
+    "214370.csv": [
+      "ohlc:Low<Close_count=2108"
+    ],
+    "214390.csv": [
+      "ohlc:Low<Close_count=2138"
+    ],
+    "214420.csv": [
+      "ohlc:Low<Close_count=2366"
+    ],
+    "214430.csv": [
+      "ohlc:Low<Close_count=2389"
+    ],
+    "214450.csv": [
+      "ohlc:Low<Close_count=2356"
+    ],
+    "214610.csv": [
+      "ohlc:Low<Close_count=1912"
+    ],
+    "214680.csv": [
+      "ohlc:Low<Close_count=2253"
+    ],
+    "215000.csv": [
+      "ohlc:Low<Close_count=2353"
+    ],
+    "215090.csv": [
+      "ohlc:Low<Close_count=1431"
+    ],
+    "215100.csv": [
+      "ohlc:Low<Close_count=2167"
+    ],
+    "215200.csv": [
+      "ohlc:Low<Close_count=2326"
+    ],
+    "215360.csv": [
+      "ohlc:Low<Close_count=2337"
+    ],
+    "215380.csv": [
+      "ohlc:Low<Close_count=2226"
+    ],
+    "215480.csv": [
+      "ohlc:Low<Close_count=2241"
+    ],
+    "215570.csv": [
+      "ohlc:Low<Close_count=1626"
+    ],
+    "215600.csv": [
+      "ohlc:Low<Close_count=1563"
+    ],
+    "215790.csv": [
+      "ohlc:Low<Close_count=2177"
+    ],
+    "216050.csv": [
+      "ohlc:Low<Close_count=2197"
+    ],
+    "216080.csv": [
+      "ohlc:Low<Close_count=1464"
+    ],
+    "216400.csv": [
+      "ohlc:Low<Close_count=1928"
+    ],
+    "217190.csv": [
+      "ohlc:Low<Close_count=2379"
+    ],
+    "217270.csv": [
+      "ohlc:Low<Close_count=2213"
+    ],
+    "217320.csv": [
+      "ohlc:Low<Close_count=255"
+    ],
+    "217330.csv": [
+      "ohlc:Low<Close_count=1673"
+    ],
+    "217480.csv": [
+      "ohlc:Low<Close_count=1397"
+    ],
+    "217500.csv": [
+      "ohlc:Low<Close_count=2142"
+    ],
+    "217590.csv": [
+      "ohlc:Low<Close_count=41"
+    ],
+    "217620.csv": [
+      "ohlc:Low<Close_count=1819"
+    ],
+    "217730.csv": [
+      "ohlc:Low<Close_count=2386"
+    ],
+    "217820.csv": [
+      "ohlc:Low<Close_count=2301"
+    ],
+    "217880.csv": [
+      "ohlc:Low<Close_count=1529"
+    ],
+    "217910.csv": [
+      "ohlc:Low<Close_count=1093"
+    ],
+    "217950.csv": [
+      "ohlc:Low<Close_count=1965"
+    ],
+    "218150.csv": [
+      "ohlc:Low<Close_count=2198"
+    ],
+    "218410.csv": [
+      "ohlc:Low<Close_count=2115"
+    ],
+    "219130.csv": [
+      "ohlc:Low<Close_count=2328"
+    ],
+    "219420.csv": [
+      "ohlc:Low<Close_count=1921"
+    ],
+    "219550.csv": [
+      "ohlc:Low<Close_count=2230"
+    ],
+    "219750.csv": [
+      "ohlc:Low<Close_count=1112"
+    ],
+    "220100.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "220180.csv": [
+      "ohlc:Low<Close_count=2168"
+    ],
+    "220260.csv": [
+      "ohlc:Low<Close_count=2258"
+    ],
+    "221800.csv": [
+      "ohlc:Low<Close_count=1134"
+    ],
+    "221840.csv": [
+      "ohlc:Low<Close_count=2382"
+    ],
+    "221980.csv": [
+      "ohlc:Low<Close_count=2292"
+    ],
+    "222040.csv": [
+      "ohlc:Low<Close_count=2374"
+    ],
+    "222080.csv": [
+      "ohlc:Low<Close_count=2239"
+    ],
+    "222110.csv": [
+      "ohlc:Low<Close_count=2329"
+    ],
+    "222160.csv": [
+      "ohlc:Low<Close_count=1131"
+    ],
+    "222420.csv": [
+      "ohlc:Low<Close_count=2286"
+    ],
+    "222670.csv": [
+      "ohlc:Low<Close_count=2090"
+    ],
+    "222800.csv": [
+      "ohlc:Low<Close_count=2374"
+    ],
+    "222810.csv": [
+      "ohlc:Low<Close_count=1900"
+    ],
+    "222980.csv": [
+      "ohlc:Low<Close_count=2312"
+    ],
+    "223220.csv": [
+      "range:return_outlier_count=2",
+      "ohlc:Low<Close_count=855"
+    ],
+    "223250.csv": [
+      "ohlc:Low<Close_count=1322"
+    ],
+    "223310.csv": [
+      "ohlc:Low<Close_count=1528"
+    ],
+    "224060.csv": [
+      "ohlc:Low<Close_count=2243"
+    ],
+    "224110.csv": [
+      "ohlc:Low<Close_count=2359"
+    ],
+    "224760.csv": [
+      "ohlc:Low<Close_count=341"
+    ],
+    "224810.csv": [
+      "ohlc:Low<Close_count=722"
+    ],
+    "225190.csv": [
+      "ohlc:Low<Close_count=1995"
+    ],
+    "225220.csv": [
+      "ohlc:Low<Close_count=1807"
+    ],
+    "225430.csv": [
+      "ohlc:Low<Close_count=1986"
+    ],
+    "225530.csv": [
+      "ohlc:Low<Close_count=2281"
+    ],
+    "225570.csv": [
+      "ohlc:Low<Close_count=2199"
+    ],
+    "225590.csv": [
+      "ohlc:Low<Close_count=2194"
+    ],
+    "226320.csv": [
+      "ohlc:Low<Close_count=2304"
+    ],
+    "226330.csv": [
+      "ohlc:Low<Close_count=1438"
+    ],
+    "226340.csv": [
+      "ohlc:Low<Close_count=2059"
+    ],
+    "226400.csv": [
+      "ohlc:Low<Close_count=2169"
+    ],
+    "226590.csv": [
+      "ohlc:Low<Close_count=227"
+    ],
+    "226950.csv": [
+      "ohlc:Low<Close_count=1787"
+    ],
+    "227100.csv": [
+      "ohlc:Low<Close_count=1428"
+    ],
+    "227420.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1249"
+    ],
+    "227610.csv": [
+      "ohlc:Low<Close_count=1993"
+    ],
+    "227840.csv": [
+      "ohlc:Low<Close_count=2338"
+    ],
+    "227950.csv": [
+      "ohlc:Low<Close_count=2119"
+    ],
+    "228340.csv": [
+      "ohlc:Low<Close_count=2291"
+    ],
+    "228670.csv": [
+      "ohlc:Low<Close_count=1558"
+    ],
+    "228760.csv": [
+      "ohlc:Low<Close_count=1995"
+    ],
+    "228850.csv": [
+      "ohlc:Low<Close_count=2330"
+    ],
+    "229000.csv": [
+      "ohlc:Low<Close_count=1890"
+    ],
+    "229500.csv": [
+      "ohlc:Low<Close_count=2089"
+    ],
+    "229640.csv": [
+      "ohlc:Low<Close_count=2203"
+    ],
+    "230240.csv": [
+      "ohlc:Low<Close_count=2148"
+    ],
+    "230360.csv": [
+      "ohlc:Low<Close_count=2202"
+    ],
+    "230980.csv": [
+      "ohlc:Low<Close_count=1728"
+    ],
+    "232140.csv": [
+      "ohlc:Low<Close_count=2245"
+    ],
+    "232530.csv": [
+      "ohlc:Low<Close_count=1501"
+    ],
+    "232680.csv": [
+      "ohlc:Low<Close_count=1918"
+    ],
+    "232830.csv": [
+      "ohlc:Low<Close_count=1605"
+    ],
+    "233250.csv": [
+      "ohlc:Low<Close_count=549"
+    ],
+    "233990.csv": [
+      "ohlc:Low<Close_count=1819"
+    ],
+    "234030.csv": [
+      "ohlc:Low<Close_count=141"
+    ],
+    "234070.csv": [
+      "ohlc:Low<Close_count=576"
+    ],
+    "234080.csv": [
+      "ohlc:Low<Close_count=2182"
+    ],
+    "234100.csv": [
+      "ohlc:Low<Close_count=2019"
+    ],
+    "234300.csv": [
+      "ohlc:Low<Close_count=1904"
+    ],
+    "234340.csv": [
+      "ohlc:Low<Close_count=1549"
+    ],
+    "234690.csv": [
+      "ohlc:Low<Close_count=1465"
+    ],
+    "234920.csv": [
+      "ohlc:Low<Close_count=2112"
+    ],
+    "235980.csv": [
+      "ohlc:Low<Close_count=1433"
+    ],
+    "236030.csv": [
+      "ohlc:Low<Close_count=568"
+    ],
+    "236200.csv": [
+      "ohlc:Low<Close_count=2363"
+    ],
+    "236340.csv": [
+      "ohlc:Low<Close_count=1822"
+    ],
+    "236810.csv": [
+      "ohlc:Low<Close_count=1176"
+    ],
+    "237690.csv": [
+      "ohlc:Low<Close_count=2251"
+    ],
+    "237750.csv": [
+      "ohlc:Low<Close_count=2224"
+    ],
+    "237820.csv": [
+      "ohlc:Low<Close_count=1366"
+    ],
+    "237880.csv": [
+      "ohlc:Low<Close_count=2140"
+    ],
+    "238090.csv": [
+      "ohlc:Low<Close_count=2079"
+    ],
+    "238120.csv": [
+      "ohlc:Low<Close_count=2123"
+    ],
+    "238170.csv": [
+      "ohlc:Low<Close_count=1074"
+    ],
+    "238200.csv": [
+      "ohlc:Low<Close_count=1574"
+    ],
+    "238490.csv": [
+      "ohlc:Low<Close_count=1985"
+    ],
+    "238500.csv": [
+      "ohlc:Low<Close_count=1704"
+    ],
+    "239340.csv": [
+      "ohlc:Low<Close_count=1885"
+    ],
+    "239610.csv": [
+      "ohlc:Low<Close_count=2141"
+    ],
+    "239890.csv": [
+      "ohlc:Low<Close_count=1284"
+    ],
+    "240550.csv": [
+      "ohlc:Low<Close_count=234"
+    ],
+    "240600.csv": [
+      "ohlc:Low<Close_count=524"
+    ],
+    "240810.csv": [
+      "ohlc:Low<Close_count=2291"
+    ],
+    "241520.csv": [
+      "ohlc:Low<Close_count=2130"
+    ],
+    "241560.csv": [
+      "ohlc:Low<Close_count=2172"
+    ],
+    "241590.csv": [
+      "ohlc:Low<Close_count=2215"
+    ],
+    "241690.csv": [
+      "ohlc:Low<Close_count=2154"
+    ],
+    "241710.csv": [
+      "ohlc:Low<Close_count=2161"
+    ],
+    "241770.csv": [
+      "ohlc:Low<Close_count=1915"
+    ],
+    "241790.csv": [
+      "ohlc:Low<Close_count=2164"
+    ],
+    "241820.csv": [
+      "ohlc:Low<Close_count=1851"
+    ],
+    "241840.csv": [
+      "ohlc:Low<Close_count=1540"
+    ],
+    "242040.csv": [
+      "ohlc:Low<Close_count=1981"
+    ],
+    "243070.csv": [
+      "ohlc:Low<Close_count=2219"
+    ],
+    "243840.csv": [
+      "ohlc:Low<Close_count=1982"
+    ],
+    "243870.csv": [
+      "ohlc:Low<Close_count=931"
+    ],
+    "244460.csv": [
+      "ohlc:Low<Close_count=1272"
+    ],
+    "244880.csv": [
+      "ohlc:Low<Close_count=1156"
+    ],
+    "244920.csv": [
+      "ohlc:Low<Close_count=1230"
+    ],
+    "245450.csv": [
+      "ohlc:Low<Close_count=848"
+    ],
+    "245620.csv": [
+      "ohlc:Low<Close_count=1343"
+    ],
+    "246250.csv": [
+      "ohlc:Low<Close_count=1488"
+    ],
+    "246690.csv": [
+      "ohlc:Low<Close_count=2088"
+    ],
+    "246710.csv": [
+      "ohlc:Low<Close_count=1686"
+    ],
+    "246720.csv": [
+      "ohlc:Low<Close_count=2085"
+    ],
+    "246960.csv": [
+      "ohlc:Low<Close_count=1618"
+    ],
+    "247540.csv": [
+      "ohlc:Low<Close_count=1620"
+    ],
+    "247660.csv": [
+      "ohlc:Low<Close_count=1141"
+    ],
+    "248070.csv": [
+      "ohlc:Low<Close_count=1172"
+    ],
+    "248170.csv": [
+      "ohlc:Low<Close_count=2199"
+    ],
+    "249420.csv": [
+      "ohlc:Low<Close_count=2142"
+    ],
+    "250000.csv": [
+      "ohlc:Low<Close_count=1983"
+    ],
+    "250030.csv": [
+      "ohlc:Low<Close_count=1094"
+    ],
+    "250060.csv": [
+      "ohlc:Low<Close_count=2124"
+    ],
+    "250930.csv": [
+      "ohlc:Low<Close_count=1753"
+    ],
+    "251120.csv": [
+      "ohlc:Low<Close_count=938"
+    ],
+    "251270.csv": [
+      "ohlc:Low<Close_count=2037"
+    ],
+    "251280.csv": [
+      "ohlc:Low<Close_count=1506"
+    ],
+    "251370.csv": [
+      "ohlc:Low<Close_count=2074"
+    ],
+    "251630.csv": [
+      "ohlc:Low<Close_count=1981"
+    ],
+    "251970.csv": [
+      "ohlc:Low<Close_count=1562"
+    ],
+    "252500.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2074"
+    ],
+    "252990.csv": [
+      "ohlc:Low<Close_count=1116"
+    ],
+    "253450.csv": [
+      "ohlc:Low<Close_count=1941"
+    ],
+    "253590.csv": [
+      "ohlc:Low<Close_count=1778"
+    ],
+    "253610.csv": [
+      "ohlc:Low<Close_count=741"
+    ],
+    "253840.csv": [
+      "ohlc:Low<Close_count=1757"
+    ],
+    "254120.csv": [
+      "ohlc:Low<Close_count=1972"
+    ],
+    "254160.csv": [
+      "ohlc:Low<Close_count=415"
+    ],
+    "254490.csv": [
+      "ohlc:Low<Close_count=682"
+    ],
+    "255220.csv": [
+      "ohlc:Low<Close_count=1868"
+    ],
+    "255440.csv": [
+      "ohlc:Low<Close_count=1921"
+    ],
+    "256150.csv": [
+      "ohlc:Low<Close_count=1470"
+    ],
+    "256630.csv": [
+      "ohlc:Low<Close_count=1892"
+    ],
+    "256840.csv": [
+      "ohlc:Low<Close_count=1800"
+    ],
+    "256940.csv": [
+      "ohlc:Low<Close_count=1961"
+    ],
+    "257370.csv": [
+      "ohlc:Low<Close_count=824"
+    ],
+    "257720.csv": [
+      "ohlc:Low<Close_count=1024"
+    ],
+    "257990.csv": [
+      "ohlc:Low<Close_count=900"
+    ],
+    "258050.csv": [
+      "ohlc:Low<Close_count=1106"
+    ],
+    "258610.csv": [
+      "ohlc:Low<Close_count=1953"
+    ],
+    "258790.csv": [
+      "ohlc:Low<Close_count=1749"
+    ],
+    "258830.csv": [
+      "ohlc:Low<Close_count=1318"
+    ],
+    "259630.csv": [
+      "ohlc:Low<Close_count=1934"
+    ],
+    "259960.csv": [
+      "ohlc:Low<Close_count=1053"
+    ],
+    "260660.csv": [
+      "ohlc:Low<Close_count=1845"
+    ],
+    "260870.csv": [
+      "ohlc:Low<Close_count=1981"
+    ],
+    "260930.csv": [
+      "ohlc:Low<Close_count=1874"
+    ],
+    "260970.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1175"
+    ],
+    "261200.csv": [
+      "ohlc:Low<Close_count=1600"
+    ],
+    "261520.csv": [
+      "ohlc:Low<Close_count=39"
+    ],
+    "261780.csv": [
+      "ohlc:Low<Close_count=986"
+    ],
+    "262260.csv": [
+      "ohlc:Low<Close_count=1275"
+    ],
+    "262840.csv": [
+      "ohlc:Low<Close_count=1143"
+    ],
+    "263020.csv": [
+      "ohlc:Low<Close_count=1677"
+    ],
+    "263050.csv": [
+      "ohlc:Low<Close_count=1682"
+    ],
+    "263600.csv": [
+      "ohlc:Low<Close_count=1955"
+    ],
+    "263690.csv": [
+      "ohlc:Low<Close_count=1647"
+    ],
+    "263700.csv": [
+      "ohlc:Low<Close_count=1809"
+    ],
+    "263720.csv": [
+      "ohlc:Low<Close_count=1952"
+    ],
+    "263750.csv": [
+      "ohlc:Low<Close_count=1974"
+    ],
+    "263770.csv": [
+      "ohlc:Low<Close_count=1999"
+    ],
+    "263800.csv": [
+      "ohlc:Low<Close_count=1917"
+    ],
+    "263810.csv": [
+      "ohlc:Low<Close_count=1954"
+    ],
+    "263860.csv": [
+      "ohlc:Low<Close_count=1989"
+    ],
+    "263920.csv": [
+      "ohlc:Low<Close_count=1364"
+    ],
+    "264450.csv": [
+      "ohlc:Low<Close_count=2102"
+    ],
+    "264660.csv": [
+      "ohlc:Low<Close_count=1902"
+    ],
+    "264850.csv": [
+      "ohlc:Low<Close_count=1752"
+    ],
+    "264900.csv": [
+      "ohlc:Low<Close_count=2038"
+    ],
+    "26490K.csv": [
+      "ohlc:Low<Close_count=2027"
+    ],
+    "265520.csv": [
+      "ohlc:Low<Close_count=2057"
+    ],
+    "265560.csv": [
+      "ohlc:Low<Close_count=1863"
+    ],
+    "265740.csv": [
+      "ohlc:Low<Close_count=1204"
+    ],
+    "266170.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1217"
+    ],
+    "266350.csv": [
+      "ohlc:Low<Close_count=110"
+    ],
+    "266470.csv": [
+      "ohlc:Low<Close_count=1303"
+    ],
+    "267080.csv": [
+      "ohlc:Low<Close_count=264"
+    ],
+    "267250.csv": [
+      "ohlc:Low<Close_count=2040"
+    ],
+    "267260.csv": [
+      "ohlc:Low<Close_count=2063"
+    ],
+    "267270.csv": [
+      "ohlc:Low<Close_count=2077"
+    ],
+    "267290.csv": [
+      "ohlc:Low<Close_count=2038"
+    ],
+    "267320.csv": [
+      "ohlc:Low<Close_count=1733"
+    ],
+    "267790.csv": [
+      "ohlc:Low<Close_count=1842"
+    ],
+    "267850.csv": [
+      "ohlc:Low<Close_count=1620"
+    ],
+    "267980.csv": [
+      "ohlc:Low<Close_count=1988"
+    ],
+    "268280.csv": [
+      "ohlc:Low<Close_count=1907"
+    ],
+    "269620.csv": [
+      "ohlc:Low<Close_count=960"
+    ],
+    "270210.csv": [
+      "ohlc:Low<Close_count=961"
+    ],
+    "270520.csv": [
+      "ohlc:Low<Close_count=1726"
+    ],
+    "270660.csv": [
+      "ohlc:Low<Close_count=1489"
+    ],
+    "270870.csv": [
+      "ohlc:Low<Close_count=1668"
+    ],
+    "271560.csv": [
+      "ohlc:Low<Close_count=1982"
+    ],
+    "271830.csv": [
+      "ohlc:Low<Close_count=624"
+    ],
+    "271940.csv": [
+      "ohlc:Low<Close_count=994"
+    ],
+    "271980.csv": [
+      "ohlc:Low<Close_count=1913"
+    ],
+    "272110.csv": [
+      "ohlc:Low<Close_count=1489"
+    ],
+    "272210.csv": [
+      "ohlc:Low<Close_count=1468"
+    ],
+    "272290.csv": [
+      "ohlc:Low<Close_count=2039"
+    ],
+    "272450.csv": [
+      "ohlc:Low<Close_count=1929"
+    ],
+    "272550.csv": [
+      "ohlc:Low<Close_count=1932"
+    ],
+    "273060.csv": [
+      "ohlc:Low<Close_count=1728"
+    ],
+    "273640.csv": [
+      "ohlc:Low<Close_count=1019"
+    ],
+    "274090.csv": [
+      "ohlc:Low<Close_count=1399"
+    ],
+    "274400.csv": [
+      "ohlc:Low<Close_count=595"
+    ],
+    "275630.csv": [
+      "ohlc:Low<Close_count=1709"
+    ],
+    "276040.csv": [
+      "ohlc:Low<Close_count=946"
+    ],
+    "276240.csv": [
+      "ohlc:Low<Close_count=793"
+    ],
+    "276730.csv": [
+      "ohlc:Low<Close_count=1078"
+    ],
+    "277070.csv": [
+      "ohlc:Low<Close_count=1826"
+    ],
+    "277410.csv": [
+      "ohlc:Low<Close_count=1913"
+    ],
+    "277810.csv": [
+      "ohlc:Low<Close_count=1167"
+    ],
+    "277880.csv": [
+      "ohlc:Low<Close_count=1367"
+    ],
+    "278280.csv": [
+      "ohlc:Low<Close_count=1649"
+    ],
+    "278470.csv": [
+      "ohlc:Low<Close_count=451"
+    ],
+    "278650.csv": [
+      "ohlc:Low<Close_count=1435"
+    ],
+    "278990.csv": [
+      "ohlc:Low<Close_count=618"
+    ],
+    "279060.csv": [
+      "ohlc:Low<Close_count=1318"
+    ],
+    "279600.csv": [
+      "ohlc:Low<Close_count=1532"
+    ],
+    "280360.csv": [
+      "ohlc:Low<Close_count=1890"
+    ],
+    "281740.csv": [
+      "ohlc:Low<Close_count=1690"
+    ],
+    "281820.csv": [
+      "ohlc:Low<Close_count=1928"
+    ],
+    "282330.csv": [
+      "ohlc:Low<Close_count=1881"
+    ],
+    "282720.csv": [
+      "ohlc:Low<Close_count=658"
+    ],
+    "282880.csv": [
+      "ohlc:Low<Close_count=1492"
+    ],
+    "284620.csv": [
+      "ohlc:Low<Close_count=1467"
+    ],
+    "284740.csv": [
+      "ohlc:Low<Close_count=1867"
+    ],
+    "285130.csv": [
+      "ohlc:Low<Close_count=1841"
+    ],
+    "28513K.csv": [
+      "ohlc:Low<Close_count=1878"
+    ],
+    "285490.csv": [
+      "ohlc:Low<Close_count=1689"
+    ],
+    "285800.csv": [
+      "ohlc:Low<Close_count=620"
+    ],
+    "286750.csv": [
+      "ohlc:Low<Close_count=1511"
+    ],
+    "286940.csv": [
+      "ohlc:Low<Close_count=1781"
+    ],
+    "287840.csv": [
+      "ohlc:Low<Close_count=178"
+    ],
+    "288330.csv": [
+      "ohlc:Low<Close_count=1448"
+    ],
+    "288620.csv": [
+      "ohlc:Low<Close_count=1666"
+    ],
+    "288980.csv": [
+      "ohlc:Low<Close_count=893"
+    ],
+    "289010.csv": [
+      "ohlc:Low<Close_count=1503"
+    ],
+    "289080.csv": [
+      "ohlc:Low<Close_count=1739"
+    ],
+    "289170.csv": [
+      "ohlc:Low<Close_count=304"
+    ],
+    "289220.csv": [
+      "ohlc:Low<Close_count=1109"
+    ],
+    "289930.csv": [
+      "ohlc:Low<Close_count=311"
+    ],
+    "290090.csv": [
+      "ohlc:Low<Close_count=953"
+    ],
+    "290120.csv": [
+      "ohlc:Low<Close_count=1635"
+    ],
+    "290270.csv": [
+      "ohlc:Low<Close_count=1709"
+    ],
+    "290520.csv": [
+      "ohlc:Low<Close_count=1245"
+    ],
+    "290550.csv": [
+      "ohlc:Low<Close_count=1669"
+    ],
+    "290560.csv": [
+      "ohlc:Low<Close_count=494"
+    ],
+    "290650.csv": [
+      "ohlc:Low<Close_count=1716"
+    ],
+    "290660.csv": [
+      "ohlc:Low<Close_count=1673"
+    ],
+    "290670.csv": [
+      "ohlc:Low<Close_count=1670"
+    ],
+    "290690.csv": [
+      "ohlc:Low<Close_count=1198"
+    ],
+    "290720.csv": [
+      "ohlc:Low<Close_count=1678"
+    ],
+    "290740.csv": [
+      "ohlc:Low<Close_count=1740"
+    ],
+    "291230.csv": [
+      "ohlc:Low<Close_count=1488"
+    ],
+    "291650.csv": [
+      "ohlc:Low<Close_count=1251"
+    ],
+    "291810.csv": [
+      "ohlc:Low<Close_count=742"
+    ],
+    "293480.csv": [
+      "ohlc:Low<Close_count=1742"
+    ],
+    "293490.csv": [
+      "ohlc:Low<Close_count=1235"
+    ],
+    "293580.csv": [
+      "ohlc:Low<Close_count=1713"
+    ],
+    "293780.csv": [
+      "ohlc:Low<Close_count=1544"
+    ],
+    "293940.csv": [
+      "ohlc:Low<Close_count=1673"
+    ],
+    "294090.csv": [
+      "ohlc:Low<Close_count=1023"
+    ],
+    "294140.csv": [
+      "ohlc:Low<Close_count=1387"
+    ],
+    "294570.csv": [
+      "ohlc:Low<Close_count=1117"
+    ],
+    "294630.csv": [
+      "ohlc:Low<Close_count=1394"
+    ],
+    "294870.csv": [
+      "ohlc:Low<Close_count=1799"
+    ],
+    "295310.csv": [
+      "ohlc:Low<Close_count=382"
+    ],
+    "296160.csv": [
+      "ohlc:Low<Close_count=490"
+    ],
+    "296520.csv": [
+      "ohlc:Low<Close_count=69"
+    ],
+    "296640.csv": [
+      "ohlc:Low<Close_count=778"
+    ],
+    "297090.csv": [
+      "ohlc:Low<Close_count=1457"
+    ],
+    "297570.csv": [
+      "ohlc:Low<Close_count=1716"
+    ],
+    "297890.csv": [
+      "ohlc:Low<Close_count=1314"
+    ],
+    "298000.csv": [
+      "ohlc:Low<Close_count=1535"
+    ],
+    "298020.csv": [
+      "ohlc:Low<Close_count=1744"
+    ],
+    "298040.csv": [
+      "ohlc:Low<Close_count=1774"
+    ],
+    "298050.csv": [
+      "ohlc:Low<Close_count=1746"
+    ],
+    "298060.csv": [
+      "ohlc:Low<Close_count=1312"
+    ],
+    "298380.csv": [
+      "ohlc:Low<Close_count=1697"
+    ],
+    "298540.csv": [
+      "ohlc:Low<Close_count=1330"
+    ],
+    "298690.csv": [
+      "ohlc:Low<Close_count=1625"
+    ],
+    "298830.csv": [
+      "ohlc:Low<Close_count=628"
+    ],
+    "299030.csv": [
+      "ohlc:Low<Close_count=1219"
+    ],
+    "299170.csv": [
+      "ohlc:Low<Close_count=1564"
+    ],
+    "299480.csv": [
+      "ohlc:Low<Close_count=551"
+    ],
+    "299660.csv": [
+      "ohlc:Low<Close_count=1618"
+    ],
+    "299900.csv": [
+      "ohlc:Low<Close_count=1653"
+    ],
+    "300080.csv": [
+      "ohlc:Low<Close_count=1538"
+    ],
+    "300120.csv": [
+      "ohlc:Low<Close_count=1434"
+    ],
+    "300720.csv": [
+      "ohlc:Low<Close_count=1703"
+    ],
+    "301300.csv": [
+      "ohlc:Low<Close_count=1236"
+    ],
+    "302430.csv": [
+      "ohlc:Low<Close_count=1665"
+    ],
+    "302440.csv": [
+      "ohlc:Low<Close_count=1104"
+    ],
+    "302550.csv": [
+      "ohlc:Low<Close_count=1636"
+    ],
+    "302920.csv": [
+      "ohlc:Low<Close_count=500"
+    ],
+    "303030.csv": [
+      "ohlc:Low<Close_count=1587"
+    ],
+    "303360.csv": [
+      "ohlc:Low<Close_count=1411"
+    ],
+    "303530.csv": [
+      "ohlc:Low<Close_count=1056"
+    ],
+    "303810.csv": [
+      "ohlc:Low<Close_count=226"
+    ],
+    "304100.csv": [
+      "ohlc:Low<Close_count=1296"
+    ],
+    "304360.csv": [
+      "ohlc:Low<Close_count=653"
+    ],
+    "304840.csv": [
+      "ohlc:Low<Close_count=1238"
+    ],
+    "305090.csv": [
+      "ohlc:Low<Close_count=1573"
+    ],
+    "306040.csv": [
+      "ohlc:Low<Close_count=1476"
+    ],
+    "306200.csv": [
+      "ohlc:Low<Close_count=1704"
+    ],
+    "306620.csv": [
+      "ohlc:Low<Close_count=1577"
+    ],
+    "307180.csv": [
+      "ohlc:Low<Close_count=1579"
+    ],
+    "307280.csv": [
+      "ohlc:Low<Close_count=1480"
+    ],
+    "307750.csv": [
+      "ohlc:Low<Close_count=1432"
+    ],
+    "307870.csv": [
+      "ohlc:Low<Close_count=1436"
+    ],
+    "307930.csv": [
+      "ohlc:Low<Close_count=1544"
+    ],
+    "307950.csv": [
+      "ohlc:Low<Close_count=1599"
+    ],
+    "308080.csv": [
+      "ohlc:Low<Close_count=1024"
+    ],
+    "308100.csv": [
+      "ohlc:Low<Close_count=1524"
+    ],
+    "308170.csv": [
+      "ohlc:Low<Close_count=1420"
+    ],
+    "308430.csv": [
+      "ohlc:Low<Close_count=320"
+    ],
+    "309710.csv": [
+      "ohlc:Low<Close_count=125"
+    ],
+    "309930.csv": [
+      "ohlc:Low<Close_count=1464"
+    ],
+    "309960.csv": [
+      "ohlc:Low<Close_count=677"
+    ],
+    "310200.csv": [
+      "ohlc:Low<Close_count=1542"
+    ],
+    "310210.csv": [
+      "ohlc:Low<Close_count=866"
+    ],
+    "310870.csv": [
+      "ohlc:Low<Close_count=1314"
+    ],
+    "311060.csv": [
+      "ohlc:Low<Close_count=760"
+    ],
+    "311320.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=975"
+    ],
+    "311390.csv": [
+      "ohlc:Low<Close_count=1501"
+    ],
+    "311690.csv": [
+      "ohlc:Low<Close_count=1415"
+    ],
+    "311960.csv": [
+      "ohlc:Low<Close_count=682"
+    ],
+    "312610.csv": [
+      "ohlc:Low<Close_count=1517"
+    ],
+    "313760.csv": [
+      "ohlc:Low<Close_count=1518"
+    ],
+    "314130.csv": [
+      "ohlc:Low<Close_count=1556"
+    ],
+    "314140.csv": [
+      "ohlc:Low<Close_count=784"
+    ],
+    "314930.csv": [
+      "ohlc:Low<Close_count=1167"
+    ],
+    "315640.csv": [
+      "ohlc:Low<Close_count=1035"
+    ],
+    "316140.csv": [
+      "ohlc:Low<Close_count=1593"
+    ],
+    "317120.csv": [
+      "ohlc:Low<Close_count=1467"
+    ],
+    "317240.csv": [
+      "ohlc:Low<Close_count=1272"
+    ],
+    "317330.csv": [
+      "ohlc:Low<Close_count=1514"
+    ],
+    "317400.csv": [
+      "ohlc:Low<Close_count=1457"
+    ],
+    "317450.csv": [
+      "ohlc:Low<Close_count=85"
+    ],
+    "317530.csv": [
+      "ohlc:Low<Close_count=1462"
+    ],
+    "317690.csv": [
+      "ohlc:Low<Close_count=1175"
+    ],
+    "317770.csv": [
+      "ohlc:Low<Close_count=1486"
+    ],
+    "317830.csv": [
+      "ohlc:Low<Close_count=1476"
+    ],
+    "317850.csv": [
+      "ohlc:Low<Close_count=1527"
+    ],
+    "317860.csv": [
+      "ohlc:Low<Close_count=627"
+    ],
+    "317870.csv": [
+      "ohlc:Low<Close_count=1494"
+    ],
+    "318000.csv": [
+      "ohlc:Low<Close_count=1509"
+    ],
+    "318010.csv": [
+      "ohlc:Low<Close_count=1454"
+    ],
+    "318020.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=707"
+    ],
+    "318060.csv": [
+      "ohlc:Low<Close_count=116"
+    ],
+    "318160.csv": [
+      "ohlc:Low<Close_count=651"
+    ],
+    "318410.csv": [
+      "ohlc:Low<Close_count=1230"
+    ],
+    "318660.csv": [
+      "ohlc:Low<Close_count=786"
+    ],
+    "319400.csv": [
+      "ohlc:Low<Close_count=1407"
+    ],
+    "319660.csv": [
+      "ohlc:Low<Close_count=1613"
+    ],
+    "320000.csv": [
+      "ohlc:Low<Close_count=1408"
+    ],
+    "321260.csv": [
+      "ohlc:Low<Close_count=1492"
+    ],
+    "321370.csv": [
+      "ohlc:Low<Close_count=597"
+    ],
+    "321550.csv": [
+      "ohlc:Low<Close_count=1469"
+    ],
+    "321820.csv": [
+      "ohlc:Low<Close_count=1164"
+    ],
+    "322000.csv": [
+      "ohlc:Low<Close_count=1448"
+    ],
+    "322180.csv": [
+      "ohlc:Low<Close_count=1473"
+    ],
+    "322310.csv": [
+      "ohlc:Low<Close_count=1153"
+    ],
+    "322510.csv": [
+      "ohlc:Low<Close_count=1456"
+    ],
+    "322780.csv": [
+      "ohlc:Low<Close_count=1488"
+    ],
+    "322970.csv": [
+      "ohlc:Low<Close_count=1209"
+    ],
+    "323280.csv": [
+      "ohlc:Low<Close_count=1383"
+    ],
+    "323350.csv": [
+      "ohlc:Low<Close_count=692"
+    ],
+    "323410.csv": [
+      "ohlc:Low<Close_count=1028"
+    ],
+    "323990.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1236"
+    ],
+    "326030.csv": [
+      "ohlc:Low<Close_count=1312"
+    ],
+    "327260.csv": [
+      "ohlc:Low<Close_count=1432"
+    ],
+    "327610.csv": [
+      "ohlc:Low<Close_count=1398"
+    ],
+    "328130.csv": [
+      "ohlc:Low<Close_count=844"
+    ],
+    "328380.csv": [
+      "ohlc:Low<Close_count=1321"
+    ],
+    "329180.csv": [
+      "ohlc:Low<Close_count=1040"
+    ],
+    "330350.csv": [
+      "ohlc:Low<Close_count=1269"
+    ],
+    "330590.csv": [
+      "ohlc:Low<Close_count=1434"
+    ],
+    "330730.csv": [
+      "ohlc:Low<Close_count=928"
+    ],
+    "330860.csv": [
+      "ohlc:Low<Close_count=1208"
+    ],
+    "331380.csv": [
+      "ohlc:Low<Close_count=1290"
+    ],
+    "331520.csv": [
+      "ohlc:Low<Close_count=1214"
+    ],
+    "331660.csv": [
+      "ohlc:Low<Close_count=69"
+    ],
+    "331740.csv": [
+      "ohlc:Low<Close_count=134"
+    ],
+    "331920.csv": [
+      "ohlc:Low<Close_count=1255"
+    ],
+    "332190.csv": [
+      "ohlc:Low<Close_count=35"
+    ],
+    "332290.csv": [
+      "ohlc:Low<Close_count=1284"
+    ],
+    "332370.csv": [
+      "ohlc:Low<Close_count=1256"
+    ],
+    "332570.csv": [
+      "ohlc:Low<Close_count=1265"
+    ],
+    "333050.csv": [
+      "ohlc:Low<Close_count=1209"
+    ],
+    "333430.csv": [
+      "ohlc:Low<Close_count=1243"
+    ],
+    "333620.csv": [
+      "ohlc:Low<Close_count=1120"
+    ],
+    "334890.csv": [
+      "ohlc:Low<Close_count=1279"
+    ],
+    "334970.csv": [
+      "ohlc:Low<Close_count=1146"
+    ],
+    "335810.csv": [
+      "ohlc:Low<Close_count=1164"
+    ],
+    "335870.csv": [
+      "ohlc:Low<Close_count=1205"
+    ],
+    "336040.csv": [
+      "ohlc:Low<Close_count=1038"
+    ],
+    "336060.csv": [
+      "ohlc:Low<Close_count=1205"
+    ],
+    "336260.csv": [
+      "ohlc:Low<Close_count=1468"
+    ],
+    "33626K.csv": [
+      "ohlc:Low<Close_count=1456"
+    ],
+    "33626L.csv": [
+      "ohlc:Low<Close_count=1458"
+    ],
+    "336370.csv": [
+      "ohlc:Low<Close_count=1448"
+    ],
+    "33637K.csv": [
+      "ohlc:Low<Close_count=1497"
+    ],
+    "33637L.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1431"
+    ],
+    "336570.csv": [
+      "ohlc:Low<Close_count=1191"
+    ],
+    "336680.csv": [
+      "ohlc:Low<Close_count=293"
+    ],
+    "337840.csv": [
+      "ohlc:Low<Close_count=1425"
+    ],
+    "337930.csv": [
+      "ohlc:Low<Close_count=1281"
+    ],
+    "338100.csv": [
+      "ohlc:Low<Close_count=1455"
+    ],
+    "338220.csv": [
+      "ohlc:Low<Close_count=1166"
+    ],
+    "338840.csv": [
+      "ohlc:Low<Close_count=520"
+    ],
+    "339770.csv": [
+      "ohlc:Low<Close_count=1209"
+    ],
+    "339950.csv": [
+      "ohlc:Low<Close_count=1364"
+    ],
+    "340360.csv": [
+      "ohlc:Low<Close_count=1230"
+    ],
+    "340440.csv": [
+      "ohlc:Low<Close_count=1293"
+    ],
+    "340450.csv": [
+      "ohlc:Low<Close_count=157"
+    ],
+    "340570.csv": [
+      "ohlc:Low<Close_count=1234"
+    ],
+    "340810.csv": [
+      "ohlc:Low<Close_count=625"
+    ],
+    "340930.csv": [
+      "ohlc:Low<Close_count=1131"
+    ],
+    "341170.csv": [
+      "ohlc:Low<Close_count=780"
+    ],
+    "341310.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=939"
+    ],
+    "342870.csv": [
+      "ohlc:Low<Close_count=98"
+    ],
+    "344820.csv": [
+      "ohlc:Low<Close_count=1392"
+    ],
+    "344860.csv": [
+      "ohlc:Low<Close_count=989"
+    ],
+    "346010.csv": [
+      "ohlc:Low<Close_count=152"
+    ],
+    "347000.csv": [
+      "ohlc:Low<Close_count=1211"
+    ],
+    "347700.csv": [
+      "ohlc:Low<Close_count=1148"
+    ],
+    "347740.csv": [
+      "ohlc:Low<Close_count=1245"
+    ],
+    "347770.csv": [
+      "ohlc:Low<Close_count=1257"
+    ],
+    "347850.csv": [
+      "ohlc:Low<Close_count=421"
+    ],
+    "347860.csv": [
+      "ohlc:Low<Close_count=1200"
+    ],
+    "347890.csv": [
+      "ohlc:Low<Close_count=1290"
+    ],
+    "348030.csv": [
+      "ohlc:Low<Close_count=1120"
+    ],
+    "348080.csv": [
+      "ohlc:Low<Close_count=622"
+    ],
+    "348150.csv": [
+      "ohlc:Low<Close_count=1204"
+    ],
+    "348210.csv": [
+      "ohlc:Low<Close_count=1266"
+    ],
+    "348340.csv": [
+      "ohlc:Low<Close_count=752"
+    ],
+    "348350.csv": [
+      "ohlc:Low<Close_count=1226"
+    ],
+    "348370.csv": [
+      "ohlc:Low<Close_count=1003"
+    ],
+    "348950.csv": [
+      "ohlc:Low<Close_count=1257"
+    ],
+    "350520.csv": [
+      "ohlc:Low<Close_count=1281"
+    ],
+    "351020.csv": [
+      "ohlc:Low<Close_count=92"
+    ],
+    "351320.csv": [
+      "ohlc:Low<Close_count=1179"
+    ],
+    "351330.csv": [
+      "ohlc:Low<Close_count=1085"
+    ],
+    "351870.csv": [
+      "ohlc:Low<Close_count=304"
+    ],
+    "352090.csv": [
+      "ohlc:Low<Close_count=515"
+    ],
+    "352480.csv": [
+      "ohlc:Low<Close_count=1109"
+    ],
+    "352700.csv": [
+      "ohlc:Low<Close_count=1176"
+    ],
+    "352770.csv": [
+      "ohlc:Low<Close_count=998"
+    ],
+    "352820.csv": [
+      "ohlc:Low<Close_count=1268"
+    ],
+    "352910.csv": [
+      "ohlc:Low<Close_count=1057"
+    ],
+    "352940.csv": [
+      "ohlc:Low<Close_count=1198"
+    ],
+    "353190.csv": [
+      "ohlc:Low<Close_count=1210"
+    ],
+    "353200.csv": [
+      "ohlc:Low<Close_count=1349"
+    ],
+    "35320K.csv": [
+      "ohlc:Low<Close_count=1352"
+    ],
+    "353590.csv": [
+      "ohlc:Low<Close_count=911"
+    ],
+    "353810.csv": [
+      "ohlc:Low<Close_count=1323"
+    ],
+    "354200.csv": [
+      "ohlc:Low<Close_count=1192"
+    ],
+    "354320.csv": [
+      "ohlc:Low<Close_count=580"
+    ],
+    "354390.csv": [
+      "ohlc:Low<Close_count=403"
+    ],
+    "355150.csv": [
+      "ohlc:Low<Close_count=1090"
+    ],
+    "355390.csv": [
+      "ohlc:Low<Close_count=557"
+    ],
+    "355690.csv": [
+      "ohlc:Low<Close_count=496"
+    ],
+    "356680.csv": [
+      "ohlc:Low<Close_count=665"
+    ],
+    "356860.csv": [
+      "ohlc:Low<Close_count=1208"
+    ],
+    "356890.csv": [
+      "ohlc:Low<Close_count=1090"
+    ],
+    "357120.csv": [
+      "ohlc:Low<Close_count=1259"
+    ],
+    "357230.csv": [
+      "ohlc:Low<Close_count=1113"
+    ],
+    "357250.csv": [
+      "ohlc:Low<Close_count=1296"
+    ],
+    "357430.csv": [
+      "ohlc:Low<Close_count=857"
+    ],
+    "357550.csv": [
+      "ohlc:Low<Close_count=1197"
+    ],
+    "357580.csv": [
+      "ohlc:Low<Close_count=1038"
+    ],
+    "357780.csv": [
+      "ohlc:Low<Close_count=1319"
+    ],
+    "357880.csv": [
+      "ohlc:Low<Close_count=964"
+    ],
+    "358570.csv": [
+      "ohlc:Low<Close_count=689"
+    ],
+    "359090.csv": [
+      "ohlc:Low<Close_count=1144"
+    ],
+    "360070.csv": [
+      "ohlc:Low<Close_count=752"
+    ],
+    "360350.csv": [
+      "ohlc:Low<Close_count=453"
+    ],
+    "361390.csv": [
+      "ohlc:Low<Close_count=1142"
+    ],
+    "361570.csv": [
+      "ohlc:Low<Close_count=968"
+    ],
+    "361610.csv": [
+      "ohlc:Low<Close_count=1086"
+    ],
+    "361670.csv": [
+      "ohlc:Low<Close_count=1074"
+    ],
+    "362320.csv": [
+      "ohlc:Low<Close_count=860"
+    ],
+    "362990.csv": [
+      "ohlc:Low<Close_count=466"
+    ],
+    "363250.csv": [
+      "ohlc:Low<Close_count=1103"
+    ],
+    "363260.csv": [
+      "ohlc:Low<Close_count=1017"
+    ],
+    "363280.csv": [
+      "ohlc:Low<Close_count=1290"
+    ],
+    "36328K.csv": [
+      "ohlc:Low<Close_count=1199"
+    ],
+    "364950.csv": [
+      "ohlc:Low<Close_count=180"
+    ],
+    "365270.csv": [
+      "ohlc:Low<Close_count=1054"
+    ],
+    "365330.csv": [
+      "ohlc:Low<Close_count=516"
+    ],
+    "365340.csv": [
+      "ohlc:Low<Close_count=819"
+    ],
+    "365550.csv": [
+      "ohlc:Low<Close_count=1166"
+    ],
+    "365590.csv": [
+      "ohlc:Low<Close_count=1083"
+    ],
+    "365900.csv": [
+      "ohlc:Low<Close_count=891"
+    ],
+    "366030.csv": [
+      "ohlc:Low<Close_count=877"
+    ],
+    "367000.csv": [
+      "ohlc:Low<Close_count=1039"
+    ],
+    "368600.csv": [
+      "ohlc:Low<Close_count=814"
+    ],
+    "368770.csv": [
+      "ohlc:Low<Close_count=1120"
+    ],
+    "368970.csv": [
+      "ohlc:Low<Close_count=771"
+    ],
+    "369370.csv": [
+      "ohlc:Low<Close_count=1087"
+    ],
+    "370090.csv": [
+      "ohlc:Low<Close_count=907"
+    ],
+    "371950.csv": [
+      "ohlc:Low<Close_count=907"
+    ],
+    "372170.csv": [
+      "ohlc:Low<Close_count=743"
+    ],
+    "372320.csv": [
+      "ohlc:Low<Close_count=539"
+    ],
+    "372800.csv": [
+      "ohlc:Low<Close_count=957"
+    ],
+    "372910.csv": [
+      "ohlc:Low<Close_count=1023"
+    ],
+    "373110.csv": [
+      "ohlc:Low<Close_count=361"
+    ],
+    "373160.csv": [
+      "ohlc:Low<Close_count=230"
+    ],
+    "373170.csv": [
+      "ohlc:Low<Close_count=573"
+    ],
+    "373200.csv": [
+      "ohlc:Low<Close_count=1091"
+    ],
+    "373220.csv": [
+      "ohlc:Low<Close_count=923"
+    ],
+    "375500.csv": [
+      "ohlc:Low<Close_count=1187"
+    ],
+    "37550K.csv": [
+      "ohlc:Low<Close_count=1191"
+    ],
+    "37550L.csv": [
+      "ohlc:Low<Close_count=872"
+    ],
+    "376180.csv": [
+      "ohlc:Low<Close_count=975"
+    ],
+    "376270.csv": [
+      "ohlc:Low<Close_count=299"
+    ],
+    "376290.csv": [
+      "ohlc:Low<Close_count=991"
+    ],
+    "376300.csv": [
+      "ohlc:Low<Close_count=1005"
+    ],
+    "376900.csv": [
+      "ohlc:Low<Close_count=183"
+    ],
+    "376930.csv": [
+      "ohlc:Low<Close_count=908"
+    ],
+    "376980.csv": [
+      "ohlc:Low<Close_count=1054"
+    ],
+    "377030.csv": [
+      "ohlc:Low<Close_count=1059"
+    ],
+    "377190.csv": [
+      "ohlc:Low<Close_count=1050"
+    ],
+    "377220.csv": [
+      "ohlc:Low<Close_count=1004"
+    ],
+    "377300.csv": [
+      "ohlc:Low<Close_count=995"
+    ],
+    "377330.csv": [
+      "ohlc:Low<Close_count=908"
+    ],
+    "377450.csv": [
+      "ohlc:Low<Close_count=990"
+    ],
+    "377460.csv": [
+      "ohlc:Low<Close_count=315"
+    ],
+    "377480.csv": [
+      "ohlc:Low<Close_count=977"
+    ],
+    "377740.csv": [
+      "ohlc:Low<Close_count=724"
+    ],
+    "378340.csv": [
+      "ohlc:Low<Close_count=598"
+    ],
+    "378800.csv": [
+      "ohlc:Low<Close_count=774"
+    ],
+    "378850.csv": [
+      "ohlc:Low<Close_count=1138"
+    ],
+    "379390.csv": [
+      "ohlc:Low<Close_count=180"
+    ],
+    "380540.csv": [
+      "ohlc:Low<Close_count=727"
+    ],
+    "380550.csv": [
+      "ohlc:Low<Close_count=135"
+    ],
+    "381620.csv": [
+      "ohlc:Low<Close_count=311"
+    ],
+    "381970.csv": [
+      "ohlc:Low<Close_count=1014"
+    ],
+    "382150.csv": [
+      "ohlc:Low<Close_count=266"
+    ],
+    "382480.csv": [
+      "ohlc:Low<Close_count=994"
+    ],
+    "382800.csv": [
+      "ohlc:Low<Close_count=1004"
+    ],
+    "382840.csv": [
+      "ohlc:Low<Close_count=998"
+    ],
+    "382900.csv": [
+      "ohlc:Low<Close_count=843"
+    ],
+    "383220.csv": [
+      "ohlc:Low<Close_count=1123"
+    ],
+    "383310.csv": [
+      "ohlc:Low<Close_count=1086"
+    ],
+    "383800.csv": [
+      "ohlc:Low<Close_count=1095"
+    ],
+    "38380K.csv": [
+      "ohlc:Low<Close_count=1048"
+    ],
+    "383930.csv": [
+      "ohlc:Low<Close_count=763"
+    ],
+    "384470.csv": [
+      "ohlc:Low<Close_count=563"
+    ],
+    "387570.csv": [
+      "ohlc:Low<Close_count=256"
+    ],
+    "388050.csv": [
+      "ohlc:Low<Close_count=880"
+    ],
+    "388210.csv": [
+      "ohlc:Low<Close_count=59"
+    ],
+    "388610.csv": [
+      "ohlc:Low<Close_count=538"
+    ],
+    "388720.csv": [
+      "ohlc:Low<Close_count=910"
+    ],
+    "388790.csv": [
+      "ohlc:Low<Close_count=931"
+    ],
+    "388870.csv": [
+      "ohlc:Low<Close_count=590"
+    ],
+    "389020.csv": [
+      "ohlc:Low<Close_count=675"
+    ],
+    "389030.csv": [
+      "ohlc:Low<Close_count=996"
+    ],
+    "389140.csv": [
+      "ohlc:Low<Close_count=858"
+    ],
+    "389260.csv": [
+      "ohlc:Low<Close_count=863"
+    ],
+    "389470.csv": [
+      "ohlc:Low<Close_count=758"
+    ],
+    "389500.csv": [
+      "ohlc:Low<Close_count=776"
+    ],
+    "389650.csv": [
+      "ohlc:Low<Close_count=352"
+    ],
+    "389680.csv": [
+      "ohlc:Low<Close_count=287"
+    ],
+    "390110.csv": [
+      "ohlc:Low<Close_count=292"
+    ],
+    "391710.csv": [
+      "ohlc:Low<Close_count=914"
+    ],
+    "393210.csv": [
+      "ohlc:Low<Close_count=861"
+    ],
+    "393890.csv": [
+      "ohlc:Low<Close_count=793"
+    ],
+    "393970.csv": [
+      "ohlc:Low<Close_count=213"
+    ],
+    "394280.csv": [
+      "ohlc:Low<Close_count=783"
+    ],
+    "394800.csv": [
+      "ohlc:Low<Close_count=288"
+    ],
+    "395400.csv": [
+      "ohlc:Low<Close_count=1006"
+    ],
+    "396270.csv": [
+      "ohlc:Low<Close_count=838"
+    ],
+    "396300.csv": [
+      "ohlc:Low<Close_count=871"
+    ],
+    "396470.csv": [
+      "ohlc:Low<Close_count=521"
+    ],
+    "396690.csv": [
+      "ohlc:Low<Close_count=989"
+    ],
+    "397030.csv": [
+      "ohlc:Low<Close_count=845"
+    ],
+    "397810.csv": [
+      "ohlc:Low<Close_count=108"
+    ],
+    "398120.csv": [
+      "ohlc:Low<Close_count=258"
+    ],
+    "399720.csv": [
+      "ohlc:Low<Close_count=865"
+    ],
+    "400760.csv": [
+      "ohlc:Low<Close_count=1013"
+    ],
+    "402030.csv": [
+      "ohlc:Low<Close_count=821"
+    ],
+    "402340.csv": [
+      "ohlc:Low<Close_count=991"
+    ],
+    "402420.csv": [
+      "ohlc:Low<Close_count=396"
+    ],
+    "402490.csv": [
+      "ohlc:Low<Close_count=505"
+    ],
+    "403360.csv": [
+      "ohlc:Low<Close_count=511"
+    ],
+    "403490.csv": [
+      "ohlc:Low<Close_count=550"
+    ],
+    "403550.csv": [
+      "ohlc:Low<Close_count=791"
+    ],
+    "403810.csv": [
+      "ohlc:Low<Close_count=38"
+    ],
+    "403850.csv": [
+      "ohlc:Low<Close_count=55"
+    ],
+    "403870.csv": [
+      "ohlc:Low<Close_count=843"
+    ],
+    "404990.csv": [
+      "ohlc:Low<Close_count=987"
+    ],
+    "405000.csv": [
+      "ohlc:Low<Close_count=740"
+    ],
+    "405100.csv": [
+      "ohlc:Low<Close_count=769"
+    ],
+    "405920.csv": [
+      "ohlc:Low<Close_count=583"
+    ],
+    "406820.csv": [
+      "ohlc:Low<Close_count=578"
+    ],
+    "407400.csv": [
+      "ohlc:Low<Close_count=686"
+    ],
+    "408900.csv": [
+      "ohlc:Low<Close_count=675"
+    ],
+    "408920.csv": [
+      "ohlc:Low<Close_count=836"
+    ],
+    "411080.csv": [
+      "ohlc:Low<Close_count=670"
+    ],
+    "412350.csv": [
+      "ohlc:Low<Close_count=836"
+    ],
+    "412540.csv": [
+      "ohlc:Low<Close_count=198"
+    ],
+    "413300.csv": [
+      "ohlc:Low<Close_count=473"
+    ],
+    "413390.csv": [
+      "ohlc:Low<Close_count=277"
+    ],
+    "413630.csv": [
+      "ohlc:Low<Close_count=787"
+    ],
+    "413640.csv": [
+      "ohlc:Low<Close_count=541"
+    ],
+    "415380.csv": [
+      "ohlc:Low<Close_count=476"
+    ],
+    "415640.csv": [
+      "ohlc:Low<Close_count=284"
+    ],
+    "416180.csv": [
+      "ohlc:Low<Close_count=526"
+    ],
+    "417010.csv": [
+      "ohlc:Low<Close_count=677"
+    ],
+    "417180.csv": [
+      "ohlc:Low<Close_count=729"
+    ],
+    "417200.csv": [
+      "ohlc:Low<Close_count=499"
+    ],
+    "417310.csv": [
+      "ohlc:Low<Close_count=919"
+    ],
+    "417500.csv": [
+      "ohlc:Low<Close_count=755"
+    ],
+    "417790.csv": [
+      "ohlc:Low<Close_count=649"
+    ],
+    "417840.csv": [
+      "ohlc:Low<Close_count=757"
+    ],
+    "417860.csv": [
+      "ohlc:Low<Close_count=688"
+    ],
+    "417970.csv": [
+      "ohlc:Low<Close_count=774"
+    ],
+    "418250.csv": [
+      "ohlc:Low<Close_count=134"
+    ],
+    "418420.csv": [
+      "ohlc:Low<Close_count=673"
+    ],
+    "418470.csv": [
+      "ohlc:Low<Close_count=548"
+    ],
+    "418550.csv": [
+      "ohlc:Low<Close_count=691"
+    ],
+    "418620.csv": [
+      "ohlc:Low<Close_count=449"
+    ],
+    "419050.csv": [
+      "ohlc:Low<Close_count=674"
+    ],
+    "419080.csv": [
+      "ohlc:Low<Close_count=746"
+    ],
+    "419120.csv": [
+      "ohlc:Low<Close_count=762"
+    ],
+    "419530.csv": [
+      "ohlc:Low<Close_count=739"
+    ],
+    "419540.csv": [
+      "ohlc:Low<Close_count=783"
+    ],
+    "420570.csv": [
+      "ohlc:Low<Close_count=430"
+    ],
+    "420770.csv": [
+      "ohlc:Low<Close_count=633"
+    ],
+    "424760.csv": [
+      "ohlc:Low<Close_count=770"
+    ],
+    "424870.csv": [
+      "ohlc:Low<Close_count=180"
+    ],
+    "424960.csv": [
+      "ohlc:Low<Close_count=570"
+    ],
+    "424980.csv": [
+      "ohlc:Low<Close_count=645"
+    ],
+    "425040.csv": [
+      "ohlc:Low<Close_count=720"
+    ],
+    "425420.csv": [
+      "ohlc:Low<Close_count=759"
+    ],
+    "429270.csv": [
+      "ohlc:Low<Close_count=585"
+    ],
+    "430690.csv": [
+      "ohlc:Low<Close_count=511"
+    ],
+    "431190.csv": [
+      "ohlc:Low<Close_count=339"
+    ],
+    "432320.csv": [
+      "ohlc:Low<Close_count=803"
+    ],
+    "432430.csv": [
+      "ohlc:Low<Close_count=588"
+    ],
+    "432470.csv": [
+      "ohlc:Low<Close_count=487"
+    ],
+    "432720.csv": [
+      "ohlc:Low<Close_count=524"
+    ],
+    "432980.csv": [
+      "ohlc:Low<Close_count=267"
+    ],
+    "434190.csv": [
+      "ohlc:Low<Close_count=704"
+    ],
+    "434480.csv": [
+      "ohlc:Low<Close_count=611"
+    ],
+    "435570.csv": [
+      "ohlc:Low<Close_count=218"
+    ],
+    "437730.csv": [
+      "ohlc:Low<Close_count=428"
+    ],
+    "438700.csv": [
+      "ohlc:Low<Close_count=588"
+    ],
+    "439090.csv": [
+      "ohlc:Low<Close_count=601"
+    ],
+    "439260.csv": [
+      "ohlc:Low<Close_count=125"
+    ],
+    "439580.csv": [
+      "ohlc:Low<Close_count=490"
+    ],
+    "440110.csv": [
+      "ohlc:Low<Close_count=568"
+    ],
+    "440290.csv": [
+      "ohlc:Low<Close_count=476"
+    ],
+    "440320.csv": [
+      "ohlc:Low<Close_count=614"
+    ],
+    "441270.csv": [
+      "ohlc:Low<Close_count=798"
+    ],
+    "443060.csv": [
+      "ohlc:Low<Close_count=423"
+    ],
+    "443250.csv": [
+      "ohlc:Low<Close_count=551"
+    ],
+    "443670.csv": [
+      "ohlc:Low<Close_count=450"
+    ],
+    "444530.csv": [
+      "ohlc:Low<Close_count=204"
+    ],
+    "444920.csv": [
+      "ohlc:Low<Close_count=495"
+    ],
+    "445090.csv": [
+      "ohlc:Low<Close_count=511"
+    ],
+    "445180.csv": [
+      "ohlc:Low<Close_count=540"
+    ],
+    "445680.csv": [
+      "ohlc:Low<Close_count=591"
+    ],
+    "446070.csv": [
+      "ohlc:Low<Close_count=764"
+    ],
+    "446440.csv": [
+      "ohlc:Low<Close_count=445"
+    ],
+    "446540.csv": [
+      "ohlc:Low<Close_count=506"
+    ],
+    "446840.csv": [
+      "ohlc:Low<Close_count=512"
+    ],
+    "447690.csv": [
+      "ohlc:Low<Close_count=399"
+    ],
+    "448280.csv": [
+      "ohlc:Low<Close_count=513"
+    ],
+    "448710.csv": [
+      "ohlc:Low<Close_count=579"
+    ],
+    "448730.csv": [
+      "ohlc:Low<Close_count=666"
+    ],
+    "448780.csv": [
+      "ohlc:Low<Close_count=377"
+    ],
+    "448900.csv": [
+      "ohlc:Low<Close_count=236"
+    ],
+    "450080.csv": [
+      "ohlc:Low<Close_count=515"
+    ],
+    "450330.csv": [
+      "ohlc:Low<Close_count=366"
+    ],
+    "450520.csv": [
+      "ohlc:Low<Close_count=546"
+    ],
+    "450940.csv": [
+      "ohlc:Low<Close_count=484"
+    ],
+    "450950.csv": [
+      "ohlc:Low<Close_count=250"
+    ],
+    "451220.csv": [
+      "ohlc:Low<Close_count=527"
+    ],
+    "451250.csv": [
+      "ohlc:Low<Close_count=394"
+    ],
+    "451700.csv": [
+      "ohlc:Low<Close_count=517"
+    ],
+    "451760.csv": [
+      "ohlc:Low<Close_count=538"
+    ],
+    "451800.csv": [
+      "ohlc:Low<Close_count=680"
+    ],
+    "452160.csv": [
+      "ohlc:Low<Close_count=493"
+    ],
+    "452190.csv": [
+      "ohlc:Low<Close_count=473"
+    ],
+    "452200.csv": [
+      "ohlc:Low<Close_count=391"
+    ],
+    "452260.csv": [
+      "ohlc:Low<Close_count=649"
+    ],
+    "45226K.csv": [
+      "ohlc:Low<Close_count=568"
+    ],
+    "452280.csv": [
+      "ohlc:Low<Close_count=502"
+    ],
+    "452300.csv": [
+      "ohlc:Low<Close_count=509"
+    ],
+    "452400.csv": [
+      "ohlc:Low<Close_count=463"
+    ],
+    "452430.csv": [
+      "ohlc:Low<Close_count=470"
+    ],
+    "452450.csv": [
+      "ohlc:Low<Close_count=241"
+    ],
+    "452670.csv": [
+      "ohlc:Low<Close_count=466"
+    ],
+    "452980.csv": [
+      "ohlc:Low<Close_count=460"
+    ],
+    "453340.csv": [
+      "ohlc:Low<Close_count=672"
+    ],
+    "453450.csv": [
+      "ohlc:Low<Close_count=378"
+    ],
+    "453860.csv": [
+      "ohlc:Low<Close_count=505"
+    ],
+    "454910.csv": [
+      "ohlc:Low<Close_count=545"
+    ],
+    "455180.csv": [
+      "ohlc:Low<Close_count=152"
+    ],
+    "455310.csv": [
+      "ohlc:Low<Close_count=418"
+    ],
+    "455900.csv": [
+      "ohlc:Low<Close_count=428"
+    ],
+    "455910.csv": [
+      "ohlc:Low<Close_count=517"
+    ],
+    "456010.csv": [
+      "ohlc:Low<Close_count=387"
+    ],
+    "456040.csv": [
+      "ohlc:Low<Close_count=626"
+    ],
+    "456070.csv": [
+      "ohlc:Low<Close_count=338"
+    ],
+    "456160.csv": [
+      "ohlc:Low<Close_count=122"
+    ],
+    "456570.csv": [
+      "ohlc:Low<Close_count=547"
+    ],
+    "457190.csv": [
+      "ohlc:Low<Close_count=620"
+    ],
+    "457370.csv": [
+      "ohlc:Low<Close_count=306"
+    ],
+    "457550.csv": [
+      "ohlc:Low<Close_count=478"
+    ],
+    "457600.csv": [
+      "ohlc:Low<Close_count=260"
+    ],
+    "457630.csv": [
+      "ohlc:Low<Close_count=335"
+    ],
+    "457940.csv": [
+      "ohlc:Low<Close_count=526"
+    ],
+    "458610.csv": [
+      "ohlc:Low<Close_count=540"
+    ],
+    "458650.csv": [
+      "ohlc:Low<Close_count=299"
+    ],
+    "458870.csv": [
+      "ohlc:Low<Close_count=395"
+    ],
+    "459100.csv": [
+      "ohlc:Low<Close_count=277"
+    ],
+    "459510.csv": [
+      "ohlc:Low<Close_count=186"
+    ],
+    "459550.csv": [
+      "ohlc:Low<Close_count=57"
+    ],
+    "460470.csv": [
+      "ohlc:Low<Close_count=349"
+    ],
+    "460850.csv": [
+      "ohlc:Low<Close_count=601"
+    ],
+    "460860.csv": [
+      "ohlc:Low<Close_count=620"
+    ],
+    "460870.csv": [
+      "ohlc:Low<Close_count=221"
+    ],
+    "460930.csv": [
+      "ohlc:Low<Close_count=472"
+    ],
+    "460940.csv": [
+      "ohlc:Low<Close_count=349"
+    ],
+    "461030.csv": [
+      "ohlc:Low<Close_count=431"
+    ],
+    "461300.csv": [
+      "ohlc:Low<Close_count=341"
+    ],
+    "462020.csv": [
+      "ohlc:Low<Close_count=474"
+    ],
+    "462310.csv": [
+      "ohlc:Low<Close_count=138"
+    ],
+    "462350.csv": [
+      "ohlc:Low<Close_count=377"
+    ],
+    "462510.csv": [
+      "ohlc:Low<Close_count=367"
+    ],
+    "462520.csv": [
+      "ohlc:Low<Close_count=577"
+    ],
+    "462860.csv": [
+      "ohlc:Low<Close_count=210"
+    ],
+    "462870.csv": [
+      "ohlc:Low<Close_count=363"
+    ],
+    "462980.csv": [
+      "ohlc:Low<Close_count=236"
+    ],
+    "463020.csv": [
+      "ohlc:Low<Close_count=143"
+    ],
+    "463480.csv": [
+      "ohlc:Low<Close_count=222"
+    ],
+    "464080.csv": [
+      "ohlc:Low<Close_count=390"
+    ],
+    "464280.csv": [
+      "ohlc:Low<Close_count=337"
+    ],
+    "464440.csv": [
+      "ohlc:Low<Close_count=476"
+    ],
+    "464490.csv": [
+      "ohlc:Low<Close_count=41"
+    ],
+    "464500.csv": [
+      "ohlc:Low<Close_count=310"
+    ],
+    "464580.csv": [
+      "ohlc:Low<Close_count=287"
+    ],
+    "464680.csv": [
+      "ohlc:Low<Close_count=473"
+    ],
+    "465320.csv": [
+      "ohlc:Low<Close_count=370"
+    ],
+    "465480.csv": [
+      "ohlc:Low<Close_count=285"
+    ],
+    "465770.csv": [
+      "ohlc:Low<Close_count=539"
+    ],
+    "466100.csv": [
+      "ohlc:Low<Close_count=304"
+    ],
+    "466410.csv": [
+      "ohlc:Low<Close_count=289"
+    ],
+    "466690.csv": [
+      "ohlc:Low<Close_count=39"
+    ],
+    "466910.csv": [
+      "ohlc:Low<Close_count=434"
+    ],
+    "467930.csv": [
+      "ohlc:Low<Close_count=468"
+    ],
+    "468530.csv": [
+      "ohlc:Low<Close_count=130"
+    ],
+    "468760.csv": [
+      "ohlc:Low<Close_count=410"
+    ],
+    "469480.csv": [
+      "ohlc:Low<Close_count=413"
+    ],
+    "469610.csv": [
+      "ohlc:Low<Close_count=65"
+    ],
+    "469750.csv": [
+      "ohlc:Low<Close_count=328"
+    ],
+    "469880.csv": [
+      "ohlc:Low<Close_count=446"
+    ],
+    "469900.csv": [
+      "ohlc:Low<Close_count=408"
+    ],
+    "471050.csv": [
+      "ohlc:Low<Close_count=437"
+    ],
+    "471820.csv": [
+      "ohlc:Low<Close_count=257"
+    ],
+    "472220.csv": [
+      "ohlc:Low<Close_count=434"
+    ],
+    "472230.csv": [
+      "ohlc:Low<Close_count=407"
+    ],
+    "472850.csv": [
+      "ohlc:Low<Close_count=469"
+    ],
+    "473000.csv": [
+      "ohlc:Low<Close_count=392"
+    ],
+    "473050.csv": [
+      "ohlc:Low<Close_count=363"
+    ],
+    "473370.csv": [
+      "ohlc:Low<Close_count=337"
+    ],
+    "473950.csv": [
+      "ohlc:Low<Close_count=307"
+    ],
+    "473980.csv": [
+      "ohlc:Low<Close_count=302"
+    ],
+    "474170.csv": [
+      "ohlc:Low<Close_count=297"
+    ],
+    "474490.csv": [
+      "ohlc:Low<Close_count=371"
+    ],
+    "474610.csv": [
+      "ohlc:Low<Close_count=292"
+    ],
+    "474650.csv": [
+      "ohlc:Low<Close_count=162"
+    ],
+    "474660.csv": [
+      "ohlc:Low<Close_count=344"
+    ],
+    "474930.csv": [
+      "ohlc:Low<Close_count=382"
+    ],
+    "475150.csv": [
+      "ohlc:Low<Close_count=436"
+    ],
+    "475230.csv": [
+      "ohlc:Low<Close_count=132"
+    ],
+    "475240.csv": [
+      "ohlc:Low<Close_count=424"
+    ],
+    "475250.csv": [
+      "ohlc:Low<Close_count=382"
+    ],
+    "475400.csv": [
+      "ohlc:Low<Close_count=307"
+    ],
+    "475430.csv": [
+      "ohlc:Low<Close_count=164"
+    ],
+    "475460.csv": [
+      "ohlc:Low<Close_count=247"
+    ],
+    "475560.csv": [
+      "ohlc:Low<Close_count=290"
+    ],
+    "475580.csv": [
+      "ohlc:Low<Close_count=299"
+    ],
+    "475660.csv": [
+      "ohlc:Low<Close_count=284"
+    ],
+    "475830.csv": [
+      "ohlc:Low<Close_count=238"
+    ],
+    "475960.csv": [
+      "ohlc:Low<Close_count=304"
+    ],
+    "476040.csv": [
+      "ohlc:Low<Close_count=177"
+    ],
+    "476060.csv": [
+      "ohlc:Low<Close_count=267"
+    ],
+    "476080.csv": [
+      "ohlc:Low<Close_count=333"
+    ],
+    "476710.csv": [
+      "ohlc:Low<Close_count=12"
+    ],
+    "476830.csv": [
+      "ohlc:Low<Close_count=34"
+    ],
+    "477340.csv": [
+      "ohlc:Low<Close_count=342"
+    ],
+    "477380.csv": [
+      "ohlc:Low<Close_count=359"
+    ],
+    "477470.csv": [
+      "ohlc:Low<Close_count=360"
+    ],
+    "477760.csv": [
+      "ohlc:Low<Close_count=348"
+    ],
+    "478110.csv": [
+      "ohlc:Low<Close_count=312"
+    ],
+    "478340.csv": [
+      "ohlc:Low<Close_count=38"
+    ],
+    "478390.csv": [
+      "ohlc:Low<Close_count=344"
+    ],
+    "478440.csv": [
+      "ohlc:Low<Close_count=349"
+    ],
+    "478560.csv": [
+      "ohlc:Low<Close_count=244"
+    ],
+    "479880.csv": [
+      "ohlc:Low<Close_count=357"
+    ],
+    "479960.csv": [
+      "ohlc:Low<Close_count=215"
+    ],
+    "480370.csv": [
+      "ohlc:Low<Close_count=214"
+    ],
+    "481070.csv": [
+      "ohlc:Low<Close_count=203"
+    ],
+    "481850.csv": [
+      "ohlc:Low<Close_count=384"
+    ],
+    "481890.csv": [
+      "ohlc:Low<Close_count=332"
+    ],
+    "482520.csv": [
+      "ohlc:Low<Close_count=271"
+    ],
+    "482630.csv": [
+      "ohlc:Low<Close_count=252"
+    ],
+    "482680.csv": [
+      "ohlc:Low<Close_count=288"
+    ],
+    "482690.csv": [
+      "ohlc:Low<Close_count=250"
+    ],
+    "483650.csv": [
+      "ohlc:Low<Close_count=179"
+    ],
+    "484120.csv": [
+      "ohlc:Low<Close_count=135"
+    ],
+    "484130.csv": [
+      "ohlc:Low<Close_count=241"
+    ],
+    "484590.csv": [
+      "ohlc:Low<Close_count=116"
+    ],
+    "484810.csv": [
+      "ohlc:Low<Close_count=206"
+    ],
+    "484870.csv": [
+      "ohlc:Low<Close_count=277"
+    ],
+    "486630.csv": [
+      "ohlc:Low<Close_count=289"
+    ],
+    "486990.csv": [
+      "ohlc:Low<Close_count=70"
+    ],
+    "487360.csv": [
+      "ohlc:Low<Close_count=237"
+    ],
+    "487570.csv": [
+      "ohlc:Low<Close_count=357"
+    ],
+    "487720.csv": [
+      "ohlc:Low<Close_count=240"
+    ],
+    "487830.csv": [
+      "ohlc:Low<Close_count=245"
+    ],
+    "488060.csv": [
+      "ohlc:Low<Close_count=249"
+    ],
+    "488280.csv": [
+      "ohlc:Low<Close_count=94"
+    ],
+    "488900.csv": [
+      "ohlc:Low<Close_count=54"
+    ],
+    "489210.csv": [
+      "ohlc:Low<Close_count=260"
+    ],
+    "489460.csv": [
+      "ohlc:Low<Close_count=176"
+    ],
+    "489480.csv": [
+      "ohlc:Low<Close_count=229"
+    ],
+    "489500.csv": [
+      "ohlc:Low<Close_count=223"
+    ],
+    "489730.csv": [
+      "ohlc:Low<Close_count=243"
+    ],
+    "489790.csv": [
+      "ohlc:Low<Close_count=322"
+    ],
+    "490470.csv": [
+      "ohlc:Low<Close_count=31"
+    ],
+    "491000.csv": [
+      "ohlc:Low<Close_count=32"
+    ],
+    "492220.csv": [
+      "ohlc:Low<Close_count=200"
+    ],
+    "493330.csv": [
+      "ohlc:Low<Close_count=19"
+    ],
+    "493790.csv": [
+      "ohlc:Low<Close_count=199"
+    ],
+    "494120.csv": [
+      "ohlc:Low<Close_count=60"
+    ],
+    "496070.csv": [
+      "ohlc:Low<Close_count=143"
+    ],
+    "498390.csv": [
+      "ohlc:Low<Close_count=176"
+    ],
+    "499790.csv": [
+      "ohlc:Low<Close_count=271"
+    ],
+    "900070.csv": [
+      "ohlc:Low<Close_count=2327"
+    ],
+    "900100.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=1744"
+    ],
+    "900110.csv": [
+      "ohlc:Low<Close_count=1875"
+    ],
+    "900120.csv": [
+      "ohlc:Low<Close_count=2265"
+    ],
+    "900140.csv": [
+      "ohlc:Low<Close_count=2375"
+    ],
+    "900250.csv": [
+      "ohlc:Low<Close_count=2306"
+    ],
+    "900260.csv": [
+      "ohlc:Low<Close_count=2214"
+    ],
+    "900270.csv": [
+      "ohlc:Low<Close_count=2166"
+    ],
+    "900290.csv": [
+      "ohlc:Low<Close_count=1909"
+    ],
+    "900300.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2102"
+    ],
+    "900310.csv": [
+      "ohlc:Low<Close_count=1934"
+    ],
+    "900340.csv": [
+      "ohlc:Low<Close_count=1635"
+    ],
+    "950130.csv": [
+      "ohlc:Low<Close_count=2243"
+    ],
+    "950140.csv": [
+      "ohlc:Low<Close_count=2191"
+    ],
+    "950160.csv": [
+      "ohlc:Low<Close_count=1148"
+    ],
+    "950170.csv": [
+      "ohlc:Low<Close_count=1874"
+    ],
+    "950190.csv": [
+      "ohlc:Low<Close_count=1300"
+    ],
+    "950200.csv": [
+      "ohlc:Low<Close_count=1246"
+    ],
+    "950210.csv": [
+      "ohlc:Low<Close_count=1136"
+    ],
+    "950220.csv": [
+      "ohlc:Low<Close_count=1160"
+    ],
+    "950250.csv": [
+      "ohlc:Low<Close_count=44"
+    ]
+  },
+  "guardrail_gr1": {
+    "total_in": 2883,
+    "clean": 2883,
+    "quarantine": 1929,
+    "dropped_known": 0,
+    "preserved": 4812,
+    "law_satisfied": true,
+    "note": "raw_exists"
+  },
+  "guardrail_gr3": {
+    "total_records": 5610108,
+    "l3_candidates": 0,
+    "l3_ratio": 0.0,
+    "cap_threshold": 0.2,
+    "cap_exceeded": false
+  },
+  "fail_traces": [],
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "status": "WARN",
+    "total_files": 2883,
+    "files_with_issues": 2878,
+    "total_records": 5610108
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "folder_key": "kr/supply",
+  "clean_dir": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production/kr/supply",
+  "issues_by_file": {},
+  "guardrail_gr1": {
+    "total_in": 2882,
+    "clean": 2882,
+    "quarantine": 0,
+    "dropped_known": 0,
+    "preserved": 2882,
+    "law_satisfied": true,
+    "note": "raw_exists"
+  },
+  "guardrail_gr3": {
+    "total_records": 5582100,
+    "l3_candidates": 0,
+    "l3_ratio": 0.0,
+    "cap_threshold": 0.2,
+    "cap_exceeded": false
+  },
+  "fail_traces": [],
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "status": "PASS",
+    "total_files": 2882,
+    "files_with_issues": 0,
+    "total_records": 5582100
+  }
+}

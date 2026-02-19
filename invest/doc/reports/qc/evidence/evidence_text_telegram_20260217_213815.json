@@ -1,0 +1,32 @@
+{
+  "folder_key": "text/telegram",
+  "clean_dir": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production/text/telegram",
+  "issues_by_file": {},
+  "guardrail_gr1": {
+    "total_in": 59,
+    "clean": 54,
+    "quarantine": 0,
+    "dropped_known": 0,
+    "preserved": 54,
+    "law_satisfied": false,
+    "note": "raw_exists"
+  },
+  "guardrail_gr3": {
+    "total_records": 5099585,
+    "l3_candidates": 0,
+    "l3_ratio": 0.0,
+    "cap_threshold": 0.2,
+    "cap_exceeded": false
+  },
+  "fail_traces": [],
+  "errors": [
+    "ERR:GR1_preservation_violated (raw=59, preserved=54)"
+  ],
+  "warnings": [],
+  "summary": {
+    "status": "FAIL",
+    "total_files": 54,
+    "files_with_issues": 0,
+    "total_records": 5099585
+  }
+}

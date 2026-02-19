@@ -1,0 +1,1541 @@
+{
+  "folder_key": "us/ohlcv",
+  "clean_dir": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production/us/ohlcv",
+  "issues_by_file": {
+    "A.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "AAPL.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "ABBV.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "ABNB.csv": [
+      "ohlc:Low<Close_count=1300"
+    ],
+    "ABT.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "ACGL.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "ACN.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "ADBE.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "ADI.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "ADM.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "ADP.csv": [
+      "ohlc:Low<Close_count=2543"
+    ],
+    "ADSK.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "AEE.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "AEP.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "AES.csv": [
+      "ohlc:Low<Close_count=2517"
+    ],
+    "AFL.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "AIG.csv": [
+      "ohlc:Low<Close_count=2524"
+    ],
+    "AIZ.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "AJG.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "AKAM.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "ALB.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "ALGN.csv": [
+      "ohlc:Low<Close_count=2544"
+    ],
+    "ALL.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "ALLE.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "AMAT.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "AMCR.csv": [
+      "ohlc:Low<Close_count=1656"
+    ],
+    "AMD.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "AME.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "AMGN.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "AMP.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "AMT.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "AMZN.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "ANET.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "AON.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "AOS.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "APA.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "APD.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "APH.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "APO.csv": [
+      "ohlc:Low<Close_count=2521"
+    ],
+    "APP.csv": [
+      "ohlc:Low<Close_count=1215"
+    ],
+    "APTV.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "ARE.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "ARES.csv": [
+      "ohlc:Low<Close_count=2496"
+    ],
+    "ATO.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "AVB.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "AVGO.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "AVY.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "AWK.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "AXON.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "AXP.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "AZO.csv": [
+      "ohlc:Low<Close_count=2523"
+    ],
+    "BA.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "BAC.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "BALL.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "BAX.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "BBY.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "BDX.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "BEN.csv": [
+      "ohlc:Low<Close_count=2511"
+    ],
+    "BF-B.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "BG.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "BIIB.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "BK.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "BKNG.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "BKR.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "BLDR.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "BLK.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "BMY.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "BR.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "BRK-B.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "BRO.csv": [
+      "ohlc:Low<Close_count=2517"
+    ],
+    "BSX.csv": [
+      "ohlc:Low<Close_count=2522"
+    ],
+    "BX.csv": [
+      "ohlc:Low<Close_count=2522"
+    ],
+    "BXP.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "C.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "CAG.csv": [
+      "ohlc:Low<Close_count=2503"
+    ],
+    "CAH.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "CARR.csv": [
+      "ohlc:Low<Close_count=1481"
+    ],
+    "CAT.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "CB.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "CBOE.csv": [
+      "ohlc:Low<Close_count=2486"
+    ],
+    "CBRE.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "CCI.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "CCL.csv": [
+      "ohlc:Low<Close_count=2523"
+    ],
+    "CDNS.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "CDW.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "CEG.csv": [
+      "ohlc:Low<Close_count=1022"
+    ],
+    "CF.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "CFG.csv": [
+      "ohlc:Low<Close_count=2524"
+    ],
+    "CHD.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "CHRW.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "CHTR.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "CI.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "CIEN.csv": [
+      "ohlc:Low<Close_count=2521"
+    ],
+    "CINF.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "CL.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "CLX.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "CMCSA.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "CME.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "CMG.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "CMI.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "CMS.csv": [
+      "ohlc:Low<Close_count=2523"
+    ],
+    "CNC.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "CNP.csv": [
+      "ohlc:Low<Close_count=2523"
+    ],
+    "COF.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "COIN.csv": [
+      "ohlc:Low<Close_count=1214"
+    ],
+    "COO.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "COP.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "COR.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "COST.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "CPAY.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "CPB.csv": [
+      "ohlc:Low<Close_count=2522"
+    ],
+    "CPRT.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "CPT.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "CRH.csv": [
+      "ohlc:Low<Close_count=2491"
+    ],
+    "CRL.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "CRM.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "CRWD.csv": [
+      "ohlc:Low<Close_count=1679"
+    ],
+    "CSCO.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "CSGP.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "CSX.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "CTAS.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "CTRA.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "CTSH.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "CTVA.csv": [
+      "ohlc:Low<Close_count=1680"
+    ],
+    "CVNA.csv": [
+      "ohlc:Low<Close_count=2207"
+    ],
+    "CVS.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "CVX.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "D.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "DAL.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "DASH.csv": [
+      "ohlc:Low<Close_count=1301"
+    ],
+    "DD.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "DDOG.csv": [
+      "ohlc:Low<Close_count=1608"
+    ],
+    "DE.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "DECK.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "DELL.csv": [
+      "ohlc:Low<Close_count=2369"
+    ],
+    "DG.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "DGX.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "DHI.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "DHR.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "DIS.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "DLR.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "DLTR.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "DOC.csv": [
+      "ohlc:Low<Close_count=2503"
+    ],
+    "DOV.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "DOW.csv": [
+      "ohlc:Low<Close_count=1731"
+    ],
+    "DPZ.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "DRI.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "DTE.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "DUK.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "DVA.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "DVN.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "DXCM.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "EA.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "EBAY.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "ECL.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "ED.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "EFX.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "EG.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "EIX.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "EL.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "ELV.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "EME.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "EMR.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "EOG.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "EPAM.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "EQIX.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "EQR.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "EQT.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "ERIE.csv": [
+      "ohlc:Low<Close_count=2519"
+    ],
+    "ES.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "ESS.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "ETN.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "ETR.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "EVRG.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "EW.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "EXC.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "EXE.csv": [
+      "ohlc:Low<Close_count=1257"
+    ],
+    "EXPD.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "EXPE.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "EXR.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "F.csv": [
+      "ohlc:Low<Close_count=2490"
+    ],
+    "FANG.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "FAST.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "FCX.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "FDS.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "FDX.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "FE.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "FFIV.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "FICO.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "FIS.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "FISV.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "FITB.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "FIX.csv": [
+      "ohlc:Low<Close_count=2523"
+    ],
+    "FOX.csv": [
+      "ohlc:Low<Close_count=1728"
+    ],
+    "FOXA.csv": [
+      "ohlc:Low<Close_count=1739"
+    ],
+    "FRT.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "FSLR.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "FTNT.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "FTV.csv": [
+      "ohlc:Low<Close_count=2406"
+    ],
+    "GD.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "GDDY.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "GE.csv": [
+      "ohlc:Low<Close_count=2505"
+    ],
+    "GEHC.csv": [
+      "ohlc:Low<Close_count=792"
+    ],
+    "GEN.csv": [
+      "ohlc:Low<Close_count=2524"
+    ],
+    "GEV.csv": [
+      "ohlc:Low<Close_count=472"
+    ],
+    "GILD.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "GIS.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "GL.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "GLW.csv": [
+      "ohlc:Low<Close_count=2513"
+    ],
+    "GM.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "GNRC.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "GOOG.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "GOOGL.csv": [
+      "ohlc:Low<Close_count=2543"
+    ],
+    "GPC.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "GPN.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "GRMN.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "GS.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "GWW.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "HAL.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "HAS.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "HBAN.csv": [
+      "ohlc:Low<Close_count=2499"
+    ],
+    "HCA.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "HD.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "HIG.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "HII.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "HLT.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "HOLX.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "HON.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "HOOD.csv": [
+      "ohlc:Low<Close_count=1138"
+    ],
+    "HPE.csv": [
+      "ohlc:Low<Close_count=2501"
+    ],
+    "HPQ.csv": [
+      "ohlc:Low<Close_count=2512"
+    ],
+    "HRL.csv": [
+      "ohlc:Low<Close_count=2522"
+    ],
+    "HSIC.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "HST.csv": [
+      "ohlc:Low<Close_count=2509"
+    ],
+    "HSY.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "HUBB.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "HUM.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "HWM.csv": [
+      "ohlc:Low<Close_count=2315"
+    ],
+    "IBKR.csv": [
+      "ohlc:Low<Close_count=2521"
+    ],
+    "IBM.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "ICE.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "IDXX.csv": [
+      "ohlc:Low<Close_count=2543"
+    ],
+    "IEX.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "IFF.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "INCY.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "INTC.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "INTU.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "INVH.csv": [
+      "ohlc:Low<Close_count=2252"
+    ],
+    "IP.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "IQV.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "IR.csv": [
+      "ohlc:Low<Close_count=2187"
+    ],
+    "IRM.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "ISRG.csv": [
+      "ohlc:Low<Close_count=2543"
+    ],
+    "IT.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "ITW.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "IVZ.csv": [
+      "ohlc:Low<Close_count=2519"
+    ],
+    "J.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "JBHT.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "JBL.csv": [
+      "ohlc:Low<Close_count=2520"
+    ],
+    "JCI.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "JKHY.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "JNJ.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "JPM.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "KDP.csv": [
+      "range:return_outlier_count=1",
+      "ohlc:Low<Close_count=2528"
+    ],
+    "KEY.csv": [
+      "ohlc:Low<Close_count=2501"
+    ],
+    "KEYS.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "KHC.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "KIM.csv": [
+      "ohlc:Low<Close_count=2514"
+    ],
+    "KKR.csv": [
+      "ohlc:Low<Close_count=2509"
+    ],
+    "KLAC.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "KMB.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "KMI.csv": [
+      "ohlc:Low<Close_count=2508"
+    ],
+    "KO.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "KR.csv": [
+      "ohlc:Low<Close_count=2524"
+    ],
+    "KVUE.csv": [
+      "ohlc:Low<Close_count=692"
+    ],
+    "L.csv": [
+      "ohlc:Low<Close_count=2518"
+    ],
+    "LDOS.csv": [
+      "ohlc:Low<Close_count=2521"
+    ],
+    "LEN.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "LH.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "LHX.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "LII.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "LIN.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "LLY.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "LMT.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "LNT.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "LOW.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "LRCX.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "LULU.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "LUV.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "LVS.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "LW.csv": [
+      "ohlc:Low<Close_count=2314"
+    ],
+    "LYB.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "LYV.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "MA.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "MAA.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "MAR.csv": [
+      "ohlc:Low<Close_count=2543"
+    ],
+    "MAS.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "MCD.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "MCHP.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "MCK.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "MCO.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "MDLZ.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "MDT.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "MET.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "META.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "MGM.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "MKC.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "MLM.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "MMM.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "MNST.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "MO.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "MOH.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "MOS.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "MPC.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "MPWR.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "MRK.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "MRNA.csv": [
+      "ohlc:Low<Close_count=1798"
+    ],
+    "MRSH.csv": [
+      "ohlc:Low<Close_count=2524"
+    ],
+    "MS.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "MSCI.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "MSFT.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "MSI.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "MTB.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "MTCH.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "MTD.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "MU.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "NCLH.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "NDAQ.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "NDSN.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "NEE.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "NEM.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "NFLX.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "NI.csv": [
+      "ohlc:Low<Close_count=2515"
+    ],
+    "NKE.csv": [
+      "ohlc:Low<Close_count=2521"
+    ],
+    "NOC.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "NOW.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "NRG.csv": [
+      "ohlc:Low<Close_count=2523"
+    ],
+    "NSC.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "NTAP.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "NTRS.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "NUE.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "NVDA.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "NVR.csv": [
+      "ohlc:Low<Close_count=2510"
+    ],
+    "NWS.csv": [
+      "ohlc:Low<Close_count=2483"
+    ],
+    "NWSA.csv": [
+      "ohlc:Low<Close_count=2517"
+    ],
+    "NXPI.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "O.csv": [
+      "ohlc:Low<Close_count=2521"
+    ],
+    "ODFL.csv": [
+      "ohlc:Low<Close_count=2544"
+    ],
+    "OKE.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "OMC.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "ON.csv": [
+      "ohlc:Low<Close_count=2529"
+    ],
+    "ORCL.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "ORLY.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "OTIS.csv": [
+      "ohlc:Low<Close_count=1481"
+    ],
+    "OXY.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "PANW.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "PAYC.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "PAYX.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "PCAR.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "PCG.csv": [
+      "ohlc:Low<Close_count=2503"
+    ],
+    "PEG.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "PEP.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "PFE.csv": [
+      "ohlc:Low<Close_count=2514"
+    ],
+    "PFG.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "PG.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "PGR.csv": [
+      "ohlc:Low<Close_count=2523"
+    ],
+    "PH.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "PHM.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "PKG.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "PLD.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "PLTR.csv": [
+      "ohlc:Low<Close_count=1342"
+    ],
+    "PM.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "PNC.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "PNR.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "PNW.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "PODD.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "POOL.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "PPG.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "PPL.csv": [
+      "ohlc:Low<Close_count=2501"
+    ],
+    "PRU.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "PSA.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "PSKY.csv": [
+      "ohlc:Low<Close_count=2519"
+    ],
+    "PSX.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "PTC.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "PWR.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "PYPL.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "Q.csv": [
+      "ohlc:Low<Close_count=75"
+    ],
+    "QCOM.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "RCL.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "REG.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "REGN.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "RF.csv": [
+      "ohlc:Low<Close_count=2500"
+    ],
+    "RJF.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "RL.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "RMD.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "ROK.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "ROL.csv": [
+      "ohlc:Low<Close_count=2524"
+    ],
+    "ROP.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "ROST.csv": [
+      "ohlc:Low<Close_count=2544"
+    ],
+    "RSG.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "RTX.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "RVTY.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "SBAC.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "SBUX.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "SCHW.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "SHW.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "SJM.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "SLB.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "SMCI.csv": [
+      "ohlc:Low<Close_count=2508"
+    ],
+    "SNA.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "SNDK.csv": [
+      "ohlc:Low<Close_count=252"
+    ],
+    "SNPS.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "SO.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "SOLV.csv": [
+      "ohlc:Low<Close_count=472"
+    ],
+    "SPG.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "SPGI.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "SRE.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "STE.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "STLD.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "STT.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "STX.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "STZ.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "SW.csv": [
+      "ohlc:Low<Close_count=565"
+    ],
+    "SWK.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "SWKS.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "SYF.csv": [
+      "ohlc:Low<Close_count=2522"
+    ],
+    "SYK.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "SYY.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "T.csv": [
+      "ohlc:Low<Close_count=2494"
+    ],
+    "TAP.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "TDG.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "TDY.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "TECH.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "TEL.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "TER.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "TFC.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "TGT.csv": [
+      "ohlc:Low<Close_count=2527"
+    ],
+    "TJX.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "TKO.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "TMO.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "TMUS.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "TPL.csv": [
+      "ohlc:Low<Close_count=2444"
+    ],
+    "TPR.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "TRGP.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "TRMB.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "TROW.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "TRV.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "TSCO.csv": [
+      "ohlc:Low<Close_count=2541"
+    ],
+    "TSLA.csv": [
+      "ohlc:Low<Close_count=2544"
+    ],
+    "TSN.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "TT.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "TTD.csv": [
+      "ohlc:Low<Close_count=2357"
+    ],
+    "TTWO.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "TXN.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "TXT.csv": [
+      "ohlc:Low<Close_count=2528"
+    ],
+    "TYL.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "UAL.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "UBER.csv": [
+      "ohlc:Low<Close_count=1691"
+    ],
+    "UDR.csv": [
+      "ohlc:Low<Close_count=2518"
+    ],
+    "UHS.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "ULTA.csv": [
+      "ohlc:Low<Close_count=2540"
+    ],
+    "UNH.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "UNP.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "UPS.csv": [
+      "ohlc:Low<Close_count=2532"
+    ],
+    "URI.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "USB.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "V.csv": [
+      "ohlc:Low<Close_count=2522"
+    ],
+    "VICI.csv": [
+      "ohlc:Low<Close_count=2005"
+    ],
+    "VLO.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "VLTO.csv": [
+      "ohlc:Low<Close_count=592"
+    ],
+    "VMC.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "VRSK.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "VRSN.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "VRTX.csv": [
+      "ohlc:Low<Close_count=2544"
+    ],
+    "VST.csv": [
+      "ohlc:Low<Close_count=2303"
+    ],
+    "VTR.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "VTRS.csv": [
+      "ohlc:Low<Close_count=2535"
+    ],
+    "VZ.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "WAB.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "WAT.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "WBD.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "WDAY.csv": [
+      "ohlc:Low<Close_count=2539"
+    ],
+    "WDC.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "WEC.csv": [
+      "ohlc:Low<Close_count=2534"
+    ],
+    "WELL.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "WFC.csv": [
+      "ohlc:Low<Close_count=2524"
+    ],
+    "WM.csv": [
+      "ohlc:Low<Close_count=2526"
+    ],
+    "WMB.csv": [
+      "ohlc:Low<Close_count=2523"
+    ],
+    "WMT.csv": [
+      "ohlc:Low<Close_count=2530"
+    ],
+    "WRB.csv": [
+      "ohlc:Low<Close_count=2524"
+    ],
+    "WSM.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "WST.csv": [
+      "ohlc:Low<Close_count=2533"
+    ],
+    "WTW.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "WY.csv": [
+      "ohlc:Low<Close_count=2514"
+    ],
+    "WYNN.csv": [
+      "ohlc:Low<Close_count=2542"
+    ],
+    "XEL.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "XOM.csv": [
+      "ohlc:Low<Close_count=2525"
+    ],
+    "XYL.csv": [
+      "ohlc:Low<Close_count=2531"
+    ],
+    "XYZ.csv": [
+      "ohlc:Low<Close_count=2536"
+    ],
+    "YUM.csv": [
+      "ohlc:Low<Close_count=2521"
+    ],
+    "ZBH.csv": [
+      "ohlc:Low<Close_count=2537"
+    ],
+    "ZBRA.csv": [
+      "ohlc:Low<Close_count=2538"
+    ],
+    "ZTS.csv": [
+      "ohlc:Low<Close_count=2536"
+    ]
+  },
+  "guardrail_gr1": {
+    "total_in": 503,
+    "clean": 503,
+    "quarantine": 503,
+    "dropped_known": 0,
+    "preserved": 1006,
+    "law_satisfied": true,
+    "note": "raw_exists"
+  },
+  "guardrail_gr3": {
+    "total_records": 1243342,
+    "l3_candidates": 0,
+    "l3_ratio": 0.0,
+    "cap_threshold": 0.2,
+    "cap_exceeded": false
+  },
+  "fail_traces": [],
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "status": "WARN",
+    "total_files": 503,
+    "files_with_issues": 503,
+    "total_records": 1243342
+  }
+}

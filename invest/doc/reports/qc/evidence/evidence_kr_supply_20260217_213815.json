@@ -1,0 +1,1069 @@
+{
+  "folder_key": "kr/supply",
+  "clean_dir": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production/kr/supply",
+  "issues_by_file": {
+    "000080_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "000100_supply.csv": [
+      "date:duplicate_count=4896"
+    ],
+    "000120_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "000150_supply.csv": [
+      "date:duplicate_count=7314"
+    ],
+    "000155_supply.csv": [
+      "date:duplicate_count=4876"
+    ],
+    "000240_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "000250_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "000270_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "000500_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "000660_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "000670_supply.csv": [
+      "date:duplicate_count=4884"
+    ],
+    "000720_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "000810_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "000815_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "000880_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "000990_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "0009K0_supply.csv": [
+      "date:duplicate_count=98"
+    ],
+    "001040_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "001120_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "001430_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "001440_supply.csv": [
+      "date:duplicate_count=4868"
+    ],
+    "001450_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "001720_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "001740_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "001800_supply.csv": [
+      "date:duplicate_count=4848"
+    ],
+    "002380_supply.csv": [
+      "date:duplicate_count=4872"
+    ],
+    "002790_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "003090_supply.csv": [
+      "date:duplicate_count=4876"
+    ],
+    "003230_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "003240_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "003380_supply.csv": [
+      "date:duplicate_count=4232"
+    ],
+    "003490_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "003530_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "003540_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "003550_supply.csv": [
+      "date:duplicate_count=7299"
+    ],
+    "003570_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "003670_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "003690_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "004000_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "004020_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "004170_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "004370_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "004800_supply.csv": [
+      "date:duplicate_count=4798"
+    ],
+    "004990_supply.csv": [
+      "date:duplicate_count=4846"
+    ],
+    "005070_supply.csv": [
+      "date:duplicate_count=4866"
+    ],
+    "005290_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "005300_supply.csv": [
+      "date:duplicate_count=4864"
+    ],
+    "005380_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "005385_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "005387_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "005440_supply.csv": [
+      "date:duplicate_count=4844"
+    ],
+    "005490_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "005830_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "005850_supply.csv": [
+      "date:duplicate_count=4838"
+    ],
+    "005930_supply.csv": [
+      "date:duplicate_count=7344"
+    ],
+    "005935_supply.csv": [
+      "date:duplicate_count=7344"
+    ],
+    "005940_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "006040_supply.csv": [
+      "date:duplicate_count=4894"
+    ],
+    "006260_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "006280_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "006360_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "006400_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "006730_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "006800_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "00680K_supply.csv": [
+      "date:duplicate_count=3892"
+    ],
+    "007070_supply.csv": [
+      "date:duplicate_count=4868"
+    ],
+    "007310_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "007340_supply.csv": [
+      "date:duplicate_count=4844"
+    ],
+    "007390_supply.csv": [
+      "date:duplicate_count=4898"
+    ],
+    "007660_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "007810_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "008770_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "008930_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "009150_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "009240_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "009420_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "009540_supply.csv": [
+      "date:duplicate_count=7278"
+    ],
+    "009830_supply.csv": [
+      "date:duplicate_count=4856"
+    ],
+    "009970_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "010060_supply.csv": [
+      "date:duplicate_count=4862"
+    ],
+    "010120_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "010130_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "010140_supply.csv": [
+      "date:duplicate_count=7317"
+    ],
+    "010950_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "011070_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "011170_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "011200_supply.csv": [
+      "date:duplicate_count=7281"
+    ],
+    "011210_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "011780_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "011790_supply.csv": [
+      "date:duplicate_count=4880"
+    ],
+    "012330_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "012450_supply.csv": [
+      "date:duplicate_count=7299"
+    ],
+    "012510_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "012630_supply.csv": [
+      "date:duplicate_count=4846"
+    ],
+    "0126Z0_supply.csv": [
+      "date:duplicate_count=171"
+    ],
+    "012750_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "014680_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "015760_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "016360_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "017670_supply.csv": [
+      "date:duplicate_count=7281"
+    ],
+    "017800_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "017960_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "018260_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "018670_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "018880_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "020150_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "020560_supply.csv": [
+      "date:duplicate_count=4800"
+    ],
+    "021240_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "022100_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "023530_supply.csv": [
+      "date:duplicate_count=4870"
+    ],
+    "023590_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "024110_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "026960_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "028050_supply.csv": [
+      "date:duplicate_count=4882"
+    ],
+    "028260_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "028300_supply.csv": [
+      "date:duplicate_count=4900"
+    ],
+    "028670_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "029780_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "030000_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "030200_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "030530_supply.csv": [
+      "date:duplicate_count=4856"
+    ],
+    "030610_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "031210_supply.csv": [
+      "date:duplicate_count=454"
+    ],
+    "031980_supply.csv": [
+      "date:duplicate_count=4844"
+    ],
+    "032350_supply.csv": [
+      "date:duplicate_count=4876"
+    ],
+    "032640_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "032820_supply.csv": [
+      "date:duplicate_count=4868"
+    ],
+    "032830_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "033780_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "034020_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "034220_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "034230_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "034730_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "035250_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "035420_supply.csv": [
+      "date:duplicate_count=7344"
+    ],
+    "035720_supply.csv": [
+      "date:duplicate_count=7344"
+    ],
+    "035760_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "035900_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "036460_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "036540_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "036570_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "036930_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "038500_supply.csv": [
+      "date:duplicate_count=4900"
+    ],
+    "039030_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "039200_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "039490_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "041510_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "042660_supply.csv": [
+      "date:duplicate_count=6408"
+    ],
+    "042700_supply.csv": [
+      "date:duplicate_count=7293"
+    ],
+    "043260_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "047040_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "047050_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "047810_supply.csv": [
+      "date:duplicate_count=7338"
+    ],
+    "048410_supply.csv": [
+      "date:duplicate_count=4900"
+    ],
+    "051600_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "051900_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "051910_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "051915_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "052690_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "055550_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "056080_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "056190_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "058470_supply.csv": [
+      "date:duplicate_count=4880"
+    ],
+    "058610_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "060370_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "062040_supply.csv": [
+      "date:duplicate_count=752"
+    ],
+    "064350_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "064400_supply.csv": [
+      "date:duplicate_count=506"
+    ],
+    "064760_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "065350_supply.csv": [
+      "date:duplicate_count=4898"
+    ],
+    "066570_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "066970_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "067310_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "068270_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "068760_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "069620_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "069960_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "071050_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "071970_supply.csv": [
+      "date:duplicate_count=4662"
+    ],
+    "073240_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "077970_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "078600_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "078930_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "079550_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "080220_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "081660_supply.csv": [
+      "date:duplicate_count=4896"
+    ],
+    "082270_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "082640_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "082740_supply.csv": [
+      "date:duplicate_count=4882"
+    ],
+    "083650_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "084370_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "085620_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "085660_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "086280_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "086520_supply.csv": [
+      "date:duplicate_count=7263"
+    ],
+    "086790_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "087010_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "088350_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "088980_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "089030_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "089860_supply.csv": [
+      "date:duplicate_count=2198"
+    ],
+    "090430_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "090710_supply.csv": [
+      "date:duplicate_count=4834"
+    ],
+    "095340_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "095610_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "096530_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "096770_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "097230_supply.csv": [
+      "date:duplicate_count=4782"
+    ],
+    "097950_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "098460_supply.csv": [
+      "date:duplicate_count=4896"
+    ],
+    "099320_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "100090_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "100790_supply.csv": [
+      "date:duplicate_count=3404"
+    ],
+    "101490_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "103140_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "103590_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "105560_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "108490_supply.csv": [
+      "date:duplicate_count=3590"
+    ],
+    "111770_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "112610_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "115180_supply.csv": [
+      "date:duplicate_count=4204"
+    ],
+    "120110_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "122870_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "124500_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "128940_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "131970_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "137310_supply.csv": [
+      "date:duplicate_count=2244"
+    ],
+    "137400_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "138040_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "138930_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "139130_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "139480_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "140410_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "140860_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "141080_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "145020_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "160190_supply.csv": [
+      "date:duplicate_count=794"
+    ],
+    "161390_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "161580_supply.csv": [
+      "date:duplicate_count=4272"
+    ],
+    "161890_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "166090_supply.csv": [
+      "date:duplicate_count=4312"
+    ],
+    "174900_supply.csv": [
+      "date:duplicate_count=4122"
+    ],
+    "175330_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "178320_supply.csv": [
+      "date:duplicate_count=4352"
+    ],
+    "180640_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "181710_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "183300_supply.csv": [
+      "date:duplicate_count=4364"
+    ],
+    "185750_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "189300_supply.csv": [
+      "date:duplicate_count=4580"
+    ],
+    "192080_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "192820_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "195940_supply.csv": [
+      "date:duplicate_count=2212"
+    ],
+    "196170_supply.csv": [
+      "date:duplicate_count=7353"
+    ],
+    "204270_supply.csv": [
+      "date:duplicate_count=2924"
+    ],
+    "204320_supply.csv": [
+      "date:duplicate_count=4896"
+    ],
+    "207940_supply.csv": [
+      "date:duplicate_count=6714"
+    ],
+    "214150_supply.csv": [
+      "date:duplicate_count=4812"
+    ],
+    "214370_supply.csv": [
+      "date:duplicate_count=4328"
+    ],
+    "214450_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "218410_supply.csv": [
+      "date:duplicate_count=4608"
+    ],
+    "222800_supply.csv": [
+      "date:duplicate_count=4902"
+    ],
+    "226950_supply.csv": [
+      "date:duplicate_count=3722"
+    ],
+    "229640_supply.csv": [
+      "date:duplicate_count=4614"
+    ],
+    "232140_supply.csv": [
+      "date:duplicate_count=4794"
+    ],
+    "237690_supply.csv": [
+      "date:duplicate_count=4736"
+    ],
+    "240810_supply.csv": [
+      "date:duplicate_count=4806"
+    ],
+    "241560_supply.csv": [
+      "date:duplicate_count=4534"
+    ],
+    "247540_supply.csv": [
+      "date:duplicate_count=5130"
+    ],
+    "249420_supply.csv": [
+      "date:duplicate_count=4640"
+    ],
+    "251270_supply.csv": [
+      "date:duplicate_count=4300"
+    ],
+    "253450_supply.csv": [
+      "date:duplicate_count=4036"
+    ],
+    "257720_supply.csv": [
+      "date:duplicate_count=2144"
+    ],
+    "259960_supply.csv": [
+      "date:duplicate_count=2210"
+    ],
+    "263750_supply.csv": [
+      "date:duplicate_count=4120"
+    ],
+    "267250_supply.csv": [
+      "date:duplicate_count=6447"
+    ],
+    "267260_supply.csv": [
+      "date:duplicate_count=6456"
+    ],
+    "267270_supply.csv": [
+      "date:duplicate_count=4304"
+    ],
+    "271560_supply.csv": [
+      "date:duplicate_count=4222"
+    ],
+    "272210_supply.csv": [
+      "date:duplicate_count=4611"
+    ],
+    "277810_supply.csv": [
+      "date:duplicate_count=3702"
+    ],
+    "278470_supply.csv": [
+      "date:duplicate_count=940"
+    ],
+    "280360_supply.csv": [
+      "date:duplicate_count=4074"
+    ],
+    "281740_supply.csv": [
+      "date:duplicate_count=3922"
+    ],
+    "282330_supply.csv": [
+      "date:duplicate_count=4016"
+    ],
+    "285130_supply.csv": [
+      "date:duplicate_count=3982"
+    ],
+    "290650_supply.csv": [
+      "date:duplicate_count=3582"
+    ],
+    "293490_supply.csv": [
+      "date:duplicate_count=2662"
+    ],
+    "294870_supply.csv": [
+      "date:duplicate_count=3772"
+    ],
+    "298020_supply.csv": [
+      "date:duplicate_count=3728"
+    ],
+    "298040_supply.csv": [
+      "date:duplicate_count=5592"
+    ],
+    "298050_supply.csv": [
+      "date:duplicate_count=3728"
+    ],
+    "298380_supply.csv": [
+      "date:duplicate_count=3514"
+    ],
+    "300720_supply.csv": [
+      "date:duplicate_count=3690"
+    ],
+    "302440_supply.csv": [
+      "date:duplicate_count=2412"
+    ],
+    "307950_supply.csv": [
+      "date:duplicate_count=3386"
+    ],
+    "310210_supply.csv": [
+      "date:duplicate_count=1784"
+    ],
+    "316140_supply.csv": [
+      "date:duplicate_count=5169"
+    ],
+    "319400_supply.csv": [
+      "date:duplicate_count=3186"
+    ],
+    "319660_supply.csv": [
+      "date:duplicate_count=3328"
+    ],
+    "323280_supply.csv": [
+      "date:duplicate_count=3168"
+    ],
+    "323410_supply.csv": [
+      "date:duplicate_count=3321"
+    ],
+    "326030_supply.csv": [
+      "date:duplicate_count=2760"
+    ],
+    "328130_supply.csv": [
+      "date:duplicate_count=1746"
+    ],
+    "329180_supply.csv": [
+      "date:duplicate_count=3234"
+    ],
+    "330590_supply.csv": [
+      "date:duplicate_count=3094"
+    ],
+    "336260_supply.csv": [
+      "date:duplicate_count=3108"
+    ],
+    "347700_supply.csv": [
+      "date:duplicate_count=2404"
+    ],
+    "347850_supply.csv": [
+      "date:duplicate_count=870"
+    ],
+    "348370_supply.csv": [
+      "date:duplicate_count=2102"
+    ],
+    "352820_supply.csv": [
+      "date:duplicate_count=3930"
+    ],
+    "353200_supply.csv": [
+      "date:duplicate_count=2820"
+    ],
+    "357780_supply.csv": [
+      "date:duplicate_count=2710"
+    ],
+    "361610_supply.csv": [
+      "date:duplicate_count=2338"
+    ],
+    "365550_supply.csv": [
+      "date:duplicate_count=2522"
+    ],
+    "373220_supply.csv": [
+      "date:duplicate_count=2970"
+    ],
+    "375500_supply.csv": [
+      "date:duplicate_count=2482"
+    ],
+    "377300_supply.csv": [
+      "date:duplicate_count=2096"
+    ],
+    "383220_supply.csv": [
+      "date:duplicate_count=2318"
+    ],
+    "388210_supply.csv": [
+      "date:duplicate_count=118"
+    ],
+    "388720_supply.csv": [
+      "date:duplicate_count=1918"
+    ],
+    "395400_supply.csv": [
+      "date:duplicate_count=2162"
+    ],
+    "397030_supply.csv": [
+      "date:duplicate_count=1736"
+    ],
+    "402340_supply.csv": [
+      "date:duplicate_count=3096"
+    ],
+    "403870_supply.csv": [
+      "date:duplicate_count=1754"
+    ],
+    "415640_supply.csv": [
+      "date:duplicate_count=588"
+    ],
+    "417200_supply.csv": [
+      "date:duplicate_count=1058"
+    ],
+    "437730_supply.csv": [
+      "date:duplicate_count=926"
+    ],
+    "439260_supply.csv": [
+      "date:duplicate_count=264"
+    ],
+    "440110_supply.csv": [
+      "date:duplicate_count=1170"
+    ],
+    "443060_supply.csv": [
+      "date:duplicate_count=864"
+    ],
+    "445680_supply.csv": [
+      "date:duplicate_count=1218"
+    ],
+    "450080_supply.csv": [
+      "date:duplicate_count=1092"
+    ],
+    "454910_supply.csv": [
+      "date:duplicate_count=1152"
+    ],
+    "456160_supply.csv": [
+      "date:duplicate_count=246"
+    ],
+    "457190_supply.csv": [
+      "date:duplicate_count=1306"
+    ],
+    "458870_supply.csv": [
+      "date:duplicate_count=808"
+    ],
+    "462870_supply.csv": [
+      "date:duplicate_count=776"
+    ],
+    "466100_supply.csv": [
+      "date:duplicate_count=636"
+    ],
+    "475830_supply.csv": [
+      "date:duplicate_count=492"
+    ],
+    "476830_supply.csv": [
+      "date:duplicate_count=78"
+    ],
+    "483650_supply.csv": [
+      "date:duplicate_count=362"
+    ],
+    "484870_supply.csv": [
+      "date:duplicate_count=566"
+    ],
+    "489790_supply.csv": [
+      "date:duplicate_count=672"
+    ],
+    "491000_supply.csv": [
+      "date:duplicate_count=70"
+    ],
+    "499790_supply.csv": [
+      "date:duplicate_count=556"
+    ],
+    "950160_supply.csv": [
+      "date:duplicate_count=2382"
+    ]
+  },
+  "guardrail_gr1": {
+    "total_in": 2882,
+    "clean": 2882,
+    "quarantine": 0,
+    "dropped_known": 0,
+    "preserved": 2882,
+    "law_satisfied": true,
+    "note": "raw_exists"
+  },
+  "guardrail_gr3": {
+    "total_records": 7164533,
+    "l3_candidates": 0,
+    "l3_ratio": 0.0,
+    "cap_threshold": 0.2,
+    "cap_exceeded": false
+  },
+  "fail_traces": [],
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "status": "WARN",
+    "total_files": 2882,
+    "files_with_issues": 346,
+    "total_records": 7164533
+  }
+}

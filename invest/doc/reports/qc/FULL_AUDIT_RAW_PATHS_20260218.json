@@ -1,0 +1,536 @@
+{
+  "audit": "FULL_AUDIT_RAW_PATHS_20260218",
+  "generated_at": "2026-02-18T01:06:54.512868",
+  "scope": [
+    "invest/**/*.py",
+    "scripts/**/*.py"
+  ],
+  "sop_reference": [
+    "OPERATIONS_SOP.md 4-A clean-only violation"
+  ],
+  "summary": {
+    "total_occurrences": 55,
+    "hard": 7,
+    "med": 10,
+    "low": 38
+  },
+  "findings": [
+    {
+      "id": 1,
+      "file": "invest/backtest_compare.py",
+      "line": 9,
+      "snippet": "데이터: invest/data/raw/kr/ohlcv/*.csv, invest/data/raw/kr/supply/*_supply.csv",
+      "severity": "HARD",
+      "sop_violation": true,
+      "rationale": "Stage5 백테스트가 raw를 직접 입력으로 사용(4-A clean-only 위반)"
+    },
+    {
+      "id": 2,
+      "file": "invest/backtest_compare.py",
+      "line": 46,
+      "snippet": "OHLCV_DIR  = os.path.join(BASE_DIR, 'data/raw/kr/ohlcv')",
+      "severity": "HARD",
+      "sop_violation": true,
+      "rationale": "Stage5 백테스트가 raw를 직접 입력으로 사용(4-A clean-only 위반)"
+    },
+    {
+      "id": 3,
+      "file": "invest/backtest_compare.py",
+      "line": 47,
+      "snippet": "SUPPLY_DIR = os.path.join(BASE_DIR, 'data/raw/kr/supply')",
+      "severity": "HARD",
+      "sop_violation": true,
+      "rationale": "Stage5 백테스트가 raw를 직접 입력으로 사용(4-A clean-only 위반)"
+    },
+    {
+      "id": 4,
+      "file": "invest/scripts/dart_nlp_tagger.py",
+      "line": 9,
+      "snippet": "DART_DIR = \"invest/data/raw/kr/dart\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 5,
+      "file": "invest/scripts/dart_nlp_tagger.py",
+      "line": 10,
+      "snippet": "OUT_DIR = \"invest/data/raw/kr/dart/tagged\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 6,
+      "file": "invest/scripts/fetch_trends.py",
+      "line": 10,
+      "snippet": "output_dir = 'invest/data/raw/market/google_trends'",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 7,
+      "file": "invest/scripts/fetch_ohlcv.py",
+      "line": 87,
+      "snippet": "raw_output_dir = 'invest/data/raw/kr/ohlcv'",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 8,
+      "file": "invest/scripts/fetch_ohlcv.py",
+      "line": 88,
+      "snippet": "legacy_output_dir = 'invest/data/raw/kr/ohlcv'  # backward-compat mirror",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 9,
+      "file": "invest/scripts/generate_feature_comparison.py",
+      "line": 8,
+      "snippet": "OHLCV_PATH = os.path.join(BASE_DIR, 'data/raw/kr/ohlcv/005930.csv')",
+      "severity": "HARD",
+      "sop_violation": true,
+      "rationale": "피처 비교 산출이 raw를 직접 참조(분석/평가 단계 clean-only 위반)"
+    },
+    {
+      "id": 10,
+      "file": "invest/scripts/generate_feature_comparison.py",
+      "line": 9,
+      "snippet": "SUPPLY_PATH = os.path.join(BASE_DIR, 'data/raw/kr/supply/005930_supply.csv')",
+      "severity": "HARD",
+      "sop_violation": true,
+      "rationale": "피처 비교 산출이 raw를 직접 참조(분석/평가 단계 clean-only 위반)"
+    },
+    {
+      "id": 11,
+      "file": "invest/scripts/generate_feature_comparison.py",
+      "line": 10,
+      "snippet": "TREND_PATH = os.path.join(BASE_DIR, 'data/raw/market/google_trends/삼성전자_trends_10y.csv')",
+      "severity": "HARD",
+      "sop_violation": true,
+      "rationale": "피처 비교 산출이 raw를 직접 참조(분석/평가 단계 clean-only 위반)"
+    },
+    {
+      "id": 12,
+      "file": "invest/scripts/query_helper.py",
+      "line": 6,
+      "snippet": "DATA_OHLCV = \"invest/data/raw/kr/ohlcv\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 13,
+      "file": "invest/scripts/query_helper.py",
+      "line": 7,
+      "snippet": "DATA_SUPPLY = \"invest/data/raw/kr/supply\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 14,
+      "file": "invest/scripts/scrape_telegram_highspeed.py",
+      "line": 50,
+      "snippet": "save_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/telegram'",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "절대경로 하드코딩(이식성/재현성 저하), 상대경로/Path 기준으로 교체 필요"
+    },
+    {
+      "id": 15,
+      "file": "invest/scripts/scrape_premium_contents.py",
+      "line": 8,
+      "snippet": "save_dir = \"/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/premium/startale\"",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "절대경로 하드코딩(이식성/재현성 저하), 상대경로/Path 기준으로 교체 필요"
+    },
+    {
+      "id": 16,
+      "file": "invest/scripts/alert_trigger.py",
+      "line": 8,
+      "snippet": "VIX_PATH = \"invest/data/raw/market/macro/VIXCLS.csv\"",
+      "severity": "HARD",
+      "sop_violation": true,
+      "rationale": "운영 알림 트리거가 raw 매크로 CSV 직접 참조(운영 입력 clean 게이트 우회)"
+    },
+    {
+      "id": 17,
+      "file": "invest/scripts/fetch_supply.py",
+      "line": 72,
+      "snippet": "raw_output_dir = 'invest/data/raw/kr/supply'",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 18,
+      "file": "invest/scripts/fetch_supply.py",
+      "line": 73,
+      "snippet": "legacy_output_dir = 'invest/data/raw/kr/supply'  # backward-compat mirror",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 19,
+      "file": "invest/scripts/scrape_all_posts.py",
+      "line": 10,
+      "snippet": "base_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/blog'",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "절대경로 하드코딩(이식성/재현성 저하), 상대경로/Path 기준으로 교체 필요"
+    },
+    {
+      "id": 20,
+      "file": "invest/scripts/scrape_all_posts_v2.py",
+      "line": 32,
+      "snippet": "base_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/blog'",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "절대경로 하드코딩(이식성/재현성 저하), 상대경로/Path 기준으로 교체 필요"
+    },
+    {
+      "id": 21,
+      "file": "invest/scripts/post_collection_validate.py",
+      "line": 8,
+      "snippet": "US_DIR = \"invest/data/raw/us/ohlcv\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 22,
+      "file": "invest/scripts/post_collection_validate.py",
+      "line": 9,
+      "snippet": "RSS_DIR = \"invest/data/raw/market/news/rss\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 23,
+      "file": "invest/scripts/generate_market_charts.py",
+      "line": 20,
+      "snippet": "path = f\"invest/data/raw/kr/ohlcv/{code}.csv\"",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "리포팅 차트가 raw를 직접 참조(권장 clean 전환)"
+    },
+    {
+      "id": 24,
+      "file": "invest/scripts/fetch_us_ohlcv.py",
+      "line": 11,
+      "snippet": "DATA_DIR = \"invest/data/raw/us/ohlcv\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 25,
+      "file": "invest/scripts/fetch_us_ohlcv.py",
+      "line": 16,
+      "snippet": "CURSOR_PATH = os.environ.get('US_OHLCV_CURSOR_PATH', 'invest/data/raw/us/ohlcv/_cursor.txt')",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 26,
+      "file": "invest/scripts/update_dashboard.py",
+      "line": 8,
+      "snippet": "blog_posts_dir = os.path.join(workspace_dir, 'data/raw/text/blog')",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "대시보드 집계가 raw 텍스트 직접 참조(게이트 미적용)"
+    },
+    {
+      "id": 27,
+      "file": "invest/scripts/update_dashboard.py",
+      "line": 9,
+      "snippet": "tg_logs_dir = os.path.join(workspace_dir, 'data/raw/text/telegram')",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "대시보드 집계가 raw 텍스트 직접 참조(게이트 미적용)"
+    },
+    {
+      "id": 28,
+      "file": "invest/scripts/extract_coupling_signals.py",
+      "line": 6,
+      "snippet": "posts_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/blog'",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "신호 추출이 raw 텍스트 직접 참조(후속 모델 입력 가능성)"
+    },
+    {
+      "id": 29,
+      "file": "invest/scripts/extract_coupling_signals.py",
+      "line": 7,
+      "snippet": "premium_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/premium/startale'",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "신호 추출이 raw 텍스트 직접 참조(후속 모델 입력 가능성)"
+    },
+    {
+      "id": 30,
+      "file": "invest/scripts/extract_coupling_signals.py",
+      "line": 8,
+      "snippet": "tg_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/telegram'",
+      "severity": "MED",
+      "sop_violation": true,
+      "rationale": "신호 추출이 raw 텍스트 직접 참조(후속 모델 입력 가능성)"
+    },
+    {
+      "id": 31,
+      "file": "invest/scripts/fetch_news_rss.py",
+      "line": 10,
+      "snippet": "DATA_DIR = \"invest/data/raw/market/news/rss\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 32,
+      "file": "invest/scripts/image_harvester.py",
+      "line": 13,
+      "snippet": "\"invest/data/raw/text/telegram\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 33,
+      "file": "invest/scripts/image_harvester.py",
+      "line": 14,
+      "snippet": "\"invest/data/raw/text/blog\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 34,
+      "file": "invest/scripts/image_harvester.py",
+      "line": 17,
+      "snippet": "MAP_DIR = \"invest/data/raw/text/image_map\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 35,
+      "file": "invest/scripts/image_harvester.py",
+      "line": 18,
+      "snippet": "OUT_DIR = \"invest/data/raw/text/images_ocr\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 36,
+      "file": "invest/scripts/image_harvester.py",
+      "line": 20,
+      "snippet": "SEEN_PATH = \"invest/data/raw/text/images_ocr/seen_urls.json\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 37,
+      "file": "invest/scripts/fetch_dart_disclosures.py",
+      "line": 8,
+      "snippet": "OUT_DIR = \"invest/data/raw/kr/dart\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 38,
+      "file": "invest/scripts/fetch_macro_fred.py",
+      "line": 7,
+      "snippet": "DATA_DIR = \"invest/data/raw/market/macro\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 39,
+      "file": "scripts/qc_text_sample.py",
+      "line": 71,
+      "snippet": "'invest/data/raw/text/blog',",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 40,
+      "file": "scripts/qc_text_sample.py",
+      "line": 72,
+      "snippet": "'invest/data/raw/text/telegram'",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 41,
+      "file": "scripts/qc_text_sample.py",
+      "line": 89,
+      "snippet": "rel_dir = os.path.dirname(os.path.relpath(file_path, 'invest/data/raw/text'))",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 42,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 75,
+      "snippet": "\"kr/ohlcv\": \"invest/data/raw/kr/ohlcv/*.csv\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 43,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 76,
+      "snippet": "\"kr/supply\": \"invest/data/raw/kr/supply/*.csv\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 44,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 77,
+      "snippet": "\"kr/dart\": \"invest/data/raw/kr/dart/*.*\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 45,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 78,
+      "snippet": "\"us/ohlcv\": \"invest/data/raw/us/ohlcv/*.csv\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 46,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 79,
+      "snippet": "\"market/news/rss\": \"invest/data/raw/market/news/rss/*.*\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 47,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 80,
+      "snippet": "\"market/macro\": \"invest/data/raw/market/macro/*.csv\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 48,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 81,
+      "snippet": "\"market/google_trends\": \"invest/data/raw/market/google_trends/*.csv\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 49,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 82,
+      "snippet": "\"text/blog\": \"invest/data/raw/text/blog/**/*.md\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 50,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 83,
+      "snippet": "\"text/telegram\": \"invest/data/raw/text/telegram/*.md\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 51,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 84,
+      "snippet": "\"text/image_map\": \"invest/data/raw/text/image_map/*.json\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 52,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 85,
+      "snippet": "\"text/images_ocr\": \"invest/data/raw/text/images_ocr/*.json\",",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 53,
+      "file": "scripts/qc_rerun_all.py",
+      "line": 86,
+      "snippet": "\"text/premium/startale\": \"invest/data/raw/text/premium/startale/*.md\"",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 54,
+      "file": "scripts/refine_quant_data.py",
+      "line": 75,
+      "snippet": "raw_base = Path(\"invest/data/raw\")",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    },
+    {
+      "id": 55,
+      "file": "scripts/refine_text_data.py",
+      "line": 28,
+      "snippet": "raw_base = Path(\"invest/data/raw/text\")",
+      "severity": "LOW",
+      "sop_violation": false,
+      "rationale": "수집/정제/QC 단계의 raw 참조(허용 범주)"
+    }
+  ],
+  "patch_proposals": [
+    {
+      "title": "P1 backtest_compare: raw→clean 경로 전환 + BASE_DIR 상대화",
+      "auto_fixable": true,
+      "diff": "--- a/invest/backtest_compare.py\n+++ b/invest/backtest_compare.py\n@@\n-BASE_DIR   = '/Users/jobiseu/.openclaw/workspace/invest'\n-OHLCV_DIR  = os.path.join(BASE_DIR, 'data/raw/kr/ohlcv')\n-SUPPLY_DIR = os.path.join(BASE_DIR, 'data/raw/kr/supply')\n+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))\n+OHLCV_DIR  = os.path.join(BASE_DIR, 'data/clean/kr/ohlcv')\n+SUPPLY_DIR = os.path.join(BASE_DIR, 'data/clean/kr/supply')\n"
+    },
+    {
+      "title": "P2 generate_feature_comparison: raw→clean 입력 전환",
+      "auto_fixable": true,
+      "diff": "--- a/invest/scripts/generate_feature_comparison.py\n+++ b/invest/scripts/generate_feature_comparison.py\n@@\n-BASE_DIR = '/Users/jobiseu/.openclaw/workspace/invest'\n-OHLCV_PATH = os.path.join(BASE_DIR, 'data/raw/kr/ohlcv/005930.csv')\n-SUPPLY_PATH = os.path.join(BASE_DIR, 'data/raw/kr/supply/005930_supply.csv')\n-TREND_PATH = os.path.join(BASE_DIR, 'data/raw/market/google_trends/삼성전자_trends_10y.csv')\n+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n+OHLCV_PATH = os.path.join(BASE_DIR, 'data/clean/kr/ohlcv/005930.csv')\n+SUPPLY_PATH = os.path.join(BASE_DIR, 'data/clean/kr/supply/005930_supply.csv')\n+TREND_PATH = os.path.join(BASE_DIR, 'data/clean/market/google_trends/삼성전자_trends_10y.csv')\n"
+    },
+    {
+      "title": "P3 alert_trigger: VIX 원천 clean 경로 우선",
+      "auto_fixable": true,
+      "diff": "--- a/invest/scripts/alert_trigger.py\n+++ b/invest/scripts/alert_trigger.py\n@@\n-VIX_PATH = \"invest/data/raw/market/macro/VIXCLS.csv\"\n+VIX_PATH = os.environ.get(\"VIX_PATH\", \"invest/data/clean/market/macro/VIXCLS.csv\")\n"
+    },
+    {
+      "title": "P4 절대경로 하드코딩 제거 (scrape/update/extract 계열)",
+      "auto_fixable": true,
+      "diff": "--- a/invest/scripts/update_dashboard.py\n+++ b/invest/scripts/update_dashboard.py\n@@\n-workspace_dir = '/Users/jobiseu/.openclaw/workspace/invest'\n+workspace_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n--- a/invest/scripts/extract_coupling_signals.py\n+++ b/invest/scripts/extract_coupling_signals.py\n@@\n-posts_dir = '/Users/jobiseu/.openclaw/workspace/invest/data/raw/text/blog'\n+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n+posts_dir = os.path.join(BASE_DIR, 'data/raw/text/blog')\n"
+    }
+  ]
+}

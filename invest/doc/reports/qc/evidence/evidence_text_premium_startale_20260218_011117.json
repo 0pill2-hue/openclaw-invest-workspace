@@ -1,0 +1,30 @@
+{
+  "folder_key": "text/premium/startale",
+  "clean_dir": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production/text/premium/startale",
+  "issues_by_file": {},
+  "guardrail_gr1": {
+    "total_in": 21,
+    "clean": 21,
+    "quarantine": 0,
+    "dropped_known": 0,
+    "preserved": 21,
+    "law_satisfied": true,
+    "note": "raw_exists"
+  },
+  "guardrail_gr3": {
+    "total_records": 6085,
+    "l3_candidates": 0,
+    "l3_ratio": 0.0,
+    "cap_threshold": 0.2,
+    "cap_exceeded": false
+  },
+  "fail_traces": [],
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "status": "PASS",
+    "total_files": 21,
+    "files_with_issues": 0,
+    "total_records": 6085
+  }
+}

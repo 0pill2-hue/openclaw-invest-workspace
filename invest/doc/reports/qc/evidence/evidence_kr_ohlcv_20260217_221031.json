@@ -1,0 +1,202 @@
+{
+  "folder_key": "kr/ohlcv",
+  "clean_dir": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production/kr/ohlcv",
+  "issues_by_file": {
+    "000725.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "001465.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "002070.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "004140.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "007460.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "009415.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "009730.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "009835.csv": [
+      "range:return_outlier_count=2"
+    ],
+    "011080.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "011200.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "011300.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "011810.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "012170.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "012205.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "012210.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "012790.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "019570.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "020560.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "023770.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "036220.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "044180.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "050090.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "052670.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "058450.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "060260.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "067630.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "078860.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "079970.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "096690.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "101000.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "101680.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "109960.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "121060.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "121890.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "123010.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "136660.csv": [
+      "range:return_outlier_count=2"
+    ],
+    "139050.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "148780.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "159910.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "179720.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "183490.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "192410.csv": [
+      "range:return_outlier_count=2"
+    ],
+    "204840.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "205470.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "208370.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "223220.csv": [
+      "range:return_outlier_count=2"
+    ],
+    "227420.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "252500.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "260970.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "266170.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "311320.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "318020.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "323990.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "33637L.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "341310.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "900100.csv": [
+      "range:return_outlier_count=1"
+    ],
+    "900300.csv": [
+      "range:return_outlier_count=1"
+    ]
+  },
+  "guardrail_gr1": {
+    "total_in": 2883,
+    "clean": 2883,
+    "quarantine": 1929,
+    "dropped_known": 0,
+    "preserved": 4812,
+    "law_satisfied": true,
+    "note": "raw_exists"
+  },
+  "guardrail_gr3": {
+    "total_records": 5610108,
+    "l3_candidates": 0,
+    "l3_ratio": 0.0,
+    "cap_threshold": 0.2,
+    "cap_exceeded": false
+  },
+  "fail_traces": [],
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "status": "WARN",
+    "total_files": 2883,
+    "files_with_issues": 57,
+    "total_records": 5610108
+  }
+}

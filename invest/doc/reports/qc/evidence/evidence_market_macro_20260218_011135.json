@@ -1,0 +1,30 @@
+{
+  "folder_key": "market/macro",
+  "clean_dir": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production/market/macro",
+  "issues_by_file": {},
+  "guardrail_gr1": {
+    "total_in": 12,
+    "clean": 12,
+    "quarantine": 0,
+    "dropped_known": 0,
+    "preserved": 12,
+    "law_satisfied": true,
+    "note": "raw_exists"
+  },
+  "guardrail_gr3": {
+    "total_records": 54693,
+    "l3_candidates": 0,
+    "l3_ratio": 0.0,
+    "cap_threshold": 0.2,
+    "cap_exceeded": false
+  },
+  "fail_traces": [],
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "status": "PASS",
+    "total_files": 12,
+    "files_with_issues": 0,
+    "total_records": 54693
+  }
+}

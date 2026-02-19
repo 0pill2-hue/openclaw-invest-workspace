@@ -1,0 +1,485 @@
+{
+  "generated_at": "2026-02-18T01:28:49.824532",
+  "continuity_check": {
+    "KR": {
+      "checked": 2883,
+      "warn_count": 2078,
+      "warn_symbols_top20": [
+        {
+          "symbol": "036220",
+          "flag": "WARN",
+          "rows": 496,
+          "missing_points": 2144,
+          "missing_ratio": 4.32258064516129,
+          "max_gap_days": 2049,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "198940",
+          "flag": "WARN",
+          "rows": 1015,
+          "missing_points": 1625,
+          "missing_ratio": 1.6009852216748768,
+          "max_gap_days": 1542,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "109070",
+          "flag": "WARN",
+          "rows": 1044,
+          "missing_points": 1596,
+          "missing_ratio": 1.528735632183908,
+          "max_gap_days": 1283,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "106080",
+          "flag": "WARN",
+          "rows": 1372,
+          "missing_points": 1268,
+          "missing_ratio": 0.924198250728863,
+          "max_gap_days": 1118,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "065150",
+          "flag": "WARN",
+          "rows": 1151,
+          "missing_points": 1243,
+          "missing_ratio": 1.0799304952215465,
+          "max_gap_days": 878,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "056730",
+          "flag": "WARN",
+          "rows": 1405,
+          "missing_points": 1235,
+          "missing_ratio": 0.8790035587188612,
+          "max_gap_days": 1078,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "208860",
+          "flag": "WARN",
+          "rows": 1297,
+          "missing_points": 1194,
+          "missing_ratio": 0.920585967617579,
+          "max_gap_days": 1015,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "099520",
+          "flag": "WARN",
+          "rows": 1226,
+          "missing_points": 1168,
+          "missing_ratio": 0.9526916802610114,
+          "max_gap_days": 1024,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "180400",
+          "flag": "WARN",
+          "rows": 1474,
+          "missing_points": 1166,
+          "missing_ratio": 0.7910447761194029,
+          "max_gap_days": 1048,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "083470",
+          "flag": "WARN",
+          "rows": 1483,
+          "missing_points": 1157,
+          "missing_ratio": 0.7801753202966959,
+          "max_gap_days": 994,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "101680",
+          "flag": "WARN",
+          "rows": 1504,
+          "missing_points": 1136,
+          "missing_ratio": 0.7553191489361702,
+          "max_gap_days": 556,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "138360",
+          "flag": "WARN",
+          "rows": 1511,
+          "missing_points": 1129,
+          "missing_ratio": 0.7471872931833223,
+          "max_gap_days": 1006,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "178780",
+          "flag": "WARN",
+          "rows": 1528,
+          "missing_points": 1112,
+          "missing_ratio": 0.7277486910994765,
+          "max_gap_days": 1000,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "115530",
+          "flag": "WARN",
+          "rows": 1537,
+          "missing_points": 1103,
+          "missing_ratio": 0.7176317501626546,
+          "max_gap_days": 970,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "064520",
+          "flag": "WARN",
+          "rows": 1563,
+          "missing_points": 1077,
+          "missing_ratio": 0.6890595009596929,
+          "max_gap_days": 954,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "121890",
+          "flag": "WARN",
+          "rows": 1574,
+          "missing_points": 1066,
+          "missing_ratio": 0.6772554002541296,
+          "max_gap_days": 937,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "024830",
+          "flag": "WARN",
+          "rows": 1579,
+          "missing_points": 1061,
+          "missing_ratio": 0.6719442685243825,
+          "max_gap_days": 888,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "257370",
+          "flag": "WARN",
+          "rows": 883,
+          "missing_points": 1054,
+          "missing_ratio": 1.1936579841449604,
+          "max_gap_days": 997,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "054220",
+          "flag": "WARN",
+          "rows": 1598,
+          "missing_points": 1042,
+          "missing_ratio": 0.6520650813516896,
+          "max_gap_days": 869,
+          "reason": "excessive_missing_segment"
+        },
+        {
+          "symbol": "219750",
+          "flag": "WARN",
+          "rows": 1598,
+          "missing_points": 1042,
+          "missing_ratio": 0.6520650813516896,
+          "max_gap_days": 766,
+          "reason": "excessive_missing_segment"
+        }
+      ]
+    },
+    "US": {
+      "checked": 503,
+      "warn_count": 0,
+      "warn_symbols_top20": []
+    }
+  },
+  "nan_bias_check": {
+    "overall_nan_ratio": 0.02090302796754141,
+    "by_market": [
+      {
+        "market": "KR",
+        "sum": 123302,
+        "count": 5610066,
+        "nan_ratio": 0.021978707558877205
+      },
+      {
+        "market": "US",
+        "sum": 19955,
+        "count": 1243343,
+        "nan_ratio": 0.016049473073801838
+      }
+    ],
+    "by_sector": [
+      {
+        "market": "KR",
+        "sector": "SPAC(소속부없음)",
+        "sum": 2956,
+        "count": 24400,
+        "nan_ratio": 0.12114754098360656
+      },
+      {
+        "market": "KR",
+        "sector": "일반기업부",
+        "sum": 7384,
+        "count": 181965,
+        "nan_ratio": 0.04057923226994202
+      },
+      {
+        "market": "KR",
+        "sector": "기술성장기업부",
+        "sum": 10786,
+        "count": 277081,
+        "nan_ratio": 0.038927245101612884
+      },
+      {
+        "market": "KR",
+        "sector": "관리종목(소속부없음)",
+        "sum": 3897,
+        "count": 114784,
+        "nan_ratio": 0.033950724839698916
+      },
+      {
+        "market": "KR",
+        "sector": "벤처기업부",
+        "sum": 15964,
+        "count": 616797,
+        "nan_ratio": 0.02588209735131656
+      },
+      {
+        "market": "KR",
+        "sector": "중견기업부",
+        "sum": 22575,
+        "count": 1087616,
+        "nan_ratio": 0.02075640667294339
+      },
+      {
+        "market": "KR",
+        "sector": "외국기업(소속부없음)",
+        "sum": 663,
+        "count": 35115,
+        "nan_ratio": 0.018880820162323793
+      },
+      {
+        "market": "KR",
+        "sector": "투자주의환기종목(소속부없음)",
+        "sum": 1638,
+        "count": 88260,
+        "nan_ratio": 0.018558803535010198
+      },
+      {
+        "market": "KR",
+        "sector": "우량기업부",
+        "sum": 19043,
+        "count": 1041344,
+        "nan_ratio": 0.018286944563948127
+      },
+      {
+        "market": "KR",
+        "sector": "UNKNOWN",
+        "sum": 38396,
+        "count": 2142704,
+        "nan_ratio": 0.017919413974118684
+      },
+      {
+        "market": "US",
+        "sector": "UNKNOWN",
+        "sum": 19955,
+        "count": 1243343,
+        "nan_ratio": 0.016049473073801838
+      }
+    ],
+    "by_mcap_bucket": [
+      {
+        "market": "KR",
+        "mcap_bucket": "SMALL",
+        "sum": 46579,
+        "count": 1741167,
+        "nan_ratio": 0.02675159820970648
+      },
+      {
+        "market": "KR",
+        "mcap_bucket": "MID",
+        "sum": 38037,
+        "count": 1897115,
+        "nan_ratio": 0.020049917901655934
+      },
+      {
+        "market": "KR",
+        "mcap_bucket": "LARGE",
+        "sum": 38647,
+        "count": 1969318,
+        "nan_ratio": 0.019624560380801882
+      },
+      {
+        "market": "US",
+        "mcap_bucket": "UNKNOWN",
+        "sum": 19955,
+        "count": 1243343,
+        "nan_ratio": 0.016049473073801838
+      },
+      {
+        "market": "KR",
+        "mcap_bucket": "UNKNOWN",
+        "sum": 39,
+        "count": 2466,
+        "nan_ratio": 0.015815085158150853
+      }
+    ],
+    "top_biased_buckets": [
+      {
+        "market": "KR",
+        "sector": "SPAC(소속부없음)",
+        "sum": 2956,
+        "count": 24400,
+        "nan_ratio": 0.12114754098360656,
+        "bucket_type": "sector",
+        "bucket_name": "KR/SPAC(소속부없음)",
+        "mcap_bucket": null,
+        "lift_vs_overall": 5.79569338814102
+      },
+      {
+        "market": "KR",
+        "sector": "일반기업부",
+        "sum": 7384,
+        "count": 181965,
+        "nan_ratio": 0.04057923226994202,
+        "bucket_type": "sector",
+        "bucket_name": "KR/일반기업부",
+        "mcap_bucket": null,
+        "lift_vs_overall": 1.9413088062147823
+      },
+      {
+        "market": "KR",
+        "sector": "기술성장기업부",
+        "sum": 10786,
+        "count": 277081,
+        "nan_ratio": 0.038927245101612884,
+        "bucket_type": "sector",
+        "bucket_name": "KR/기술성장기업부",
+        "mcap_bucket": null,
+        "lift_vs_overall": 1.8622778078879192
+      },
+      {
+        "market": "KR",
+        "sector": "관리종목(소속부없음)",
+        "sum": 3897,
+        "count": 114784,
+        "nan_ratio": 0.033950724839698916,
+        "bucket_type": "sector",
+        "bucket_name": "KR/관리종목(소속부없음)",
+        "mcap_bucket": null,
+        "lift_vs_overall": 1.6242012828198
+      },
+      {
+        "market": "KR",
+        "sector": null,
+        "sum": 46579,
+        "count": 1741167,
+        "nan_ratio": 0.02675159820970648,
+        "bucket_type": "mcap",
+        "bucket_name": "KR/SMALL",
+        "mcap_bucket": "SMALL",
+        "lift_vs_overall": 1.2797953603299403
+      },
+      {
+        "market": "KR",
+        "sector": "벤처기업부",
+        "sum": 15964,
+        "count": 616797,
+        "nan_ratio": 0.02588209735131656,
+        "bucket_type": "sector",
+        "bucket_name": "KR/벤처기업부",
+        "mcap_bucket": null,
+        "lift_vs_overall": 1.238198474953329
+      },
+      {
+        "market": "KR",
+        "sector": "중견기업부",
+        "sum": 22575,
+        "count": 1087616,
+        "nan_ratio": 0.02075640667294339,
+        "bucket_type": "sector",
+        "bucket_name": "KR/중견기업부",
+        "mcap_bucket": null,
+        "lift_vs_overall": 0.9929856432845187
+      },
+      {
+        "market": "KR",
+        "sector": null,
+        "sum": 38037,
+        "count": 1897115,
+        "nan_ratio": 0.020049917901655934,
+        "bucket_type": "mcap",
+        "bucket_name": "KR/MID",
+        "mcap_bucket": "MID",
+        "lift_vs_overall": 0.9591872494640394
+      },
+      {
+        "market": "KR",
+        "sector": null,
+        "sum": 38647,
+        "count": 1969318,
+        "nan_ratio": 0.019624560380801882,
+        "bucket_type": "mcap",
+        "bucket_name": "KR/LARGE",
+        "mcap_bucket": "LARGE",
+        "lift_vs_overall": 0.9388381631252298
+      },
+      {
+        "market": "KR",
+        "sector": "외국기업(소속부없음)",
+        "sum": 663,
+        "count": 35115,
+        "nan_ratio": 0.018880820162323793,
+        "bucket_type": "sector",
+        "bucket_name": "KR/외국기업(소속부없음)",
+        "mcap_bucket": null,
+        "lift_vs_overall": 0.9032576616001406
+      }
+    ]
+  },
+  "kr_us_distribution": {
+    "KR": {
+      "n": 2867,
+      "mean": 0.30622338504836377,
+      "std": 0.5973424651232777,
+      "q05": -0.6246545491790817,
+      "q25": -0.09101973278783695,
+      "q50": 0.2915883716718469,
+      "q75": 0.6878154566172964,
+      "q95": 1.3149784280306764
+    },
+    "US": {
+      "n": 503,
+      "mean": 0.11282897645965528,
+      "std": 0.6761775373317207,
+      "q05": -1.0090007620141286,
+      "q25": -0.41321240433408374,
+      "q50": 0.1721120188968653,
+      "q75": 0.6370127238149674,
+      "q95": 1.1354532969364568
+    },
+    "consistency_warning": {
+      "warn": false,
+      "reasons": [],
+      "mean_diff": 0.1933944085887085,
+      "median_diff": 0.11947635277498161,
+      "std_ratio_kr_over_us": 0.8834106904533744,
+      "rule": {
+        "mean_diff_max": 0.35,
+        "median_diff_max": 0.35,
+        "std_ratio_band": [
+          0.7,
+          1.3
+        ]
+      }
+    }
+  },
+  "stage4_summary_5lines": [
+    "1) 롤링 연속성: KR 2078/2883 WARN, US 0/503 WARN (제외 없이 경고 플래그).",
+    "2) VALUE_SCORE NaN 전체 비율: 0.0209",
+    "3) NaN 편중 상위 버킷: KR/SPAC(소속부없음), KR/일반기업부, KR/기술성장기업부.",
+    "4) KR/US 분포: KR(mean=0.30622338504836377, std=0.5973424651232777), US(mean=0.11282897645965528, std=0.6761775373317207).",
+    "5) 혼합 랭킹 전 정합성 경고: OK / reasons=[]"
+  ]
+}
