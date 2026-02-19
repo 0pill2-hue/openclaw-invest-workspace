@@ -40,6 +40,31 @@ def run_script(script_path, retries=3):
 
     return False, (last_err or "failed")
 
+def run_with_fallbacks(script_path):
+    """Run primary collector, and if it fails try predefined fallback collectors."""
+    fallback_map = {
+        'invest/scripts/stage01_fetch_ohlcv.py': ['invest/scripts/stage01_full_fetch_ohlcv.py'],
+        'invest/scripts/stage01_fetch_supply.py': ['invest/scripts/stage01_full_fetch_supply.py'],
+        'invest/scripts/stage01_fetch_us_ohlcv.py': ['invest/scripts/stage01_full_fetch_us_ohlcv.py'],
+        'invest/scripts/stage01_fetch_dart_disclosures.py': ['invest/scripts/stage01_full_fetch_dart_disclosures.py'],
+    }
+
+    ok, err = run_script(script_path)
+    if ok:
+        return True, "", script_path
+
+    fallbacks = [p for p in fallback_map.get(script_path, []) if os.path.exists(os.path.join(ROOT_DIR, p))]
+    last_err = err
+    for fb in fallbacks:
+        print(f"[{datetime.now()}] Primary failed, trying fallback: {fb}")
+        ok_fb, err_fb = run_script(fb)
+        if ok_fb:
+            return True, f"primary_failed_fallback_ok:{script_path}->{fb}", fb
+        last_err = f"primary:{err} | fallback:{fb}:{err_fb}"
+
+    return False, (last_err or err), script_path
+
+
 def main():
     """
     Role: main 함수 역할 설명
@@ -65,17 +90,20 @@ def main():
         'invest/scripts/stage01_fetch_global_macro.py',  # VIX, SOX, DXY for regime detection
         'invest/scripts/stage01_fetch_news_rss.py',
         'invest/scripts/stage01_image_harvester.py',
-        'invest/scripts/fetch_dart_disclosures.py'
+        'invest/scripts/stage01_fetch_dart_disclosures.py'
     ]
     for s in optional_scripts:
         if os.path.exists(os.path.join(ROOT_DIR, s)):
             scripts.append(s)
     
     failures = []
+    fallbacks_used = []
     for script in scripts:
-        ok, err = run_script(script)
+        ok, err, executed = run_with_fallbacks(script)
         if not ok:
             failures.append({"script": script, "error": err})
+        elif err:
+            fallbacks_used.append({"script": script, "note": err, "executed": executed})
         time.sleep(2) # Brief cooling period
 
     status_dir = 'invest/data/runtime'
@@ -86,6 +114,7 @@ def main():
         "total_scripts": len(scripts),
         "failed_count": len(failures),
         "failures": failures,
+        "fallbacks_used": fallbacks_used,
     }
     with open(status_path, 'w', encoding='utf-8') as f:
         json.dump(status, f, ensure_ascii=False, indent=2)
