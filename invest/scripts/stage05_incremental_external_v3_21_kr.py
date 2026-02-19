@@ -20,7 +20,7 @@ BASE = Path(__file__).resolve().parents[1]
 VALIDATED = BASE / "invest/results/validated"
 TEST_RESULTS = BASE / "invest/results/test"
 REPORTS = BASE / "reports/stage_updates"
-STAGE05_REPORTS = REPORTS / "stage05"
+STAGE05_REPORTS = REPORTS / "stage05/v3_21"
 LOG_DIR = REPORTS / "logs"
 RAW_TEXT = BASE / "invest/data/raw/text"
 
@@ -303,9 +303,9 @@ def write_result_md(payload: dict[str, Any]) -> None:
         "",
         "## outputs",
         "- `invest/results/validated/stage05_baselines_v3_21_kr.json`",
-        "- `invest/reports/stage_updates/stage05/stage05_result_v3_21_kr.md`",
-        "- `invest/reports/stage_updates/stage05/stage05_result_v3_21_kr_readable.md`",
-        "- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_21_kr.md`",
+        "- `invest/reports/stage_updates/stage05/v3_21/stage05_result_v3_21_kr.md`",
+        "- `invest/reports/stage_updates/stage05/v3_21/stage05_result_v3_21_kr_readable.md`",
+        "- `invest/reports/stage_updates/stage05/v3_21/stage05_patch_diff_v3_21_kr.md`",
         "",
         "## quality_gates",
         f"- gate1(track 12개, 3x4): {gate['gate1']}",
@@ -457,9 +457,9 @@ def write_patch_md(payload: dict[str, Any]) -> None:
         "## 입력/출력",
         "- input(base9): `invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`",
         "- output(result): `invest/results/validated/stage05_baselines_v3_21_kr.json`",
-        "- output(report): `invest/reports/stage_updates/stage05/stage05_result_v3_21_kr.md`",
-        "- output(readable): `invest/reports/stage_updates/stage05/stage05_result_v3_21_kr_readable.md`",
-        "- output(patch): `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_21_kr.md`",
+        "- output(report): `invest/reports/stage_updates/stage05/v3_21/stage05_result_v3_21_kr.md`",
+        "- output(readable): `invest/reports/stage_updates/stage05/v3_21/stage05_result_v3_21_kr_readable.md`",
+        "- output(patch): `invest/reports/stage_updates/stage05/v3_21/stage05_patch_diff_v3_21_kr.md`",
         "",
         "## hard-rule 유지 확인",
         "- KRX only: 유지",

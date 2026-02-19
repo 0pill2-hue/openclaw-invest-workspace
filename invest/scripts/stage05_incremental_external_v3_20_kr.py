@@ -19,7 +19,7 @@ BASE = Path(__file__).resolve().parents[1]
 VALIDATED = BASE / "invest/results/validated"
 TEST_RESULTS = BASE / "invest/results/test"
 REPORTS = BASE / "reports/stage_updates"
-STAGE05_REPORTS = REPORTS / "stage05"
+STAGE05_REPORTS = REPORTS / "stage05/v3_20"
 LOG_DIR = REPORTS / "logs"
 
 BASE9_JSON = VALIDATED / "stage05_baselines_3x3_v3_9_kr.json"
@@ -186,9 +186,9 @@ def write_result_md(payload: dict[str, Any]) -> None:
         "",
         "## outputs",
         "- `invest/results/validated/stage05_baselines_v3_20_kr.json`",
-        "- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr.md`",
-        "- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr_readable.md`",
-        "- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_20_kr.md`",
+        "- `invest/reports/stage_updates/stage05/v3_20/stage05_result_v3_20_kr.md`",
+        "- `invest/reports/stage_updates/stage05/v3_20/stage05_result_v3_20_kr_readable.md`",
+        "- `invest/reports/stage_updates/stage05/v3_20/stage05_patch_diff_v3_20_kr.md`",
         "",
         "## quality_gates",
         f"- gate1(track 12개, 3x4): {payload['gate_status']['gate1']}",
@@ -364,9 +364,9 @@ def write_patch_md(payload: dict[str, Any]) -> None:
         "",
         "## outputs",
         "- `invest/results/validated/stage05_baselines_v3_20_kr.json`",
-        "- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr.md`",
-        "- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr_readable.md`",
-        "- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_20_kr.md`",
+        "- `invest/reports/stage_updates/stage05/v3_20/stage05_result_v3_20_kr.md`",
+        "- `invest/reports/stage_updates/stage05/v3_20/stage05_result_v3_20_kr_readable.md`",
+        "- `invest/reports/stage_updates/stage05/v3_20/stage05_patch_diff_v3_20_kr.md`",
         "- `invest/results/test/stage05_baselines_v3_19_kr_fail.json`",
         "",
         "## quality_gates",
