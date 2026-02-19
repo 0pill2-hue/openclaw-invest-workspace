@@ -104,6 +104,28 @@ def _validate_hourly_freshness(now):
     return failures
 
 
+def _parse_iso_ts(v):
+    try:
+        if not v:
+            return None
+        return datetime.fromisoformat(str(v).replace('Z', '+00:00')).replace(tzinfo=None)
+    except Exception:
+        return None
+
+
+def _normalize_legacy_failures(failures):
+    mapped = []
+    for f in (failures or []):
+        script = str((f or {}).get('script', 'unknown'))
+        script = script.replace('invest/scripts/fetch_us_ohlcv.py', 'invest/scripts/stage01_fetch_us_ohlcv.py')
+        script = script.replace('invest/scripts/fetch_ohlcv.py', 'invest/scripts/stage01_fetch_ohlcv.py')
+        script = script.replace('invest/scripts/fetch_supply.py', 'invest/scripts/stage01_fetch_supply.py')
+        row = dict(f or {})
+        row['script'] = script
+        mapped.append(row)
+    return mapped
+
+
 def main():
     """
     Role: main 함수 역할 설명
@@ -123,23 +145,24 @@ def main():
         "mode": "hourly_freshness",
     }
 
-    # Legacy mode: only trust daily status when it's recent (within 6h)
+    # Trust daily status only when embedded timestamp is recent (within 6h)
     trusted_daily = False
+    status = {}
     if os.path.exists(STATUS_PATH):
-        status_mtime = _file_mtime(STATUS_PATH)
-        if status_mtime and status_mtime >= now - timedelta(hours=6):
+        with open(STATUS_PATH, "r", encoding="utf-8") as f:
+            status = json.load(f)
+        status_ts = _parse_iso_ts(status.get("timestamp"))
+        if status_ts and status_ts >= now - timedelta(hours=6):
             trusted_daily = True
 
     if trusted_daily:
-        with open(STATUS_PATH, "r", encoding="utf-8") as f:
-            status = json.load(f)
         failed = int(status.get("failed_count", 0))
         result["mode"] = "daily_status_recent"
         result["failed_count"] = failed
         if failed > 0:
             result["ok"] = False
             result["message"] = f"daily update has {failed} failed scripts"
-            result["failures"] = status.get("failures", [])
+            result["failures"] = _normalize_legacy_failures(status.get("failures", []))
     else:
         failures = _validate_hourly_freshness(now)
         failed = len(failures)
