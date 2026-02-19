@@ -2,6 +2,7 @@
 from __future__ import annotations
 import importlib.util
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -13,6 +14,7 @@ V322_JSON = BASE / 'invest/results/validated/stage05_baselines_v3_22_kr.json'
 TIMELINE_CSV = BASE / 'invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_timeline_v3_22_kr.csv'
 OUT_STRUCTURED = BASE / 'invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_v3_22_kr.csv'
 OUT_SUMMARY = BASE / 'invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_summary_v3_22_kr.json'
+MIN_WEIGHT_PCT = float(os.environ.get('STAGE05_MIN_WEIGHT_PCT', '1.0'))
 
 
 def _import(path: Path, name: str):
@@ -79,8 +81,8 @@ def main():
 
     wdf = pd.DataFrame(rows)
     if not wdf.empty:
-        # 0%는 미보유로 간주하여 UI/평가에서 제외
-        wdf = wdf[wdf['weight_pct'] > 0].copy()
+        # 극소 비중(기본 <1%)은 미보유로 간주하여 UI/평가에서 제외
+        wdf = wdf[wdf['weight_pct'] >= MIN_WEIGHT_PCT].copy()
 
     snapshot_map = {}
     if not wdf.empty:
@@ -98,7 +100,7 @@ def main():
         wdf.sort_values(['date', 'weight_pct'], ascending=[True, False], inplace=True)
     wdf.to_csv(OUT_STRUCTURED, index=False, encoding='utf-8-sig')
 
-    summary = {'model_id': best['model_id'], 'rows': int(len(wdf))}
+    summary = {'model_id': best['model_id'], 'rows': int(len(wdf)), 'min_weight_threshold_pct': MIN_WEIGHT_PCT}
     if not wdf.empty:
         g = wdf.groupby('date')['weight_pct']
         top1 = g.max()
