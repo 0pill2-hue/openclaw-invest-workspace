@@ -17,19 +17,18 @@ CHART_RESET = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_
 def _img_data_uri(path: Path) -> str:
     if not path.exists():
         return ""
-    b64 = base64.b64encode(path.read_bytes()).decode('ascii')
+    b64 = base64.b64encode(path.read_bytes()).decode("ascii")
     return f"data:image/png;base64,{b64}"
 
 
 def main():
     wdf = pd.read_csv(W_CSV)
     tdf = pd.read_csv(T_CSV)
-    edf = pd.read_csv(E_CSV) if E_CSV.exists() else pd.DataFrame()
+    _ = pd.read_csv(E_CSV) if E_CSV.exists() else pd.DataFrame()
 
     if "stock_code" not in wdf.columns:
         wdf["stock_code"] = ""
 
-    # normalize
     wdf["date"] = wdf["date"].astype(str)
     wdf["weight_pct"] = pd.to_numeric(wdf["weight_pct"], errors="coerce").fillna(0.0)
     wdf["holding_days"] = pd.to_numeric(wdf["holding_days"], errors="coerce").fillna(0).astype(int)
@@ -58,12 +57,11 @@ def main():
     dates = sorted(by_date.keys())
     latest = dates[-1] if dates else ""
 
-    # timeline changes
     weight_map = {}
     for d, items in by_date.items():
         wm = {}
         for it in items:
-            wm[str(it['stock_name'])] = float(it['weight_pct'])
+            wm[str(it["stock_name"])] = float(it["weight_pct"])
         weight_map[d] = wm
 
     timeline = []
@@ -75,39 +73,26 @@ def main():
         prev_w = weight_map.get(prev_d, {}) if prev_d else {}
 
         def _fmt_with_pct(codes_text, wmap):
-            if not codes_text or str(codes_text).strip() in {'', '-'}:
-                return '-'
+            if not codes_text or str(codes_text).strip() in {"", "-"}:
+                return "-"
             out = []
-            for name in [x.strip() for x in str(codes_text).split(',') if x.strip()]:
+            for name in [x.strip() for x in str(codes_text).split(",") if x.strip()]:
                 pct = wmap.get(name)
                 if pct is None:
                     out.append(name)
                 else:
                     out.append(f"{name} {pct:.1f}%")
-            return ', '.join(out) if out else '-'
+            return ", ".join(out) if out else "-"
 
         timeline.append(
             {
                 "date": d,
                 "added": _fmt_with_pct(str(r.added_codes), cur_w),
                 "removed": _fmt_with_pct(str(r.removed_codes), prev_w),
-                "kept": str(r.kept_codes),
                 "reason": str(r.replacement_basis),
-                "current": str(getattr(r, 'weights_snapshot', '-')),
+                "current": str(getattr(r, "weights_snapshot", "-")),
             }
         )
-
-    events = []
-    if not edf.empty:
-        for _, r in edf.fillna('').iterrows():
-            bd = str(r.get('buy_date', '')).strip()
-            sd = str(r.get('sell_date', '')).strip()
-            nm = str(r.get('stock_name', '')).strip() or str(r.get('stock_code', '')).strip()
-            if bd:
-                events.append({'date': bd, 'type': 'BUY', 'name': nm})
-            if sd:
-                events.append({'date': sd, 'type': 'SELL', 'name': nm})
-    events = sorted(events, key=lambda x: x['date'], reverse=True)[:80]
 
     payload = {
         "dates": dates,
@@ -133,18 +118,19 @@ def main():
     .card {{ background:#171a21; border:1px solid #2b3240; border-radius:10px; padding:12px; }}
     .kpi {{ min-width:180px; }}
     table {{ border-collapse: collapse; width:100%; margin-top:10px; }}
-    th,td {{ border-bottom:1px solid #2b3240; padding:8px; font-size:13px; text-align:left; }}
-    .bar {{ background:#2b3240; border-radius:6px; height:16px; position:relative; overflow:hidden; }}
-    .fill {{ background:#4c8bf5; height:100%; }}
+    th,td {{ border-bottom:1px solid #2b3240; padding:8px; font-size:13px; text-align:left; vertical-align:top; }}
     .muted {{ color:#9aa4b2; font-size:12px; }}
     select {{ background:#171a21; color:#e8ecf1; border:1px solid #2b3240; padding:6px; border-radius:8px; }}
-    .more-wrap {{ display:flex; align-items:center; gap:6px; }}
-    .more-btn {{ background:#202634; color:#dbe7ff; border:1px solid #32435e; border-radius:8px; padding:2px 8px; cursor:pointer; font-size:12px; }}
+    .btn {{ background:#202634; color:#dbe7ff; border:1px solid #32435e; border-radius:8px; padding:2px 8px; cursor:pointer; font-size:12px; }}
+    .modal {{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:999; }}
+    .panel {{ width:min(900px,95vw); max-height:90vh; overflow:auto; background:#171a21; border:1px solid #2b3240; border-radius:10px; padding:12px; }}
+    .legend-item {{ font-size:12px; margin:2px 0; }}
   </style>
 </head>
 <body>
   <h2>Stage05 v3_22 포트폴리오 비중 UI</h2>
-  <div class='muted'>읽기용 카드 + 변화표 + 집중도 지표</div>
+  <div class='muted'>리밸런싱 변화 + 포트 비중 원형그래프</div>
+
   <div class='row' style='margin-top:10px;'>
     <div class='card kpi'><div class='muted'>보유 종목수</div><div id='kHold'></div></div>
     <div class='card kpi'><div class='muted'>Top1 비중</div><div id='kTop1'></div></div>
@@ -153,38 +139,35 @@ def main():
 
   <div class='card' style='margin-top:12px;'>
     <h3>평가 차트 (고정)</h3>
-    <div class='muted'>기존 생성 차트를 이 페이지에서 바로 확인합니다.</div>
     <div style='margin-top:10px;'>
-      <div><b>누적 평가용 (yearly_continuous, 이벤트 포함)</b></div>
+      <div><b>누적 평가용</b></div>
       <img src='{chart_cont_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
     </div>
     <div style='margin-top:14px;'>
-      <div><b>연도별 리셋 평가용 (yearly_reset, 이벤트 포함)</b></div>
+      <div><b>연도별 리셋 평가용</b></div>
       <img src='{chart_reset_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
     </div>
-    <div style='margin-top:12px;'>
-      기준일: <select id='dateSel'></select>
-    </div>
-    <div class='muted' style='margin-top:8px;'>원본: {CHART_CONT}, {CHART_RESET}</div>
-  </div>
-
-  <div class='card' style='margin-top:12px;'>
-    <h3>종목 비중 Top5</h3>
-    <div id='top5'></div>
-  </div>
-
-  <div class='card' style='margin-top:12px;'>
-    <h3>전 종목 비중표</h3>
-    <table id='tbl'><thead><tr><th>종목</th><th>비중</th><th>보유일수</th></tr></thead><tbody></tbody></table>
+    <div style='margin-top:12px;'>기준일: <select id='dateSel'></select></div>
   </div>
 
   <div class='card' style='margin-top:12px;'>
     <h3>리밸런싱 변화표</h3>
-    <table id='tl'><thead><tr><th>일자</th><th>편입</th><th>편출</th><th>근거</th><th>현재 포트폴리오(비중)</th></tr></thead><tbody></tbody></table>
+    <table id='tl'><thead><tr><th>일자</th><th>편입</th><th>편출</th><th>근거</th><th>현재 포트폴리오(비중)</th><th>상세</th></tr></thead><tbody></tbody></table>
     <div style='display:flex;justify-content:center;gap:8px;align-items:center;margin-top:10px;'>
-      <button id='prevPage' class='more-btn'>◀ 이전</button>
+      <button id='prevPage' class='btn'>◀ 이전</button>
       <span id='pageInfo' class='muted'>1 / 1</span>
-      <button id='nextPage' class='more-btn'>다음 ▶</button>
+      <button id='nextPage' class='btn'>다음 ▶</button>
+    </div>
+  </div>
+
+  <div id='pieModal' class='modal'>
+    <div class='panel'>
+      <div style='display:flex;justify-content:space-between;align-items:center;'>
+        <h3 id='pieTitle'>포트폴리오 원형그래프</h3>
+        <button id='closeModal' class='btn'>닫기</button>
+      </div>
+      <canvas id='pieCanvas' width='520' height='520' style='max-width:100%;background:#0f1115;border-radius:8px;'></canvas>
+      <div id='pieLegend' style='margin-top:10px;'></div>
     </div>
   </div>
 
@@ -196,6 +179,56 @@ let timelinePage = 1;
 DATA.dates.forEach(d => {{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); }});
 sel.value = DATA.latest;
 
+function parseCurrentPortfolio(text) {{
+  if (!text || text === '-') return [];
+  return String(text).split(';').map(x=>x.trim()).filter(Boolean).map(row => {{
+    const m = row.match(/^(.*)\s([0-9.]+)%/);
+    if (!m) return null;
+    return {{ name: m[1].trim(), w: parseFloat(m[2]) }};
+  }}).filter(Boolean);
+}}
+
+function drawPie(items, title) {{
+  const modal = document.getElementById('pieModal');
+  const c = document.getElementById('pieCanvas');
+  const ctx = c.getContext('2d');
+  const legend = document.getElementById('pieLegend');
+  document.getElementById('pieTitle').textContent = title;
+  ctx.clearRect(0,0,c.width,c.height);
+  legend.innerHTML = '';
+
+  if (!items.length) {{
+    ctx.fillStyle='#9aa4b2';
+    ctx.font='16px sans-serif';
+    ctx.fillText('데이터 없음', 210, 260);
+    modal.style.display='flex';
+    return;
+  }}
+
+  const colors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
+  let total = items.reduce((a,b)=>a+b.w,0);
+  let start = -Math.PI/2;
+  const cx=260, cy=260, r=190;
+
+  items.forEach((it, idx) => {{
+    const frac = it.w / total;
+    const end = start + frac * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,end);
+    ctx.closePath();
+    ctx.fillStyle = colors[idx % colors.length];
+    ctx.fill();
+    start = end;
+
+    const div = document.createElement('div');
+    div.className='legend-item';
+    div.innerHTML = `<span style="display:inline-block;width:10px;height:10px;background:${{colors[idx % colors.length]}};margin-right:6px;"></span>${{it.name}} - ${{it.w.toFixed(1)}}%`;
+    legend.appendChild(div);
+  }});
+
+  modal.style.display='flex';
+}}
 
 function render() {{
   const d = sel.value;
@@ -208,23 +241,8 @@ function render() {{
   document.getElementById('kTop1').textContent = top1.toFixed(2) + '%';
   document.getElementById('kHhi').textContent = hhi.toFixed(4);
 
-  const top5 = rows.slice(0,5).map(r => `
-    <div style='margin:8px 0;'>
-      <div style='display:flex;justify-content:space-between;'><span>${{r.stock_name}}</span><span>${{r.weight_pct.toFixed(2)}}%</span></div>
-      <div class='bar'><div class='fill' style='width:${{Math.max(0,Math.min(100,r.weight_pct))}}%'></div></div>
-      <div class='muted'>보유일수 ${{r.holding_days}}d</div>
-    </div>`).join('');
-  document.getElementById('top5').innerHTML = top5 || '<div class="muted">데이터 없음</div>';
-
-  const tb = document.querySelector('#tbl tbody'); tb.innerHTML='';
-  rows.forEach(r => {{
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${{r.stock_name}}</td><td>${{r.weight_pct.toFixed(2)}}%</td><td>${{r.holding_days}}d</td>`;
-    tb.appendChild(tr);
-  }});
-
   const tlb = document.querySelector('#tl tbody'); tlb.innerHTML='';
-  const ordered = [...(DATA.timeline || [])].reverse(); // latest first
+  const ordered = [...(DATA.timeline || [])].reverse();
   const totalPages = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
   if (timelinePage > totalPages) timelinePage = totalPages;
   const start = (timelinePage - 1) * PAGE_SIZE;
@@ -235,19 +253,25 @@ function render() {{
       + '<td>' + (t.added || '-') + '</td>'
       + '<td>' + (t.removed || '-') + '</td>'
       + '<td>' + (t.reason || '-') + '</td>'
-      + '<td>' + (t.current || '-') + '</td>';
+      + '<td>' + (t.current || '-') + '</td>'
+      + '<td><button class="btn">더보기</button></td>';
+    tr.querySelector('button').addEventListener('click', () => {{
+      const items = parseCurrentPortfolio(t.current || '-');
+      drawPie(items, `포트폴리오 비중 - ${{t.date}}`);
+    }});
     tlb.appendChild(tr);
   }});
+
   document.getElementById('pageInfo').textContent = timelinePage + ' / ' + totalPages;
   document.getElementById('prevPage').disabled = timelinePage <= 1;
   document.getElementById('nextPage').disabled = timelinePage >= totalPages;
 }}
+
 sel.addEventListener('change', render);
 document.getElementById('prevPage').addEventListener('click', () => {{ if (timelinePage > 1) {{ timelinePage -= 1; render(); }} }});
-document.getElementById('nextPage').addEventListener('click', () => {{
-  const totalPages = Math.max(1, Math.ceil((DATA.timeline || []).length / PAGE_SIZE));
-  if (timelinePage < totalPages) {{ timelinePage += 1; render(); }}
-}});
+document.getElementById('nextPage').addEventListener('click', () => {{ const totalPages = Math.max(1, Math.ceil((DATA.timeline || []).length / PAGE_SIZE)); if (timelinePage < totalPages) {{ timelinePage += 1; render(); }} }});
+document.getElementById('closeModal').addEventListener('click', () => {{ document.getElementById('pieModal').style.display='none'; }});
+document.getElementById('pieModal').addEventListener('click', (e) => {{ if (e.target.id === 'pieModal') document.getElementById('pieModal').style.display='none'; }});
 render();
 </script>
 </body></html>"""
