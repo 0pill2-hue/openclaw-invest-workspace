@@ -1,0 +1,12 @@
+# Stage06 candidate generation config (v1)
+anchor_track: text
+challenger_tracks:
+  - quant
+  - hybrid
+generation:
+  variants_per_track: 4
+risk:
+  portfolio_stop: 0.07
+  regime_filter: true
+cost:
+  round_trip_bps: 350

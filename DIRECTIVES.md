@@ -7,25 +7,57 @@
 - 필드: `time | message_id | directive | due | status | first_action | proof`
 - 상태: `OPEN | IN_PROGRESS | DONE | BLOCKED`
 - 완료 시 반드시 proof(파일/리포트 경로) 기입
+- 임의 룰 추가 시 코드 폐기 (주인님 명령/Rulebook 미근거 규칙 삽입 금지)
+
+## QUICK RESUME SNAPSHOT (L1)
+- 상태 합계: `IN_PROGRESS 21 / DONE 49`
+- P1 현재 진행중 핵심
+  - 4947: 11단계·운영선정 규칙 혼선 재발 방지 (proof: memory/2026-02-18.md)
+  - 5053: 4/5 게이트 통과 후 Git 업데이트 선행 (proof: -)
+- P2 현재 진행중 핵심
+  - 3530: 제출물 비교표 3종 필수 포함
+  - 3579: 커뮤니티/특이점 사례조사
+  - 3780: 단계별 브레인스토밍 확정안 운영
+- 사용 규칙: 리셋 직후에는 이 섹션만 먼저 확인 후, 필요 시 원문 항목 상세 확인
 
 ## Priority Buckets (WIP=1)
 
 ### P1-오늘 (정확히 1개)
+- 2026-02-18 20:00 | 6149 | 컨텍스트 한도 초과 재발방지책 수립 후 문서에 기록 | 즉시 | DONE | first_action: 토큰 예산/출력 상한/분할응답/사전 점검 규칙을 memory에 고정 반영 | proof: memory/2026-02-18.md, MEMORY.md
+- 2026-02-18 16:17 | 5844 | 진행 보고 포맷 고정(단계 종료/시작 또는 실패/재시도만 초간단 보고) | 즉시 | DONE | first_action: 이후 단계 보고를 지정 포맷으로만 전송 | proof: -
+- 2026-02-18 15:47 | 5807 | 답변 길이 규칙 고정(짧은건 1회, 긴건 시작/종료 2회 보고) | 즉시 | DONE | first_action: 이후 모든 응답 cadence를 신규 규칙으로 적용 | proof: -
+- 2026-02-18 15:46 | 5806 | 다른 계열 검증 결과 즉시 보고 | 즉시 | IN_PROGRESS | first_action: Opus/Sonnet/agpro 단계별 감사 결과를 PASS/FAIL로 요약 보고 | proof: -
+- 2026-02-18 15:23 | 5783 | 7단계/8단계 진행(승급 포함) | 즉시 | DONE | first_action: stage07/stage08 QC --promote 실행 | proof: invest/results/validated/stage07_candidates_cut.json, invest/results/validated/stage08_purged_cv_oos.json
+- 2026-02-18 15:19 | 5775 | 8단계 브레인스토밍 기반 설계 문서화(재현필드 완비) + 다른 계열 검증 | 즉시 | DONE | first_action: Stage08(Purged CV/OOS) 설계 브레인스토밍 3모델 후 canonical 문서 작성 및 비-Codex 교차검증 수행 | proof: reports/stage_updates/stage08/stage08_purged_cv_oos.md, scripts/stage08_purged_cv_oos.py, scripts/stage08_purged_cv_oos_qc.py, invest/results/validated/stage08_purged_cv_oos.json
+- 2026-02-18 15:13 | 5761 | 7단계 브레인스토밍 후 설계 문서 작성 + 자체검증 필요 시 포함 설계 | 즉시 | DONE | first_action: Stage07 컷 기준 브레인스토밍 3모델 실행 후 canonical 문서/자체검증 스크립트 설계 반영 | proof: reports/stage_updates/stage07/stage07_candidate_stage_cut.md, scripts/stage07_candidate_stage_cut.py, scripts/stage07_candidate_cut_qc.py, invest/results/validated/stage07_candidates_cut.json
+- 2026-02-18 14:04 | 5658 | 5단계 문서 참조 기반으로 6단계 설계 브레인스토밍 후 문서 업데이트 | 즉시 | DONE | first_action: stage05 baseline/pass 문서를 입력으로 stage06 canonical 문서를 템플릿 필드 포함 형태로 재작성 | proof: reports/stage_updates/stage06/stage06_candidate_gen_v1.md, reports/stage_updates/STAGE06_ENTRY_PREP_20260218.md
+- 2026-02-18 14:11 | 5671 | heartbeat가 메인작업을 멈추지 않도록 복귀루틴을 문서가 아닌 강제 절차로 수정 | 즉시 | OPEN | first_action: foreground anchor/heartbeat 분리/3분 복귀 타임박스 규칙을 SOP+readlist에 강제 반영 | proof: OPERATIONS_SOP.md, docs/openclaw/CONTEXT_RESET_READLIST.md, runtime/foreground_anchor.json
+- 2026-02-18 14:52 | 5705 | Stage06 설계 기준으로 실제 실행 진행 | 즉시 | DONE | first_action: stage06 생성 스크립트/검증 스크립트 준비 후 실행 | proof: invest/scripts/stage06_candidate_gen_v1.py, scripts/stage06_candidate_qc.py, invest/results/validated/stage06_candidates.json
+- 2026-02-18 13:42 | 5637 | 리팩토링 명목으로 미뤄진 지시(함수별 입출력/기능 주석 명시, 문서 리팩토링) 즉시 재개 및 누락 없이 처리 | 즉시 | OPEN | first_action: 미이행 항목 인벤토리 작성 후 코드 주석 반영 범위/문서 리팩토링 범위 확정 | proof: -
 - 2026-02-18 05:45 | 4947 | 지시/합의사항(특히 11단계·운영선정 규칙) 즉시 문서화하고 동일 혼선 재발 금지 | 상시 | IN_PROGRESS | first_action: memory/2026-02-18.md에 합의 규칙(택1 운영, 4→5 반복, 예외 시 2→3 재진입) 고정 기록 | proof: memory/2026-02-18.md
 - 2026-02-18 05:52 | 4969 | 1번 단계를 수집으로 고정하고 단계 문서 전체를 재정렬/업데이트 | 즉시 | DONE | first_action: stage 문서 번호/명칭을 11단계 canonical에 맞게 재작성 | proof: reports/stage_updates/README.md, stage01_data_collection.md ~ stage11_adopt_hold_promote.md, invest/strategy/RULEBOOK_V1_20260218.md
 - 2026-02-18 05:53 | 4970 | 컨텍스트 비운 뒤 먼저 읽을 문서 목록을 메모리에 고정 | 즉시 | DONE | first_action: memory/2026-02-18.md에 재로딩 체크리스트 추가 | proof: memory/2026-02-18.md
-- 2026-02-18 06:03 | 4996 | stage01~04 명시 게이트 브레인스토밍 후 문서 반영, 실제 동작 점검 1회 실행 | 즉시 | DONE | first_action: stage02~04 gate 설계/반영 후 gate-check 스모크 실행 | proof: reports/stage_updates/stage02_data_cleaning.md, stage03_cleaning_validation.md, stage04_validated_value.md, scripts/stage_gate_check_1to4.py 실행결과(SUMMARY:FAIL, stage04:grade_present:FAIL)
+- 2026-02-18 06:03 | 4996 | stage01~04 명시 게이트 브레인스토밍 후 문서 반영, 실제 동작 점검 1회 실행 | 즉시 | DONE | first_action: stage02~04 gate 설계/반영 후 gate-check 스모크 실행 | proof: reports/stage_updates/stage02/stage02_data_cleaning.md, stage03_cleaning_validation.md, stage04_validated_value.md, scripts/stage_gate_check_1to4.py 실행결과(SUMMARY:FAIL, stage04:grade_present:FAIL)
 - 2026-02-18 06:05 | 5001 | RULEBOOK/Stage 문서 추가·수정 필요점 브레인스토밍 후 적용 | 즉시 | DONE | first_action: RULEBOOK의 운영선정/충돌룰 모순 제거 + stage gate 연결 섹션 추가 + README 동기화 + gate-check 재실행 | proof: invest/strategy/RULEBOOK_V1_20260218.md, reports/stage_updates/README.md, scripts/stage_gate_check_1to4.py 실행결과(SUMMARY:FAIL, stage04:grade_present:FAIL)
 - 2026-02-18 06:13 | 5009 | OpenClaw 시스템/폴더/설정 문서를 invest 밖에 작성하고 컨텍스트 초기화 시 강제 재로딩 규칙 추가 | 즉시 | DONE | first_action: 시스템 브레인스토밍 후 baseline 문서 2종 작성 + AGENTS/메모리 체크리스트 반영 | proof: docs/openclaw/OPENCLAW_SYSTEM_BASELINE.md, docs/openclaw/WORKSPACE_STRUCTURE.md, docs/openclaw/CONTEXT_RESET_READLIST.md, AGENTS.md
 - 2026-02-18 06:17 | 5017 | 시스템/알고리즘 변경 시 문서 업데이트 강제 | 상시 | DONE | first_action: AGENTS.md에 Documentation Sync Gate 추가 | proof: AGENTS.md
 - 2026-02-18 06:20 | 5027 | 문서는 전부 재현 가능한 수준으로 작성 | 상시 | DONE | first_action: stage/rulebook/openclaw 문서에 실행·입력·출력·게이트·증빙 필드 점검 및 누락 보강 | proof: AGENTS.md Documentation Sync Gate(재현 필드 최소요건 명시), memory/2026-02-18.md
 - 2026-02-18 06:22 | 5033 | 시스템 불필요 파일 브레인스토밍 후 제거 | 즉시 | DONE | first_action: 안전 대상(캐시/컴파일 산출물) 선별 후 trash 이동 | proof: workspace 전체 __pycache__/pyc/.DS_Store 제거 확인(find 결과 없음)
 - 2026-02-18 06:24 | 5037 | 폴더구조 적합성 브레인스토밍 후 문제 없이 수정 | 즉시 | DONE | first_action: 실제 디렉터리 트리와 문서 기준 비교 후 불일치 문서만 수정 | proof: docs/openclaw/WORKSPACE_STRUCTURE.md
-- 2026-02-18 06:25 | 5038 | 문서 추가/보강 필요점 브레인스토밍 후 점검 | 즉시 | DONE | first_action: docs/openclaw + stage/rulebook 대상 갭 분석 후 추가/보강안 반영 | proof: docs/openclaw/DOCS_MAINTENANCE_PLAYBOOK.md, docs/openclaw/CONTEXT_RESET_READLIST.md, reports/stage_updates/stage02_data_cleaning.md, stage03_cleaning_validation.md, stage04_validated_value.md
+- 2026-02-18 06:25 | 5038 | 문서 추가/보강 필요점 브레인스토밍 후 점검 | 즉시 | DONE | first_action: docs/openclaw + stage/rulebook 대상 갭 분석 후 추가/보강안 반영 | proof: docs/openclaw/DOCS_MAINTENANCE_PLAYBOOK.md, docs/openclaw/CONTEXT_RESET_READLIST.md, reports/stage_updates/stage02/stage02_data_cleaning.md, stage03_cleaning_validation.md, stage04_validated_value.md
 - 2026-02-18 06:30 | 5051 | 메모리 파일 보강 필요점 브레인스토밍 및 반영 | 즉시 | DONE | first_action: MEMORY/memory/*.md 갭 점검 후 최소 보강안 적용 | proof: MEMORY.md(2026-02-18 섹션 추가), memory/INDEX.md(2026-02-17/18 인덱스 보강)
 - 2026-02-18 06:31 | 5053 | 4/5 게이트 통과 후 Git 업데이트 선행, 그 다음 리팩토링 진행 | 상시 | IN_PROGRESS | first_action: 4/5 게이트 통과 확인 전에는 리팩토링 제안/실행 보류, 통과 즉시 git 업데이트부터 수행 | proof: -
-- 2026-02-18 07:09 | 5132 | 리팩토링 시 input/output path 안정성 보장 | 리팩토링 시점 | IN_PROGRESS | first_action: 경로 변경 시 alias/호환레이어 유지 + run/gate/manfiest 경로 회귀검증 포함 | proof: -
-- 2026-02-18 07:11 | 5138 | 리팩토링 누락 파일 전수 탐색/검증 | 리팩토링 종료 전 | IN_PROGRESS | first_action: 네이밍 룰 기준 전체 파일 스캔 후 미반영 목록/수정 목록 리포트 생성 | proof: -
+- 2026-02-18 07:09 | 5132 | 리팩토링 시 input/output path 안정성 보장 | 리팩토링 시점 | DONE | first_action: 경로 변경 시 alias/호환레이어 유지 + run/gate/manfiest 경로 회귀검증 포함 | proof: reports/stage_updates/REFACTOR_FINAL_REPORT_20260218_FLASH.md
+- 2026-02-18 07:11 | 5138 | 리팩토링 누락 파일 전수 탐색/검증 | 리팩토링 종료 전 | DONE | first_action: 네이밍 룰 기준 전체 파일 스캔 후 미반영 목록/수정 목록 리포트 생성 | proof: reports/stage_updates/REFACTOR_FINAL_REPORT_20260218_FLASH.md
+- 2026-02-18 07:36 | 5157 | 미완료 작업 종료 시 남은 할일+다음 제안 자동 포함 규칙 고정 | 즉시 | DONE | first_action: SOP에 종료보고 제안 규칙 추가 | proof: OPERATIONS_SOP.md 섹션 8
+- 2026-02-18 07:42 | 5165 | 검수코드/중요작업은 다른 계열 고성능 모델에 교차 배정 규칙 추가 | 즉시 | DONE | first_action: SOP에 교차모델 배정 규칙 신설 | proof: OPERATIONS_SOP.md 섹션 9
+- 2026-02-18 07:43 | 5167 | 구버전 지시 잔존/충돌 재발 방지 규칙 문서화 | 즉시 | DONE | first_action: SOP에 지시 충돌 정리 절차(상태전환+해소메모+proof보강) 추가 | proof: OPERATIONS_SOP.md 섹션 10
+- 2026-02-18 07:52 | 5185 | 정시/예약 보고의 REPORT_QUEUE 선등록 누락 재발 방지 | 즉시 | DONE | first_action: SOP에 선등록 규칙 추가 + 08:00 pending 즉시 등록 | proof: OPERATIONS_SOP.md 섹션 11, TASKS.md REPORT_QUEUE
+- 2026-02-18 08:01 | 5199 | 문서별 포맷 표준 확정 | 즉시 | DONE | first_action: 문서 유형별 템플릿(단계/운영/리포트) 표준 문서 신설 및 readlist 연동 | proof: docs/openclaw/DOC_TEMPLATES.md, docs/openclaw/CONTEXT_RESET_READLIST.md
+- 2026-02-18 08:11 | 5221 | 정시 보고 완료 후 PENDING 잔존 경고 재발 방지 | 즉시 | DONE | first_action: TASKS REPORT_QUEUE 즉시 종료 반영 + 점검 크론에 자동정리/재알림 억제 규칙 추가 | proof: TASKS.md 08:00 DONE_REPORT, cron job 531714af payload update
+- 2026-02-18 08:22 | 5234 | US OHLCV freshness 오탐 재발 방지 | 즉시 | DONE | first_action: post_collection_validate의 US freshness 룰에 KST 장중/비장중 분기 임계치 적용 | proof: invest/scripts/post_collection_validate.py, 실행검증 ok=true (08:22)
+- 2026-02-18 08:54 | 5256 | 리팩토링 우선, 기타 4개 블록 처리 후 본작업 집중 | 즉시 | DONE | first_action: 추가 대응은 4개 블록으로 제한하고 리팩토링 본작업 시간 블록 고정 | proof: reports/stage_updates/REFACTOR_FINAL_REPORT_20260218_FLASH.md
+- 2026-02-18 07:47 | 5173 | 특갤 참고사항 중 적용가능 항목 선별·반영 | 즉시 | DONE | first_action: 우회팁 제외, 운영원칙(작업성격별 모델모드 선택/임시복구 핸들링)만 문서 반영 | proof: docs/openclaw/OPERATING_GOVERNANCE.md
 - 2026-02-18 06:43 | 5079 | 네이밍 룰 우선 수립 | 즉시 | DONE | first_action: 파일/함수/리포트/매니페스트 네이밍 초안 제시 후 승인받기 | proof: docs/openclaw/NAMING_STRATEGY.md, docs/openclaw/CONTEXT_RESET_READLIST.md
 - 2026-02-18 06:47 | 5089 | 코딩 룰 브레인스토밍 후 고정 | 즉시 | DONE | first_action: 운영/재현/게이트 중심 코딩 룰 초안 작성 | proof: docs/openclaw/CODING_RULES.md, docs/openclaw/CONTEXT_RESET_READLIST.md
 - 2026-02-18 06:49 | 5093 | 운영전략(게이트/SOP/SLA/Git) 브레인스토밍 후 문서 고정 | 즉시 | DONE | first_action: 상위 운영 문서에 4개 기준을 canonical로 추가 | proof: docs/openclaw/OPERATING_GOVERNANCE.md, docs/openclaw/CONTEXT_RESET_READLIST.md, OPERATIONS_SOP.md
@@ -81,3 +113,6 @@
 2) 약속/ETA/완료보고 전 P1/P2의 OPEN/IN_PROGRESS 재확인
 3) 코드/전략/보고 완료 건은 DONE 전환 시 proof 1개 이상 첨부
 4) 타이머(10분) 점검은 유지하되, 이상 징후 있을 때만 알림
+- 2026-02-18 16:44 | 5900 | 단계 종료 즉시 다음 단계 자동 연속 실행(중단 금지) | 즉시 | IN_PROGRESS | first_action: 단계 완료 이벤트 직후 다음 단계 실행 트리거 적용 | proof: -
+- 2026-02-19 04:49 | 6754 | 씽킹 설정은 컨텍스트 초기화 시 날아갈 수 있음을 메모리에 명시하고, 이후 실행마다 thinking=high를 명시 적용 | 즉시 | IN_PROGRESS | first_action: memory/2026-02-19.md에 운영 메모 추가 후 작업 실행 시 thinking 고정 명시 | proof: memory/2026-02-19.md
+- 2026-02-19 07:XX | 6815 | 같은 설정/수치로 왔다갔다(핑퐁) 반복 금지 규칙 메모리 고정 | 즉시 | IN_PROGRESS | first_action: 라운드별 파라미터 변경 로그를 의무화하고 이전 2라운드와 중복 시 FAIL 처리 | proof: memory/2026-02-19.md
