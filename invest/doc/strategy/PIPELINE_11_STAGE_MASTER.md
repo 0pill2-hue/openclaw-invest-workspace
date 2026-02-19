@@ -1,7 +1,7 @@
 # PIPELINE_11_STAGE_MASTER
 
 > canonical: 11단계 프로세스 전용 단일 파일
-> location: docs/invest/strategy/
+> location: invest/doc/strategy/
 
 1. Stage01 데이터 수집
 2. Stage02 데이터 정제
@@ -16,4 +16,4 @@
 11. Stage11 채택/보류/승격
 
 ## 산출물 위치 고정
-- `reports/stage_updates/stage01/` ~ `reports/stage_updates/stage11/`
+- `invest/doc/reports/stage_updates/stage01/` ~ `invest/doc/reports/stage_updates/stage11/`

@@ -26,7 +26,7 @@ Purpose: 컨텍스트 초기화(대화 리셋) 후 **전략/메모리 누락 방
 5. `docs/openclaw/DOC_TEMPLATES.md`
 6. `invest/doc/reports/stage_updates/README.md`
 7. `invest/doc/reports/stage_updates/stage01/stage01_data_collection.md` ~ `stage11/stage11_adopt_hold_promote.md`
-8. `reports/invest` (링크 경로 점검용)
+8. `invest/doc/reports` (링크 경로 점검용)
 
 ## Hard Guard (Mandatory)
 - 위 L1 재로딩 완료 전, 단계/운영 기준 관련 확정 답변 금지

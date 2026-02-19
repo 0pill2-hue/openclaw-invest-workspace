@@ -5,7 +5,7 @@ Purpose: 게이트 운영의 고정 기준(임계치 버전, 실행 SOP, 보고 
 
 ## 1) Gate Threshold Version (고정)
 - 현재 운영 버전: `gate_threshold_v1_20260218`
-- 기준 원문: `invest/strategy/RULEBOOK_V1_20260218.md` 11장(11-1/11-2/11-3)
+- 기준 원문: `invest/doc/strategy/RULEBOOK_MASTER.md` 11장(11-1/11-2/11-3)
 - 변경 원칙:
   - 임계치 변경은 버전 증가(`v2_...`) 없이는 금지
   - 변경 시 stage 문서 + RULEBOOK + 본 문서 동시 갱신
@@ -35,7 +35,17 @@ Purpose: 게이트 운영의 고정 기준(임계치 버전, 실행 SOP, 보고 
   - 기본: 한 줄 요약
   - 긴급 수정: `hotfix:` 접두어
 
-## 5) 충돌 시 우선순위
-1. `invest/strategy/RULEBOOK_V1_20260218.md`
+## 5) 모델 운용 모드 선택 원칙 (신규)
+- 일반 운영/대량 반복: 기본 모드(속도 우선)
+- 중요 의사결정/검수/최종 판정: 정밀 모드(정확성 우선)
+- 동일 작업에서 모드 변경 시 보고문에 변경 이유 1줄 기록
+
+## 6) 임시 복구 팁 취급 원칙 (신규)
+- 커뮤니티 우회 팁(예: 제한 해제 요청)은 `임시 대응`으로만 취급한다.
+- 공식/재현 검증 전에는 표준 SOP에 고정 반영 금지.
+- 적용 시 반드시 `케이스 한정`으로 사용하고, 실패 시 즉시 원복/대체 경로로 전환.
+
+## 7) 충돌 시 우선순위
+1. `invest/doc/strategy/RULEBOOK_MASTER.md`
 2. `docs/openclaw/OPERATING_GOVERNANCE.md`
 3. `OPERATIONS_SOP.md`

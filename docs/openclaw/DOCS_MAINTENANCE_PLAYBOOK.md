@@ -9,8 +9,8 @@ Purpose: 시스템/전략 변경 시 어떤 문서를 반드시 갱신할지 빠
   - `docs/openclaw/WORKSPACE_STRUCTURE.md` (구조 변경 시)
   - `docs/openclaw/CONTEXT_RESET_READLIST.md` (읽기 순서 영향 시)
 - 알고리즘 전략/게이트/운영 규칙 변경
-  - `invest/strategy/RULEBOOK_V1_20260218.md`
-  - `reports/stage_updates/stage01~11` 해당 문서
+  - `invest/doc/strategy/RULEBOOK_MASTER.md`
+  - `invest/doc/reports/stage_updates/stage01~11` 해당 문서
 
 ## 2) 재현성 최소 필드 (문서 공통)
 - `inputs`
