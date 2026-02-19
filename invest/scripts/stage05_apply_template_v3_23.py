@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parents[2]
-V22 = BASE / 'invest/reports/stage_updates/stage05/v3_22'
+TEMPLATE = BASE / 'invest/reports/stage_updates/stage05/template'
 V23 = BASE / 'invest/reports/stage_updates/stage05/v3_23'
 
 
@@ -88,13 +88,25 @@ def copy_charts_and_ui():
     if cont.exists():
         (V23 / 'charts/stage05_v3_23_cum_2021plus.png').write_bytes(cont.read_bytes())
         (V23 / 'charts/stage05_eval_yearly_continuous_2021plus.png').write_bytes(cont.read_bytes())
+    else:
+        tp = TEMPLATE / 'charts/stage05_eval_yearly_continuous_2021plus.png'
+        if tp.exists():
+            (V23 / 'charts/stage05_eval_yearly_continuous_2021plus.png').write_bytes(tp.read_bytes())
     if reset.exists():
         (V23 / 'charts/stage05_eval_yearly_reset_2021plus.png').write_bytes(reset.read_bytes())
+    else:
+        tp = TEMPLATE / 'charts/stage05_eval_yearly_reset_2021plus.png'
+        if tp.exists():
+            (V23 / 'charts/stage05_eval_yearly_reset_2021plus.png').write_bytes(tp.read_bytes())
 
     dash = V23 / 'ui/dashboard.html'
     idx = V23 / 'ui/index.html'
     if dash.exists():
         idx.write_text(dash.read_text(encoding='utf-8'), encoding='utf-8')
+    else:
+        tp = TEMPLATE / 'ui/index.html'
+        if tp.exists():
+            idx.write_text(tp.read_text(encoding='utf-8'), encoding='utf-8')
 
 
 def main():
