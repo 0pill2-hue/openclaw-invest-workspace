@@ -55,22 +55,47 @@ def main():
         hhi_series.append({"date": d, "hhi": round(hhi, 4)})
         top1_series.append({"date": d, "top1": round(top1, 2)})
 
+    dates = sorted(by_date.keys())
+    latest = dates[-1] if dates else ""
+
     # timeline changes
+    weight_map = {}
+    for d, items in by_date.items():
+        wm = {}
+        for it in items:
+            wm[str(it['stock_name'])] = float(it['weight_pct'])
+        weight_map[d] = wm
+
     timeline = []
     for r in tdf.fillna("-").itertuples():
+        d = str(r.rebalance_date)
+        prev_dates = [x for x in dates if x < d]
+        prev_d = prev_dates[-1] if prev_dates else None
+        cur_w = weight_map.get(d, {})
+        prev_w = weight_map.get(prev_d, {}) if prev_d else {}
+
+        def _fmt_with_pct(codes_text, wmap):
+            if not codes_text or str(codes_text).strip() in {'', '-'}:
+                return '-'
+            out = []
+            for name in [x.strip() for x in str(codes_text).split(',') if x.strip()]:
+                pct = wmap.get(name)
+                if pct is None:
+                    out.append(name)
+                else:
+                    out.append(f"{name} {pct:.1f}%")
+            return ', '.join(out) if out else '-'
+
         timeline.append(
             {
-                "date": str(r.rebalance_date),
-                "added": str(r.added_codes),
-                "removed": str(r.removed_codes),
+                "date": d,
+                "added": _fmt_with_pct(str(r.added_codes), cur_w),
+                "removed": _fmt_with_pct(str(r.removed_codes), prev_w),
                 "kept": str(r.kept_codes),
                 "reason": str(r.replacement_basis),
                 "current": str(getattr(r, 'weights_snapshot', '-')),
             }
         )
-
-    dates = sorted(by_date.keys())
-    latest = dates[-1] if dates else ""
 
     events = []
     if not edf.empty:
