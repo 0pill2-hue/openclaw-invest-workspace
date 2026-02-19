@@ -2,7 +2,7 @@
 
 - Scope: `invest/**/*.py`, `scripts/**/*.py`
 - Generated: 2026-02-18T01:06:54.512868
-- SOP 기준: `OPERATIONS_SOP.md` 4-A (clean-only violation)
+- SOP 기준: `invest/docs/operations/OPERATIONS_SOP.md` 4-A (clean-only violation)
 
 ## 1) 요약
 - Total raw direct refs: **55**

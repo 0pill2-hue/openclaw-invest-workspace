@@ -31,7 +31,7 @@
 - 2026-02-18 15:19 | 5775 | 8단계 브레인스토밍 기반 설계 문서화(재현필드 완비) + 다른 계열 검증 | 즉시 | DONE | first_action: Stage08(Purged CV/OOS) 설계 브레인스토밍 3모델 후 canonical 문서 작성 및 비-Codex 교차검증 수행 | proof: reports/stage_updates/stage08/stage08_purged_cv_oos.md, scripts/stage08_purged_cv_oos.py, scripts/stage08_purged_cv_oos_qc.py, invest/results/validated/stage08_purged_cv_oos.json
 - 2026-02-18 15:13 | 5761 | 7단계 브레인스토밍 후 설계 문서 작성 + 자체검증 필요 시 포함 설계 | 즉시 | DONE | first_action: Stage07 컷 기준 브레인스토밍 3모델 실행 후 canonical 문서/자체검증 스크립트 설계 반영 | proof: reports/stage_updates/stage07/stage07_candidate_stage_cut.md, scripts/stage07_candidate_stage_cut.py, scripts/stage07_candidate_cut_qc.py, invest/results/validated/stage07_candidates_cut.json
 - 2026-02-18 14:04 | 5658 | 5단계 문서 참조 기반으로 6단계 설계 브레인스토밍 후 문서 업데이트 | 즉시 | DONE | first_action: stage05 baseline/pass 문서를 입력으로 stage06 canonical 문서를 템플릿 필드 포함 형태로 재작성 | proof: reports/stage_updates/stage06/stage06_candidate_gen_v1.md, reports/stage_updates/STAGE06_ENTRY_PREP_20260218.md
-- 2026-02-18 14:11 | 5671 | heartbeat가 메인작업을 멈추지 않도록 복귀루틴을 문서가 아닌 강제 절차로 수정 | 즉시 | OPEN | first_action: foreground anchor/heartbeat 분리/3분 복귀 타임박스 규칙을 SOP+readlist에 강제 반영 | proof: OPERATIONS_SOP.md, docs/openclaw/CONTEXT_RESET_READLIST.md, runtime/foreground_anchor.json
+- 2026-02-18 14:11 | 5671 | heartbeat가 메인작업을 멈추지 않도록 복귀루틴을 문서가 아닌 강제 절차로 수정 | 즉시 | OPEN | first_action: foreground anchor/heartbeat 분리/3분 복귀 타임박스 규칙을 SOP+readlist에 강제 반영 | proof: invest/docs/operations/OPERATIONS_SOP.md, docs/openclaw/CONTEXT_RESET_READLIST.md, runtime/foreground_anchor.json
 - 2026-02-18 14:52 | 5705 | Stage06 설계 기준으로 실제 실행 진행 | 즉시 | DONE | first_action: stage06 생성 스크립트/검증 스크립트 준비 후 실행 | proof: invest/scripts/stage06_candidate_gen_v1.py, scripts/stage06_candidate_qc.py, invest/results/validated/stage06_candidates.json
 - 2026-02-18 13:42 | 5637 | 리팩토링 명목으로 미뤄진 지시(함수별 입출력/기능 주석 명시, 문서 리팩토링) 즉시 재개 및 누락 없이 처리 | 즉시 | OPEN | first_action: 미이행 항목 인벤토리 작성 후 코드 주석 반영 범위/문서 리팩토링 범위 확정 | proof: -
 - 2026-02-18 05:45 | 4947 | 지시/합의사항(특히 11단계·운영선정 규칙) 즉시 문서화하고 동일 혼선 재발 금지 | 상시 | IN_PROGRESS | first_action: memory/2026-02-18.md에 합의 규칙(택1 운영, 4→5 반복, 예외 시 2→3 재진입) 고정 기록 | proof: memory/2026-02-18.md
@@ -49,10 +49,10 @@
 - 2026-02-18 06:31 | 5053 | 4/5 게이트 통과 후 Git 업데이트 선행, 그 다음 리팩토링 진행 | 상시 | IN_PROGRESS | first_action: 4/5 게이트 통과 확인 전에는 리팩토링 제안/실행 보류, 통과 즉시 git 업데이트부터 수행 | proof: -
 - 2026-02-18 07:09 | 5132 | 리팩토링 시 input/output path 안정성 보장 | 리팩토링 시점 | DONE | first_action: 경로 변경 시 alias/호환레이어 유지 + run/gate/manfiest 경로 회귀검증 포함 | proof: reports/stage_updates/REFACTOR_FINAL_REPORT_20260218_FLASH.md
 - 2026-02-18 07:11 | 5138 | 리팩토링 누락 파일 전수 탐색/검증 | 리팩토링 종료 전 | DONE | first_action: 네이밍 룰 기준 전체 파일 스캔 후 미반영 목록/수정 목록 리포트 생성 | proof: reports/stage_updates/REFACTOR_FINAL_REPORT_20260218_FLASH.md
-- 2026-02-18 07:36 | 5157 | 미완료 작업 종료 시 남은 할일+다음 제안 자동 포함 규칙 고정 | 즉시 | DONE | first_action: SOP에 종료보고 제안 규칙 추가 | proof: OPERATIONS_SOP.md 섹션 8
-- 2026-02-18 07:42 | 5165 | 검수코드/중요작업은 다른 계열 고성능 모델에 교차 배정 규칙 추가 | 즉시 | DONE | first_action: SOP에 교차모델 배정 규칙 신설 | proof: OPERATIONS_SOP.md 섹션 9
-- 2026-02-18 07:43 | 5167 | 구버전 지시 잔존/충돌 재발 방지 규칙 문서화 | 즉시 | DONE | first_action: SOP에 지시 충돌 정리 절차(상태전환+해소메모+proof보강) 추가 | proof: OPERATIONS_SOP.md 섹션 10
-- 2026-02-18 07:52 | 5185 | 정시/예약 보고의 REPORT_QUEUE 선등록 누락 재발 방지 | 즉시 | DONE | first_action: SOP에 선등록 규칙 추가 + 08:00 pending 즉시 등록 | proof: OPERATIONS_SOP.md 섹션 11, TASKS.md REPORT_QUEUE
+- 2026-02-18 07:36 | 5157 | 미완료 작업 종료 시 남은 할일+다음 제안 자동 포함 규칙 고정 | 즉시 | DONE | first_action: SOP에 종료보고 제안 규칙 추가 | proof: invest/docs/operations/OPERATIONS_SOP.md 섹션 8
+- 2026-02-18 07:42 | 5165 | 검수코드/중요작업은 다른 계열 고성능 모델에 교차 배정 규칙 추가 | 즉시 | DONE | first_action: SOP에 교차모델 배정 규칙 신설 | proof: invest/docs/operations/OPERATIONS_SOP.md 섹션 9
+- 2026-02-18 07:43 | 5167 | 구버전 지시 잔존/충돌 재발 방지 규칙 문서화 | 즉시 | DONE | first_action: SOP에 지시 충돌 정리 절차(상태전환+해소메모+proof보강) 추가 | proof: invest/docs/operations/OPERATIONS_SOP.md 섹션 10
+- 2026-02-18 07:52 | 5185 | 정시/예약 보고의 REPORT_QUEUE 선등록 누락 재발 방지 | 즉시 | DONE | first_action: SOP에 선등록 규칙 추가 + 08:00 pending 즉시 등록 | proof: invest/docs/operations/OPERATIONS_SOP.md 섹션 11, TASKS.md REPORT_QUEUE
 - 2026-02-18 08:01 | 5199 | 문서별 포맷 표준 확정 | 즉시 | DONE | first_action: 문서 유형별 템플릿(단계/운영/리포트) 표준 문서 신설 및 readlist 연동 | proof: docs/openclaw/DOC_TEMPLATES.md, docs/openclaw/CONTEXT_RESET_READLIST.md
 - 2026-02-18 08:11 | 5221 | 정시 보고 완료 후 PENDING 잔존 경고 재발 방지 | 즉시 | DONE | first_action: TASKS REPORT_QUEUE 즉시 종료 반영 + 점검 크론에 자동정리/재알림 억제 규칙 추가 | proof: TASKS.md 08:00 DONE_REPORT, cron job 531714af payload update
 - 2026-02-18 08:22 | 5234 | US OHLCV freshness 오탐 재발 방지 | 즉시 | DONE | first_action: post_collection_validate의 US freshness 룰에 KST 장중/비장중 분기 임계치 적용 | proof: invest/scripts/post_collection_validate.py, 실행검증 ok=true (08:22)
@@ -60,7 +60,7 @@
 - 2026-02-18 07:47 | 5173 | 특갤 참고사항 중 적용가능 항목 선별·반영 | 즉시 | DONE | first_action: 우회팁 제외, 운영원칙(작업성격별 모델모드 선택/임시복구 핸들링)만 문서 반영 | proof: docs/openclaw/OPERATING_GOVERNANCE.md
 - 2026-02-18 06:43 | 5079 | 네이밍 룰 우선 수립 | 즉시 | DONE | first_action: 파일/함수/리포트/매니페스트 네이밍 초안 제시 후 승인받기 | proof: docs/openclaw/NAMING_STRATEGY.md, docs/openclaw/CONTEXT_RESET_READLIST.md
 - 2026-02-18 06:47 | 5089 | 코딩 룰 브레인스토밍 후 고정 | 즉시 | DONE | first_action: 운영/재현/게이트 중심 코딩 룰 초안 작성 | proof: docs/openclaw/CODING_RULES.md, docs/openclaw/CONTEXT_RESET_READLIST.md
-- 2026-02-18 06:49 | 5093 | 운영전략(게이트/SOP/SLA/Git) 브레인스토밍 후 문서 고정 | 즉시 | DONE | first_action: 상위 운영 문서에 4개 기준을 canonical로 추가 | proof: docs/openclaw/OPERATING_GOVERNANCE.md, docs/openclaw/CONTEXT_RESET_READLIST.md, OPERATIONS_SOP.md
+- 2026-02-18 06:49 | 5093 | 운영전략(게이트/SOP/SLA/Git) 브레인스토밍 후 문서 고정 | 즉시 | DONE | first_action: 상위 운영 문서에 4개 기준을 canonical로 추가 | proof: docs/openclaw/OPERATING_GOVERNANCE.md, docs/openclaw/CONTEXT_RESET_READLIST.md, invest/docs/operations/OPERATIONS_SOP.md
 - 2026-02-17 10:34 | 3737 | 작업 순서를 순차 처리로 고정(꼬임 방지) | due 해제(주인님 지시) | IN_PROGRESS | first_action: 1) 데이터 정제 완료 2) 정제 검증 3) VALIDATED 밸류 산출 4) 비교표/후속 작업 순서로 진행 | proof: -
 
 ### P2-이번주
@@ -102,7 +102,7 @@
 - 2026-02-17 13:25 | 4007 | 보고서 완벽 재작성 후 승인 받을 수준으로 제출 | 즉시 | DONE | first_action: 질적요약+진행률 분리 방식으로 보고서 재작성 및 보고채널 원문 전송 | proof: `reports/hourly/HOURLY_2026-02-17_1300_KST.md`, 보고채널 messageId `75`
 - 2026-02-17 13:55 | 4024 | 기존 value 산출물 삭제(폐기) | 즉시 | DONE | first_action: invest/results 내 value 산출 결과 파일 삭제 후 잔존 확인 | proof: `invest/results` 잔존 파일 3개(`generate_chart.py`, `_governance_smoke.md`, `RESULT_GOVERNANCE.md`)
 - 2026-02-17 13:57 | 4028 | 선행 위반/오염 가능 산출물 전량 폐기("다 버려") | 즉시 | DONE | first_action: reports 산출물 및 관련 임시 산출물 일괄 삭제 후 잔존 확인 | proof: reports 잔존 파일 6개(README/.gitkeep만 유지), value 결과는 기존에 전량 삭제 완료
-- 2026-02-17 14:42 | 4130 | 전략 보강 항목 즉시 반영(가드레일/게이트) | 즉시 | DONE | first_action: OPERATIONS_SOP에 하드게이트/리니지/무결성/병렬격리 규칙 추가 | proof: `OPERATIONS_SOP.md` 1/4-A/4-B/4-C/4-D 섹션, `invest/docs/architecture/GUARDRAIL_CHECKLIST_V1.md`
+- 2026-02-17 14:42 | 4130 | 전략 보강 항목 즉시 반영(가드레일/게이트) | 즉시 | DONE | first_action: OPERATIONS_SOP에 하드게이트/리니지/무결성/병렬격리 규칙 추가 | proof: `invest/docs/operations/OPERATIONS_SOP.md` 1/4-A/4-B/4-C/4-D 섹션, `invest/docs/architecture/GUARDRAIL_CHECKLIST_V1.md`
 
 ### P3-상시
 - 2026-02-17 05:50 | 3522 | 주기적으로 할일 체크(정기 점검 루틴 상시 적용) | 상시 | IN_PROGRESS | first_action: 크론 `531714af-c1ee-4852-9966-2e9b62714449` 실행 상태 주기 확인 | proof: cron job active

@@ -1,4 +1,4 @@
-# OPERATIONS_SOP.md
+# invest/docs/operations/OPERATIONS_SOP.md
 
 ## Daily Ops (Automation-first)
 

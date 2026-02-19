@@ -127,4 +127,4 @@ for name, (path, type) in sources.items():
 
 df = pd.DataFrame(results)
 print(df.to_string(index=False))
-df.to_csv("coverage_baseline.csv", index=False)
+df.to_csv("invest/reports/data_quality/coverage_baseline.csv", index=False)

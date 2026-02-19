@@ -6,7 +6,7 @@
     "scripts/**/*.py"
   ],
   "sop_reference": [
-    "OPERATIONS_SOP.md 4-A clean-only violation"
+    "invest/docs/operations/OPERATIONS_SOP.md 4-A clean-only violation"
   ],
   "summary": {
     "total_occurrences": 55,

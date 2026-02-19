@@ -35,7 +35,7 @@
 - **네이버 프리미엄**: 브라우저 기반 무한 스크롤 및 로딩 지연 문제로 수집 효율이 낮습니다. 게이트웨이 타임아웃 조정 및 섹션별 분할 수집 로직 보강이 필요합니다.
 
 ## 4. 증거 파일 경로
-- 커버리지 통계: `coverage_baseline.csv`
+- 커버리지 통계: `invest/reports/data_quality/coverage_baseline.csv`
 - 수집 로그: `invest/logs/blog_scrape.log`, `invest/logs/pipeline_events.jsonl`
 - 데이터 경로: `invest/data/raw/` 하위 카테고리별 저장
 

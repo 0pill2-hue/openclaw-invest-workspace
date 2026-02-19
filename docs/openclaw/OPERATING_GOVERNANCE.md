@@ -48,4 +48,4 @@ Purpose: 게이트 운영의 고정 기준(임계치 버전, 실행 SOP, 보고 
 ## 7) 충돌 시 우선순위
 1. `invest/docs/strategy/RULEBOOK_MASTER.md`
 2. `docs/openclaw/OPERATING_GOVERNANCE.md`
-3. `OPERATIONS_SOP.md`
+3. `invest/docs/operations/OPERATIONS_SOP.md`

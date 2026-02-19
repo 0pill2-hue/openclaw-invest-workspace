@@ -1,4 +1,4 @@
-# RULE_GRADES.md
+# invest/docs/governance/RULE_GRADES.md
 
 ## MUST (즉시 경고/강제)
 - 복구불가 손실/보안/외부영향 위험

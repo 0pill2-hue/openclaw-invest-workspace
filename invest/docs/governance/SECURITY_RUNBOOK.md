@@ -1,4 +1,4 @@
-# SECURITY_RUNBOOK.md
+# invest/docs/governance/SECURITY_RUNBOOK.md
 
 ## P0 즉시 대응 (적용 시작)
 1. 비밀/세션 보호
