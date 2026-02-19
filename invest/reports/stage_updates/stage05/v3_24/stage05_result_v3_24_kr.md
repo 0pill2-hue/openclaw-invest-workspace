@@ -33,18 +33,19 @@
 - gate4(replacement composite gate): FAIL
 - gate5(monthly cap/cooldown/soft stage schema): PASS
 - gate6(MDD split): PASS
-- gate7(UI template parity): FAIL
+- gate7(UI template parity): PASS
+- gate8(readable required fields): PASS
 
 ## winner
-- model_id: qual_q09_governance_score
-- track: qualitative
-- total_return: 2645.13%
-- cagr: 35.14%
-- mdd_full: -56.28%
-- replacement_edge: -14.92%
+- model_id: hybrid_h07_risk_parity
+- track: hybrid
+- total_return: 2944.67%
+- cagr: 36.42%
+- mdd_full: -62.74%
+- replacement_edge: 1.70%
 - persistence_hits: 2/3
 - confidence_score: 0.67
 
 ## final
 - final_decision: HOLD_V324_REVIEW_REQUIRED
-- stop_reason: REPLACEMENT_COMPOSITE_GATE_FAIL
+- stop_reason: GATE_FAIL_REVIEW_REQUIRED

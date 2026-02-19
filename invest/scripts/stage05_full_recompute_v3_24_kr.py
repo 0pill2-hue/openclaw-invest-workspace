@@ -31,6 +31,24 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 VALIDATED_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def check_readable_required_fields(path: Path) -> bool:
+    req_sections = [
+        '# stage05_result_v3_24_kr_readable',
+        '## 실행 요약',
+        '## 게이트 요약',
+        '## 정책 스냅샷',
+        '## 성과 요약',
+        '## MDD 구간 분리',
+        '## 산출물 경로',
+        '## 최종 판정',
+    ]
+    req_keys = ['gate1', 'gate2', 'gate3', 'gate4', 'final_decision', 'stop_reason']
+    if not path.exists():
+        return False
+    txt = path.read_text(encoding='utf-8', errors='ignore')
+    return all(s in txt for s in req_sections) and all(k in txt for k in req_keys)
+
+
 class ModelDefinition:
     @staticmethod
     def get_all_models():
@@ -418,6 +436,7 @@ def generate_reports(results, winner_info, summary):
 - gate5(monthly cap/cooldown/soft stage schema): {summary['gates']['gate5_switch_control_schema']}
 - gate6(MDD split): {summary['gates']['gate6_mdd_split']}
 - gate7(UI template parity): {summary['gates']['gate7_ui_template_parity']}
+- gate8(readable required fields): {summary['gates']['gate8_readable_required_fields']}
 
 ## winner
 - model_id: {w['model_id']}
@@ -435,10 +454,45 @@ def generate_reports(results, winner_info, summary):
 """
     readable = f"""# stage05_result_v3_24_kr_readable
 
+## 실행 요약
 - 최종 승자: **{w['model_id']}** ({w['track']})
+- 모델 수: 36 (10/10/10/6)
+- 데이터 컷오프: {TODAY.date()}
+
+## 게이트 요약
+- gate1: {summary['gates']['gate1_36_models']}
+- gate2: {summary['gates']['gate2_weighted_selection']}
+- gate3: {summary['gates']['gate3_numeric_not_final']}
+- gate4: {summary['gates']['gate4_replacement_composite']}
+- gate5: {summary['gates']['gate5_switch_control_schema']}
+- gate6: {summary['gates']['gate6_mdd_split']}
+- gate7: {summary['gates']['gate7_ui_template_parity']}
+- gate8: {summary['gates']['gate8_readable_required_fields']}
+
+## 정책 스냅샷
 - 교체 복합게이트: edge({winner_info['policy']['edge_gate_pass']}) / persistence({winner_info['policy']['persistence_gate_pass']}) / confidence({winner_info['policy']['confidence_gate_pass']})
 - 월교체상한: 20%, 쿨다운: 2개월, 소프트단계: 신규편입 1개월 패널티
 - numeric 최종승자 금지: 유지
+
+## 성과 요약
+- total_return: {w['stats']['total_return']:.2%}
+- cagr: {w['stats']['cagr']:.2%}
+
+## MDD 구간 분리
+- mdd_full: {w['stats']['mdd_full']:.2%}
+- mdd_2021_plus: {w['stats']['mdd_2021_plus']:.2%}
+- mdd_core_2023_2025: {w['stats']['mdd_2023_2025']:.2%}
+
+## 산출물 경로
+- result_md: `invest/reports/stage_updates/stage05/v3_24/stage05_result_v3_24_kr.md`
+- readable_md: `invest/reports/stage_updates/stage05/v3_24/stage05_result_v3_24_kr_readable.md`
+- summary_json: `invest/reports/stage_updates/stage05/v3_24/summary.json`
+- charts: `invest/reports/stage_updates/stage05/v3_24/charts/*`
+- ui: `invest/reports/stage_updates/stage05/v3_24/ui/index.html`
+
+## 최종 판정
+- final_decision: {summary['final_decision']}
+- stop_reason: {summary['stop_reason']}
 """
     (OUTPUT_DIR / "stage05_result_v3_24_kr.md").write_text(md, encoding="utf-8")
     (OUTPUT_DIR / "stage05_result_v3_24_kr_readable.md").write_text(readable, encoding="utf-8")
@@ -508,14 +562,31 @@ def main():
             "gate5_switch_control_schema": "PASS",
             "gate6_mdd_split": "PASS",
             "gate7_ui_template_parity": ui_parity,
+            "gate8_readable_required_fields": "PENDING",
         },
         "final_decision": "ADOPT_HOLD_PRIORITY_V324" if winner_info["policy"]["replacement_valid"] and winner_info["winner"]["track"] != "numeric" and ui_parity == "PASS" else "HOLD_V324_REVIEW_REQUIRED",
         "repeat_counter": 1,
         "stop_reason": "ALL_POLICY_GATES_PASS" if winner_info["policy"]["replacement_valid"] else "REPLACEMENT_COMPOSITE_GATE_FAIL",
         "generated_at": datetime.now().isoformat(),
     }
-    (OUTPUT_DIR / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    # 1차 리포트 생성 후 readable 필수 필드 게이트 검증
+    generate_reports(results, winner_info, summary)
 
+    readable_path = OUTPUT_DIR / "stage05_result_v3_24_kr_readable.md"
+    readable_ok = check_readable_required_fields(readable_path)
+    summary["gates"]["gate8_readable_required_fields"] = "PASS" if readable_ok else "FAIL"
+
+    all_policy_pass = (
+        summary["gates"]["gate3_numeric_not_final"] == "PASS"
+        and summary["gates"]["gate4_replacement_composite"] == "PASS"
+        and summary["gates"]["gate7_ui_template_parity"] == "PASS"
+        and summary["gates"]["gate8_readable_required_fields"] == "PASS"
+    )
+    summary["final_decision"] = "ADOPT_HOLD_PRIORITY_V324" if all_policy_pass else "HOLD_V324_REVIEW_REQUIRED"
+    summary["stop_reason"] = "ALL_POLICY_GATES_PASS" if all_policy_pass else "GATE_FAIL_REVIEW_REQUIRED"
+
+    (OUTPUT_DIR / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    # gate8 반영값을 readable/md에도 재반영
     generate_reports(results, winner_info, summary)
 
 
