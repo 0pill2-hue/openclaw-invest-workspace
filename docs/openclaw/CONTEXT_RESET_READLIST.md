@@ -1,6 +1,6 @@
 # CONTEXT_RESET_READLIST.md
 
-Last updated: 2026-02-19 14:52 KST
+Last updated: 2026-02-19 15:07 KST
 Purpose: 컨텍스트 초기화(대화 리셋) 후 **전략/메모리 누락 방지 강제 로딩 순서**
 
 ## Mandatory Read Order (L1: Always)
@@ -24,9 +24,10 @@ Purpose: 컨텍스트 초기화(대화 리셋) 후 **전략/메모리 누락 방
 3. `docs/openclaw/NAMING_STRATEGY.md`
 4. `docs/openclaw/CODING_RULES.md`
 5. `docs/openclaw/DOC_TEMPLATES.md`
-6. `invest/reports/stage_updates/README.md`
-7. `invest/reports/stage_updates/stage01/stage01_data_collection.md` ~ `stage11/stage11_adopt_hold_promote.md`
-8. `invest/reports` (링크 경로 점검용)
+6. `invest/docs/INVEST_STRUCTURE_CANONICAL.md`
+7. `invest/reports/stage_updates/README.md`
+8. `invest/reports/stage_updates/stage01/stage01_data_collection.md` ~ `stage11/stage11_adopt_hold_promote.md`
+9. `invest/reports/regular/*` (정기 보고 위치 점검용)
 
 ## Hard Guard (Mandatory)
 - 위 L1 재로딩 완료 전, 단계/운영 기준 관련 확정 답변 금지

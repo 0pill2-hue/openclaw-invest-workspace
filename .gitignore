@@ -8,7 +8,7 @@ invest/config/dart_api_key.txt
 
 # Runtime / logs
 *.log
-reports/regular/server.log
+invest/reports/regular/server.log
 invest/logs/
 
 # OS junk
@@ -27,17 +27,6 @@ TOOLS.md
 AGENTS.md
 BRAINS.md
 report_state.json
-reports/*
-!reports/README.md
-!reports/hourly/
-!reports/hourly/**
-!reports/daily/
-!reports/daily/**
-!reports/weekly/
-!reports/weekly/**
-!reports/invest/
-!reports/invest/**
-
 # Large/generated data artifacts
 invest/data/
 invest/results/
