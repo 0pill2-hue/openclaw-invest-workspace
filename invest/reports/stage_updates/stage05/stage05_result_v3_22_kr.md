@@ -83,3 +83,29 @@
 - gate2_non_numeric_candidate: hybrid
 - gate2_reason: (i) weighted_return_excess_over_numeric
 - high_density_candidate: hybrid
+
+## 6) 차트 재현 스펙(형태 고정)
+- 생성 스크립트: `invest/scripts/stage05_plot_v3_22_top3.py`
+- 실행 커맨드: `./venv/bin/python invest/scripts/stage05_plot_v3_22_top3.py`
+- 입력: `invest/results/validated/stage05_baselines_v3_22_kr.json`
+- Top3 선정 규칙: `stats.total_return` 내림차순 상위 3개(트랙 고정 없음)
+
+### 차트 A (누적 평가용)
+- 파일: `invest/reports/stage_updates/charts/stage05_v3_22_yearly_continuous_2021plus.png`
+- 기간: 2021+ (일간 축)
+- 형태: 일간 연속 곡선(지글지글), 연도 리셋 없음
+- 포함선: Top1/Top2/Top3 + KOSPI + KOSDAQ
+
+### 차트 B (연도별 리셋 평가용)
+- 파일: `invest/reports/stage_updates/charts/stage05_v3_22_yearly_reset_2021plus.png`
+- 기간: 2021+ (일간 축)
+- 형태: **연도 경계에서 선을 끊고** 각 연도 1월 첫 거래일을 0%로 리베이스
+- 포함선: Top1/Top2/Top3 + KOSPI + KOSDAQ
+
+### 시각 규칙(색/스타일 고정)
+- Top1: `#1f77b4` (blue)
+- Top2: `#ff7f0e` (orange)
+- Top3: `#2ca02c` (green)
+- KOSPI: `#d62728` (red, dashed)
+- KOSDAQ: `#9467bd` (purple, dotted)
+- 두 차트에서 동일 색상 매핑 유지(모델별 색상 통일)
