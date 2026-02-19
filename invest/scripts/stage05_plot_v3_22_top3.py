@@ -43,8 +43,8 @@ def _to_cum_pct(eq: pd.Series) -> pd.Series:
     return (eq / float(eq.iloc[0]) - 1.0) * 100.0
 
 
-def _to_yearly_reset_pct(eq: pd.Series) -> pd.Series:
-    out = []
+def _year_segments(eq: pd.Series):
+    segs = []
     years = sorted(set(eq.index.year))
     for y in years:
         s = eq[eq.index.year == y]
@@ -52,10 +52,8 @@ def _to_yearly_reset_pct(eq: pd.Series) -> pd.Series:
             continue
         base = float(s.iloc[0])
         yr = (s / base - 1.0) * 100.0
-        out.append(yr)
-    if not out:
-        return pd.Series(dtype=float)
-    return pd.concat(out).sort_index()
+        segs.append((y, yr))
+    return segs
 
 
 def main():
@@ -108,13 +106,18 @@ def main():
     plt.figure(figsize=(12, 6))
     for i, (mid, eq) in enumerate(replays, start=1):
         s = eq.reindex(common_idx).ffill().bfill()
-        yr = _to_yearly_reset_pct(s)
-        plt.plot(yr.index, yr.values, linewidth=2.0, label=f'{i}위 {mid}')
-    kospi_yr = _to_yearly_reset_pct(kospi_eq)
-    plt.plot(kospi_yr.index, kospi_yr.values, linewidth=1.8, linestyle='--', label='KOSPI')
+        segs = _year_segments(s)
+        for j, (_, yr) in enumerate(segs):
+            plt.plot(yr.index, yr.values, linewidth=2.0, label=(f'{i}위 {mid}' if j == 0 else None))
+
+    kospi_segs = _year_segments(kospi_eq)
+    for j, (_, yr) in enumerate(kospi_segs):
+        plt.plot(yr.index, yr.values, linewidth=1.8, linestyle='--', label=('KOSPI' if j == 0 else None))
+
     if not kosdaq_eq.empty:
-        kosdaq_yr = _to_yearly_reset_pct(kosdaq_eq)
-        plt.plot(kosdaq_yr.index, kosdaq_yr.values, linewidth=1.6, linestyle=':', label='KOSDAQ')
+        kosdaq_segs = _year_segments(kosdaq_eq)
+        for j, (_, yr) in enumerate(kosdaq_segs):
+            plt.plot(yr.index, yr.values, linewidth=1.6, linestyle=':', label=('KOSDAQ' if j == 0 else None))
     years = sorted(set(common_idx.year))
     for y in years:
         plt.axvline(pd.Timestamp(f'{y}-01-01'), color='lightgray', linewidth=0.7, alpha=0.6)
