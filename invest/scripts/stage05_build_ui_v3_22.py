@@ -10,10 +10,8 @@ W_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_wei
 T_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_timeline_v3_22_kr.csv"
 E_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_trade_events_v3_22_kr.csv"
 OUT = BASE / "invest/reports/stage_updates/stage05/v3_22/ui/index.html"
-CHART_CUM = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_continuous_2021plus.png"
+CHART_CONT = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_continuous_2021plus.png"
 CHART_RESET = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_reset_2021plus.png"
-CHART_EVAL_CUM = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_eval_yearly_continuous_2021plus.png"
-CHART_EVAL_RESET = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_eval_yearly_reset_2021plus.png"
 
 
 def _img_data_uri(path: Path) -> str:
@@ -95,8 +93,8 @@ def main():
         "events": events,
     }
 
-    chart_eval_cum_src = _img_data_uri(CHART_EVAL_CUM) or _img_data_uri(CHART_CUM)
-    chart_eval_reset_src = _img_data_uri(CHART_EVAL_RESET) or _img_data_uri(CHART_RESET)
+    chart_cont_src = _img_data_uri(CHART_CONT)
+    chart_reset_src = _img_data_uri(CHART_RESET)
 
     html = f"""<!doctype html>
 <html lang='ko'>
@@ -130,12 +128,12 @@ def main():
     <h3>평가 차트 (고정)</h3>
     <div class='muted'>기존 생성 차트를 이 페이지에서 바로 확인합니다.</div>
     <div style='margin-top:10px;'>
-      <div><b>누적 평가용 (yearly_continuous)</b></div>
-      <img src='{chart_eval_cum_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
+      <div><b>누적 평가용 (yearly_continuous, 이벤트 포함)</b></div>
+      <img src='{chart_cont_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
     </div>
     <div style='margin-top:14px;'>
-      <div><b>연도별 리셋 평가용 (yearly_reset)</b></div>
-      <img src='{chart_eval_reset_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
+      <div><b>연도별 리셋 평가용 (yearly_reset, 이벤트 포함)</b></div>
+      <img src='{chart_reset_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
     </div>
     <div style='margin-top:12px;'>
       기준일: <select id='dateSel'></select>
@@ -144,7 +142,7 @@ def main():
       <div class='muted'>이벤트 클릭 시 기준일 자동 선택</div>
       <div id='eventChips' style='display:flex;flex-wrap:wrap;gap:6px;max-height:120px;overflow:auto;'></div>
     </div>
-    <div class='muted' style='margin-top:8px;'>원본: {CHART_CUM}, {CHART_RESET}</div>
+    <div class='muted' style='margin-top:8px;'>원본: {CHART_CONT}, {CHART_RESET}</div>
   </div>
 
   <div class='card' style='margin-top:12px;'>

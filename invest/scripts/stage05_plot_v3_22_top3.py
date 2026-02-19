@@ -140,9 +140,9 @@ def main():
             if y is not None:
                 sx.append(d); sy.append(y)
         if bx:
-            plt.scatter(bx, by, marker='^', s=16, color='#17becf', alpha=0.8, label='Top1 Buy Event')
+            plt.scatter(bx, by, marker='^', s=52, color='#17becf', edgecolors='black', linewidths=0.4, alpha=0.95, zorder=6, label='Top1 Buy Event')
         if sx:
-            plt.scatter(sx, sy, marker='v', s=16, color='#8c564b', alpha=0.8, label='Top1 Sell Event')
+            plt.scatter(sx, sy, marker='v', s=52, color='#8c564b', edgecolors='black', linewidths=0.4, alpha=0.95, zorder=6, label='Top1 Sell Event')
 
     plt.axhline(0, color='gray', linewidth=0.8)
     plt.title('Stage05 v3_22 Top3 Cumulative Return (2021+)')
@@ -213,9 +213,9 @@ def main():
             if yv is not None:
                 sx.append(d); sy.append(yv)
         if bx:
-            plt.scatter(bx, by, marker='^', s=16, color='#17becf', alpha=0.8, label='Top1 Buy Event')
+            plt.scatter(bx, by, marker='^', s=52, color='#17becf', edgecolors='black', linewidths=0.4, alpha=0.95, zorder=6, label='Top1 Buy Event')
         if sx:
-            plt.scatter(sx, sy, marker='v', s=16, color='#8c564b', alpha=0.8, label='Top1 Sell Event')
+            plt.scatter(sx, sy, marker='v', s=52, color='#8c564b', edgecolors='black', linewidths=0.4, alpha=0.95, zorder=6, label='Top1 Sell Event')
 
     years = sorted(set(common_idx.year))
     for y in years:
