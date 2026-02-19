@@ -27,37 +27,37 @@
 - gate1(track 36개, 10/10/10/6): PASS
 - gate2(weighted selection internal): PASS
 - gate3(numeric 최종 승자 불가): PASS
-- gate4(교체 +15% edge): PASS
+- gate4(교체 +15% edge): FAIL
 - gate5(MDD 분할 full/2021+/core): PASS
 
 ## 1) 필수 구간 성과 요약 (승자 기준)
 | 구간 | 수익률 | CAGR | MDD |
 |---|---:|---:|---:|
-| Full(2016~현재) | 10027.67% | 52.17% | -39.36% |
-| Official(2021~현재) | - | - | -36.72% |
-| Core(2023~2025) | - | - | -23.48% |
+| Full(2016~현재) | 4561.52% | 41.80% | -52.16% |
+| Official(2021~현재) | - | - | -40.07% |
+| Core(2023~2025) | - | - | -40.07% |
 
 ## 2) gate/final/repeat/stop 필수 필드
 - gate1: PASS
 - gate2: PASS
 - gate3: PASS
-- gate4: PASS
+- gate4: FAIL
 - gate5: PASS
-- final_decision: ADOPT_FULL_RECOMPUTE_36_BASELINE_PROTOCOL_V323
+- final_decision: HOLD_V323_REVIEW_REQUIRED
 - repeat_counter: 1
-- stop_reason: ALL_GATES_PASS
+- stop_reason: GATE4_REPLACEMENT_EDGE_BELOW_THRESHOLD
 
 ## 3) 승자 상세
 | 항목 | 값 |
 |---|---|
 | model_id | qual_q09_governance_score |
 | track | qualitative |
-| total_return | 10027.67% |
-| CAGR | 52.17% |
-| MDD (Full) | -39.36% |
-| MDD (2021+) | -36.72% |
-| MDD (Core) | -23.48% |
-| 교체 Edge | 78.52% |
+| total_return | 4561.52% |
+| CAGR | 41.80% |
+| MDD (Full) | -52.16% |
+| MDD (2021+) | -40.07% |
+| MDD (Core) | -40.07% |
+| 교체 Edge | 5.87% (기준 +15% 미달) |
 
 ## 4) 주요 변경점 (v3_22 → v3_23)
 | 항목 | v3_22 | v3_23 |
@@ -95,3 +95,7 @@
 ## 6) UI 대시보드
 - 경로: `invest/reports/stage_updates/stage05/v3_23/ui/dashboard.html`
 - 포함 내용: 36개 모델 비교표, 승자 상세, MDD 분할, 차트 임베드
+
+## 7) 연도 범위 표기 주의
+- 코드에서 `range(..., 2027)`은 Python 상한 미포함 규칙으로 **2026년까지 계산**을 의미한다.
+- 본 v3_23 산출물은 2027 데이터를 사용하지 않는다.
