@@ -1,5 +1,5 @@
 {
-  "model_id": "hybrid_h10_fee_stress",
+  "model_id": "qual_q09_governance_score",
   "rows": 599,
   "top1_weight_pct_max": 78.7,
   "top1_weight_pct_avg": 46.72148760330579,

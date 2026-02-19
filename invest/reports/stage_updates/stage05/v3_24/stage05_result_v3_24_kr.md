@@ -33,18 +33,18 @@
 - gate4(replacement composite gate): PASS
 - gate5(monthly cap/cooldown/soft stage schema): PASS
 - gate6(MDD split): PASS
-- gate7(UI template parity): PASS
+- gate7(UI template parity): FAIL
 
 ## winner
-- model_id: hybrid_h10_fee_stress
-- track: hybrid
-- total_return: 8789.16%
-- cagr: 50.37%
-- mdd_full: -52.60%
-- replacement_edge: 29.69%
+- model_id: qual_q09_governance_score
+- track: qualitative
+- total_return: 9328.47%
+- cagr: 51.18%
+- mdd_full: -50.85%
+- replacement_edge: 35.32%
 - persistence_hits: 2/3
 - confidence_score: 0.67
 
 ## final
-- final_decision: ADOPT_HOLD_PRIORITY_V324
+- final_decision: HOLD_V324_REVIEW_REQUIRED
 - stop_reason: ALL_POLICY_GATES_PASS
