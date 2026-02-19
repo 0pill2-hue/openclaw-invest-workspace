@@ -4,17 +4,17 @@
   "track_counts": "10/10/10/6",
   "winner": "qual_q09_governance_score",
   "winner_track": "qualitative",
-  "winner_return": 93.28467060131649,
-  "winner_cagr": 0.5118010560460744,
-  "winner_mdd_full": -0.5084795737719143,
-  "winner_mdd_2021_plus": -0.38628522563783496,
-  "winner_mdd_core": -0.386285225637835,
-  "replacement_edge": 0.3532149285563606,
+  "winner_return": 121.65260346839648,
+  "winner_cagr": 0.5483876776503487,
+  "winner_mdd_full": -0.46526712877242427,
+  "winner_mdd_2021_plus": -0.37267414838769136,
+  "winner_mdd_core": -0.3467850663223348,
+  "replacement_edge": 0.412622451454624,
   "replacement_policy": {
     "edge_gate_pass": true,
     "persistence_window": 3,
-    "persistence_hits": 2,
-    "persistence_gate_pass": true,
+    "persistence_hits": 1,
+    "persistence_gate_pass": false,
     "confidence_score": 0.6666666666666666,
     "confidence_gate_threshold": 0.6,
     "confidence_gate_pass": true,
@@ -29,19 +29,19 @@
       "months": 2
     },
     "monthly_replacement_cap": 0.2,
-    "replacement_valid": true
+    "replacement_valid": false
   },
   "gates": {
     "gate1_36_models": "PASS",
     "gate2_weighted_selection": "PASS",
     "gate3_numeric_not_final": "PASS",
-    "gate4_replacement_composite": "PASS",
+    "gate4_replacement_composite": "FAIL",
     "gate5_switch_control_schema": "PASS",
     "gate6_mdd_split": "PASS",
     "gate7_ui_template_parity": "FAIL"
   },
   "final_decision": "HOLD_V324_REVIEW_REQUIRED",
   "repeat_counter": 1,
-  "stop_reason": "ALL_POLICY_GATES_PASS",
-  "generated_at": "2026-02-19T20:42:21.200806"
+  "stop_reason": "REPLACEMENT_COMPOSITE_GATE_FAIL",
+  "generated_at": "2026-02-19T20:49:31.355865"
 }

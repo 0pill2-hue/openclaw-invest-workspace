@@ -30,7 +30,7 @@
 - gate1(track 36개, 10/10/10/6): PASS
 - gate2(weighted selection internal): PASS
 - gate3(numeric 최종 승자 불가): PASS
-- gate4(replacement composite gate): PASS
+- gate4(replacement composite gate): FAIL
 - gate5(monthly cap/cooldown/soft stage schema): PASS
 - gate6(MDD split): PASS
 - gate7(UI template parity): FAIL
@@ -38,13 +38,13 @@
 ## winner
 - model_id: qual_q09_governance_score
 - track: qualitative
-- total_return: 9328.47%
-- cagr: 51.18%
-- mdd_full: -50.85%
-- replacement_edge: 35.32%
-- persistence_hits: 2/3
+- total_return: 12165.26%
+- cagr: 54.84%
+- mdd_full: -46.53%
+- replacement_edge: 41.26%
+- persistence_hits: 1/3
 - confidence_score: 0.67
 
 ## final
 - final_decision: HOLD_V324_REVIEW_REQUIRED
-- stop_reason: ALL_POLICY_GATES_PASS
+- stop_reason: REPLACEMENT_COMPOSITE_GATE_FAIL
