@@ -833,6 +833,12 @@ def main():
     print(f"    저장: {validated_path}")
 
     # Summary JSON
+    template_ui = BASE_DIR / "reports/stage_updates/stage05/template/ui"
+    out_ui = OUTPUT_DIR / "ui"
+    tpl_files = sorted([p.relative_to(template_ui).as_posix() for p in template_ui.rglob("*") if p.is_file()]) if template_ui.exists() else []
+    out_files = sorted([p.relative_to(out_ui).as_posix() for p in out_ui.rglob("*") if p.is_file()]) if out_ui.exists() else []
+    gate6_ui_template_parity = "PASS" if (tpl_files and tpl_files == out_files) else "FAIL"
+
     summary = {
         "version": "v3_23",
         "total_models": 36,
@@ -851,6 +857,7 @@ def main():
             "gate3_numeric_not_final": "PASS" if winner_info["winner"]["track"] != "numeric" else "FAIL",
             "gate4_replacement_edge": "PASS" if winner_info["replacement_valid"] else "FAIL",
             "gate5_mdd_split": "PASS",
+            "gate6_ui_template_parity": gate6_ui_template_parity,
         },
         "generated_at": datetime.now().isoformat(),
     }

@@ -1,9 +1,9 @@
 # stage05_result_v3_23_kr_readable
 
-- 1위 모델: **hybrid_h07_risk_parity** (hybrid)
-- 수익률: **3618.44%**
-- CAGR: **38.92%**
-- MDD(2021+): **-54.88%**
+- 1위 모델: **external_e01_anchor_stable** (external)
+- 수익률: **5541.14%**
+- CAGR: **44.28%**
+- MDD(2021+): **-28.85%**
 
 ## 게이트 요약
 - gate1_36_models: PASS
@@ -11,6 +11,7 @@
 - gate3_numeric_not_final: PASS
 - gate4_replacement_edge: PASS
 - gate5_mdd_split: PASS
+- gate6_ui_template_parity: FAIL
 
 ## 차트
 - 누적: `invest/reports/stage_updates/stage05/v3_23/charts/stage05_v3_23_yearly_continuous_2021plus.png`

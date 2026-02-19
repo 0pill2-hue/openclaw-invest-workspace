@@ -29,6 +29,8 @@
 - gate2(official+core+reference weighted internal selection): PASS
 - gate3(official/core/reference sample coverage): PASS
 - gate4(rulebook hard룰 고정): PASS
+- gate5(MDD 구간분리 표기): PASS
+- gate6(UI 템플릿 동일성: template/ui 대비 파일구조/개수 일치): PASS
 - high_density(+25%p/MDD/turnover): PASS
 
 ## 1) 필수 구간 성과 (누적/CAGR)
