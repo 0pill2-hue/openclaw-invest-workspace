@@ -41,5 +41,5 @@
 ## 변경 규칙
 - 본 문서 변경 시 반드시 아래 동시 업데이트
   1) invest/strategy/strategy_v1_replication_spec_20260217.md
-  2) reports/stage_updates/stage04_baseline_3track.md
+  2) reports/stage_updates/stage04/stage04_validated_value.md
   3) memory/2026-02-18.md (what/why/next)

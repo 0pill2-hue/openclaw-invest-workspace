@@ -28,7 +28,7 @@
 - validated snapshot(현재): `invest/data/validated/snapshots/20260217_231426/production`
 - 주요 전략 문서:
   - `invest/strategy/RULEBOOK_V1_20260218.md`
-  - `reports/stage_updates/stage04_baseline_3track.md`
+  - `reports/stage_updates/stage04/stage04_validated_value.md`
 
 ## 4) 실행 순서(최소 명령)
 ```bash
@@ -72,5 +72,5 @@ source .venv/bin/activate
 룰/파라미터 수정 시 동시 업데이트:
 1) 본 문서
 2) `invest/strategy/RULEBOOK_V1_20260218.md`
-3) `reports/stage_updates/stage04_baseline_3track.md`
+3) `reports/stage_updates/stage04/stage04_validated_value.md`
 4) `memory/YYYY-MM-DD.md`

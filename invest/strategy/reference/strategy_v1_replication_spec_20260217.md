@@ -169,7 +169,7 @@ source .venv/bin/activate
 ## K. 변경관리 규칙
 파라미터/가중치/게이트 변경 시 아래 3개 동시 업데이트 필수:
 1) 본 문서
-2) `reports/stage_updates/stage03_validated_value.md`
+2) `reports/stage_updates/stage03/stage03_cleaning_validation.md`
 3) `memory/YYYY-MM-DD.md`
 
 변경 기록 형식:
