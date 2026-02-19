@@ -78,6 +78,9 @@ def main():
         rows.extend(_parse_weights(str(r.get('holdings_weights_days', '-')), str(r.get('month_end', ''))))
 
     wdf = pd.DataFrame(rows)
+    if not wdf.empty:
+        # 0%는 미보유로 간주하여 UI/평가에서 제외
+        wdf = wdf[wdf['weight_pct'] > 0].copy()
 
     snapshot_map = {}
     if not wdf.empty:
