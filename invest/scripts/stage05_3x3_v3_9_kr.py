@@ -188,12 +188,13 @@ def normalize_weights(score_map: dict[str, float]) -> dict[str, float]:
         return {}
     values = np.array(list(score_map.values()), dtype=float)
     min_v = float(values.min())
-    shifted = {k: float(v - min_v + 1e-6) for k, v in score_map.items()}
+    # 강제 epsilon(+1e-6)으로 모든 종목에 극소 비중이 배정되는 현상 제거
+    shifted = {k: max(float(v - min_v), 0.0) for k, v in score_map.items()}
     total = sum(shifted.values())
     if total <= 0:
         n = len(score_map)
         return {k: 1.0 / n for k in score_map}
-    return {k: v / total for k, v in shifted.items()}
+    return {k: v / total for k, v in shifted.items() if v > 0}
 
 
 def load_universe(limit: int) -> dict[str, pd.DataFrame]:
