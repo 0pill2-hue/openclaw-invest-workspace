@@ -116,7 +116,6 @@ def main():
         "timeline": timeline,
         "hhiSeries": hhi_series,
         "top1Series": top1_series,
-        "events": events,
     }
 
     chart_cont_src = _img_data_uri(CHART_CONT)
@@ -166,10 +165,6 @@ def main():
     <div style='margin-top:12px;'>
       기준일: <select id='dateSel'></select>
     </div>
-    <div style='margin-top:10px;'>
-      <div class='muted'>이벤트 클릭 시 기준일 자동 선택</div>
-      <div id='eventChips' style='display:flex;flex-wrap:wrap;gap:6px;max-height:120px;overflow:auto;'></div>
-    </div>
     <div class='muted' style='margin-top:8px;'>원본: {CHART_CONT}, {CHART_RESET}</div>
   </div>
 
@@ -201,31 +196,6 @@ let timelinePage = 1;
 DATA.dates.forEach(d => {{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); }});
 sel.value = DATA.latest;
 
-function nearestDate(target) {{
-  if (!DATA.dates || DATA.dates.length === 0) return null;
-  const t = new Date(target).getTime();
-  let best = DATA.dates[0], bestDiff = Math.abs(new Date(DATA.dates[0]).getTime() - t);
-  for (const d of DATA.dates) {{
-    const diff = Math.abs(new Date(d).getTime() - t);
-    if (diff < bestDiff) {{ best = d; bestDiff = diff; }}
-  }}
-  return best;
-}}
-
-function renderEventChips() {{
-  const box = document.getElementById('eventChips');
-  box.innerHTML = '';
-  (DATA.events || []).slice(0, 60).forEach(ev => {{
-    const b = document.createElement('button');
-    b.textContent = `${{ev.date}} ${{ev.type}} ${{ev.name}}`;
-    b.style.cssText = 'background:#202634;color:#dbe7ff;border:1px solid #32435e;border-radius:999px;padding:4px 8px;cursor:pointer;font-size:12px;';
-    b.onclick = () => {{
-      const nd = nearestDate(ev.date);
-      if (nd) {{ sel.value = nd; render(); }}
-    }};
-    box.appendChild(b);
-  }});
-}}
 
 function render() {{
   const d = sel.value;
@@ -278,7 +248,6 @@ document.getElementById('nextPage').addEventListener('click', () => {{
   const totalPages = Math.max(1, Math.ceil((DATA.timeline || []).length / PAGE_SIZE));
   if (timelinePage < totalPages) {{ timelinePage += 1; render(); }}
 }});
-renderEventChips();
 render();
 </script>
 </body></html>"""
