@@ -24,3 +24,5 @@ Last updated: 2026-02-19 18:05 KST
 - 평가 템플릿 차트: `invest/reports/stage_updates/stage05/v3_23/charts/stage05_eval_yearly_continuous_2021plus.png`, `stage05_eval_yearly_reset_2021plus.png`
 - UI: `invest/reports/stage_updates/stage05/v3_23/ui/index.html`
 - 템플릿 적용 스크립트: `invest/scripts/stage05_apply_template_v3_23.py`
+
+- v3_24: `invest/reports/stage_updates/stage05/v3_24/` (hold-priority anti-over-switching policy)
