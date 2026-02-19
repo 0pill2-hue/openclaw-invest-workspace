@@ -11,7 +11,8 @@ Purpose: 투자 관련 파일의 단일 경로 기준(정합성 기준)
 ## Canonical Paths (투자)
 - 전략 문서: `invest/docs/strategy/`
 - 투자 일반 문서: `invest/docs/`
-- 실행 스크립트: `invest/scripts/`
+- 실행 스크립트(실체): `invest/scripts/`
+- 루트 `scripts/`는 운영 호환용 wrapper만 허용(실체 코드 금지)
 - 데이터 품질/스테이지 리포트: `invest/reports/`
 - (투자) 정기 성과/검증 보고: `invest/reports/`
 - 결과물: `invest/results/{test,validated,prod}/`
