@@ -24,6 +24,7 @@ Purpose: 컨텍스트 초기화(대화 리셋) 후 **전략/메모리 누락 방
 3. `docs/openclaw/NAMING_STRATEGY.md`
 4. `docs/openclaw/CODING_RULES.md`
 5. `docs/openclaw/DOC_TEMPLATES.md`
+5-1. `docs/openclaw/MODEL_FAILOVER_POLICY.md`
 6. `invest/docs/INVEST_STRUCTURE_CANONICAL.md`
 7. `invest/reports/stage_updates/README.md`
 8. `invest/reports/stage_updates/stage01/stage01_data_collection.md` ~ `stage11/stage11_adopt_hold_promote.md`
