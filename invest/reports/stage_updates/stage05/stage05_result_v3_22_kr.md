@@ -16,6 +16,8 @@
 - `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_22_kr.md`
 - `invest/reports/stage_updates/charts/stage05_v3_22_yearly_continuous_2021plus.png` (누적 평가용)
 - `invest/reports/stage_updates/charts/stage05_v3_22_yearly_reset_2021plus.png` (연도별 리셋 평가용)
+- `invest/reports/stage_updates/stage05/stage05_portfolio_weights_v3_22_kr.csv` (리밸런싱별 종목 비중 스냅샷)
+- `invest/reports/stage_updates/stage05/stage05_portfolio_weights_summary_v3_22_kr.json` (비중 집중도 요약)
 
 ## recompute evidence (필수)
 - full_recompute=true: true
@@ -111,3 +113,14 @@
 - KOSPI: `#d62728` (red, dashed)
 - KOSDAQ: `#9467bd` (purple, dotted)
 - 두 차트에서 동일 색상 매핑 유지(모델별 색상 통일)
+
+## 7) 포트폴리오 비중/집중도 평가 반영
+- 생성 스크립트: `./venv/bin/python invest/scripts/stage05_portfolio_weights_v3_22.py`
+- 종목 비중 스냅샷 CSV: `invest/reports/stage_updates/stage05/stage05_portfolio_weights_v3_22_kr.csv`
+- 집중도 요약 JSON: `invest/reports/stage_updates/stage05/stage05_portfolio_weights_summary_v3_22_kr.json`
+- 현재 요약(Top1 모델 기준):
+  - top1_weight_pct_max: **99.90%**
+  - top1_weight_pct_avg: **72.17%**
+  - hhi_max: **0.9980**
+  - hhi_avg: **0.6127**
+- 평가 해석: 수익 반영으로 승자 비중이 커지는 동학이 실제로 발생하며, 고집중 구간(Top1 비중 급증) 리스크를 별도 모니터링한다.

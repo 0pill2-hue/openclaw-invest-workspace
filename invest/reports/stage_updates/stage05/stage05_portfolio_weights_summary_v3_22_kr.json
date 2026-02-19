@@ -1,0 +1,8 @@
+{
+  "model_id": "hybrid_h2_consensus_tilt",
+  "rows": 726,
+  "top1_weight_pct_max": 99.9,
+  "top1_weight_pct_avg": 72.17355371900827,
+  "hhi_max": 0.9980020000000003,
+  "hhi_avg": 0.612676611570248
+}
