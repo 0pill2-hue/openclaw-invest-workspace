@@ -1,12 +1,13 @@
 # WORKSPACE_STRUCTURE.md
 
-Last updated: 2026-02-19 15:07 KST
+Last updated: 2026-02-19 15:15 KST
 Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위치 기준
 
 ## Top-level canonical
 - `docs/openclaw/` : OpenClaw 시스템/구조/컨텍스트 재로딩 기준 문서
 - `invest/` : 알고리즘/데이터/전략/스크립트 본체
-- `invest/reports/` : 투자 단계/정기/검증 리포트
+- `invest/reports/` : 투자 단계/검증 리포트
+- `reports/` : 운영 정기 보고(hourly/daily/weekly/monthly)
 - `memory/` : 일자 메모리 + 상태파일 (`memory/README.md` 기준)
 - `MEMORY.md` : 장기 메모리
 - `DIRECTIVES.md` : 지시사항 추적

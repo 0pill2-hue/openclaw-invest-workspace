@@ -28,7 +28,7 @@ Purpose: 컨텍스트 초기화(대화 리셋) 후 **전략/메모리 누락 방
 7. `invest/reports/stage_updates/README.md`
 8. `invest/reports/stage_updates/stage01/stage01_data_collection.md` ~ `stage11/stage11_adopt_hold_promote.md`
 9. `invest/docs/memory/README.md` (투자 메모 위치 기준)
-10. `invest/reports/regular/*` (정기 보고 위치 점검용)
+10. `reports/{hourly,daily,weekly,monthly}/*` (정기 보고 위치 점검용)
 
 ## Hard Guard (Mandatory)
 - 위 L1 재로딩 완료 전, 단계/운영 기준 관련 확정 답변 금지
