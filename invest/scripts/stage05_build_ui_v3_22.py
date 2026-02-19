@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+import base64
 import json
 from pathlib import Path
 import pandas as pd
@@ -8,10 +9,17 @@ BASE = Path(__file__).resolve().parents[2]
 W_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_weights_v3_22_kr.csv"
 T_CSV = BASE / "invest/reports/stage_updates/stage05/v3_22/stage05_portfolio_timeline_v3_22_kr.csv"
 OUT = BASE / "invest/reports/stage_updates/stage05/v3_22/ui/index.html"
-CHART_CUM = "../charts/stage05_v3_22_yearly_continuous_2021plus.png"
-CHART_RESET = "../charts/stage05_v3_22_yearly_reset_2021plus.png"
-CHART_EVAL_CUM = "../charts/stage05_eval_yearly_continuous_2021plus.png"
-CHART_EVAL_RESET = "../charts/stage05_eval_yearly_reset_2021plus.png"
+CHART_CUM = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_continuous_2021plus.png"
+CHART_RESET = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_v3_22_yearly_reset_2021plus.png"
+CHART_EVAL_CUM = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_eval_yearly_continuous_2021plus.png"
+CHART_EVAL_RESET = BASE / "invest/reports/stage_updates/stage05/v3_22/charts/stage05_eval_yearly_reset_2021plus.png"
+
+
+def _img_data_uri(path: Path) -> str:
+    if not path.exists():
+        return ""
+    b64 = base64.b64encode(path.read_bytes()).decode('ascii')
+    return f"data:image/png;base64,{b64}"
 
 
 def main():
@@ -72,6 +80,9 @@ def main():
         "top1Series": top1_series,
     }
 
+    chart_eval_cum_src = _img_data_uri(CHART_EVAL_CUM) or _img_data_uri(CHART_CUM)
+    chart_eval_reset_src = _img_data_uri(CHART_EVAL_RESET) or _img_data_uri(CHART_RESET)
+
     html = f"""<!doctype html>
 <html lang='ko'>
 <head>
@@ -108,11 +119,11 @@ def main():
     <div class='muted'>기존 생성 차트를 이 페이지에서 바로 확인합니다.</div>
     <div style='margin-top:10px;'>
       <div><b>누적 평가용 (yearly_continuous)</b></div>
-      <img src='{CHART_EVAL_CUM}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
+      <img src='{chart_eval_cum_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
     </div>
     <div style='margin-top:14px;'>
       <div><b>연도별 리셋 평가용 (yearly_reset)</b></div>
-      <img src='{CHART_EVAL_RESET}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
+      <img src='{chart_eval_reset_src}' style='width:100%;max-width:1200px;border:1px solid #2b3240;border-radius:8px;margin-top:6px;' />
     </div>
     <div class='muted' style='margin-top:8px;'>원본: {CHART_CUM}, {CHART_RESET}</div>
   </div>
