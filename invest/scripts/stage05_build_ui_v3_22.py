@@ -114,6 +114,8 @@ def main():
     .fill {{ background:#4c8bf5; height:100%; }}
     .muted {{ color:#9aa4b2; font-size:12px; }}
     select {{ background:#171a21; color:#e8ecf1; border:1px solid #2b3240; padding:6px; border-radius:8px; }}
+    .more-wrap {{ display:flex; align-items:center; gap:6px; }}
+    .more-btn {{ background:#202634; color:#dbe7ff; border:1px solid #32435e; border-radius:8px; padding:2px 8px; cursor:pointer; font-size:12px; }}
   </style>
 </head>
 <body>
@@ -193,6 +195,20 @@ function renderEventChips() {{
   }});
 }}
 
+function shortText(s, n=72) {{
+  if (!s || s === '-') return '-';
+  const t = String(s);
+  return t.length > n ? t.slice(0, n) + '…' : t;
+}}
+
+function expandableCell(text) {{
+  if (!text || text === '-') return '-';
+  const full = String(text).replaceAll('<','&lt;').replaceAll('>','&gt;');
+  const short = shortText(full);
+  if (short === full) return full;
+  return '<details><summary class="more-btn">▼ 더보기</summary><div style="margin-top:6px;">' + full + '</div></details>';
+}}
+
 function render() {{
   const d = sel.value;
   const rows = (DATA.weightsByDate[d] || []);
@@ -222,7 +238,11 @@ function render() {{
   const tlb = document.querySelector('#tl tbody'); tlb.innerHTML='';
   DATA.timeline.slice(-20).reverse().forEach(t => {{
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${{t.date}}</td><td>${{t.added}}</td><td>${{t.removed}}</td><td>${{t.reason}}</td><td>${{t.current}}</td>`;
+    tr.innerHTML = '<td>' + t.date + '</td>'
+      + '<td>' + expandableCell(t.added) + '</td>'
+      + '<td>' + expandableCell(t.removed) + '</td>'
+      + '<td>' + expandableCell(t.reason) + '</td>'
+      + '<td>' + expandableCell(t.current) + '</td>';
     tlb.appendChild(tr);
   }});
 }}
