@@ -1,0 +1,14 @@
+{
+  "ts_utc": "2026-02-16T14:32:16.869384Z",
+  "raw_ohlcv_files": 2883,
+  "clean_ohlcv_files": 2825,
+  "q_ohlcv_files": 1027,
+  "raw_supply_files": 2882,
+  "clean_supply_files": 2824,
+  "q_supply_files": 1,
+  "clean_ohlcv_sample_checked": 300,
+  "clean_ohlcv_sample_issues": 2,
+  "clean_supply_sample_checked": 300,
+  "clean_supply_sample_issues": 0,
+  "status": "WARN"
+}

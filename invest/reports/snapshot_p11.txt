@@ -1,0 +1,912 @@
+- generic [ref=e2]:
+  - heading "환경설정 > 내가 추가한 이웃" [level=1] [ref=e3]:
+    - generic: 환경설정 >
+    - text: 내가 추가한 이웃
+  - list [ref=e4]:
+    - listitem [ref=e5]:
+      - link "이웃목록" [ref=e6] [cursor=pointer]:
+        - /url: /BuddyListManage.naver?blogId=0pill2
+    - listitem [ref=e7]:
+      - link "이웃그룹" [ref=e8] [cursor=pointer]:
+        - /url: /BuddyGroupManage.naver?blogId=0pill2
+    - listitem [ref=e9]:
+      - link "이웃순서" [ref=e10] [cursor=pointer]:
+        - /url: /BuddyShortcutManage.naver?blogId=0pill2
+  - generic [ref=e11]:
+    - generic:
+      - group: 이웃 검색
+      - textbox [ref=e12]: 블로그명, 별명 검색
+      - button "검색" [ref=e13] [cursor=pointer]
+  - generic [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - button "그룹이동" [ref=e18] [cursor=pointer]
+        - button "새글소식 설정" [ref=e20] [cursor=pointer]
+        - button "삭제" [ref=e22] [cursor=pointer]
+        - button "열린이웃(RSS) 추가" [ref=e25] [cursor=pointer]
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - text: 정렬된 이웃
+          - strong [ref=e28]: "633"
+          - text: 명
+        - combobox [ref=e29]:
+          - option "이웃추가순" [selected]
+          - option "이웃별명순"
+          - option "업데이트순"
+    - table "이웃관리 목록" [ref=e30]:
+      - caption: 이웃관리 목록
+      - rowgroup [ref=e39]:
+        - row "그룹전체 이웃전체 이웃 새글소식전체 최근 글 이웃추가일" [ref=e40]:
+          - columnheader [ref=e41]:
+            - checkbox [ref=e42]
+          - columnheader "그룹전체" [ref=e43]:
+            - combobox [ref=e44]:
+              - option "그룹전체" [selected]
+              - option "새 그룹"
+              - option "새그룹"
+          - columnheader "이웃전체" [ref=e45]:
+            - combobox [ref=e46]:
+              - option "이웃전체" [selected]
+              - option "이웃"
+              - option "서로이웃"
+              - option "이웃(RSS)"
+          - columnheader "이웃" [ref=e47]
+          - columnheader "새글소식전체" [ref=e48]:
+            - combobox [ref=e49]:
+              - option "새글소식전체" [selected]
+              - option "새글소식전체"
+              - option "새글소식 ON"
+              - option "새글소식 OFF"
+          - columnheader "최근 글" [ref=e50]
+          - columnheader "이웃추가일" [ref=e51]
+      - rowgroup [ref=e52]:
+        - row "새 그룹 이웃 아웃로|다양한 생각과 사고 그리고 투자 ON 26.02.11. 19.06.13." [ref=e53]:
+          - cell [ref=e54]:
+            - checkbox [ref=e55]
+          - cell "새 그룹" [ref=e56]:
+            - generic [ref=e57]: 새 그룹
+          - cell "이웃" [ref=e58]
+          - cell "아웃로|다양한 생각과 사고 그리고 투자" [ref=e59]:
+            - generic [ref=e60]:
+              - text: 아웃로|
+              - link "다양한 생각과 사고 그리고 투자" [ref=e61] [cursor=pointer]:
+                - /url: https://blog.naver.com/hk926219
+          - cell "ON" [ref=e62]:
+            - link "ON" [ref=e63] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.11." [ref=e64]
+          - cell "19.06.13." [ref=e65]
+        - row "새 그룹 이웃 rrapport|rrapport님의블로그 ON 25.10.12. 19.06.08." [ref=e66]:
+          - cell [ref=e67]:
+            - checkbox [ref=e68]
+          - cell "새 그룹" [ref=e69]:
+            - generic [ref=e70]: 새 그룹
+          - cell "이웃" [ref=e71]
+          - cell "rrapport|rrapport님의블로그" [ref=e72]:
+            - generic [ref=e73]:
+              - text: rrapport|
+              - link "rrapport님의블로그" [ref=e74] [cursor=pointer]:
+                - /url: https://blog.naver.com/rrapport
+          - cell "ON" [ref=e75]:
+            - link "ON" [ref=e76] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.10.12." [ref=e77]
+          - cell "19.06.08." [ref=e78]
+        - row "새 그룹 이웃 내맘대로투자|내맘대로투자의 자잘한 투자이야기 ON 22.05.23. 19.06.06." [ref=e79]:
+          - cell [ref=e80]:
+            - checkbox [ref=e81]
+          - cell "새 그룹" [ref=e82]:
+            - generic [ref=e83]: 새 그룹
+          - cell "이웃" [ref=e84]
+          - cell "내맘대로투자|내맘대로투자의 자잘한 투자이야기" [ref=e85]:
+            - generic [ref=e86]:
+              - text: 내맘대로투자|
+              - link "내맘대로투자의 자잘한 투자이야기" [ref=e87] [cursor=pointer]:
+                - /url: https://blog.naver.com/tae1020
+          - cell "ON" [ref=e88]:
+            - link "ON" [ref=e89] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "22.05.23." [ref=e90]
+          - cell "19.06.06." [ref=e91]
+        - row "새 그룹 이웃 후니|UsU입니다. ON 24.04.22. 19.06.04." [ref=e92]:
+          - cell [ref=e93]:
+            - checkbox [ref=e94]
+          - cell "새 그룹" [ref=e95]:
+            - generic [ref=e96]: 새 그룹
+          - cell "이웃" [ref=e97]
+          - cell "후니|UsU입니다." [ref=e98]:
+            - generic [ref=e99]:
+              - text: 후니|
+              - link "UsU입니다." [ref=e100] [cursor=pointer]:
+                - /url: https://blog.naver.com/su34576
+          - cell "ON" [ref=e101]:
+            - link "ON" [ref=e102] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "24.04.22." [ref=e103]
+          - cell "19.06.04." [ref=e104]
+        - row "새 그룹 이웃 호크마|호크마의 기업탐방 ON 22.10.08. 19.05.31." [ref=e105]:
+          - cell [ref=e106]:
+            - checkbox [ref=e107]
+          - cell "새 그룹" [ref=e108]:
+            - generic [ref=e109]: 새 그룹
+          - cell "이웃" [ref=e110]
+          - cell "호크마|호크마의 기업탐방" [ref=e111]:
+            - generic [ref=e112]:
+              - text: 호크마|
+              - link "호크마의 기업탐방" [ref=e113] [cursor=pointer]:
+                - /url: https://blog.naver.com/jkim0625
+          - cell "ON" [ref=e114]:
+            - link "ON" [ref=e115] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "22.10.08." [ref=e116]
+          - cell "19.05.31." [ref=e117]
+        - 'row "새 그룹 이웃 이야기꾼|시나리오 투자 연구소: 공포를 사고 탐욕을 팔아라 ON 26.02.11. 19.05.30." [ref=e118]':
+          - cell [ref=e119]:
+            - checkbox [ref=e120]
+          - cell "새 그룹" [ref=e121]:
+            - generic [ref=e122]: 새 그룹
+          - cell "이웃" [ref=e123]
+          - 'cell "이야기꾼|시나리오 투자 연구소: 공포를 사고 탐욕을 팔아라" [ref=e124]':
+            - generic [ref=e125]:
+              - text: 이야기꾼|
+              - 'link "시나리오 투자 연구소: 공포를 사고 탐욕을 팔아라" [ref=e126] [cursor=pointer]':
+                - /url: https://blog.naver.com/mktgguy
+          - cell "ON" [ref=e127]:
+            - link "ON" [ref=e128] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.11." [ref=e129]
+          - cell "19.05.30." [ref=e130]
+        - row "새 그룹 이웃 키친|J ON 24.09.24. 19.05.26." [ref=e131]:
+          - cell [ref=e132]:
+            - checkbox [ref=e133]
+          - cell "새 그룹" [ref=e134]:
+            - generic [ref=e135]: 새 그룹
+          - cell "이웃" [ref=e136]
+          - cell "키친|J" [ref=e137]:
+            - generic [ref=e138]:
+              - text: 키친|
+              - link "J" [ref=e139] [cursor=pointer]:
+                - /url: https://blog.naver.com/kentoo1
+          - cell "ON" [ref=e140]:
+            - link "ON" [ref=e141] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "24.09.24." [ref=e142]
+          - cell "19.05.26." [ref=e143]
+        - row "새 그룹 이웃 좋은 기업 찾기|좋은 기업 찾기 ON 25.11.09. 19.05.17." [ref=e144]:
+          - cell [ref=e145]:
+            - checkbox [ref=e146]
+          - cell "새 그룹" [ref=e147]:
+            - generic [ref=e148]: 새 그룹
+          - cell "이웃" [ref=e149]
+          - cell "좋은 기업 찾기|좋은 기업 찾기" [ref=e150]:
+            - generic [ref=e151]:
+              - text: 좋은 기업 찾기|
+              - link "좋은 기업 찾기" [ref=e152] [cursor=pointer]:
+                - /url: https://blog.naver.com/shimseok12
+          - cell "ON" [ref=e153]:
+            - link "ON" [ref=e154] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.11.09." [ref=e155]
+          - cell "19.05.17." [ref=e156]
+        - row "새 그룹 이웃 출출|주식투자를 위한 기업분석 ON 22.10.20. 19.05.12." [ref=e157]:
+          - cell [ref=e158]:
+            - checkbox [ref=e159]
+          - cell "새 그룹" [ref=e160]:
+            - generic [ref=e161]: 새 그룹
+          - cell "이웃" [ref=e162]
+          - cell "출출|주식투자를 위한 기업분석" [ref=e163]:
+            - generic [ref=e164]:
+              - text: 출출|
+              - link "주식투자를 위한 기업분석" [ref=e165] [cursor=pointer]:
+                - /url: https://blog.naver.com/2jonis2
+          - cell "ON" [ref=e166]:
+            - link "ON" [ref=e167] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "22.10.20." [ref=e168]
+          - cell "19.05.12." [ref=e169]
+        - row "새 그룹 이웃 안아줘|안아줘 투자이야기 ON 26.02.07. 19.05.12." [ref=e170]:
+          - cell [ref=e171]:
+            - checkbox [ref=e172]
+          - cell "새 그룹" [ref=e173]:
+            - generic [ref=e174]: 새 그룹
+          - cell "이웃" [ref=e175]
+          - cell "안아줘|안아줘 투자이야기" [ref=e176]:
+            - generic [ref=e177]:
+              - text: 안아줘|
+              - link "안아줘 투자이야기" [ref=e178] [cursor=pointer]:
+                - /url: https://blog.naver.com/ehgur06
+          - cell "ON" [ref=e179]:
+            - link "ON" [ref=e180] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.07." [ref=e181]
+          - cell "19.05.12." [ref=e182]
+        - row "새 그룹 이웃 도윤파|DoYoon Pa's Home ON 25.11.03. 19.05.12." [ref=e183]:
+          - cell [ref=e184]:
+            - checkbox [ref=e185]
+          - cell "새 그룹" [ref=e186]:
+            - generic [ref=e187]: 새 그룹
+          - cell "이웃" [ref=e188]
+          - cell "도윤파|DoYoon Pa's Home" [ref=e189]:
+            - generic [ref=e190]:
+              - text: 도윤파|
+              - link "DoYoon Pa's Home" [ref=e191] [cursor=pointer]:
+                - /url: https://blog.naver.com/naelgrade
+          - cell "ON" [ref=e192]:
+            - link "ON" [ref=e193] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.11.03." [ref=e194]
+          - cell "19.05.12." [ref=e195]
+        - row "새 그룹 이웃 RD|Just Do It ON 26.02.11. 19.05.08." [ref=e196]:
+          - cell [ref=e197]:
+            - checkbox [ref=e198]
+          - cell "새 그룹" [ref=e199]:
+            - generic [ref=e200]: 새 그룹
+          - cell "이웃" [ref=e201]
+          - cell "RD|Just Do It" [ref=e202]:
+            - generic [ref=e203]:
+              - text: RD|
+              - link "Just Do It" [ref=e204] [cursor=pointer]:
+                - /url: https://blog.naver.com/rdinvest
+          - cell "ON" [ref=e205]:
+            - link "ON" [ref=e206] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.11." [ref=e207]
+          - cell "19.05.08." [ref=e208]
+        - row "새 그룹 이웃 쌍계|invesor 님의 블로그 ON 26.01.28. 19.04.28." [ref=e209]:
+          - cell [ref=e210]:
+            - checkbox [ref=e211]
+          - cell "새 그룹" [ref=e212]:
+            - generic [ref=e213]: 새 그룹
+          - cell "이웃" [ref=e214]
+          - cell "쌍계|invesor 님의 블로그" [ref=e215]:
+            - generic [ref=e216]:
+              - text: 쌍계|
+              - link "invesor 님의 블로그" [ref=e217] [cursor=pointer]:
+                - /url: https://blog.naver.com/invesor
+          - cell "ON" [ref=e218]:
+            - link "ON" [ref=e219] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.01.28." [ref=e220]
+          - cell "19.04.28." [ref=e221]
+        - row "새 그룹 이웃 책읽는 윤약사|책읽는 윤약사 ON 26.02.11. 19.04.26." [ref=e222]:
+          - cell [ref=e223]:
+            - checkbox [ref=e224]
+          - cell "새 그룹" [ref=e225]:
+            - generic [ref=e226]: 새 그룹
+          - cell "이웃" [ref=e227]
+          - cell "책읽는 윤약사|책읽는 윤약사" [ref=e228]:
+            - generic [ref=e229]:
+              - text: 책읽는 윤약사|
+              - link "책읽는 윤약사" [ref=e230] [cursor=pointer]:
+                - /url: https://blog.naver.com/bibimgugsu
+          - cell "ON" [ref=e231]:
+            - link "ON" [ref=e232] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.11." [ref=e233]
+          - cell "19.04.26." [ref=e234]
+        - row "새 그룹 이웃 흑로|흑로 ON 25.12.31. 19.04.21." [ref=e235]:
+          - cell [ref=e236]:
+            - checkbox [ref=e237]
+          - cell "새 그룹" [ref=e238]:
+            - generic [ref=e239]: 새 그룹
+          - cell "이웃" [ref=e240]
+          - cell "흑로|흑로" [ref=e241]:
+            - generic [ref=e242]:
+              - text: 흑로|
+              - link "흑로" [ref=e243] [cursor=pointer]:
+                - /url: https://blog.naver.com/duxtyhermes13
+          - cell "ON" [ref=e244]:
+            - link "ON" [ref=e245] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.12.31." [ref=e246]
+          - cell "19.04.21." [ref=e247]
+        - row "새 그룹 이웃 팡|슈슈의 잡담방 ON 26.02.10. 19.04.18." [ref=e248]:
+          - cell [ref=e249]:
+            - checkbox [ref=e250]
+          - cell "새 그룹" [ref=e251]:
+            - generic [ref=e252]: 새 그룹
+          - cell "이웃" [ref=e253]
+          - cell "팡|슈슈의 잡담방" [ref=e254]:
+            - generic [ref=e255]:
+              - text: 팡|
+              - link "슈슈의 잡담방" [ref=e256] [cursor=pointer]:
+                - /url: https://blog.naver.com/qqqspyman
+          - cell "ON" [ref=e257]:
+            - link "ON" [ref=e258] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.10." [ref=e259]
+          - cell "19.04.18." [ref=e260]
+        - row "새 그룹 이웃 문현|맛주(맛집과 주식) ON 26.02.10. 19.04.02." [ref=e261]:
+          - cell [ref=e262]:
+            - checkbox [ref=e263]
+          - cell "새 그룹" [ref=e264]:
+            - generic [ref=e265]: 새 그룹
+          - cell "이웃" [ref=e266]
+          - cell "문현|맛주(맛집과 주식)" [ref=e267]:
+            - generic [ref=e268]:
+              - text: 문현|
+              - link "맛주(맛집과 주식)" [ref=e269] [cursor=pointer]:
+                - /url: https://blog.naver.com/moonhyeon82
+          - cell "ON" [ref=e270]:
+            - link "ON" [ref=e271] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.10." [ref=e272]
+          - cell "19.04.02." [ref=e273]
+        - row "새 그룹 이웃 필사즉생|필사즉생의 바이오 및 미국 주식투자 ON 24.02.02. 19.03.28." [ref=e274]:
+          - cell [ref=e275]:
+            - checkbox [ref=e276]
+          - cell "새 그룹" [ref=e277]:
+            - generic [ref=e278]: 새 그룹
+          - cell "이웃" [ref=e279]
+          - cell "필사즉생|필사즉생의 바이오 및 미국 주식투자" [ref=e280]:
+            - generic [ref=e281]:
+              - text: 필사즉생|
+              - link "필사즉생의 바이오 및 미국 주식투자" [ref=e282] [cursor=pointer]:
+                - /url: https://blog.naver.com/hyosuby2005
+          - cell "ON" [ref=e283]:
+            - link "ON" [ref=e284] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "24.02.02." [ref=e285]
+          - cell "19.03.28." [ref=e286]
+        - row "새 그룹 이웃 대주주S|그럼에도 불구하고! ON 25.11.19. 19.03.14." [ref=e287]:
+          - cell [ref=e288]:
+            - checkbox [ref=e289]
+          - cell "새 그룹" [ref=e290]:
+            - generic [ref=e291]: 새 그룹
+          - cell "이웃" [ref=e292]
+          - cell "대주주S|그럼에도 불구하고!" [ref=e293]:
+            - generic [ref=e294]:
+              - text: 대주주S|
+              - link "그럼에도 불구하고!" [ref=e295] [cursor=pointer]:
+                - /url: https://blog.naver.com/naltle27
+          - cell "ON" [ref=e296]:
+            - link "ON" [ref=e297] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.11.19." [ref=e298]
+          - cell "19.03.14." [ref=e299]
+        - row "새 그룹 이웃 바겐헌터|바겐헌팅 이야기 ON 25.06.08. 19.03.11." [ref=e300]:
+          - cell [ref=e301]:
+            - checkbox [ref=e302]
+          - cell "새 그룹" [ref=e303]:
+            - generic [ref=e304]: 새 그룹
+          - cell "이웃" [ref=e305]
+          - cell "바겐헌터|바겐헌팅 이야기" [ref=e306]:
+            - generic [ref=e307]:
+              - text: 바겐헌터|
+              - link "바겐헌팅 이야기" [ref=e308] [cursor=pointer]:
+                - /url: https://blog.naver.com/bhlab25
+          - cell "ON" [ref=e309]:
+            - link "ON" [ref=e310] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.06.08." [ref=e311]
+          - cell "19.03.11." [ref=e312]
+        - row "새 그룹 이웃 Alter ego|EtoS ON 25.12.20. 19.03.06." [ref=e313]:
+          - cell [ref=e314]:
+            - checkbox [ref=e315]
+          - cell "새 그룹" [ref=e316]:
+            - generic [ref=e317]: 새 그룹
+          - cell "이웃" [ref=e318]
+          - cell "Alter ego|EtoS" [ref=e319]:
+            - generic [ref=e320]:
+              - text: Alter ego|
+              - link "EtoS" [ref=e321] [cursor=pointer]:
+                - /url: https://blog.naver.com/teamoergosum
+          - cell "ON" [ref=e322]:
+            - link "ON" [ref=e323] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.12.20." [ref=e324]
+          - cell "19.03.06." [ref=e325]
+        - row "새 그룹 이웃 Bora|마음속의 해와달 ON 26.02.10. 19.03.05." [ref=e326]:
+          - cell [ref=e327]:
+            - checkbox [ref=e328]
+          - cell "새 그룹" [ref=e329]:
+            - generic [ref=e330]: 새 그룹
+          - cell "이웃" [ref=e331]
+          - cell "Bora|마음속의 해와달" [ref=e332]:
+            - generic [ref=e333]:
+              - text: Bora|
+              - link "마음속의 해와달" [ref=e334] [cursor=pointer]:
+                - /url: https://blog.naver.com/badajr
+          - cell "ON" [ref=e335]:
+            - link "ON" [ref=e336] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.10." [ref=e337]
+          - cell "19.03.05." [ref=e338]
+        - row "새 그룹 이웃 Deep Space|Deep Space ON 25.12.21. 19.03.05." [ref=e339]:
+          - cell [ref=e340]:
+            - checkbox [ref=e341]
+          - cell "새 그룹" [ref=e342]:
+            - generic [ref=e343]: 새 그룹
+          - cell "이웃" [ref=e344]
+          - cell "Deep Space|Deep Space" [ref=e345]:
+            - generic [ref=e346]:
+              - text: Deep Space|
+              - link "Deep Space" [ref=e347] [cursor=pointer]:
+                - /url: https://blog.naver.com/sic_11y
+          - cell "ON" [ref=e348]:
+            - link "ON" [ref=e349] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.12.21." [ref=e350]
+          - cell "19.03.05." [ref=e351]
+        - row "새 그룹 이웃 아직과이미사이|Snowball Effect & ON 25.09.07. 19.03.04." [ref=e352]:
+          - cell [ref=e353]:
+            - checkbox [ref=e354]
+          - cell "새 그룹" [ref=e355]:
+            - generic [ref=e356]: 새 그룹
+          - cell "이웃" [ref=e357]
+          - cell "아직과이미사이|Snowball Effect &" [ref=e358]:
+            - generic [ref=e359]:
+              - text: 아직과이미사이|
+              - link "Snowball Effect &" [ref=e360] [cursor=pointer]:
+                - /url: https://blog.naver.com/rhapsody11
+          - cell "ON" [ref=e361]:
+            - link "ON" [ref=e362] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.09.07." [ref=e363]
+          - cell "19.03.04." [ref=e364]
+        - row "새 그룹 이웃 현담|밸런스 ON 26.02.08. 19.03.04." [ref=e365]:
+          - cell [ref=e366]:
+            - checkbox [ref=e367]
+          - cell "새 그룹" [ref=e368]:
+            - generic [ref=e369]: 새 그룹
+          - cell "이웃" [ref=e370]
+          - cell "현담|밸런스" [ref=e371]:
+            - generic [ref=e372]:
+              - text: 현담|
+              - link "밸런스" [ref=e373] [cursor=pointer]:
+                - /url: https://blog.naver.com/vanback
+          - cell "ON" [ref=e374]:
+            - link "ON" [ref=e375] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.08." [ref=e376]
+          - cell "19.03.04." [ref=e377]
+        - row "새 그룹 이웃 선투|선샤인투모로우 ON 26.01.27. 19.03.04." [ref=e378]:
+          - cell [ref=e379]:
+            - checkbox [ref=e380]
+          - cell "새 그룹" [ref=e381]:
+            - generic [ref=e382]: 새 그룹
+          - cell "이웃" [ref=e383]
+          - cell "선투|선샤인투모로우" [ref=e384]:
+            - generic [ref=e385]:
+              - text: 선투|
+              - link "선샤인투모로우" [ref=e386] [cursor=pointer]:
+                - /url: https://blog.naver.com/mutandis
+          - cell "ON" [ref=e387]:
+            - link "ON" [ref=e388] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.01.27." [ref=e389]
+          - cell "19.03.04." [ref=e390]
+        - row "새 그룹 이웃 퀘이사|Life is equal to Choice ON 26.01.29. 19.03.03." [ref=e391]:
+          - cell [ref=e392]:
+            - checkbox [ref=e393]
+          - cell "새 그룹" [ref=e394]:
+            - generic [ref=e395]: 새 그룹
+          - cell "이웃" [ref=e396]
+          - cell "퀘이사|Life is equal to Choice" [ref=e397]:
+            - generic [ref=e398]:
+              - text: 퀘이사|
+              - link "Life is equal to Choice" [ref=e399] [cursor=pointer]:
+                - /url: https://blog.naver.com/gkhigh
+          - cell "ON" [ref=e400]:
+            - link "ON" [ref=e401] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.01.29." [ref=e402]
+          - cell "19.03.03." [ref=e403]
+        - row "새 그룹 이웃 란즈크|yeux1122님의 블로그 ON 26.02.11. 19.03.03." [ref=e404]:
+          - cell [ref=e405]:
+            - checkbox [ref=e406]
+          - cell "새 그룹" [ref=e407]:
+            - generic [ref=e408]: 새 그룹
+          - cell "이웃" [ref=e409]
+          - cell "란즈크|yeux1122님의 블로그" [ref=e410]:
+            - generic [ref=e411]:
+              - text: 란즈크|
+              - link "yeux1122님의 블로그" [ref=e412] [cursor=pointer]:
+                - /url: https://blog.naver.com/yeux1122
+          - cell "ON" [ref=e413]:
+            - link "ON" [ref=e414] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.11." [ref=e415]
+          - cell "19.03.03." [ref=e416]
+        - row "새 그룹 이웃 햇병아리|기록.생각. ON 25.06.30. 19.03.03." [ref=e417]:
+          - cell [ref=e418]:
+            - checkbox [ref=e419]
+          - cell "새 그룹" [ref=e420]:
+            - generic [ref=e421]: 새 그룹
+          - cell "이웃" [ref=e422]
+          - cell "햇병아리|기록.생각." [ref=e423]:
+            - generic [ref=e424]:
+              - text: 햇병아리|
+              - link "기록.생각." [ref=e425] [cursor=pointer]:
+                - /url: https://blog.naver.com/km_doit
+          - cell "ON" [ref=e426]:
+            - link "ON" [ref=e427] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.06.30." [ref=e428]
+          - cell "19.03.03." [ref=e429]
+        - row "새 그룹 이웃 BI|BI님의 블로그 ON 26.02.10. 19.03.03." [ref=e430]:
+          - cell [ref=e431]:
+            - checkbox [ref=e432]
+          - cell "새 그룹" [ref=e433]:
+            - generic [ref=e434]: 새 그룹
+          - cell "이웃" [ref=e435]
+          - cell "BI|BI님의 블로그" [ref=e436]:
+            - generic [ref=e437]:
+              - text: BI|
+              - link "BI님의 블로그" [ref=e438] [cursor=pointer]:
+                - /url: https://blog.naver.com/hls2683445
+          - cell "ON" [ref=e439]:
+            - link "ON" [ref=e440] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.10." [ref=e441]
+          - cell "19.03.03." [ref=e442]
+        - row "새 그룹 이웃 미종율온이네|[투자심념] ON 24.01.29. 19.03.03." [ref=e443]:
+          - cell [ref=e444]:
+            - checkbox [ref=e445]
+          - cell "새 그룹" [ref=e446]:
+            - generic [ref=e447]: 새 그룹
+          - cell "이웃" [ref=e448]
+          - cell "미종율온이네|[투자심념]" [ref=e449]:
+            - generic [ref=e450]:
+              - text: 미종율온이네|
+              - link "[투자심념]" [ref=e451] [cursor=pointer]:
+                - /url: https://blog.naver.com/fifajw
+          - cell "ON" [ref=e452]:
+            - link "ON" [ref=e453] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "24.01.29." [ref=e454]
+          - cell "19.03.03." [ref=e455]
+        - row "새 그룹 이웃 택순이|생각이 많은 사람 ON 25.04.21. 19.03.03." [ref=e456]:
+          - cell [ref=e457]:
+            - checkbox [ref=e458]
+          - cell "새 그룹" [ref=e459]:
+            - generic [ref=e460]: 새 그룹
+          - cell "이웃" [ref=e461]
+          - cell "택순이|생각이 많은 사람" [ref=e462]:
+            - generic [ref=e463]:
+              - text: 택순이|
+              - link "생각이 많은 사람" [ref=e464] [cursor=pointer]:
+                - /url: https://blog.naver.com/sactac
+          - cell "ON" [ref=e465]:
+            - link "ON" [ref=e466] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.04.21." [ref=e467]
+          - cell "19.03.03." [ref=e468]
+        - row "새 그룹 이웃 Agent jaden|Agent jaden ON 25.01.24. 19.03.02." [ref=e469]:
+          - cell [ref=e470]:
+            - checkbox [ref=e471]
+          - cell "새 그룹" [ref=e472]:
+            - generic [ref=e473]: 새 그룹
+          - cell "이웃" [ref=e474]
+          - cell "Agent jaden|Agent jaden" [ref=e475]:
+            - generic [ref=e476]:
+              - text: Agent jaden|
+              - link "Agent jaden" [ref=e477] [cursor=pointer]:
+                - /url: https://blog.naver.com/jaden-agent
+          - cell "ON" [ref=e478]:
+            - link "ON" [ref=e479] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.01.24." [ref=e480]
+          - cell "19.03.02." [ref=e481]
+        - row "새 그룹 이웃 투자이너 JSK|투자이너 JSK ON 26.02.06. 19.03.01." [ref=e482]:
+          - cell [ref=e483]:
+            - checkbox [ref=e484]
+          - cell "새 그룹" [ref=e485]:
+            - generic [ref=e486]: 새 그룹
+          - cell "이웃" [ref=e487]
+          - cell "투자이너 JSK|투자이너 JSK" [ref=e488]:
+            - generic [ref=e489]:
+              - text: 투자이너 JSK|
+              - link "투자이너 JSK" [ref=e490] [cursor=pointer]:
+                - /url: https://blog.naver.com/rkdakxl
+          - cell "ON" [ref=e491]:
+            - link "ON" [ref=e492] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.06." [ref=e493]
+          - cell "19.03.01." [ref=e494]
+        - row "새 그룹 이웃 오래된영혼|블로그 오래된영혼 ON 26.02.01. 19.02.27." [ref=e495]:
+          - cell [ref=e496]:
+            - checkbox [ref=e497]
+          - cell "새 그룹" [ref=e498]:
+            - generic [ref=e499]: 새 그룹
+          - cell "이웃" [ref=e500]
+          - cell "오래된영혼|블로그 오래된영혼" [ref=e501]:
+            - generic [ref=e502]:
+              - text: 오래된영혼|
+              - link "블로그 오래된영혼" [ref=e503] [cursor=pointer]:
+                - /url: https://blog.naver.com/tkdska3
+          - cell "ON" [ref=e504]:
+            - link "ON" [ref=e505] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.01." [ref=e506]
+          - cell "19.02.27." [ref=e507]
+        - row "새 그룹 이웃 팽샘공부|평생공부 블로그 ON 26.01.26. 19.02.27." [ref=e508]:
+          - cell [ref=e509]:
+            - checkbox [ref=e510]
+          - cell "새 그룹" [ref=e511]:
+            - generic [ref=e512]: 새 그룹
+          - cell "이웃" [ref=e513]
+          - cell "팽샘공부|평생공부 블로그" [ref=e514]:
+            - generic [ref=e515]:
+              - text: 팽샘공부|
+              - link "평생공부 블로그" [ref=e516] [cursor=pointer]:
+                - /url: https://blog.naver.com/yc0627
+          - cell "ON" [ref=e517]:
+            - link "ON" [ref=e518] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.01.26." [ref=e519]
+          - cell "19.02.27." [ref=e520]
+        - row "새 그룹 이웃 씨드머니|씨드머니님의 블로그 ON 26.01.26. 19.02.11." [ref=e521]:
+          - cell [ref=e522]:
+            - checkbox [ref=e523]
+          - cell "새 그룹" [ref=e524]:
+            - generic [ref=e525]: 새 그룹
+          - cell "이웃" [ref=e526]
+          - cell "씨드머니|씨드머니님의 블로그" [ref=e527]:
+            - generic [ref=e528]:
+              - text: 씨드머니|
+              - link "씨드머니님의 블로그" [ref=e529] [cursor=pointer]:
+                - /url: https://blog.naver.com/stalbert
+          - cell "ON" [ref=e530]:
+            - link "ON" [ref=e531] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.01.26." [ref=e532]
+          - cell "19.02.11." [ref=e533]
+        - row "새 그룹 이웃 레인메이커|레인메이커 인사이트&리서치 ON 23.10.19. 19.02.10." [ref=e534]:
+          - cell [ref=e535]:
+            - checkbox [ref=e536]
+          - cell "새 그룹" [ref=e537]:
+            - generic [ref=e538]: 새 그룹
+          - cell "이웃" [ref=e539]
+          - cell "레인메이커|레인메이커 인사이트&리서치" [ref=e540]:
+            - generic [ref=f1e462]:
+              - text: 레인메이커|
+              - link "레인메이커 인사이트&리서치" [ref=f1e464] [cursor=pointer]:
+                - /url: https://blog.naver.com/jakieint
+          - cell "ON" [ref=f1e465]:
+            - link "ON" [ref=f1e466] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "23.10.19." [ref=f1e467]
+          - cell "19.02.10." [ref=f1e468]
+        - row "새 그룹 이웃 상상을현실로|Be lost in thought ON 26.01.14. 19.02.09." [ref=f1e469]:
+          - cell [ref=f1e470]:
+            - checkbox [ref=f1e471]
+          - cell "새 그룹" [ref=f1e472]:
+            - generic [ref=f1e473]: 새 그룹
+          - cell "이웃" [ref=f1e474]
+          - cell "상상을현실로|Be lost in thought" [ref=f1e475]:
+            - generic [ref=f1e476]:
+              - text: 상상을현실로|
+              - link "Be lost in thought" [ref=f1e477] [cursor=pointer]:
+                - /url: https://blog.naver.com/dufpd12
+          - cell "ON" [ref=f1e478]:
+            - link "ON" [ref=f1e479] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.01.14." [ref=f1e480]
+          - cell "19.02.09." [ref=f1e481]
+        - row "새 그룹 이웃 anopi|May the ㅋreativity be with you ON 24.12.12. 19.01.16." [ref=f1e482]:
+          - cell [ref=f1e483]:
+            - checkbox [ref=f1e484]
+          - cell "새 그룹" [ref=f1e485]:
+            - generic [ref=f1e486]: 새 그룹
+          - cell "이웃" [ref=f1e487]
+          - cell "anopi|May the ㅋreativity be with you" [ref=f1e488]:
+            - generic [ref=f1e489]:
+              - text: anopi|
+              - link "May the ㅋreativity be with you" [ref=f1e490] [cursor=pointer]:
+                - /url: https://blog.naver.com/anopi
+          - cell "ON" [ref=f1e491]:
+            - link "ON" [ref=f1e492] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "24.12.12." [ref=f1e493]
+          - cell "19.01.16." [ref=f1e494]
+        - row "새 그룹 이웃 LunarmariA|어두운 바다를 비추는 꽃 ON 26.02.10. 19.01.16." [ref=f1e495]:
+          - cell [ref=f1e496]:
+            - checkbox [ref=f1e497]
+          - cell "새 그룹" [ref=f1e498]:
+            - generic [ref=f1e499]: 새 그룹
+          - cell "이웃" [ref=f1e500]
+          - cell "LunarmariA|어두운 바다를 비추는 꽃" [ref=f1e501]:
+            - generic [ref=f1e502]:
+              - text: LunarmariA|
+              - link "어두운 바다를 비추는 꽃" [ref=f1e503] [cursor=pointer]:
+                - /url: https://blog.naver.com/lunasea12345
+          - cell "ON" [ref=f1e504]:
+            - link "ON" [ref=f1e505] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.10." [ref=f1e506]
+          - cell "19.01.16." [ref=f1e507]
+        - row "새 그룹 이웃 무상보리심|가치투자 이야기 ON 26.02.09. 19.01.16." [ref=f1e508]:
+          - cell [ref=f1e509]:
+            - checkbox [ref=f1e510]
+          - cell "새 그룹" [ref=f1e511]:
+            - generic [ref=f1e512]: 새 그룹
+          - cell "이웃" [ref=f1e513]
+          - cell "무상보리심|가치투자 이야기" [ref=f1e514]:
+            - generic [ref=f1e515]:
+              - text: 무상보리심|
+              - link "가치투자 이야기" [ref=f1e516] [cursor=pointer]:
+                - /url: https://blog.naver.com/junsa26
+          - cell "ON" [ref=f1e517]:
+            - link "ON" [ref=f1e518] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.09." [ref=f1e519]
+          - cell "19.01.16." [ref=f1e520]
+        - row "새 그룹 이웃 dreamer|경제적 자유를 꿈꾸며... ON 22.11.20. 19.01.09." [ref=f1e521]:
+          - cell [ref=f1e522]:
+            - checkbox [ref=f1e523]
+          - cell "새 그룹" [ref=f1e524]:
+            - generic [ref=f1e525]: 새 그룹
+          - cell "이웃" [ref=f1e526]
+          - cell "dreamer|경제적 자유를 꿈꾸며..." [ref=f1e527]:
+            - generic [ref=f1e528]:
+              - text: dreamer|
+              - link "경제적 자유를 꿈꾸며..." [ref=f1e529] [cursor=pointer]:
+                - /url: https://blog.naver.com/victor9
+          - cell "ON" [ref=f1e530]:
+            - link "ON" [ref=f1e531] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "22.11.20." [ref=f1e532]
+          - cell "19.01.09." [ref=f1e533]
+        - row "새 그룹 이웃 스노볼|스노볼 ON 25.11.27. 18.12.31." [ref=f1e534]:
+          - cell [ref=f1e535]:
+            - checkbox [ref=f1e536]
+          - cell "새 그룹" [ref=f1e537]:
+            - generic [ref=f1e538]: 새 그룹
+          - cell "이웃" [ref=f1e539]
+          - cell "스노볼|스노볼" [ref=f1e540]:
+            - generic [ref=f1e541]:
+              - text: 스노볼|
+              - link "스노볼" [ref=f1e542] [cursor=pointer]:
+                - /url: https://blog.naver.com/nosurprise1
+          - cell "ON" [ref=f1e543]:
+            - link "ON" [ref=f1e544] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.11.27." [ref=f1e545]
+          - cell "18.12.31." [ref=f1e546]
+        - row "새 그룹 이웃 웅이랑영이랑|재테크 및 일상생활 (80 port) ON 26.01.25. 18.12.09." [ref=f1e547]:
+          - cell [ref=f1e548]:
+            - checkbox [ref=f1e549]
+          - cell "새 그룹" [ref=f1e550]:
+            - generic [ref=f1e551]: 새 그룹
+          - cell "이웃" [ref=f1e552]
+          - cell "웅이랑영이랑|재테크 및 일상생활 (80 port)" [ref=f1e553]:
+            - generic [ref=f1e554]:
+              - text: 웅이랑영이랑|
+              - link "재테크 및 일상생활 (80 port)" [ref=f1e555] [cursor=pointer]:
+                - /url: https://blog.naver.com/rozxwoongs
+          - cell "ON" [ref=f1e556]:
+            - link "ON" [ref=f1e557] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.01.25." [ref=f1e558]
+          - cell "18.12.09." [ref=f1e559]
+        - row "새 그룹 이웃 난넘|눈내리는 고요의 바다 ON 24.06.05. 18.12.03." [ref=f1e560]:
+          - cell [ref=f1e561]:
+            - checkbox [ref=f1e562]
+          - cell "새 그룹" [ref=f1e563]:
+            - generic [ref=f1e564]: 새 그룹
+          - cell "이웃" [ref=f1e565]
+          - cell "난넘|눈내리는 고요의 바다" [ref=f1e566]:
+            - generic [ref=f1e567]:
+              - text: 난넘|
+              - link "눈내리는 고요의 바다" [ref=f1e568] [cursor=pointer]:
+                - /url: https://blog.naver.com/kskim2k4
+          - cell "ON" [ref=f1e569]:
+            - link "ON" [ref=f1e570] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "24.06.05." [ref=f1e571]
+          - cell "18.12.03." [ref=f1e572]
+        - row "새 그룹 이웃 체리형부|적절한 지식과 검증된 판단 ON 26.02.10. 18.12.01." [ref=f1e573]:
+          - cell [ref=f1e574]:
+            - checkbox [ref=f1e575]
+          - cell "새 그룹" [ref=f1e576]:
+            - generic [ref=f1e577]: 새 그룹
+          - cell "이웃" [ref=f1e578]
+          - cell "체리형부|적절한 지식과 검증된 판단" [ref=f1e579]:
+            - generic [ref=f1e580]:
+              - text: 체리형부|
+              - link "적절한 지식과 검증된 판단" [ref=f1e581] [cursor=pointer]:
+                - /url: https://blog.naver.com/crush212121
+          - cell "ON" [ref=f1e582]:
+            - link "ON" [ref=f1e583] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.10." [ref=f1e584]
+          - cell "18.12.01." [ref=f1e585]
+        - row "새 그룹 이웃 선사판후이판|선사판후이판 ON 26.02.06. 18.12.01." [ref=f1e586]:
+          - cell [ref=f1e587]:
+            - checkbox [ref=f1e588]
+          - cell "새 그룹" [ref=f1e589]:
+            - generic [ref=f1e590]: 새 그룹
+          - cell "이웃" [ref=f1e591]
+          - cell "선사판후이판|선사판후이판" [ref=f1e592]:
+            - generic [ref=f1e593]:
+              - text: 선사판후이판|
+              - link "선사판후이판" [ref=f1e594] [cursor=pointer]:
+                - /url: https://blog.naver.com/knpu87
+          - cell "ON" [ref=f1e595]:
+            - link "ON" [ref=f1e596] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "26.02.06." [ref=f1e597]
+          - cell "18.12.01." [ref=f1e598]
+        - row "새 그룹 이웃 에코마케팅|에코마케팅 공식 블로그 ON 25.08.27. 18.11.30." [ref=f1e599]:
+          - cell [ref=f1e600]:
+            - checkbox [ref=f1e601]
+          - cell "새 그룹" [ref=f1e602]:
+            - generic [ref=f1e603]: 새 그룹
+          - cell "이웃" [ref=f1e604]
+          - cell "에코마케팅|에코마케팅 공식 블로그" [ref=f1e605]:
+            - generic [ref=f1e606]:
+              - text: 에코마케팅|
+              - link "에코마케팅 공식 블로그" [ref=f1e607] [cursor=pointer]:
+                - /url: https://blog.naver.com/echomarket
+          - cell "ON" [ref=f1e608]:
+            - link "ON" [ref=f1e609] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.08.27." [ref=f1e610]
+          - cell "18.11.30." [ref=f1e611]
+        - row "새 그룹 이웃 chumy|개념이를 찾아라 ON 25.08.14. 18.11.30." [ref=f1e612]:
+          - cell [ref=f1e613]:
+            - checkbox [ref=f1e614]
+          - cell "새 그룹" [ref=f1e615]:
+            - generic [ref=f1e616]: 새 그룹
+          - cell "이웃" [ref=f1e617]
+          - cell "chumy|개념이를 찾아라" [ref=f1e618]:
+            - generic [ref=f1e619]:
+              - text: chumy|
+              - link "개념이를 찾아라" [ref=f1e620] [cursor=pointer]:
+                - /url: https://blog.naver.com/chumy
+          - cell "ON" [ref=f1e621]:
+            - link "ON" [ref=f1e622] [cursor=pointer]:
+              - /url: "#"
+              - generic: "ON"
+          - cell "25.08.14." [ref=f1e623]
+          - cell "18.11.30." [ref=f1e624]

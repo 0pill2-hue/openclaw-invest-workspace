@@ -47,7 +47,7 @@ def check_stage3():
 
 def check_stage4():
     checks = []
-    vr = latest('reports/invest/stage_updates/STAGE3_VALUE_RUN_*.json')
+    vr = latest('invest/reports/stage_updates/STAGE3_VALUE_RUN_*.json')
     mf = latest('invest/reports/data_quality/manifest_stage3_value_*.json')
     checks.append(("value_report_exists", vr is not None))
     checks.append(("value_manifest_exists", mf is not None))

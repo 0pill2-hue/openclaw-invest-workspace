@@ -1,0 +1,52 @@
+{
+  "run_id": "stage2_validate_refine_independent-20260217T162530Z",
+  "run_type": "stage2_validate_refine_independent",
+  "started_at_utc": "2026-02-17T16:25:30.888282+00:00",
+  "git_commit": "a529bf33acd9d6c2ad7d789fec1e514e65364d7e",
+  "params": {
+    "folders": [
+      "kr/ohlcv",
+      "kr/supply",
+      "kr/dart",
+      "us/ohlcv",
+      "market/news/rss",
+      "market/macro",
+      "market/google_trends",
+      "text/blog",
+      "text/telegram",
+      "text/image_map",
+      "text/images_ocr",
+      "text/premium/startale"
+    ],
+    "l3_ratio_cap": 0.2
+  },
+  "inputs": [
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/production",
+      "sha256": "8ff9c93669baca5afb01fa34c3527ae8a545124d5b6922b9728feed720936235"
+    },
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/invest/data/quarantine/production",
+      "sha256": "7db5161be149e59c70077a89e18584c77c1da1d7aa8e4881a435084b2a91952c"
+    },
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/invest/data/raw",
+      "sha256": "f8a9aa72547ec1c410cb78d31b1d1ee83823a8adfefc0ce1e5fbc8115780d7c0"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/reports/qc/VALIDATION_INDEPENDENT_20260218_012504.md",
+      "sha256": "66721591a16c017e523d10d6b419f2bfdac5dca9321a7c671998e4557737bcaa"
+    },
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/reports/qc/VALIDATION_INDEPENDENT_20260218_012504.json",
+      "sha256": "c1d312ae0d628097aec804ad704e87137186a1bc943c852645e77d57ea40a0d1"
+    },
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/reports/qc/verdict_20260218_012504.json",
+      "sha256": "f621c0c69db25fe1c0943dd39892756679f9d769078ed5e23809d72a5197c89f"
+    }
+  ],
+  "ended_at_utc": "2026-02-17T16:25:41.670531+00:00"
+}

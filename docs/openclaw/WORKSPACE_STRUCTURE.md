@@ -19,7 +19,7 @@ Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위
 - `automation/` : 운영 자동화 보조
 
 ## invest 내부 canonical
-- `docs/invest/strategy/` : 전략 고정 문서(RULEBOOK/PIPELINE/STAGE_STRATEGY)
+- `invest/docs/strategy/` : 전략 고정 문서(RULEBOOK/PIPELINE/STAGE_STRATEGY)
 - `invest/strategies/` : 전략 코드 패키지(파이썬 모듈)
 - `invest/scripts/` : 수집/정제/검증/산출 실행 스크립트
 - `invest/data/` : raw/clean/quarantine 데이터 계층
@@ -27,19 +27,19 @@ Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위
 - `invest/results/` : 결과물(test/validated/prod 분리)
 
 ## stage 문서 canonical
-- `reports/invest/stage_updates/stage01/stage01_data_collection.md`
-- `reports/invest/stage_updates/stage02/stage02_data_cleaning.md`
-- `reports/invest/stage_updates/stage03/stage03_cleaning_validation.md`
-- `reports/invest/stage_updates/stage04/stage04_validated_value.md`
-- `reports/invest/stage_updates/stage05/stage05_baselines_v3_4_kr.md`
-- `reports/invest/stage_updates/stage06/stage06_candidates_v3_4_kr.md`
-- `reports/invest/stage_updates/stage07/stage07_cutoff_v3_4_kr.md`
-- `reports/invest/stage_updates/stage08/stage08_value_v3_4_kr.md`
-- `reports/invest/stage_updates/stage09/stage09_cross_review_v3_4_kr.md`
-- `reports/invest/stage_updates/stage11/stage11_adopt_hold_promote.md`
-- 단계 인덱스: `reports/invest/stage_updates/README.md`
+- `invest/reports/stage_updates/stage01/stage01_data_collection.md`
+- `invest/reports/stage_updates/stage02/stage02_data_cleaning.md`
+- `invest/reports/stage_updates/stage03/stage03_cleaning_validation.md`
+- `invest/reports/stage_updates/stage04/stage04_validated_value.md`
+- `invest/reports/stage_updates/stage05/stage05_baselines_v3_4_kr.md`
+- `invest/reports/stage_updates/stage06/stage06_candidates_v3_4_kr.md`
+- `invest/reports/stage_updates/stage07/stage07_cutoff_v3_4_kr.md`
+- `invest/reports/stage_updates/stage08/stage08_value_v3_4_kr.md`
+- `invest/reports/stage_updates/stage09/stage09_cross_review_v3_4_kr.md`
+- `invest/reports/stage_updates/stage11/stage11_adopt_hold_promote.md`
+- 단계 인덱스: `invest/reports/stage_updates/README.md`
 
 ## 문서 우선순위
-1. `docs/invest/strategy/RULEBOOK_MASTER.md`
-2. `reports/invest/stage_updates/*.md`
+1. `invest/docs/strategy/RULEBOOK_MASTER.md`
+2. `invest/reports/stage_updates/*.md`
 3. 실행 스크립트/보조 문서

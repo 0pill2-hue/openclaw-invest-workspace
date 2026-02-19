@@ -1,0 +1,12 @@
+{
+  "generated_at_utc": "2026-02-16T13:06:10.428178+00:00",
+  "rows": 5,
+  "input": "/Users/jobiseu/.openclaw/workspace/invest/data/clean/market/sector_flow_input.csv",
+  "output_csv": "/Users/jobiseu/.openclaw/workspace/invest/reports/sector_flow/money_flow_sector_score_v1_20260216T130610Z.csv",
+  "weights": {
+    "turnover_share_delta_z": 0.45,
+    "net_buy_strength_z": 0.35,
+    "etf_flow_proxy_z": 0.15,
+    "news_momentum_z": 0.05
+  }
+}

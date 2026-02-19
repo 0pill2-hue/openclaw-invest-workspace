@@ -41,7 +41,7 @@ reports/*
 # Large/generated data artifacts
 invest/data/
 invest/results/
-invest/reports/
+# invest/reports/  # canonical tracked report docs
 
 # Python cache
 __pycache__/

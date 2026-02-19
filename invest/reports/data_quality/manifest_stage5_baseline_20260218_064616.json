@@ -1,0 +1,31 @@
+{
+  "run_id": "stage5_baseline_fixed_run-20260217T214616Z",
+  "run_type": "stage5_baseline_fixed_run",
+  "started_at_utc": "2026-02-17T21:46:16.570232+00:00",
+  "git_commit": "a529bf33acd9d6c2ad7d789fec1e514e65364d7e",
+  "params": {
+    "grade": "DRAFT",
+    "adoption_gate": "stage7_required"
+  },
+  "inputs": [
+    {
+      "path": "invest/data/clean/production/kr/ohlcv",
+      "sha256": "9879c520918206a6d8f295da00f6214def7213f966a18e7fac151b2edd9e1602"
+    },
+    {
+      "path": "invest/data/clean/production/kr/supply",
+      "sha256": "6833ec06100e501654640ae2ebeabbe817709762c81737b6c2a8da3af3897b3f"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.md",
+      "sha256": "565aef3ec349f36305eaf46c5f9203d354a89c60c8dd0439fe728115ce5a4e94"
+    },
+    {
+      "path": "reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json",
+      "sha256": "2fe68b72e9a1e3dbdc0900e7a87164787983a2cfb4a9536f9c4c99d7097ae62d"
+    }
+  ],
+  "ended_at_utc": "2026-02-17T21:46:16.860219+00:00"
+}

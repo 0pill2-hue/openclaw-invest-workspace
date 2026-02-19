@@ -8,10 +8,10 @@ Purpose: 컨텍스트 초기화(대화 리셋) 후 **전략/메모리 누락 방
 2. `docs/openclaw/CONTEXT_RESET_READLIST.md` (this file)
 3. `docs/openclaw/OPENCLAW_SYSTEM_BASELINE.md`
 4. `docs/openclaw/OPERATING_GOVERNANCE.md`
-5. `docs/invest/strategy/README.md`
-6. `docs/invest/strategy/RULEBOOK_MASTER.md`
-7. `docs/invest/strategy/PIPELINE_11_STAGE_MASTER.md`
-8. `docs/invest/strategy/STAGE_STRATEGY_MASTER.md`
+5. `invest/docs/strategy/README.md`
+6. `invest/docs/strategy/RULEBOOK_MASTER.md`
+7. `invest/docs/strategy/PIPELINE_11_STAGE_MASTER.md`
+8. `invest/docs/strategy/STAGE_STRATEGY_MASTER.md`
 9. `DIRECTIVES.md` (상단 QUICK RESUME SNAPSHOT 우선)
 10. `memory/오늘.md`
 11. `memory/어제.md`
@@ -24,9 +24,9 @@ Purpose: 컨텍스트 초기화(대화 리셋) 후 **전략/메모리 누락 방
 3. `docs/openclaw/NAMING_STRATEGY.md`
 4. `docs/openclaw/CODING_RULES.md`
 5. `docs/openclaw/DOC_TEMPLATES.md`
-6. `reports/invest/stage_updates/README.md`
-7. `reports/invest/stage_updates/stage01/stage01_data_collection.md` ~ `stage11/stage11_adopt_hold_promote.md`
-8. `reports/invest` (링크 경로 점검용)
+6. `invest/reports/stage_updates/README.md`
+7. `invest/reports/stage_updates/stage01/stage01_data_collection.md` ~ `stage11/stage11_adopt_hold_promote.md`
+8. `invest/reports` (링크 경로 점검용)
 
 ## Hard Guard (Mandatory)
 - 위 L1 재로딩 완료 전, 단계/운영 기준 관련 확정 답변 금지

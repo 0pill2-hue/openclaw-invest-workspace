@@ -6,7 +6,7 @@
 ## 단일 기준 위치 (Single Source of Truth)
 
 ### 1) 전략/규칙
-- Canonical Rulebook: `docs/invest/strategy/RULEBOOK_V3.md`
+- Canonical Rulebook: `invest/docs/strategy/RULEBOOK_V3.md`
 - Legacy 파일은 참조/리다이렉트만 허용, 운영 기준으로 사용 금지.
 
 ### 2) 스테이지 산출물
