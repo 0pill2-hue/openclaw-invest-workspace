@@ -2,7 +2,7 @@
 
 ## inputs
 - 정책 기준 문서: `invest/docs/strategy/RULEBOOK_V3.md`
-- 기존 Stage05 운영 결과: `reports/stage_updates/stage05/stage05_result_v3_7_kr.md`
+- 기존 Stage05 운영 결과: `invest/reports/stage_updates/stage05/stage05_result_v3_7_kr.md`
 - 고정 제약:
   - RULEBOOK 기존 하드룰 유지(보유 1~6 / 최소보유 20일 / 교체 +15% / 월교체 30% / trailing -20% 등)
   - KRX only
@@ -13,7 +13,7 @@
 - 정책 결정/문서화 작업 (코드 실행 없음)
 
 ## outputs
-- `reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
 - `(수정) invest/docs/strategy/RULEBOOK_V3.md`
 
 ## quality_gates
@@ -30,7 +30,7 @@
 
 ## proof
 - `invest/docs/strategy/RULEBOOK_V3.md` (Rule 6-3, Rule 6-4)
-- `reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
 
 ---
 

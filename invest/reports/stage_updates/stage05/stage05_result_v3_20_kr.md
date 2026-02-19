@@ -12,9 +12,9 @@
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_20_kr.json`
-- `reports/stage_updates/stage05/stage05_result_v3_20_kr.md`
-- `reports/stage_updates/stage05/stage05_result_v3_20_kr_readable.md`
-- `reports/stage_updates/stage05/stage05_patch_diff_v3_20_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr_readable.md`
+- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_20_kr.md`
 
 ## quality_gates
 - gate1(track 12개, 3x4): PASS
@@ -31,7 +31,7 @@
 ## proof
 - result json: `invest/results/validated/stage05_baselines_v3_20_kr.json`
 - fail marker: `invest/results/test/stage05_baselines_v3_19_kr_fail.json`
-- log: `reports/stage_updates/logs/stage05_incremental_external_v3_20_kr.log`
+- log: `invest/reports/stage_updates/logs/stage05_incremental_external_v3_20_kr.log`
 - code: `invest/scripts/stage05_incremental_external_v3_20_kr.py`
 
 ---

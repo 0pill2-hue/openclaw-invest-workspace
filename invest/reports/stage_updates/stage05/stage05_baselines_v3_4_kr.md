@@ -9,7 +9,7 @@
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_v3_4_kr.json
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05/stage05_baselines_v3_4_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage05/stage05_baselines_v3_4_kr.md
 
 ## quality_gates
 - KRX ONLY hard guard PASS

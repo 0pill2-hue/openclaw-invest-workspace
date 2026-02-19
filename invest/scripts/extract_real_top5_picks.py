@@ -118,7 +118,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--trades-csv", default="invest/results/validated/stage06_highlander_trades.csv")
     ap.add_argument("--equity-csv", default="invest/results/validated/stage06_highlander_equity.csv")
-    ap.add_argument("--output-md", default="reports/stage_updates/stage06/stage06_real_top5_picks.md")
+    ap.add_argument("--output-md", default="invest/reports/stage_updates/stage06/stage06_real_top5_picks.md")
     ap.add_argument("--output-csv", default="invest/results/validated/stage06_highlander_top5_by_year.csv")
     args = ap.parse_args()
 

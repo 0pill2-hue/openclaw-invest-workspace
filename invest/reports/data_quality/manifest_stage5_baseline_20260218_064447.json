@@ -19,11 +19,11 @@
   ],
   "outputs": [
     {
-      "path": "reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.md",
+      "path": "invest/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.md",
       "sha256": "eafa42843e0804860c7260214c97f816a05ecc18e22abb247483945845281f61"
     },
     {
-      "path": "reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json",
+      "path": "invest/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json",
       "sha256": "1e697d42059b9ed34f3570f070e0996a6ddff29ee13b29b6b35a9dfc04bc1c4d"
     }
   ],

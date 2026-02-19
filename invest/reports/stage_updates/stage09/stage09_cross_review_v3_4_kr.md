@@ -8,7 +8,7 @@
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage09_cross_review_v3_4_kr.json
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage09/stage09_cross_review_v3_4_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage09/stage09_cross_review_v3_4_kr.md
 
 ## quality_gates
 - Opus/Sonnet/AgPro 최종 PASS/FAIL

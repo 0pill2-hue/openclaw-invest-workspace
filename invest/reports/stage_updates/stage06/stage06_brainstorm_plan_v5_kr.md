@@ -3,8 +3,8 @@
 ## inputs
 - Stage05 3x3 결과(JSON): `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`
 - Stage06 v4 계획/결과: 
-  - `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_brainstorm_plan_v4_kr.md`
-  - `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v4_kr.md`
+  - `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_brainstorm_plan_v4_kr.md`
+  - `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_candidates_v4_kr.md`
 - RULEBOOK V3.5/V3.4 하드 규칙 고정:
   - 보유 1~6, 최소보유 20일, 교체 +15%, 월교체 30%, trailing_stop=-20%
 - 고정 운영 제약:
@@ -96,8 +96,8 @@
 
 ## outputs
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v5_kr.json`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v5_kr.md`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_crosscheck_v5_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_candidates_v5_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_crosscheck_v5_kr.md`
 
 ## failure_policy
 - Stage05 seed 누락/비검증(VALIDATED 아님) 시 FAIL_STOP

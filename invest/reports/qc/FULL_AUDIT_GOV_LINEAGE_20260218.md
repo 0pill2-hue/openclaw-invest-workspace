@@ -2,7 +2,7 @@
 
 > **문서 등급:** INTERNAL AUDIT  
 > **감사 일시:** 2026-02-18 01:05 KST  
-> **감사 범위:** `invest/**/*.py`, `invest/scripts/**/*.py`, `reports/stage_updates/*.md`  
+> **감사 범위:** `invest/**/*.py`, `invest/scripts/**/*.py`, `invest/reports/stage_updates/*.md`  
 > **총 점검 파일:** Python 62개, Markdown 10개  
 
 ---
@@ -75,8 +75,8 @@ SUPPLY_DIR = os.path.join(BASE_DIR, 'data/clean/production/kr/supply')
 ### P3 — 5단계에서 10단계 역할(운영 지정) 수행 — 게이트 우회 【즉시조치】
 
 **관련 파일:**
-- `reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.md`  
-- `reports/stage_updates/stage07/stage07_purged_cv_oos.md` (`status: REQUIRED_NEXT_GATE`)
+- `invest/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.md`  
+- `invest/reports/stage_updates/stage07/stage07_purged_cv_oos.md` (`status: REQUIRED_NEXT_GATE`)
 
 **위반 내용:**  
 `STAGE05_BASELINE_FIXED_RUN_20260218.md`에서 이미 **운영1: Hybrid, 감시2: Quant·Text** 지정 완료.  
@@ -234,7 +234,7 @@ tg_dir       = '.../data/raw/text/telegram'   # raw 직접
 
 ### P10 — STAGE3_VALIDATION_SONNET: VALIDATED 판정 후 물리 폴더 미이동 【후순위】
 
-**파일:** `reports/stage_updates/STAGE3_VALIDATION_SONNET_20260218.md`
+**파일:** `invest/reports/stage_updates/STAGE3_VALIDATION_SONNET_20260218.md`
 
 ```
 - **검증 등급:** VALIDATED

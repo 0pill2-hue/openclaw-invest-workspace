@@ -8,7 +8,7 @@
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v3_4_kr.json
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v3_4_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_candidates_v3_4_kr.md
 
 ## quality_gates
 - 후보군 생성 완료

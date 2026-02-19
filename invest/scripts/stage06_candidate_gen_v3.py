@@ -26,7 +26,7 @@ NEWS_DIR = BASE / "invest/data/raw/market/news/rss"
 DART_DIR = BASE / "invest/data/raw/kr/dart/tagged"
 
 OUT_JSON = BASE / "invest/results/validated/stage06_candidates_v3.json"
-OUT_MD = BASE / "reports/stage_updates/stage06/stage06_candidates_v3.md"
+OUT_MD = BASE / "invest/reports/stage_updates/stage06/stage06_candidates_v3.md"
 
 
 @dataclass

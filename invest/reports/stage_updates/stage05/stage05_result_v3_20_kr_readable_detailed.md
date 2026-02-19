@@ -23,12 +23,12 @@
 - trailing_stop_count diff: 0
 
 ## 벤치마크 비교 그래프
-- KOSPI 그래프: `reports/stage_updates/charts/stage05_v3_20_vs_kospi.png`
-- KOSPI+KOSDAQ 그래프: `reports/stage_updates/charts/stage05_v3_20_vs_kospi_kosdaq.png` (KOSDAQ 보조선도 생성 완료)
+- KOSPI 그래프: `invest/reports/stage_updates/charts/stage05_v3_20_vs_kospi.png`
+- KOSPI+KOSDAQ 그래프: `invest/reports/stage_updates/charts/stage05_v3_20_vs_kospi_kosdaq.png` (KOSDAQ 보조선도 생성 완료)
 
-![stage05_v3_20_vs_kospi](reports/stage_updates/charts/stage05_v3_20_vs_kospi.png)
+![stage05_v3_20_vs_kospi](invest/reports/stage_updates/charts/stage05_v3_20_vs_kospi.png)
 
-![stage05_v3_20_vs_kospi_kosdaq](reports/stage_updates/charts/stage05_v3_20_vs_kospi_kosdaq.png)
+![stage05_v3_20_vs_kospi_kosdaq](invest/reports/stage_updates/charts/stage05_v3_20_vs_kospi_kosdaq.png)
 
 ### 그래프 해석
 - canonical 성과(공식): 누적수익률 4538.83%, CAGR 46.53%, MDD -73.96%
@@ -596,11 +596,11 @@
 | 2026-02-19 | 0.83 | 0 | 트레일링스탑:1, 꺾임신호:1 |
 
 ## 산출물
-- `reports/stage_updates/stage05/stage05_result_v3_20_kr_readable_detailed.md`
-- `reports/stage_updates/stage05/stage05_trade_events_v3_20_kr.csv`
-- `reports/stage_updates/stage05/stage05_portfolio_timeline_v3_20_kr.csv`
-- `reports/stage_updates/charts/stage05_v3_20_vs_kospi.png`
-- `reports/stage_updates/charts/stage05_v3_20_vs_kospi_kosdaq.png`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr_readable_detailed.md`
+- `invest/reports/stage_updates/stage05/stage05_trade_events_v3_20_kr.csv`
+- `invest/reports/stage_updates/stage05/stage05_portfolio_timeline_v3_20_kr.csv`
+- `invest/reports/stage_updates/charts/stage05_v3_20_vs_kospi.png`
+- `invest/reports/stage_updates/charts/stage05_v3_20_vs_kospi_kosdaq.png`
 
 ## reason 분류 기준(재계산)
 - buy_reason

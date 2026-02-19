@@ -1,17 +1,17 @@
 # Data Backfill Progress (2026-02-19, 중간)
 
 - Updated: 2026-02-19 10:34 KST
-- 기준 진단 리포트: `reports/stage_updates/data_gap_audit_20260219.md`
-- 기준 메트릭: `reports/stage_updates/data_backfill_metrics_pre_20260219.json`
+- 기준 진단 리포트: `invest/reports/stage_updates/data_gap_audit_20260219.md`
+- 기준 메트릭: `invest/reports/stage_updates/data_backfill_metrics_pre_20260219.json`
 
 ## 1) 백필 배치 실행 상태 (백그라운드)
 
 | Job | Session ID | Status | Log |
 |---|---|---|---|
-| DART missing-month batch (52 windows) | `gentle-lagoon` | RUNNING | `reports/stage_updates/logs/backfill_dart_20260219.log` |
-| Blog full-cycle backfill (6 passes) | `mellow-meadow` | RUNNING | `reports/stage_updates/logs/backfill_blog_20260219.log` |
-| Telegram full-history backfill | `mellow-willow` | RUNNING | `reports/stage_updates/logs/backfill_telegram_20260219.log` |
-| Stage01 기타 소스 재수집 | `plaid-orbit` | RUNNING | `reports/stage_updates/logs/backfill_stage01_missing_20260219.log` |
+| DART missing-month batch (52 windows) | `gentle-lagoon` | RUNNING | `invest/reports/stage_updates/logs/backfill_dart_20260219.log` |
+| Blog full-cycle backfill (6 passes) | `mellow-meadow` | RUNNING | `invest/reports/stage_updates/logs/backfill_blog_20260219.log` |
+| Telegram full-history backfill | `mellow-willow` | RUNNING | `invest/reports/stage_updates/logs/backfill_telegram_20260219.log` |
+| Stage01 기타 소스 재수집 | `plaid-orbit` | RUNNING | `invest/reports/stage_updates/logs/backfill_stage01_missing_20260219.log` |
 
 ## 2) 현재까지 확인된 진행
 

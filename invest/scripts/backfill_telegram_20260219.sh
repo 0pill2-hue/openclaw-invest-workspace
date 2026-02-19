@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="/Users/jobiseu/.openclaw/workspace"
 PY="$ROOT/.venv/bin/python3"
 SCRIPT="$ROOT/invest/scripts/stage01_scrape_telegram_highspeed.py"
-LOG="$ROOT/reports/stage_updates/logs/backfill_telegram_20260219.log"
+LOG="$ROOT/invest/reports/stage_updates/logs/backfill_telegram_20260219.log"
 mkdir -p "$(dirname "$LOG")"
 
 echo "[$(date '+%F %T')] Telegram backfill start" | tee -a "$LOG"

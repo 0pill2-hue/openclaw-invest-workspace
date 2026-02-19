@@ -84,9 +84,9 @@ bash invest/scripts/cron/cron_rss_telegram_date_fix.sh
 - RSS 보정 상태: `invest/data/runtime/rss_date_repair_status.json`
 - Telegram undated 보정 상태: `invest/data/runtime/telegram_date_index.json`
 - 크론 실행 로그:
-  - `reports/stage_updates/logs/cron/kr_supply_autorepair_20260219_140113.log`
-  - `reports/stage_updates/logs/cron/dart_backfill_autopilot_20260219_140123.log`
-  - `reports/stage_updates/logs/cron/rss_telegram_date_fix_20260219_140251.log`
+  - `invest/reports/stage_updates/logs/cron/kr_supply_autorepair_20260219_140113.log`
+  - `invest/reports/stage_updates/logs/cron/dart_backfill_autopilot_20260219_140123.log`
+  - `invest/reports/stage_updates/logs/cron/rss_telegram_date_fix_20260219_140251.log`
 - DART 전환 규칙 테스트 로그:
-  - `reports/stage_updates/logs/cron/dart_backfill_autopilot_force_monitor_1.log`
-  - `reports/stage_updates/logs/cron/dart_backfill_autopilot_force_monitor_2.log`
+  - `invest/reports/stage_updates/logs/cron/dart_backfill_autopilot_force_monitor_1.log`
+  - `invest/reports/stage_updates/logs/cron/dart_backfill_autopilot_force_monitor_2.log`

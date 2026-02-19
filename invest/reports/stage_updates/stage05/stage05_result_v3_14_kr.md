@@ -10,12 +10,12 @@
   - `invest/data/raw/text/telegram/*.md`
 
 ## run_command(or process)
-- `python3 invest/scripts/stage05_rerun_v3_14_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_14_kr.log`
+- `python3 invest/scripts/stage05_rerun_v3_14_kr.py | tee invest/reports/stage_updates/logs/stage05_rerun_v3_14_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_14_kr.json`
-- `reports/stage_updates/stage05/stage05_result_v3_14_kr.md`
-- `reports/stage_updates/stage05/stage05_policy_patch_v3_14_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_14_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_policy_patch_v3_14_kr.md`
 
 ## quality_gates
 - KRX only guard: PASS
@@ -33,7 +33,7 @@
 
 ## proof
 - script: `invest/scripts/stage05_rerun_v3_14_kr.py`
-- log: `reports/stage_updates/logs/stage05_rerun_v3_14_kr.log`
+- log: `invest/reports/stage_updates/logs/stage05_rerun_v3_14_kr.log`
 - result json: `invest/results/validated/stage05_baselines_v3_14_kr.json`
 
 ---

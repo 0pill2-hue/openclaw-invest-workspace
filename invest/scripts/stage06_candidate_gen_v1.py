@@ -51,7 +51,7 @@ def load_simple_yaml(path: Path) -> dict:
 
 
 def load_stage05_metrics() -> dict:
-    p = BASE / "reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json"
+    p = BASE / "invest/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json"
     if not p.exists():
         return {"CAGR": 0.2874, "MDD": -0.1005, "Sharpe": 1.501}
     try:
@@ -114,7 +114,7 @@ def main() -> int:
 
     base_metrics = load_stage05_metrics()
     candidates = build_candidates(base_metrics, variants_per_track, portfolio_stop, base_cost_bps)
-    json_path, csv_path = save_outputs(candidates, ["reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json", "reports/stage_updates/stage05/stage05_baseline_3track.md"])
+    json_path, csv_path = save_outputs(candidates, ["invest/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json", "invest/reports/stage_updates/stage05/stage05_baseline_3track.md"])
     print(f"OK: wrote {json_path}")
     print(f"OK: wrote {csv_path}")
     print(f"OK: candidates={len(candidates)}")

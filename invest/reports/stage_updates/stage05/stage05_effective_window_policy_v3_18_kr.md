@@ -1,7 +1,7 @@
 # stage05_effective_window_policy_v3_18_kr
 
 ## inputs
-- 기준 Rulebook: `invest/strategy/RULEBOOK_V1_20260218.md`
+- 기준 Rulebook: `invest/docs/strategy/RULEBOOK_V1_20260218.md`
 - 기반 Stage05: `invest/scripts/stage05_rerun_v3_16_kr.py`
 - 사용자 확정 지시: "Stage05부터 재시작, 평가 로직만 유효구간 기준 적용"
 

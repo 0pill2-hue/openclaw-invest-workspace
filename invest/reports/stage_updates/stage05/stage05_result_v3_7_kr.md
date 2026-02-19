@@ -11,8 +11,8 @@
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_7_kr.json`
-- `reports/stage_updates/stage05/stage05_brainstorm_decision_v3_7_kr.md`
-- `reports/stage_updates/stage05/stage05_result_v3_7_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_brainstorm_decision_v3_7_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_7_kr.md`
 
 ## quality_gates
 - Rulebook 고정 제약(1~6 / 20거래일 / +15% / 월30%): PASS

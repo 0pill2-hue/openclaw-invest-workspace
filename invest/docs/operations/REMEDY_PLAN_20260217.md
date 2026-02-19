@@ -34,7 +34,7 @@ def validate_ohlcv(df, market='KR'):
 ```
 
 ## 3. 보고 포맷 (STAGE3_SUMMARY)
-매 실행 시 `reports/stage_updates/SUMMARY_YYYYMMDD.md` 생성:
+매 실행 시 `invest/reports/stage_updates/SUMMARY_YYYYMMDD.md` 생성:
 ```markdown
 # Stage 3 가치 산출 요약 (YYYY-MM-DD)
 - **정제율:** 99.8% (Issue: 68 -> 2)

@@ -11,9 +11,9 @@
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_20_kr.json`
-- `reports/stage_updates/stage05/stage05_result_v3_20_kr.md`
-- `reports/stage_updates/stage05/stage05_result_v3_20_kr_readable.md`
-- `reports/stage_updates/stage05/stage05_patch_diff_v3_20_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr_readable.md`
+- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_20_kr.md`
 - `invest/results/test/stage05_baselines_v3_19_kr_fail.json`
 
 ## quality_gates
@@ -29,7 +29,7 @@
 
 ## proof
 - code: `invest/scripts/stage05_incremental_external_v3_20_kr.py`
-- log: `reports/stage_updates/logs/stage05_incremental_external_v3_20_kr.log`
+- log: `invest/reports/stage_updates/logs/stage05_incremental_external_v3_20_kr.log`
 - result: `invest/results/validated/stage05_baselines_v3_20_kr.json`
 
 ---

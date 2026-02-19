@@ -1,8 +1,8 @@
 # stage05_result_v3_15_kr
 
 ## inputs
-- design doc: `reports/stage_updates/stage05/stage05_overfit_brainstorm_v3_15_kr.md`
-- patch spec: `reports/stage_updates/stage05/stage05_patch_diff_v3_15_kr.md`
+- design doc: `invest/reports/stage_updates/stage05/stage05_overfit_brainstorm_v3_15_kr.md`
+- patch spec: `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_15_kr.md`
 - config: `invest/config/stage05_auto_capture_v3_15_kr.yaml`
 - runner: `invest/scripts/stage05_rerun_v3_15_kr.py`
 - data:
@@ -13,15 +13,15 @@
 
 ## run_command(or process)
 - `python3 -m py_compile invest/scripts/stage05_rerun_v3_15_kr.py`
-- `python3 invest/scripts/stage05_rerun_v3_15_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
+- `python3 invest/scripts/stage05_rerun_v3_15_kr.py | tee invest/reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_15_kr.json`
-- `reports/stage_updates/stage05/stage05_result_v3_15_kr.md`
-- `reports/stage_updates/stage05/stage05_patch_diff_v3_15_kr.md`
-- `reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
-- `reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
-- `reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_15_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_15_kr.md`
+- `invest/reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
+- `invest/reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
+- `invest/reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
 
 ## quality_gates
 - KRX only guard: PASS
@@ -40,9 +40,9 @@
 
 ## proof
 - result json: `invest/results/validated/stage05_baselines_v3_15_kr.json`
-- run log: `reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
-- static scan: `reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
-- dynamic universe: `reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
+- run log: `invest/reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
+- static scan: `invest/reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
+- dynamic universe: `invest/reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
 - config hash: `6108eca6df755960bffe0fa0020e03087f3e9581a86917cde9bebdb53a7de79b`
 - search hash: `f20652b8a2b5d54b08921eb85dee63dd862fb8954b88407c0a76490c922233c9`
 
@@ -83,11 +83,11 @@
 
 ## 4) anti-overfit 검증 상세
 ### A. 정적 스캔 (티커 하드코딩 탐지)
-- 파일: `reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
+- 파일: `invest/reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
 - 결과: `scan_pass=true` (allowlist/favorites/ticker literal hit 없음)
 
 ### B. 동적 유니버스 증빙
-- 파일: `reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
+- 파일: `invest/reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
 - 규칙: `liquidity_top_n`, `limit=180`, `min_history_days=700`
 - membership hash: `ba2ae9dbb6f3c71522e0032bdec362048bb3c2681805d4de2ec96c33c8eab200`
 

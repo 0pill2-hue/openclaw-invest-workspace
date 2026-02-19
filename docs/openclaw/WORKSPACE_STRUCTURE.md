@@ -16,7 +16,7 @@ Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위
 ## Top-level operational (존재 확인됨)
 - `.venv/` : 루트 Python 가상환경
 - `.openclaw_tmp/` : 임시 작업 디렉터리
-- `scripts/` : (비워둠/예약) 루트 스크립트 사용 금지, 투자 실행은 invest/scripts만 사용
+- `invest/scripts/` : (비워둠/예약) 루트 스크립트 사용 금지, 투자 실행은 invest/scripts만 사용
 - `automation/` : 운영 자동화 보조
 
 ## invest 내부 canonical

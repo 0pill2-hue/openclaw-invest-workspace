@@ -13,12 +13,12 @@
   - `invest/data/raw/text/telegram/*.md`
 
 ## run_command(or process)
-- `python3 invest/scripts/stage05_rerun_v3_16_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_16_kr.log`
+- `python3 invest/scripts/stage05_rerun_v3_16_kr.py | tee invest/reports/stage_updates/logs/stage05_rerun_v3_16_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_16_kr.json`
-- `reports/stage_updates/stage05/stage05_result_v3_16_kr.md`
-- `reports/stage_updates/stage05/stage05_density_adaptive_patch_v3_16_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_16_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_density_adaptive_patch_v3_16_kr.md`
 
 ## quality_gates
 - RULEBOOK V3.x 하드룰(보유1~6, 최소보유20, 교체+15%, 월교체30): PASS
@@ -39,7 +39,7 @@
 
 ## proof
 - JSON: `invest/results/validated/stage05_baselines_v3_16_kr.json`
-- log: `reports/stage_updates/logs/stage05_rerun_v3_16_kr.log`
+- log: `invest/reports/stage_updates/logs/stage05_rerun_v3_16_kr.log`
 - code: `invest/scripts/stage05_rerun_v3_16_kr.py`
 
 ---

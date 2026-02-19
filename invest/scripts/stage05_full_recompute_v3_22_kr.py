@@ -19,8 +19,8 @@ from stage05_baseline_guard import (
 BASE = Path(__file__).resolve().parents[1]
 VALIDATED = BASE / "invest/results/validated"
 TEST_RESULTS = BASE / "invest/results/test"
-REPORTS = BASE / "reports/stage_updates/stage05"
-LOG_DIR = BASE / "reports/stage_updates/logs"
+REPORTS = BASE / "invest/reports/stage_updates/stage05"
+LOG_DIR = BASE / "invest/reports/stage_updates/logs"
 RAW_TEXT = BASE / "invest/data/raw/text"
 
 PREV_V321_JSON = VALIDATED / "stage05_baselines_v3_21_kr.json"
@@ -299,9 +299,9 @@ def write_result_md(payload: dict[str, Any]) -> None:
         "",
         "## outputs",
         "- `invest/results/validated/stage05_baselines_v3_22_kr.json`",
-        "- `reports/stage_updates/stage05/stage05_result_v3_22_kr.md`",
-        "- `reports/stage_updates/stage05/stage05_result_v3_22_kr_readable.md`",
-        "- `reports/stage_updates/stage05/stage05_patch_diff_v3_22_kr.md`",
+        "- `invest/reports/stage_updates/stage05/stage05_result_v3_22_kr.md`",
+        "- `invest/reports/stage_updates/stage05/stage05_result_v3_22_kr_readable.md`",
+        "- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_22_kr.md`",
         "",
         "## recompute evidence (필수)",
         f"- full_recompute=true: {str(payload['full_recompute']).lower()}",

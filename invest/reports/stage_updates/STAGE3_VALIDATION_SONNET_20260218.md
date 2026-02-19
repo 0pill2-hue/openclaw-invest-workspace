@@ -2,7 +2,7 @@
 
 - **검증 일시:** 2026-02-18 00:10 KST
 - **검증 모델:** claude-sonnet-4-5 (subagent, 독립 수행)
-- **입력 리포트:** `reports/stage_updates/STAGE3_VALUE_RUN_20260217_234226.json`
+- **입력 리포트:** `invest/reports/stage_updates/STAGE3_VALUE_RUN_20260217_234226.json`
 - **입력 데이터:** `invest/data/value/stage3/{kr,us}/ohlcv/*.csv`
 - **최종 판정:** ✅ **PASS → Go**
 

@@ -11,8 +11,8 @@
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_3x3_v3_9_kr.json
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05/stage05_3x3_design_v3_9_kr.md
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05/stage05_3x3_result_v3_9_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage05/stage05_3x3_design_v3_9_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage05/stage05_3x3_result_v3_9_kr.md
 
 ## quality_gates
 - KRX only guard pass (US ticker/path reject)

@@ -2,8 +2,8 @@
 
 ## inputs
 - Stage05 3x3 결과(JSON): `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`
-- Stage05 설계 리포트: `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05/stage05_3x3_design_v3_9_kr.md`
-- Stage05 결과 리포트: `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05/stage05_3x3_result_v3_9_kr.md`
+- Stage05 설계 리포트: `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage05/stage05_3x3_design_v3_9_kr.md`
+- Stage05 결과 리포트: `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage05/stage05_3x3_result_v3_9_kr.md`
 - RULEBOOK 기준: 보유 1~6, 최소보유 20일, 교체 +15%, 월교체 30%, KRX only, external_proxy 선발 제외
 
 ---
@@ -82,7 +82,7 @@
 
 ## outputs
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v4_kr.json`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v4_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_candidates_v4_kr.md`
 
 ## proof
 - `/Users/jobiseu/.openclaw/workspace/invest/scripts/stage06_candidates_v4_kr.py`

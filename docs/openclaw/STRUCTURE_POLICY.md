@@ -10,11 +10,11 @@
 - Legacy 파일은 참조/리다이렉트만 허용, 운영 기준으로 사용 금지.
 
 ### 2) 스테이지 산출물
-- 루트: `reports/stage_updates/`
-- 스테이지별: `reports/stage_updates/stage01/` ... `stage11/`
-- 공통: `reports/stage_updates/common/`
-- 로그: `reports/stage_updates/logs/`
-- 차트: `reports/stage_updates/charts/` (필요시 `stageXX/charts/`)
+- 루트: `invest/reports/stage_updates/`
+- 스테이지별: `invest/reports/stage_updates/stage01/` ... `stage11/`
+- 공통: `invest/reports/stage_updates/common/`
+- 로그: `invest/reports/stage_updates/logs/`
+- 차트: `invest/reports/stage_updates/charts/` (필요시 `stageXX/charts/`)
 
 ### 3) 결과 데이터
 - test: `invest/results/test/`
@@ -27,7 +27,7 @@
 ## 강제 규칙
 1. 새 보고서/산출물은 반드시 해당 stage 폴더에 저장.
 2. 코드/문서 경로는 stage 폴더 기준으로만 참조.
-3. `reports/stage_updates/stage05_*.md` 같은 루트 직파일 출력 금지.
+3. `invest/reports/stage_updates/stage05_*.md` 같은 루트 직파일 출력 금지.
 4. Stage05는 12-baseline(3/3/3/3) 가드 통과 전 결과 무효.
 
 ## 마이그레이션 체크

@@ -44,14 +44,14 @@ bash invest/scripts/cron/cron_rss_telegram_date_fix.sh
 - `invest/data/runtime/telegram_date_index.json`
 
 ### 크론 실행 로그
-- `reports/stage_updates/logs/cron/kr_supply_autorepair_20260219_140113.log`
-- `reports/stage_updates/logs/cron/dart_backfill_autopilot_20260219_140123.log`
-- `reports/stage_updates/logs/cron/dart_backfill_autopilot_force_monitor_1.log`
-- `reports/stage_updates/logs/cron/dart_backfill_autopilot_force_monitor_2.log`
-- `reports/stage_updates/logs/cron/rss_telegram_date_fix_20260219_140251.log`
+- `invest/reports/stage_updates/logs/cron/kr_supply_autorepair_20260219_140113.log`
+- `invest/reports/stage_updates/logs/cron/dart_backfill_autopilot_20260219_140123.log`
+- `invest/reports/stage_updates/logs/cron/dart_backfill_autopilot_force_monitor_1.log`
+- `invest/reports/stage_updates/logs/cron/dart_backfill_autopilot_force_monitor_2.log`
+- `invest/reports/stage_updates/logs/cron/rss_telegram_date_fix_20260219_140251.log`
 
 ### 핵심 결과
 - Supply: 누락/빈파일 0건 유지 확인
 - DART: 201905~201908 월 백필 자동 진행 확인(남은 결손 지속 추적)
-- Telegram undated: `reports/stage_updates/data_backfill_metrics_pre_20260219.json` 기준 19건 → `invest/data/runtime/telegram_date_index.json` 기준 0건
+- Telegram undated: `invest/reports/stage_updates/data_backfill_metrics_pre_20260219.json` 기준 19건 → `invest/data/runtime/telegram_date_index.json` 기준 0건
 - RSS date 파싱: 기존 파일 정규화 완료, 재실행 시 idempotent(추가 수정 0) (`invest/data/runtime/rss_date_repair_status.json`)

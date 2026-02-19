@@ -4,15 +4,15 @@ set -euo pipefail
 ROOT="/Users/jobiseu/.openclaw/workspace"
 PY="$ROOT/invest/venv/bin/python"
 SCRIPT="$ROOT/invest/scripts/stage01_fetch_dart_disclosures.py"
-PRE="$ROOT/reports/stage_updates/data_backfill_metrics_pre_20260219.json"
-LOG="$ROOT/reports/stage_updates/logs/backfill_dart_20260219.log"
+PRE="$ROOT/invest/reports/stage_updates/data_backfill_metrics_pre_20260219.json"
+LOG="$ROOT/invest/reports/stage_updates/logs/backfill_dart_20260219.log"
 mkdir -p "$(dirname "$LOG")"
 
 echo "[$(date '+%F %T')] DART backfill start" | tee -a "$LOG"
 
 python3 - <<'PY' > "$ROOT/invest/data/runtime/dart_missing_months_20260219.txt"
 import json, datetime
-p='reports/stage_updates/data_backfill_metrics_pre_20260219.json'
+p='invest/reports/stage_updates/data_backfill_metrics_pre_20260219.json'
 now=datetime.datetime.now()
 with open(p,'r',encoding='utf-8') as f:
     d=json.load(f)

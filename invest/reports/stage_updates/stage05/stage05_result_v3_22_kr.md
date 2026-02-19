@@ -11,9 +11,9 @@
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_22_kr.json`
-- `reports/stage_updates/stage05/stage05_result_v3_22_kr.md`
-- `reports/stage_updates/stage05/stage05_result_v3_22_kr_readable.md`
-- `reports/stage_updates/stage05/stage05_patch_diff_v3_22_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_22_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_22_kr_readable.md`
+- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_22_kr.md`
 
 ## recompute evidence (필수)
 - full_recompute=true: true

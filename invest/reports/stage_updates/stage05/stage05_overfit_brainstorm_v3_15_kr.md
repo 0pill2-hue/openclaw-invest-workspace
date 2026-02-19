@@ -2,14 +2,14 @@
 
 ## inputs
 - 기존 Stage05 엔진/라운드 구조: `invest/scripts/stage05_rerun_v3_14_kr.py`, `invest/scripts/stage05_density_repeat_v3_12_kr.py`
-- 기존 Stage05 결과/정책: `invest/results/validated/stage05_baselines_v3_12_kr.json`, `reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
+- 기존 Stage05 결과/정책: `invest/results/validated/stage05_baselines_v3_12_kr.json`, `invest/reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
 - 운영 룰북: `invest/docs/strategy/RULEBOOK_V3.md`
 
 ## run_command(or process)
 - 브레인스토밍/설계 문서화 작업 (코드 실행 없음)
 
 ## outputs
-- `reports/stage_updates/stage05/stage05_overfit_brainstorm_v3_15_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_overfit_brainstorm_v3_15_kr.md`
 
 ## quality_gates
 - 고정 종목 없이 자동 포착 로직 3안 제시: PASS
@@ -208,7 +208,7 @@
 
 필수 4종 증빙:
 1. **정적 코드 증빙**
-   - 티커 allowlist/favorites 키워드 스캔 로그 저장(예: `reports/stage_updates/logs/stage05_no_whitelist_scan.log`)
+   - 티커 allowlist/favorites 키워드 스캔 로그 저장(예: `invest/reports/stage_updates/logs/stage05_no_whitelist_scan.log`)
 2. **동적 유니버스 증빙**
    - 각 리밸런싱 날짜별 유니버스 산출 근거(유동성 순위/데이터완전성) 저장
    - 결과 JSON에 `universe_membership_by_date` 해시 기록

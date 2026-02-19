@@ -7,7 +7,7 @@
 - `python3 invest/scripts/run_stage05_09_v3_4_kr.py`
 
 ## outputs
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05/stage05_cross_review_v3_4_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage05/stage05_cross_review_v3_4_kr.md
 
 ## quality_gates
 - Opus/Sonnet/AgPro 역할 분리
@@ -17,7 +17,7 @@
 - 중대한 누수/정합성 이슈 시 FAIL
 
 ## proof
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05/stage05_cross_review_v3_4_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage05/stage05_cross_review_v3_4_kr.md
 
 ## review
 - Opus(논리 타당성): PASS - Rulebook 제약(보유 1~6, KRX 전용)과 리밸런싱 논리 일관.

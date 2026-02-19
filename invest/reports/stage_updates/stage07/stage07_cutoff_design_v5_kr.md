@@ -3,14 +3,14 @@
 ## inputs
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v5_kr.json`
 - `/Users/jobiseu/.openclaw/workspace/invest/docs/strategy/RULEBOOK_V3.md`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v5_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_candidates_v5_kr.md`
 
 ## run_command(or process)
 - `python3 invest/scripts/stage07_cutoff_v5_kr.py` (설계 반영 대상)
 
 ## outputs
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage07_candidates_cut_v5_kr.json`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage07/stage07_cutoff_v5_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage07/stage07_cutoff_v5_kr.md`
 
 ## hard_gate (new_selection_gate)
 - policy_id: `anti_numeric_monopoly_gate_v1`
@@ -46,5 +46,5 @@
 
 ## proof
 - `/Users/jobiseu/.openclaw/workspace/invest/docs/strategy/RULEBOOK_V3.md`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage07/stage07_cutoff_design_v5_kr.md`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v4_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage07/stage07_cutoff_design_v5_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_candidates_v4_kr.md`

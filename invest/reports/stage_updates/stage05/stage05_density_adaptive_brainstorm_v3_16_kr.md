@@ -11,7 +11,7 @@
 - 브레인스토밍/정책 설계 문서화 (코드 실행 없음)
 
 ## outputs
-- `reports/stage_updates/stage05/stage05_density_adaptive_brainstorm_v3_16_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_density_adaptive_brainstorm_v3_16_kr.md`
 - (후속 적용) `invest/scripts/stage05_rerun_v3_16_kr.py`, `invest/config/stage05_auto_capture_v3_16_kr.yaml`
 
 ## quality_gates

@@ -9,9 +9,9 @@
 ## 입력/출력
 - input(base9): `invest/results/validated/stage05_baselines_3x3_v3_9_kr.json`
 - output(result): `invest/results/validated/stage05_baselines_v3_21_kr.json`
-- output(report): `reports/stage_updates/stage05/stage05_result_v3_21_kr.md`
-- output(readable): `reports/stage_updates/stage05/stage05_result_v3_21_kr_readable.md`
-- output(patch): `reports/stage_updates/stage05/stage05_patch_diff_v3_21_kr.md`
+- output(report): `invest/reports/stage_updates/stage05/stage05_result_v3_21_kr.md`
+- output(readable): `invest/reports/stage_updates/stage05/stage05_result_v3_21_kr_readable.md`
+- output(patch): `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_21_kr.md`
 
 ## hard-rule 유지 확인
 - KRX only: 유지

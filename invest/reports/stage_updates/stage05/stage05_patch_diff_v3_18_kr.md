@@ -3,17 +3,17 @@
 ## inputs
 - base runner: `invest/scripts/stage05_rerun_v3_16_kr.py`
 - base config: `invest/config/stage05_auto_capture_v3_16_kr.yaml`
-- policy doc: `reports/stage_updates/stage05/stage05_effective_window_policy_v3_18_kr.md`
+- policy doc: `invest/reports/stage_updates/stage05/stage05_effective_window_policy_v3_18_kr.md`
 
 ## run_command(or process)
 - `cp invest/scripts/stage05_rerun_v3_16_kr.py invest/scripts/stage05_rerun_v3_18_kr.py`
 - `python3 -m py_compile invest/scripts/stage05_rerun_v3_18_kr.py`
-- `python3 invest/scripts/stage05_rerun_v3_18_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
+- `python3 invest/scripts/stage05_rerun_v3_18_kr.py | tee invest/reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
 
 ## outputs
 - `invest/scripts/stage05_rerun_v3_18_kr.py`
 - `invest/config/stage05_auto_capture_v3_18_kr.yaml`
-- `reports/stage_updates/stage05/stage05_patch_diff_v3_18_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_patch_diff_v3_18_kr.md`
 
 ## quality_gates
 - Stage04 입력 변경 없음: PASS
@@ -30,7 +30,7 @@
 ## proof
 - code: `invest/scripts/stage05_rerun_v3_18_kr.py`
 - config: `invest/config/stage05_auto_capture_v3_18_kr.yaml`
-- run log: `reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
+- run log: `invest/reports/stage_updates/logs/stage05_rerun_v3_18_kr.log`
 - result: `invest/results/validated/stage05_baselines_v3_18_kr.json`
 
 ---

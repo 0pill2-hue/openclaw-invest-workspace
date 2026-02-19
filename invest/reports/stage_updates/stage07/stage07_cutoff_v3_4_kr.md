@@ -8,7 +8,7 @@
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage07_candidates_cut_v3_4_kr.json
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage07/stage07_cutoff_v3_4_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage07/stage07_cutoff_v3_4_kr.md
 
 ## quality_gates
 - 컷오프 규칙 적용(Return>2000%, MDD>-40%)

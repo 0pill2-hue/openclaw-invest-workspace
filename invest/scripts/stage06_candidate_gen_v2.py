@@ -33,7 +33,7 @@ class TrackMetric:
 
 
 def load_stage05_tracks() -> dict[str, TrackMetric]:
-    p = BASE / "reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json"
+    p = BASE / "invest/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json"
     data = json.loads(p.read_text())
     out: dict[str, TrackMetric] = {}
     for row in data.get("comparison_table", []):
@@ -190,7 +190,7 @@ def save(raw: list[dict], filtered: list[dict], comparison_samples: list[dict]) 
 
     h = hashlib.sha256()
     for rel in [
-        "reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json",
+        "invest/reports/stage_updates/STAGE05_BASELINE_FIXED_RUN_20260218.json",
         "invest/results/validated/stage05_chronos_large_battle.json",
     ]:
         fp = BASE / rel

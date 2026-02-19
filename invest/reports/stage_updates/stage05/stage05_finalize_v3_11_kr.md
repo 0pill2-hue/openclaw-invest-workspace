@@ -7,12 +7,12 @@
 - 실행 스크립트: `invest/scripts/stage05_finalize_v3_11_kr.py`
 
 ## run_command(or process)
-- `python3 invest/scripts/stage05_finalize_v3_11_kr.py | tee reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
+- `python3 invest/scripts/stage05_finalize_v3_11_kr.py | tee invest/reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
 
 ## outputs
 - `invest/results/validated/stage05_baselines_v3_11_kr.json`
-- `reports/stage_updates/stage05/stage05_finalize_v3_11_kr.md`
-- `reports/stage_updates/stage05/stage05_crosscheck_v3_11_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_finalize_v3_11_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_crosscheck_v3_11_kr.md`
 
 ## quality_gates
 - RULEBOOK V3.5 고정값(min_hold=20d, replace_edge=+15%, monthly_replace_cap=30%): **PASS**
@@ -33,8 +33,8 @@
 ## proof
 - `invest/results/validated/stage05_baselines_v3_11_kr.json`
 - `invest/scripts/stage05_finalize_v3_11_kr.py`
-- `reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
-- `reports/stage_updates/logs/stage05_verify_v3_11_kr.log`
+- `invest/reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
+- `invest/reports/stage_updates/logs/stage05_verify_v3_11_kr.log`
 - `invest/docs/strategy/RULEBOOK_V3.md`
 
 ---

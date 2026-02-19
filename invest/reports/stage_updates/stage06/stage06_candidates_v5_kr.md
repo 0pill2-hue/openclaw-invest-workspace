@@ -11,7 +11,7 @@
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v5_kr.json
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v5_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_candidates_v5_kr.md
 
 ## quality_gates
 - candidate_count_match_plan: True

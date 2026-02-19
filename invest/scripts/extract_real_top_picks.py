@@ -114,7 +114,7 @@ def main() -> None:
     )
     ap.add_argument(
         "--output-md",
-        default="reports/stage_updates/stage06/stage06_real_top_picks.md",
+        default="invest/reports/stage_updates/stage06/stage06_real_top_picks.md",
         help="Output markdown path",
     )
     args = ap.parse_args()

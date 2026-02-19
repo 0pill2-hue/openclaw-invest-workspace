@@ -18,10 +18,10 @@ from pykrx import stock
 BASE = Path(__file__).resolve().parents[1]
 RESULT_V320 = BASE / "invest/results/validated/stage05_baselines_v3_20_kr.json"
 RESULT_V318 = BASE / "invest/results/validated/stage05_baselines_v3_18_kr.json"
-OUT_REPORT = BASE / "reports/stage_updates/stage05/stage05_result_v3_20_kr_readable_detailed.md"
-OUT_EVENTS_CSV = BASE / "reports/stage_updates/stage05/stage05_trade_events_v3_20_kr.csv"
-OUT_TIMELINE_CSV = BASE / "reports/stage_updates/stage05/stage05_portfolio_timeline_v3_20_kr.csv"
-OUT_CHART_DIR = BASE / "reports/stage_updates/charts"
+OUT_REPORT = BASE / "invest/reports/stage_updates/stage05/stage05_result_v3_20_kr_readable_detailed.md"
+OUT_EVENTS_CSV = BASE / "invest/reports/stage_updates/stage05/stage05_trade_events_v3_20_kr.csv"
+OUT_TIMELINE_CSV = BASE / "invest/reports/stage_updates/stage05/stage05_portfolio_timeline_v3_20_kr.csv"
+OUT_CHART_DIR = BASE / "invest/reports/stage_updates/charts"
 OUT_CHART_KOSPI = OUT_CHART_DIR / "stage05_v3_20_vs_kospi.png"
 OUT_CHART_KOSPI_KOSDAQ = OUT_CHART_DIR / "stage05_v3_20_vs_kospi_kosdaq.png"
 

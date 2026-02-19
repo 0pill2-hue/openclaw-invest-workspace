@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="/Users/jobiseu/.openclaw/workspace"
 PY="$ROOT/invest/venv/bin/python"
 SCRIPT="$ROOT/invest/scripts/stage01_scrape_all_posts_v2.py"
-LOG="$ROOT/reports/stage_updates/logs/backfill_blog_20260219.log"
+LOG="$ROOT/invest/reports/stage_updates/logs/backfill_blog_20260219.log"
 mkdir -p "$(dirname "$LOG")"
 
 echo "[$(date '+%F %T')] Blog backfill start" | tee -a "$LOG"

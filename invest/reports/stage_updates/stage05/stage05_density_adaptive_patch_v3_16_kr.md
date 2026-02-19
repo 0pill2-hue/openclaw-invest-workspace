@@ -3,7 +3,7 @@
 ## inputs
 - base script: `invest/scripts/stage05_rerun_v3_15_kr.py`
 - base config: `invest/config/stage05_auto_capture_v3_15_kr.yaml`
-- target policy: `reports/stage_updates/stage05/stage05_density_adaptive_brainstorm_v3_16_kr.md`
+- target policy: `invest/reports/stage_updates/stage05/stage05_density_adaptive_brainstorm_v3_16_kr.md`
 - 사용자 강화 지시: high-density gate `+0.25 / MDD / turnover<=1.05x`
 
 ## run_command(or process)
@@ -14,7 +14,7 @@
 ## outputs
 - `invest/scripts/stage05_rerun_v3_16_kr.py`
 - `invest/config/stage05_auto_capture_v3_16_kr.yaml`
-- `reports/stage_updates/stage05/stage05_density_adaptive_patch_v3_16_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_density_adaptive_patch_v3_16_kr.md`
 
 ## quality_gates
 - RULEBOOK 하드룰(보유1~6/최소20/+15/월30) 유지: PASS

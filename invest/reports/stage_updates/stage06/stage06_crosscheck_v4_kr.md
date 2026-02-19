@@ -2,14 +2,14 @@
 
 ## inputs
 - `/Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v4_kr.json`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_candidates_v4_kr.md`
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_brainstorm_plan_v4_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_candidates_v4_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_brainstorm_plan_v4_kr.md`
 
 ## run_command(or process)
 - `python3 invest/scripts/stage06_candidates_v4_kr.py`
 
 ## outputs
-- `/Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage06/stage06_crosscheck_v4_kr.md`
+- `/Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage06/stage06_crosscheck_v4_kr.md`
 
 ## quality_gates
 - Opus/Sonnet/AgPro 3관점 요약 포함

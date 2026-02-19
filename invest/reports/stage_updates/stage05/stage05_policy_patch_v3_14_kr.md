@@ -2,13 +2,13 @@
 
 ## inputs
 - 사용자 정책 업데이트(10:10): 기존 "정성 50% 하드고정" 폐기, **B + C 채택**
-- 기존 Stage05 정책: `reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
+- 기존 Stage05 정책: `invest/reports/stage_updates/stage05/stage05_policy_decision_v3_13_kr.md`
 - 구현 대상 스크립트: `invest/scripts/stage05_rerun_v3_14_kr.py`
 
 ## outputs
 - `invest/scripts/stage05_rerun_v3_14_kr.py` (정책 반영 실행기)
 - `invest/results/validated/stage05_baselines_v3_14_kr.json`
-- `reports/stage_updates/stage05/stage05_result_v3_14_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_14_kr.md`
 
 ## quality_gates
 - Gate1/2 정책이 코드 및 결과 JSON에 모두 기록됨: PASS
@@ -23,7 +23,7 @@
 ## proof
 - code: `invest/scripts/stage05_rerun_v3_14_kr.py`
 - json: `invest/results/validated/stage05_baselines_v3_14_kr.json`
-- report: `reports/stage_updates/stage05/stage05_result_v3_14_kr.md`
+- report: `invest/reports/stage_updates/stage05/stage05_result_v3_14_kr.md`
 
 ---
 

@@ -28,7 +28,7 @@
   - `expected_track_counts`
 
 ### 3) Rulebook 재명시
-- 파일: `invest/strategy/RULEBOOK_V1_20260218.md` (섹션 16)
+- 파일: `invest/docs/strategy/RULEBOOK_V1_20260218.md` (섹션 16)
 - 추가 조항:
   - 12-baseline 하드체크(`track_counts 3/3/3/3`) 불일치 시 FAIL_STOP
   - 결과 JSON 필수 필드(`protocol_enforced`, `track_counts_assertion`)
@@ -40,10 +40,10 @@
 
 ### B. 최소 실행 검증(Stage05)
 - `python3 invest/scripts/stage05_incremental_external_v3_20_kr.py`
-  - 출력 경로: `reports/stage_updates/stage05/stage05_result_v3_20_kr.md` 등
+  - 출력 경로: `invest/reports/stage_updates/stage05/stage05_result_v3_20_kr.md` 등
   - gate1: PASS
 - `python3 invest/scripts/stage05_incremental_external_v3_21_kr.py`
-  - 출력 경로: `reports/stage_updates/stage05/stage05_result_v3_21_kr.md` 등
+  - 출력 경로: `invest/reports/stage_updates/stage05/stage05_result_v3_21_kr.md` 등
   - gate1: PASS
 
 ### C. JSON 필드 검증

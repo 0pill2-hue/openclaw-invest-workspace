@@ -8,7 +8,7 @@
 
 ## outputs
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage08_value_assessment_v3_4_kr.json
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage08/stage08_value_v3_4_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage08/stage08_value_v3_4_kr.md
 
 ## quality_gates
 - 챔피언 1개 선정

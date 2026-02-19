@@ -9,18 +9,18 @@ inputs:
     - invest/data/clean/production/kr/supply
   value_script: invest/scripts/calculate_stage3_values.py
 outputs:
-  value_report: reports/stage_updates/STAGE3_VALUE_RUN_*.json
+  value_report: invest/reports/stage_updates/STAGE3_VALUE_RUN_*.json
   value_manifest: invest/reports/data_quality/manifest_stage3_value_*.json
 run_command:
   - python3 invest/scripts/calculate_stage3_values.py
 proof:
-  - reports/stage_updates/STAGE3_VALUE_RUN_*.json
+  - invest/reports/stage_updates/STAGE3_VALUE_RUN_*.json
   - invest/reports/data_quality/manifest_stage3_value_*.json
 
 quality_gates:
   - id: QG-04-01 (Z-Score Normalization)
     check: "|Mean| < 0.05 and |Std - 1.0| < 0.1 for factor scores"
-    path: "reports/stage_updates/STAGE3_VALUE_RUN_*.json"
+    path: "invest/reports/stage_updates/STAGE3_VALUE_RUN_*.json"
   - id: QG-04-02 (Finite Score Integrity)
     check: "NaN rate < 0.5% in VALUE_SCORE (excluding lead-in)"
     path: "invest/data/value/stage3/**/*.csv"
@@ -29,7 +29,7 @@ quality_gates:
     path: "invest/data/value/stage3/**/*.csv"
   - id: QG-04-04 (Continuity)
     check: "continuity_flag == 'OK' or 'WARN' (Current Baseline: < 70% warn rate)"
-    path: "reports/stage_updates/STAGE3_VALUE_RUN_*.json"
+    path: "invest/reports/stage_updates/STAGE3_VALUE_RUN_*.json"
 
 failure_policy:
   - action: USE_STALE_FALLBACK

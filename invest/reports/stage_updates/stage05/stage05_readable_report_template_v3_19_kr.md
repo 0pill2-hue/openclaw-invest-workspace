@@ -119,15 +119,15 @@
 
 ## 8) 그래프/원장 산출물 (매 실행 필수 보존)
 
-- [ ] 거래원장 CSV 저장: `reports/stage_updates/stage05/stage05_trade_events_vX_kr.csv`
-- [ ] 포트 타임라인 CSV 저장: `reports/stage_updates/stage05/stage05_portfolio_timeline_vX_kr.csv`
+- [ ] 거래원장 CSV 저장: `invest/reports/stage_updates/stage05/stage05_trade_events_vX_kr.csv`
+- [ ] 포트 타임라인 CSV 저장: `invest/reports/stage_updates/stage05/stage05_portfolio_timeline_vX_kr.csv`
 - [ ] 그래프 ①(의미구간 누적, 2021~시작): 전략 누적수익률 vs KOSPI (가능 시 KOSDAQ 보조선)
 - [ ] 그래프 ②(연도별 리셋, 2021~시작): 각 연도 1월=0%로 재기준화 후 연말까지 수익률 비교
 - [ ] 두 그래프 모두 퍼센트 축(%) + 범례 + 기간 명시
 
 권장 파일명:
-- `reports/stage_updates/charts/stage05_vX_vs_kospi_cum_2021plus.png`
-- `reports/stage_updates/charts/stage05_vX_vs_kospi_yearly_reset_2021plus.png`
+- `invest/reports/stage_updates/charts/stage05_vX_vs_kospi_cum_2021plus.png`
+- `invest/reports/stage_updates/charts/stage05_vX_vs_kospi_yearly_reset_2021plus.png`
 
 ## 9) 제출 전 체크리스트
 

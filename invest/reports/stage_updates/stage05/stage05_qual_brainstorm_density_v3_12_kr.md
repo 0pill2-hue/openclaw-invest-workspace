@@ -9,12 +9,12 @@
 - `invest/docs/strategy/RULEBOOK_V3.md` (V3.5 + v3_13 종료조건 반영)
 
 ## run_command(or process)
-- `python3 invest/scripts/stage05_density_repeat_v3_12_kr.py | tee reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
+- `python3 invest/scripts/stage05_density_repeat_v3_12_kr.py | tee invest/reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
 
 ## outputs
-- `reports/stage_updates/stage05/stage05_qual_brainstorm_density_v3_12_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_qual_brainstorm_density_v3_12_kr.md`
 - `invest/results/validated/stage05_baselines_v3_12_kr.json`
-- `reports/stage_updates/stage05/stage05_result_v3_12_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_result_v3_12_kr.md`
 
 ## quality_gates
 - RULEBOOK V3.5 하드룰 유지(보유1~6/20거래일/+15%/월30%): PASS
@@ -31,7 +31,7 @@
 
 ## proof
 - `invest/scripts/stage05_density_repeat_v3_12_kr.py`
-- `reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
+- `invest/reports/stage_updates/logs/stage05_density_repeat_v3_12_kr.log`
 - `invest/results/validated/stage05_baselines_v3_12_kr.json`
 - `invest/docs/strategy/RULEBOOK_V3.md`
 

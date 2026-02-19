@@ -24,7 +24,7 @@ CONFIG_PATH = BASE / "invest/config/stage05_auto_capture_v3_19_kr.yaml"
 PREV_JSON = VALIDATED / "stage05_baselines_v3_18_kr.json"
 OUT_JSON = VALIDATED / "stage05_baselines_v3_19_kr.json"
 
-LOG_DIR = BASE / "reports/stage_updates/logs"
+LOG_DIR = BASE / "invest/reports/stage_updates/logs"
 SCAN_LOG = LOG_DIR / "stage05_no_whitelist_scan_v3_19_kr.log"
 UNIVERSE_LOG = LOG_DIR / "stage05_dynamic_universe_v3_19_kr.json"
 

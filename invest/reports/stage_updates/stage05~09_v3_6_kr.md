@@ -11,11 +11,11 @@
   - replacement only at +15% edge
   - monthly replacement cap 30%
   - Stage05 internal 3000% hard gate (internal 3 baselines)
-- sync: invest/strategy/RULEBOOK_V1_20260218.md stage gate section updated with internal 3000% hard gate + external_proxy comparison-only
+- sync: invest/docs/strategy/RULEBOOK_V1_20260218.md stage gate section updated with internal 3000% hard gate + external_proxy comparison-only
 
 ## proof paths
 - invest/docs/strategy/RULEBOOK_V3.md
-- invest/strategy/RULEBOOK_V1_20260218.md
+- invest/docs/strategy/RULEBOOK_V1_20260218.md
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_v3_6_kr.json
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v3_6_kr.json
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage07_candidates_cut_v3_6_kr.json
@@ -42,4 +42,4 @@
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage05_baselines_v3_6_kr.json
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage06_candidates_v3_6_kr.json
 - /Users/jobiseu/.openclaw/workspace/invest/results/validated/stage07_candidates_cut_v3_6_kr.json
-- /Users/jobiseu/.openclaw/workspace/reports/stage_updates/stage05~09_v3_6_kr.md
+- /Users/jobiseu/.openclaw/workspace/invest/reports/stage_updates/stage05~09_v3_6_kr.md

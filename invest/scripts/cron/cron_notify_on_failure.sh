@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="/Users/jobiseu/.openclaw/workspace"
-LOG_DIR="$ROOT/reports/stage_updates/logs/cron"
+LOG_DIR="$ROOT/invest/reports/stage_updates/logs/cron"
 mkdir -p "$LOG_DIR"
 
 if [ "$#" -lt 2 ]; then

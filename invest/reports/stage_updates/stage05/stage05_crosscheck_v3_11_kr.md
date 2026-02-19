@@ -2,14 +2,14 @@
 
 ## inputs
 - `invest/results/validated/stage05_baselines_v3_11_kr.json`
-- `reports/stage_updates/stage05/stage05_finalize_v3_11_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_finalize_v3_11_kr.md`
 - `invest/docs/strategy/RULEBOOK_V3.md`
 
 ## run_command(or process)
-- `python3 invest/scripts/stage05_finalize_v3_11_kr.py | tee reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
+- `python3 invest/scripts/stage05_finalize_v3_11_kr.py | tee invest/reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
 
 ## outputs
-- `reports/stage_updates/stage05/stage05_crosscheck_v3_11_kr.md`
+- `invest/reports/stage_updates/stage05/stage05_crosscheck_v3_11_kr.md`
 
 ## quality_gates
 - 3관점 교차검토(논리/데이터/리스크) 포함
@@ -25,8 +25,8 @@
 ## proof
 - `invest/results/validated/stage05_baselines_v3_11_kr.json`
 - `invest/scripts/stage05_finalize_v3_11_kr.py`
-- `reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
-- `reports/stage_updates/logs/stage05_verify_v3_11_kr.log`
+- `invest/reports/stage_updates/logs/stage05_finalize_v3_11_kr.log`
+- `invest/reports/stage_updates/logs/stage05_verify_v3_11_kr.log`
 
 ---
 

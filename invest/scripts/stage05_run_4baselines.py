@@ -30,8 +30,8 @@ OHLCV_DIR = BASE / "invest/data/clean/production/kr/ohlcv"
 SUPPLY_DIR = BASE / "invest/data/clean/production/kr/supply"
 NAME_PATH = BASE / "invest/data/master/kr_stock_list.csv"
 
-OUT_JSON = BASE / "reports/stage_updates/STAGE05_4BASELINES_20260219.json"
-OUT_MD = BASE / "reports/stage_updates/STAGE05_4BASELINES_20260219.md"
+OUT_JSON = BASE / "invest/reports/stage_updates/STAGE05_4BASELINES_20260219.json"
+OUT_MD = BASE / "invest/reports/stage_updates/STAGE05_4BASELINES_20260219.md"
 
 START = pd.Timestamp("2016-01-01")
 END = pd.Timestamp("2026-12-31")

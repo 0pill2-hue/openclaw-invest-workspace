@@ -1,7 +1,7 @@
 # stage05_patch_diff_v3_15_kr
 
 ## inputs
-- design source: `reports/stage_updates/stage05/stage05_overfit_brainstorm_v3_15_kr.md` (E안 채택: 레짐 게이트 + 멀티팩터 앙상블)
+- design source: `invest/reports/stage_updates/stage05/stage05_overfit_brainstorm_v3_15_kr.md` (E안 채택: 레짐 게이트 + 멀티팩터 앙상블)
 - baseline reference code: `invest/scripts/stage05_rerun_v3_14_kr.py`
 - policy sync (2026-02-19 10:28 KST):
   - high-density 구간에서 non-numeric 우위 임계 `+25%p`
@@ -10,13 +10,13 @@
 
 ## run_command(or process)
 - `python3 -m py_compile invest/scripts/stage05_rerun_v3_15_kr.py`
-- `python3 invest/scripts/stage05_rerun_v3_15_kr.py | tee reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
+- `python3 invest/scripts/stage05_rerun_v3_15_kr.py | tee invest/reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
 
 ## outputs
 - new config: `invest/config/stage05_auto_capture_v3_15_kr.yaml`
 - new runner: `invest/scripts/stage05_rerun_v3_15_kr.py`
-- static scan log: `reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
-- dynamic universe log: `reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
+- static scan log: `invest/reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
+- dynamic universe log: `invest/reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
 - validated result: `invest/results/validated/stage05_baselines_v3_15_kr.json`
 
 ## quality_gates
@@ -38,9 +38,9 @@
 - code: `invest/scripts/stage05_rerun_v3_15_kr.py`
 - config: `invest/config/stage05_auto_capture_v3_15_kr.yaml`
 - compile proof: `python3 -m py_compile invest/scripts/stage05_rerun_v3_15_kr.py` (success)
-- run log: `reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
-- static scan proof: `reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
-- dynamic universe proof: `reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
+- run log: `invest/reports/stage_updates/logs/stage05_rerun_v3_15_kr.log`
+- static scan proof: `invest/reports/stage_updates/logs/stage05_no_whitelist_scan_v3_15_kr.log`
+- dynamic universe proof: `invest/reports/stage_updates/logs/stage05_dynamic_universe_v3_15_kr.json`
 - result json proof: `invest/results/validated/stage05_baselines_v3_15_kr.json`
 
 ---
