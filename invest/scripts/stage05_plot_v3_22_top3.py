@@ -12,7 +12,7 @@ BASE = Path(__file__).resolve().parents[2]
 IN_JSON = BASE / 'invest/results/validated/stage05_baselines_v3_22_kr.json'
 OUT_DIR = BASE / 'invest/reports/stage_updates/charts'
 OUT_CUM = OUT_DIR / 'stage05_v3_22_cum_2021plus.png'
-OUT_YEAR = OUT_DIR / 'stage05_v3_22_yearly_continuous_2021plus.png'
+OUT_YEAR = OUT_DIR / 'stage05_v3_22_yearly_reset_2021plus.png'
 
 
 def import_stage05_module():
@@ -41,6 +41,21 @@ def import_replay_module():
 
 def _to_cum_pct(eq: pd.Series) -> pd.Series:
     return (eq / float(eq.iloc[0]) - 1.0) * 100.0
+
+
+def _to_yearly_reset_pct(eq: pd.Series) -> pd.Series:
+    out = []
+    years = sorted(set(eq.index.year))
+    for y in years:
+        s = eq[eq.index.year == y]
+        if s.empty:
+            continue
+        base = float(s.iloc[0])
+        yr = (s / base - 1.0) * 100.0
+        out.append(yr)
+    if not out:
+        return pd.Series(dtype=float)
+    return pd.concat(out).sort_index()
 
 
 def main():
@@ -89,22 +104,24 @@ def main():
     plt.savefig(OUT_CUM, dpi=150)
     plt.close()
 
-    # Chart 2: same jagged style, yearly visual guide without reset
+    # Chart 2: yearly reset (start each year at 0), jagged daily curves
     plt.figure(figsize=(12, 6))
     for i, (mid, eq) in enumerate(replays, start=1):
         s = eq.reindex(common_idx).ffill().bfill()
-        plt.plot(common_idx, _to_cum_pct(s), linewidth=2.0, label=f'{i}위 {mid}')
-    plt.plot(common_idx, _to_cum_pct(kospi_eq), linewidth=1.8, linestyle='--', label='KOSPI')
+        yr = _to_yearly_reset_pct(s)
+        plt.plot(yr.index, yr.values, linewidth=2.0, label=f'{i}위 {mid}')
+    kospi_yr = _to_yearly_reset_pct(kospi_eq)
+    plt.plot(kospi_yr.index, kospi_yr.values, linewidth=1.8, linestyle='--', label='KOSPI')
     if not kosdaq_eq.empty:
-        plt.plot(common_idx, _to_cum_pct(kosdaq_eq), linewidth=1.6, linestyle=':', label='KOSDAQ')
-    # yearly separators
+        kosdaq_yr = _to_yearly_reset_pct(kosdaq_eq)
+        plt.plot(kosdaq_yr.index, kosdaq_yr.values, linewidth=1.6, linestyle=':', label='KOSDAQ')
     years = sorted(set(common_idx.year))
     for y in years:
         plt.axvline(pd.Timestamp(f'{y}-01-01'), color='lightgray', linewidth=0.7, alpha=0.6)
     plt.axhline(0, color='gray', linewidth=0.8)
-    plt.title('Stage05 v3_22 Top3 Continuous Curve with Year Guides (No Reset)')
+    plt.title('Stage05 v3_22 Top3 Yearly Reset Curve (Each Year Starts at 0)')
     plt.xlabel('Date')
-    plt.ylabel('Cumulative Return (%)')
+    plt.ylabel('Yearly Return from Jan Start (%)')
     plt.grid(alpha=0.20)
     plt.legend(loc='best', fontsize=9)
     plt.tight_layout()

@@ -17,7 +17,7 @@
 
 ## 그래프 (2021~ 시작, 2종)
 - 누적 수익률(Top1~Top3 + KOSPI/KOSDAQ): `invest/reports/stage_updates/charts/stage05_v3_22_cum_2021plus.png`
-- 연속 그래프(Top1~Top3 + KOSPI/KOSDAQ, 연도 가이드만 표시/no reset): `invest/reports/stage_updates/charts/stage05_v3_22_yearly_continuous_2021plus.png`
+- 연도별 리셋 그래프(Top1~Top3 + KOSPI/KOSDAQ, 매년 0부터 시작): `invest/reports/stage_updates/charts/stage05_v3_22_yearly_reset_2021plus.png`
 - 작성 기준: v3_22 `annual_returns` 실측값 기반(연말 기준), 임의 보간/가짜 월별 곡선 미사용
 
 ## 거래내역/포트타임라인
