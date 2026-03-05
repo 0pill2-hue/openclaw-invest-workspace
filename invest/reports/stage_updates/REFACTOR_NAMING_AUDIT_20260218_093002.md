@@ -1,3 +1,0 @@
-# REFACTOR NAMING AUDIT
-
-- none

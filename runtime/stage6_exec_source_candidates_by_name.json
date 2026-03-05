@@ -1,0 +1,98 @@
+[
+  {
+    "path": "invest/stages/stage1/inputs/config/schemas/execution_ledger.schema.json",
+    "size": 1523
+  },
+  {
+    "path": "invest/stages/stage1/outputs/reports/stage_updates/STAGE1_BACKFILL_10Y_COVERAGE_20260305_184441.json",
+    "size": 2218
+  },
+  {
+    "path": "invest/stages/stage1/outputs/reports/stage_updates/_stage6_execution_ledger_check.json",
+    "size": 390
+  },
+  {
+    "path": "invest/stages/stage1/outputs/reports/stage_updates/_tmp_stage1_backfill10y_count_delta.json",
+    "size": 336
+  },
+  {
+    "path": "invest/stages/stage1/outputs/reports/stage_updates/_tmp_stage1_backfill10y_pre_counts.json",
+    "size": 202
+  },
+  {
+    "path": "invest/stages/stage1/outputs/reports/stage_updates/_tmp_stage1_backfill10y_span_compare.json",
+    "size": 1267
+  },
+  {
+    "path": "invest/stages/stage1/outputs/reports/stage_updates/data_backfill_metrics_pre_20260219.json",
+    "size": 9040
+  },
+  {
+    "path": "invest/stages/stage1/outputs/runtime/stage01_backfill_10y_status.json",
+    "size": 519
+  },
+  {
+    "path": "invest/stages/stage6/inputs/config/schemas/execution_ledger.schema.json",
+    "size": 1523
+  },
+  {
+    "path": "invest/stages/stage6/inputs/execution_ledger/broker_execution_ledger.template.csv",
+    "size": 67
+  },
+  {
+    "path": "invest/stages/stage6/inputs/execution_ledger/model_trade_orders.template.csv",
+    "size": 67
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_0/stage05_trade_events_v4_0_kr.csv",
+    "size": 165879
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_1/stage05_trade_events_v4_1_kr.csv",
+    "size": 167038
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_2/stage05_trade_events_v4_2_kr.csv",
+    "size": 166657
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_3/stage05_trade_events_v4_3_kr.csv",
+    "size": 167550
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_4/stage05_trade_events_v4_4_kr.csv",
+    "size": 167271
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_5/stage05_trade_events_v4_5_kr.csv",
+    "size": 171586
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_6/stage06_trade_events_v4_6_kr.csv",
+    "size": 19235
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_7/stage05_trade_events_v4_7_kr.csv",
+    "size": 44282
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_8/stage05_trade_events_v4_8_kr.csv",
+    "size": 46897
+  },
+  {
+    "path": "invest/stages/stage6/outputs/reports/stage_updates/v4_8_1/stage05_trade_events_v4_8_1_kr.csv",
+    "size": 46858
+  },
+  {
+    "path": "invest/stages/stage6/outputs/results/archived/strict_snapshots/v4_0_fixed_20260303_152152/v4_0_reports/stage05_trade_events_v4_0_kr.csv",
+    "size": 165879
+  },
+  {
+    "path": "invest/stages/stage6/outputs/results/archived/strict_snapshots/v4_3_before_v4_4_20260303_151447/v4_3_reports/stage05_trade_events_v4_3_kr.csv",
+    "size": 165033
+  },
+  {
+    "path": "invest/stages/stage6/outputs/results/archived/strict_snapshots/v4_6_baseline_promotion_20260303_185047/report/v4_6/stage05_trade_events_v4_6_kr.csv",
+    "size": 170556
+  }
+]

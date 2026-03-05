@@ -1,34 +1,24 @@
 {
-  "version": "2026-02-18",
+  "version": "2026-03-05-slim-merge",
   "tiers": {
     "L1": [
-      "docs/openclaw/RESET_CORE.md",
-      "docs/openclaw/CONTEXT_RESET_READLIST.md",
-      "docs/openclaw/OPENCLAW_SYSTEM_BASELINE.md",
-      "docs/openclaw/OPERATING_GOVERNANCE.md",
-      "invest/docs/strategy/RULEBOOK_MASTER.md",
+      "SOUL.md",
+      "USER.md",
+      "docs/openclaw/RULES_INDEX.md",
+      "docs/openclaw/CONTEXT_LOAD_POLICY.md",
       "DIRECTIVES.md",
-      "memory/2026-02-18.md",
-      "MEMORY.md"
+      "TASKS.md"
     ],
     "L2": [
+      "MEMORY.md",
+      "BRAINS.md",
+      "CONTRIBUTING.md",
+      "docs/openclaw/CONTEXT_RESET_READLIST.md",
+      "docs/openclaw/OPENCLAW_SYSTEM_BASELINE.md",
       "docs/openclaw/WORKSPACE_STRUCTURE.md",
-      "docs/openclaw/DOCS_MAINTENANCE_PLAYBOOK.md",
-      "docs/openclaw/NAMING_STRATEGY.md",
-      "docs/openclaw/CODING_RULES.md",
-      "docs/openclaw/DOC_TEMPLATES.md",
-      "invest/reports/stage_updates/README.md",
-      "invest/reports/stage_updates/stage01/stage01_data_collection.md",
-      "invest/reports/stage_updates/stage02/stage02_data_cleaning.md",
-      "invest/reports/stage_updates/stage03/stage03_cleaning_validation.md",
-      "invest/reports/stage_updates/stage04/stage04_validated_value.md",
-      "invest/reports/stage_updates/stage05/",
-      "invest/reports/stage_updates/stage06/",
-      "invest/reports/stage_updates/stage07/",
-      "invest/reports/stage_updates/stage08/",
-      "invest/reports/stage_updates/stage09/",
-      "invest/reports/stage_updates/stage11/stage11_adopt_hold_promote.md",
-      "memory/2026-02-17.md"
+      "docs/openclaw/OPERATING_GOVERNANCE.md",
+      "invest/docs/OPERATIONS_SOP.md",
+      "invest/docs/INVEST_STRUCTURE_POLICY.md"
     ]
   }
 }

@@ -1,37 +1,50 @@
 # WORKSPACE_STRUCTURE.md
 
-Last updated: 2026-02-19 17:28 KST
-Purpose: invest 안/밖 포함 워크스페이스 구조와 canonical 문서 위치 기준
+Last updated: 2026-03-05 KST
+Purpose: invest 안/밖 포함 워크스페이스 구조와 문서 배치 기준의 단일 canonical
 
-## Top-level canonical
+## 1) Top-level canonical
 - `docs/openclaw/` : OpenClaw 시스템/구조/컨텍스트 재로딩 기준 문서
 - `invest/` : 알고리즘/데이터/전략/스크립트 본체
-- `invest/reports/` : 투자 단계/검증 리포트
-- `reports/` : 운영 정기 보고(hourly/daily/weekly/monthly)
+- `invest/stages/stage*/outputs/reports/` : 투자 단계/검증 리포트
 - `memory/` : 일자 메모리 + 상태파일 (`memory/README.md` 기준)
 - `MEMORY.md` : 장기 메모리
-- `DIRECTIVES.md` : 지시사항 추적
-- `TASKS.md` : 보고/작업 큐
+- `runtime/directives/directives.db` : 지시사항 SSOT (`scripts/directivesdb.py`, `scripts/directives_gate.py`)
+- `runtime/tasks/tasks.db` : 작업 티켓 SSOT (`scripts/taskdb.py`, `scripts/task_gate.py`)
+- `DIRECTIVES.md` / `TASKS.md` : usage index
 
-## Top-level operational (존재 확인됨)
+## 2) 루트 운영 코어 파일(고정)
+- `AGENTS.md`
+- `MEMORY.md`
+- `DIRECTIVES.md`
+- `TASKS.md`
+- `HEARTBEAT.md`
+- `BRAINS.md`
+- `SOUL.md`
+- `USER.md`
+- `TOOLS.md`
+- `IDENTITY.md`
+
+## 3) docs/openclaw 배치 기준
+- OpenClaw 시스템 운영/복구/컨텍스트 정책 문서만 유지
+- 투자 도메인(전략/게이트/코드규칙/산출물 규칙)은 `invest/docs/`로 배치
+- 중복 문서 발생 시 최신 canonical 1개만 유지하고 나머지는 archive 격리
+
+## 4) invest 문서/산출물 기준
+- 투자 구조 정책 canonical: `invest/docs/INVEST_STRUCTURE_POLICY.md`
+- 진입점: `invest/docs/INVEST_STRUCTURE_POLICY.md`
+- 투자 전략 하드룰: `invest/docs/RULEBOOK_MASTER.md`
+- 투자 운영 SOP: `invest/docs/OPERATIONS_SOP.md`
+
+## 5) Top-level operational
 - `.venv/` : 루트 Python 가상환경
 - `.openclaw_tmp/` : 임시 작업 디렉터리
-- `scripts/` : 루트 스크립트(사용 금지/예약)
-- `automation/` : 운영 자동화 보조
+- `.trash/` : 삭제 대기 항목
+- `.pi/` : 예약 폴더
+- `skills/` : 스킬 폴더
+- `scripts/` : 루트 운영 크론/감사 스크립트
 
-## invest 내부 canonical
-- `invest/docs/strategy/` : 전략 고정 문서(RULEBOOK/PIPELINE/STAGE_STRATEGY)
-- `invest/scripts/` : 전략/수집/정제/검증/산출 실행 스크립트
-- `invest/data/` : raw/clean/quarantine 데이터 계층
-- `invest/reports/data_quality/` : manifest/품질 리포트
-- `invest/results/` : 결과물(test/validated/prod 분리)
-
-## stage 문서 canonical
-- 단계 인덱스: `invest/reports/stage_updates/README.md`
-- 단계 문서 루트: `invest/reports/stage_updates/stage01~stage11/`
-- stage05 버전 산출물 루트: `invest/reports/stage_updates/stage05/v*/`
-
-## 문서 우선순위
-1. `invest/docs/strategy/RULEBOOK_MASTER.md`
-2. `invest/reports/stage_updates/*.md`
-3. 실행 스크립트/보조 문서
+## 6) 문서 우선순위
+1. `AGENTS.md` → 운영 게이트/완료 게이트
+2. `DIRECTIVES.md` / `TASKS.md` → usage index (상태/전이는 DB+CLI SSOT)
+3. `invest/docs/RULEBOOK_MASTER.md` → 알고리즘 하드룰

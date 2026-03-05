@@ -14,10 +14,13 @@ runtime/**/*.db
 
 # High-churn generated artifacts (do not track)
 invest/stages/stage*/outputs/**
+invest/stages/stage*/inputs/**
 invest/stages/stage3/inputs/stage2_text_meta_records.jsonl
 invest/stages/stage1/outputs/runtime/telegram_scrape_*.json
 invest/stages/stage1/outputs/runtime/telegram_attach_tmp/**
 invest/stages/stage1/outputs/runtime/*.lock
+**/dart_api_key.txt
+**/*api_key*.txt
 *.session-journal
 
 # OS junk

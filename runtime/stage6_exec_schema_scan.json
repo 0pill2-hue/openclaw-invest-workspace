@@ -1,0 +1,22 @@
+{
+  "total_data_files": 45876,
+  "by_ext": {
+    ".csv": 44971,
+    ".json": 905,
+    ".xlsx": 0,
+    ".xls": 0,
+    ".tsv": 0
+  },
+  "header_matches_or_partial": [
+    {
+      "path": "invest/stages/stage6/inputs/execution_ledger/broker_execution_ledger.template.csv",
+      "header": "execution_id,order_id,timestamp,symbol,side,qty,fill_price,fee,tax",
+      "missing": []
+    },
+    {
+      "path": "invest/stages/stage6/inputs/execution_ledger/model_trade_orders.template.csv",
+      "header": "execution_id,order_id,timestamp,symbol,side,qty,fill_price,fee,tax",
+      "missing": []
+    }
+  ]
+}

@@ -3,51 +3,44 @@
 투자 데이터 수집/정제/검증/백테스트를 위한 OpenClaw 워크스페이스입니다.
 
 ## 핵심 목표
-- 데이터 오염 방지 (raw / clean / quarantine / audit 분리)
-- 재현 가능한 백테스트 (run manifest + 결과 등급)
-- 운영 안정화 (수집 파이프라인 + 헬스체크 + 보고 체계)
+- 데이터 오염 방지 (raw / clean / quarantine 분리)
+- 재현 가능한 단계별 실행 (stage별 inputs/outputs/scripts/docs 고정)
+- 운영 안정화 (실패 시 fail-close + 증적 리포트)
 
 ## 디렉토리 개요
-> 참고: `invest/data`, `invest/reports`, `invest/results`는 대용량/민감 데이터라 기본적으로 git 추적 제외(.gitignore)되어 레포 웹 화면에는 안 보일 수 있습니다.
+- `invest/docs/` : 공통 정책/운영 문서
+- `invest/stages/stageN/{inputs,outputs,scripts,docs}` : stage별 canonical 구조
 
-- `invest/data/raw/` : 원본 데이터(불변)
-- `invest/data/clean/` : 검수 통과 데이터
-- `invest/data/quarantine/` : 오염/의심 데이터 격리
-- `invest/data/audit/` : 감사/추적 로그
-- `invest/reports/data_quality/` : 오염/정리 리포트
-- `invest/results/test|validated|prod/` : 결과 등급 분리
-
-## 빠른 시작
+## 빠른 시작 (신규 번호 체계)
 ```bash
-# 0) 로컬 데이터 디렉토리 초기화(최초 1회)
-mkdir -p invest/data/{raw,clean,quarantine,audit,reports}
+# 1) Stage1 수집
+python3 invest/stages/stage1/scripts/stage01_daily_update.py
 
-# 1) 기존 데이터 정리 (clean/quarantine 분리)
-.venv/bin/python3 invest/scripts/organize_existing_data.py
+# 2) Stage2 정제/QC (ohlcv/supply + dart/news/text)
+python3 invest/stages/stage2/scripts/stage02_qc_cleaning_full.py
+python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py
 
-# 2) MD 코퍼스 구조화(JSONL)
-.venv/bin/python3 invest/scripts/structure_md_corpus.py
+# 3) Stage3 로컬뇌 입력 생성 + 정성 게이트
+python3 invest/stages/stage3/scripts/stage03_build_input_jsonl.py
+python3 invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py --bootstrap-empty-ok
 
-# 3) 블로그 수집
-python3 invest/scripts/scrape_all_posts_v2.py
+# 4) Stage4 값 계산
+python3 invest/stages/stage4/scripts/calculate_stage4_values.py
 
-# 4) 텔레그램 수집
-python3 invest/scripts/scrape_telegram_highspeed.py
+# 5) Stage5 피처 엔지니어링
+python3 invest/stages/stage5/scripts/stage05_feature_engineer.py
 
-# 5) 백테스트 (DRAFT)
-.venv/bin/python3 invest/backtest_compare.py
+# 6) Stage6 베이스라인 재계산/검증
+python3 invest/stages/stage6/scripts/stage06_full_recompute_v4_6_kr.py
 ```
 
 ## 운영 규칙(요약)
-- raw는 overwrite 금지(append-only)
-- 분석/백테스트 입력은 clean 우선
-- quarantine 데이터는 삭제 금지(근거 보존)
-- 결과는 `DRAFT | VALIDATED | PRODUCTION` 등급 준수
+- upstream 입력은 각 stage의 `inputs/upstream_*` 경유
+- 결과 라벨: `DRAFT | VALIDATED | PRODUCTION`
+- 검증 실패 시 downstream 차단(fail-close)
 
 ## 관련 문서
-- `invest/docs/architecture/DATA_LAYOUT_V1.md`
-- `invest/docs/architecture/RUNBOOK_V1.md`
-- `invest/results/RESULT_GOVERNANCE.md`
-
----
-필요한 항목이 있으면 이 README를 계속 확장합니다.
+- `invest/docs/INVEST_STRUCTURE_POLICY.md`
+- `invest/docs/BOOTSTRAP_REPRODUCTION.md`
+- `invest/docs/STAGE_EXECUTION_SPEC.md`
+- `invest/docs/STRATEGY_MASTER.md`

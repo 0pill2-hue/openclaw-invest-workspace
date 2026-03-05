@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang='ko'>
+<head>
+  <meta charset='utf-8'/>
+  <meta name='viewport' content='width=device-width, initial-scale=1'/>
+  <title>Stage06 v4_0 Portfolio UI</title>
+  <style>
+    body { font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; margin: 20px; background:#0f1115; color:#e8ecf1; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    .card { background:#171a21; border:1px solid #2b3240; border-radius:10px; padding:12px; }
+    .kpi { min-width:180px; }
+    table { border-collapse: collapse; width:100%; margin-top:10px; }
+    th,td { border-bottom:1px solid #2b3240; padding:8px; font-size:13px; text-align:left; vertical-align:top; }
+    .muted { color:#9aa4b2; font-size:12px; }
+    select { background:#171a21; color:#e8ecf1; border:1px solid #2b3240; padding:6px; border-radius:8px; }
+    .btn { background:#202634; color:#dbe7ff; border:1px solid #32435e; border-radius:8px; padding:2px 8px; cursor:pointer; font-size:12px; }
+    .modal { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:999; }
+    .panel { width:min(900px,95vw); max-height:90vh; overflow:auto; background:#171a21; border:1px solid #2b3240; border-radius:10px; padding:12px; }
+    .legend-item { font-size:12px; margin:2px 0; }
+  </style>
+</head>
+<body>
+  <h2>Stage06 v4_0 포트폴리오 UI</h2>
+
+  <div class='card' style='margin-top:10px;'>
+    <h3 style='margin:0 0 8px;'>수익률 TOP 3</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th>알고리즘명</th>
+          <th>기간</th>
+          <th>누적수익률</th>
+          <th>연평균수익률(CAGR)</th>
+          <th>MDD</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td>1위</td>
+          <td>qual_q09_governance_score</td>
+          <td>2021-01-01 ~ 최신</td>
+          <td>1839.78%</td>
+          <td>77.73%</td>
+          <td>-41.79%</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>2위</td>
+          <td>hybrid_h02_qual_tilt</td>
+          <td>2021-01-01 ~ 최신</td>
+          <td>911.15%</td>
+          <td>56.63%</td>
+          <td>-39.79%</td>
+          <td>우승</td>
+        </tr>
+        <tr>
+          <td>3위</td>
+          <td>external_e01_anchor_stable</td>
+          <td>2021-01-01 ~ 최신</td>
+          <td>699.93%</td>
+          <td>49.67%</td>
+          <td>-29.22%</td>
+          <td>-</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class='muted' style='margin-top:8px;'>우승한 알고리즘: <b>hybrid_h02_qual_tilt</b></div>
+  </div>
+
+  <div id='loadErr' class='muted' style='display:none;margin-top:8px;color:#ffb3b3;'></div>
+
+  <div class='row' style='margin-top:10px;'>
+    <div class='card kpi'><div class='muted'>최신 기준 Top1 비중</div><div id='kTop1'></div></div>
+    <div class='card kpi'><div class='muted'>최신 기준 HHI</div><div id='kHhi'></div></div>
+  </div>
+
+  <div class='card' style='margin-top:12px;'>
+    <h3>평가 차트 (고정)</h3>
+    <div style='margin-top:10px;'>
+      <div><b>누적 평가용</b></div>
+      <img src='charts/stage06_v4_0_yearly_continuous_2021plus.png' alt='chart1' style='max-width:100%;border:1px solid #2b3240;border-radius:8px;'/>
+    </div>
+    <div style='margin-top:14px;'>
+      <div><b>연도별 리셋 평가용</b></div>
+      <img src='charts/stage06_v4_0_yearly_reset_2021plus.png' alt='chart2' style='max-width:100%;border:1px solid #2b3240;border-radius:8px;'/>
+    </div>
+  <div class='card' style='margin-top:12px;'>
+    <h3 style='margin-top:0;'>일일비중참표 (일별 비중 참조)</h3>
+    <div style='margin-top:8px;'>기준일: <select id='dateSel'></select></div>
+    <table id='tl'><thead><tr><th>리밸런스일</th><th>편입</th><th>편출</th><th>현재 포트폴리오(비중)</th><th>비중 변화</th><th>상세</th></tr></thead><tbody></tbody></table>
+    <div style='display:flex;justify-content:center;gap:8px;align-items:center;margin-top:10px;'>
+      <button id='prevRef' class='btn'>◀ 이전</button>
+      <span id='refPageInfo' class='muted'>1 / 1</span>
+      <button id='nextRef' class='btn'>다음 ▶</button>
+    </div>
+  </div>
+
+
+  </div>
+
+  <div id='pieModal' class='modal'>
+    <div class='panel'>
+      <div style='display:flex;justify-content:space-between;align-items:center;'>
+        <h3 id='pieTitle'>포트폴리오 원형그래프</h3>
+        <button id='closeModal' class='btn'>닫기</button>
+      </div>
+      <canvas id='pieCanvas' width='520' height='520' style='max-width:100%;background:#0f1115;border-radius:8px;'></canvas>
+      <div id='pieLegend' style='margin-top:10px;'></div>
+    </div>
+  </div>
+
+<script src='./ui_data_v4_0.js'></script>
+<script>
+const PAGE_SIZE = 20;
+let refPage = 1;
+let DATA = null;
+
+function parseCurrentPortfolio(text) {
+  if (!text || text === '-') return [];
+  return String(text).split(';').map(x=>x.trim()).filter(Boolean).map(row => {
+    const m = row.match(/^(.*?)\s([0-9.]+)%(?:,\s*\d+d)?$/);
+    if (!m) return null;
+    return { name: m[1].trim(), w: parseFloat(m[2]) };
+  }).filter(Boolean);
+}
+
+function drawPie(items, title) {
+  const modal = document.getElementById('pieModal');
+  const c = document.getElementById('pieCanvas');
+  const ctx = c.getContext('2d');
+  const legend = document.getElementById('pieLegend');
+  document.getElementById('pieTitle').textContent = title;
+  ctx.clearRect(0,0,c.width,c.height);
+  legend.innerHTML = '';
+
+  if (!items.length) {
+    ctx.fillStyle='#9aa4b2';
+    ctx.font='16px sans-serif';
+    ctx.fillText('데이터 없음', 210, 260);
+    modal.style.display='flex';
+    return;
+  }
+
+  const colors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
+  let total = items.reduce((a,b)=>a+b.w,0);
+  let start = -Math.PI/2;
+  const cx=260, cy=260, r=190;
+
+  items.forEach((it, idx) => {
+    const frac = it.w / total;
+    const end = start + frac * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,end);
+    ctx.closePath();
+    ctx.fillStyle = colors[idx % colors.length];
+    ctx.fill();
+    start = end;
+
+    const div = document.createElement('div');
+    div.className='legend-item';
+    div.innerHTML = `<span style="display:inline-block;width:10px;height:10px;background:${colors[idx % colors.length]};margin-right:6px;"></span>${it.name} - ${it.w.toFixed(1)}%`;
+    legend.appendChild(div);
+  });
+
+  modal.style.display='flex';
+}
+
+function renderRef() {
+  const sel = document.getElementById('dateSel');
+  const d = sel.value;
+  const rows = (DATA.weightsByDate[d] || []);
+  const top1 = rows.length ? rows[0].weight_pct : 0;
+  const hhi = rows.reduce((a,r)=>a+Math.pow(r.weight_pct/100,2),0);
+  document.getElementById('kTop1').textContent = top1.toFixed(2) + '%';
+  document.getElementById('kHhi').textContent = hhi.toFixed(4);
+
+  const tlb = document.querySelector('#tl tbody'); tlb.innerHTML='';
+  const ordered = [...(DATA.timelineRef || [])].reverse();
+  const totalPages = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
+  if (refPage > totalPages) refPage = totalPages;
+  const start = (refPage - 1) * PAGE_SIZE;
+  const pageRows = ordered.slice(start, start + PAGE_SIZE);
+  pageRows.forEach(t => {
+    const tr=document.createElement('tr');
+    tr.innerHTML = '<td>' + (t.date || '-') + '</td>'
+      + '<td>' + (t.added || '-') + '</td>'
+      + '<td>' + (t.removed || '-') + '</td>'
+      + '<td>' + (t.current || '-') + '</td>'
+      + '<td>' + (t.weight_change || '-') + '</td>'
+      + '<td><button class="btn">더보기</button></td>';
+    tr.querySelector('button').addEventListener('click', () => {
+      const items = parseCurrentPortfolio(t.current || '-');
+      drawPie(items, `포트폴리오 비중 - ${t.date}`);
+    });
+    tlb.appendChild(tr);
+  });
+
+  document.getElementById('refPageInfo').textContent = refPage + ' / ' + totalPages;
+  document.getElementById('prevRef').disabled = refPage <= 1;
+  document.getElementById('nextRef').disabled = refPage >= totalPages;
+}
+
+async function loadData() {
+  try {
+    const resp = await fetch('./ui_data_v4_0.json', {cache:'no-store'});
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.json();
+  } catch (e) {
+    if (window.__UI_DATA_V4_0__) return window.__UI_DATA_V4_0__;
+    throw e;
+  }
+}
+
+async function init() {
+  try {
+    DATA = await loadData();
+  } catch (e) {
+    const err = document.getElementById('loadErr');
+    err.style.display = 'block';
+    err.textContent = '데이터 로딩 실패: ui_data_v4_0.json 확인 또는 HTTP 서버에서 열어주세요.';
+    return;
+  }
+
+  const sel = document.getElementById('dateSel');
+  (DATA.dates || []).forEach(d => {
+    const o=document.createElement('option');
+    o.value=d; o.textContent=d;
+    sel.appendChild(o);
+  });
+  sel.value = DATA.latest;
+
+  renderRef();
+
+  sel.addEventListener('change', renderRef);
+  document.getElementById('prevRef').addEventListener('click', () => { if (refPage > 1) { refPage -= 1; renderRef(); } });
+  document.getElementById('nextRef').addEventListener('click', () => {
+    const totalPages = Math.max(1, Math.ceil((DATA.timelineRef || []).length / PAGE_SIZE));
+    if (refPage < totalPages) { refPage += 1; renderRef(); }
+  });
+
+  document.getElementById('closeModal').addEventListener('click', () => { document.getElementById('pieModal').style.display='none'; });
+  document.getElementById('pieModal').addEventListener('click', (e) => { if (e.target.id === 'pieModal') document.getElementById('pieModal').style.display='none'; });
+}
+
+init();
+</script>
+<div class='card' style='margin-top:12px;'><h3>게이트 요약</h3><ul><li>gate1: PASS</li><li>gate2: PASS</li><li>gate3: PASS</li><li>gate4(하드게이트: edge/MDD/CAGR): PASS</li><li>gate5: PASS</li><li>gate6: PASS</li><li>gate7: FAIL</li><li>gate8: PASS</li></ul></div>
+<div class='card' style='margin-top:12px;'><h3>교체 판단</h3><ul><li>replacement_edge: <strong>408.85%</strong></li><li>persistence_hits: <strong>3/3</strong></li><li>confidence_score: <strong>1.00</strong></li><li>final_decision: <strong>HOLD_V400_REVIEW_REQUIRED</strong></li><li>stop_reason: GATE_FAIL_REVIEW_REQUIRED</li></ul></div>
+<div class='card' style='margin-top:12px;'><h3>최근 변동</h3><ul><li>over-switching 축소, hold 우선 정책 반영</li><li>교체 조건 강화(+15% edge + persistence + confidence gate)</li><li>교체 전 소프트 단계(신규 편입 비중 패널티) 적용</li><li>교체 후 종목별 쿨다운 30일 유지</li><li>월 교체 상한 없음</li></ul></div>
+</body></html>

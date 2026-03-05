@@ -1,16 +1,16 @@
 # OPENCLAW_SYSTEM_BASELINE.md
 
-Last updated: 2026-02-18 06:13 KST
+Last updated: 2026-03-04 KST
 Purpose: 컨텍스트 초기화 후에도 OpenClaw 운영 상태/점검 기준을 빠르게 복구하기 위한 기준 문서
 
 ## 1) 현재 시스템 베이스라인
 - Dashboard: `http://127.0.0.1:18789/`
-- OS/Node: `macos 26.2 (arm64) / node 25.6.0`
+- OS/Node: 확인 필요 시 `openclaw status` 실행
 - Gateway: `ws://127.0.0.1:18789` (local loopback)
 - Gateway service: LaunchAgent 설치/로드/실행 중
 - Node service: LaunchAgent 미설치
 - Channel: Telegram ON/OK
-- Update 상태: update available (`openclaw update` 표시됨)
+- Update 상태: `openclaw status` 로 확인
 
 ## 2) 필수 점검 명령(우선순위)
 1. `openclaw status`
