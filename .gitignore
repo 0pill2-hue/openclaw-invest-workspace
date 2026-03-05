@@ -10,6 +10,18 @@ invest/config/dart_api_key.txt
 *.log
 invest/reports/regular/server.log
 invest/logs/
+runtime/**/*.db
+
+# High-churn generated artifacts (do not track)
+invest/stages/stage1/outputs/**
+invest/stages/stage1/outputs/runtime/telegram_scrape_*.json
+invest/stages/stage1/outputs/runtime/telegram_attach_tmp/**
+invest/stages/stage2/outputs/clean/production/
+invest/stages/stage2/outputs/quarantine/production/
+invest/stages/stage3/outputs/**
+invest/stages/stage3/inputs/stage2_text_meta_records.jsonl
+invest/stages/stage1/outputs/runtime/*.lock
+*.session-journal
 
 # OS junk
 .DS_Store
