@@ -15,8 +15,8 @@ from typing import Any
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-TASKDB_SCRIPT = ROOT / "scripts/taskdb.py"
+ROOT = Path(__file__).resolve().parents[2]
+TASKDB_SCRIPT = ROOT / "scripts/tasks/db.py"
 STATUS_PATH = ROOT / "runtime/tasks/auto_dispatch_status.json"
 DEBUG_LOG_PATH = ROOT / "runtime/tasks/auto_dispatch_debug.log"
 TASK_DB_PATH = ROOT / "runtime/tasks/tasks.db"

@@ -25,19 +25,22 @@ def repo_root() -> Path:
     git_root = _git_repo_root()
     if git_root:
         return git_root.resolve()
-    return Path(__file__).resolve().parents[1]
-
-
-ROOT = repo_root()
-RUNTIME_DIR = ROOT / "runtime"
-TASKS_DB = ROOT / "runtime/tasks/tasks.db"
-DIRECTIVES_DB = ROOT / "runtime/directives/directives.db"
-STAGE6_RUNTIME_AUDIT_DIR = ROOT / "invest/stages/stage6/outputs/reports/runtime_audit"
+    return Path(__file__).resolve().parents[2]
 
 
 def env_path(name: str, default: Path) -> Path:
     raw = os.environ.get(name, "").strip()
     return Path(raw).expanduser().resolve() if raw else default.resolve()
+
+
+ROOT = repo_root()
+RUNTIME_DIR = env_path("OPENCLAW_RUNTIME_DIR", ROOT / "runtime")
+TASKS_DB = env_path("OPENCLAW_TASKS_DB", ROOT / "runtime/tasks/tasks.db")
+DIRECTIVES_DB = env_path("OPENCLAW_DIRECTIVES_DB", ROOT / "runtime/directives/directives.db")
+STAGE6_RUNTIME_AUDIT_DIR = env_path(
+    "OPENCLAW_STAGE6_RUNTIME_AUDIT_DIR",
+    ROOT / "invest/stages/stage6/outputs/reports/runtime_audit",
+)
 
 
 def openclaw_home() -> Path:

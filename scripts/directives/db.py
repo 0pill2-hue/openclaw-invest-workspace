@@ -11,9 +11,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from runtime_env import DIRECTIVES_DB
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
 
-ROOT = Path(__file__).resolve().parents[1]
+from lib.runtime_env import DIRECTIVES_DB
+
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = DIRECTIVES_DB
 DEFAULT_DIRECTIVES_MD_PATH = ROOT / "DIRECTIVES.md"
 DEFAULT_ARCHIVE_MD_PATH = ROOT / "runtime/directives/directives_archive.md"

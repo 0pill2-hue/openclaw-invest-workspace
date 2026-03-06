@@ -15,8 +15,8 @@ Drift rule: 이 문서는 `docs/openclaw/CONTEXT_MANIFEST.json`과 동일한 로
 ## L2 — On-demand (필요할 때만 로드)
 - 로딩 정책/우선순위: docs/openclaw/CONTEXT_LOAD_POLICY.md
 - 운영 게이트/SLA: docs/openclaw/OPERATING_GOVERNANCE.md
-- 티켓 SSOT: `runtime/tasks/tasks.db` + `scripts/taskdb.py` + `scripts/task_gate.py` (`TASKS.md`는 usage index)
-- 지시 SSOT: `runtime/directives/directives.db` + `scripts/directivesdb.py` + `scripts/directives_gate.py` (`DIRECTIVES.md`는 usage index)
+- 티켓 SSOT: `runtime/tasks/tasks.db` + `scripts/tasks/db.py` + `scripts/tasks/gate.py` (`TASKS.md`는 usage index)
+- 지시 SSOT: `runtime/directives/directives.db` + `scripts/directives/db.py` + `scripts/directives/gate.py` (`DIRECTIVES.md`는 usage index)
 - 구조/경로: docs/openclaw/WORKSPACE_STRUCTURE.md, invest/docs/INVEST_STRUCTURE_POLICY.md
 - 투자 실행 SOP: invest/docs/OPERATIONS_SOP.md
 - 브레인 라우팅: BRAINS.md

@@ -223,7 +223,7 @@
 - 2026-03-05 23:37 | 미확인 | TASKS 규칙/작업 분리로 토큰 절감 | 즉시 | DONE | first_action: TASKS.md 내용을 규칙/작업으로 분리 이관 | proof: TASKS.md, TASKS_RULES.md, TASKS_ACTIVE.md
 
 - 2026-03-05 23:44 | 미확인 | TASKS 프로그램 전환(SQLite) + 티켓 강제 게이트 도입 | 즉시 | IN_PROGRESS | first_action: TASKS_ACTIVE JB-20260305-037 등록 후 프로그램 전환/강제화 구현 착수 | proof: TASKS_ACTIVE.md
-- 2026-03-05 23:49 | 주인님 | TASKS 문서기반→프로그램(SQLite) 전환 + fail-close 티켓 게이트 도입 + TASKS 문서 3종 역할분리 정리 | 즉시 | DONE | proof: scripts/taskdb.py, scripts/task_gate.py, TASKS.md, TASKS_RULES.md, TASKS_ACTIVE.md, runtime/tasks/README.md
+- 2026-03-05 23:49 | 주인님 | TASKS 문서기반→프로그램(SQLite) 전환 + fail-close 티켓 게이트 도입 + TASKS 문서 3종 역할분리 정리 | 즉시 | DONE | proof: scripts/tasks/db.py, scripts/tasks/gate.py, TASKS.md, TASKS_RULES.md, TASKS_ACTIVE.md, runtime/tasks/README.md
 2026-03-05 23:57 | 미확인 | TASKS 문서 최소화(프로그램 SSOT만 유지) | 즉시 | DONE | first_action: TASKS_ACTIVE.md/TASKS_RULES.md 삭제 후 TASKS.md 3줄 최소화 | proof: TASKS.md, TASKS_ACTIVE.md(removed), TASKS_RULES.md(removed)
 
-- 2026-03-06 00:00 | 미확인 | DIRECTIVES 프로그램 전환(SQLite) + 티켓 강제 게이트 도입 | 즉시 | IN_PROGRESS | first_action: taskdb에 JB-20260306-001 등록 후 전환 작업 착수 | proof: runtime/tasks/tasks.db, scripts/taskdb.py
+- 2026-03-06 00:00 | 미확인 | DIRECTIVES 프로그램 전환(SQLite) + 티켓 강제 게이트 도입 | 즉시 | IN_PROGRESS | first_action: taskdb에 JB-20260306-001 등록 후 전환 작업 착수 | proof: runtime/tasks/tasks.db, scripts/tasks/db.py

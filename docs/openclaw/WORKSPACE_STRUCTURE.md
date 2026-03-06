@@ -9,8 +9,8 @@ Purpose: invest 안/밖 포함 워크스페이스 구조와 문서 배치 기준
 - `invest/stages/stage*/outputs/reports/` : 투자 단계/검증 리포트
 - `memory/` : 일자 메모리 + 상태파일 (`memory/README.md` 기준)
 - `MEMORY.md` : 장기 메모리
-- `runtime/directives/directives.db` : 지시사항 SSOT (`scripts/directivesdb.py`, `scripts/directives_gate.py`)
-- `runtime/tasks/tasks.db` : 작업 티켓 SSOT (`scripts/taskdb.py`, `scripts/task_gate.py`)
+- `runtime/directives/directives.db` : 지시사항 SSOT (`scripts/directives/db.py`, `scripts/directives/gate.py`)
+- `runtime/tasks/tasks.db` : 작업 티켓 SSOT (`scripts/tasks/db.py`, `scripts/tasks/gate.py`)
 - `DIRECTIVES.md` / `TASKS.md` : usage index
 
 ## 2) 루트 운영 코어 파일(고정)

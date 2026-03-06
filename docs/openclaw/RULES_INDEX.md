@@ -5,8 +5,8 @@
 
 ## 1) 절대 기준 (항상)
 1. `AGENTS.md` — 운영 게이트/우선순위/완료 게이트
-2. DIRECTIVES SSOT — `runtime/directives/directives.db` + `scripts/directivesdb.py` + `scripts/directives_gate.py` (`DIRECTIVES.md`는 usage index)
-3. TASKS SSOT — `runtime/tasks/tasks.db` + `scripts/taskdb.py` + `scripts/task_gate.py` (`TASKS.md`는 usage index)
+2. DIRECTIVES SSOT — `runtime/directives/directives.db` + `scripts/directives/db.py` + `scripts/directives/gate.py` (`DIRECTIVES.md`는 usage index)
+3. TASKS SSOT — `runtime/tasks/tasks.db` + `scripts/tasks/db.py` + `scripts/tasks/gate.py` (`TASKS.md`는 usage index)
 
 ## 2) L2 보조 규칙 (필요 시)
 - `MEMORY.md` — MAIN 1:1 세션에서만 로드하는 핵심 원칙/보안/트레이딩 안전

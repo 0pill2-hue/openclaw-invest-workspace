@@ -4,8 +4,14 @@ from __future__ import annotations
 import json
 import sqlite3
 from datetime import datetime, timedelta
+from pathlib import Path
+import sys
 
-from runtime_env import TASKS_DB
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from lib.runtime_env import TASKS_DB
 
 STALE_MINUTES = 30
 

@@ -17,8 +17,14 @@ import time
 import urllib.error
 import urllib.request
 from datetime import datetime
+from pathlib import Path
+import sys
 
-from runtime_env import llama_model_path, sessions_store
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from lib.runtime_env import llama_model_path, sessions_store
 
 LLAMA_MODEL_PATH = str(llama_model_path())
 SESSIONS_STORE = str(sessions_store())
@@ -28,25 +34,34 @@ LLAMA_SERVER_CMD = [
     "llama-server",
     "-m",
     LLAMA_MODEL_PATH,
+    "--host",
+    os.environ.get("OPENCLAW_LOCAL_HOST", "127.0.0.1"),
     "--port",
-    "8090",
+    os.environ.get("OPENCLAW_LOCAL_PORT", "8090"),
     "-c",
-    "32768",
+    os.environ.get("OPENCLAW_LOCAL_CTX", "12288"),
+    "-ngl",
+    "99",
+    "--flash-attn",
+    "on",
+    "--cache-type-k",
+    "q8_0",
+    "--cache-type-v",
+    "q8_0",
     "--temp",
-    "0.7",
+    "0.5",
     "--top-p",
-    "0.8",
+    "0.9",
     "--top-k",
     "20",
     "--min-p",
-    "0.0",
+    "0.02",
+    "--repeat-penalty",
+    "1.05",
+    "--repeat-last-n",
+    "128",
     "--chat-template-kwargs",
-    '{"enable_thinking": true}',
-    "-ngl",
-    "99",
-    "-cb",
-    "--flash-attn",
-    "on",
+    '{"enable_thinking": false}',
 ]
 
 
