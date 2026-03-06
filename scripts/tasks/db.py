@@ -556,6 +556,13 @@ def pick_next_assignable_task(conn: sqlite3.Connection) -> sqlite3.Row | None:
 
 
 def assign_next_task(conn: sqlite3.Connection, assignee: str, run_id: str) -> sqlite3.Row | None:
+    in_progress = conn.execute(
+        "SELECT id FROM tasks WHERE assignee=? AND status='IN_PROGRESS' LIMIT 1",
+        (assignee,),
+    ).fetchone()
+    if in_progress:
+        return None
+
     for _ in range(5):
         row = pick_next_assignable_task(conn)
         if not row:

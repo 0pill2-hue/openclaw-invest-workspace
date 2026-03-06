@@ -23,6 +23,7 @@ TASK_DB_PATH = ROOT / "runtime/tasks/tasks.db"
 OPENCLAW_BIN = Path("/opt/homebrew/bin/openclaw")
 NODE_BIN = Path("/opt/homebrew/bin/node")
 ASSIGNEE = "main-orchestrator"
+ORCH_AGENT_ID = os.environ.get("OPENCLAW_ORCH_AGENT_ID", "main").strip() or "main"
 ORCH_TIMEOUT_SEC = 180
 CLOSE_WAIT_SEC = 20
 
@@ -295,13 +296,16 @@ def run_orchestrator(ticket_id: str, run_id: str) -> tuple[bool, str]:
     cmd = [
         str(OPENCLAW_BIN),
         "agent",
-        "--local",
+        "--agent",
+        ORCH_AGENT_ID,
         "--session-id",
         f"auto-orchestrator-{ticket_id}-{run_id}",
         "--message",
         message,
         "--json",
     ]
+    if os.getenv("OPENCLAW_ORCH_LOCAL") == "1":
+        cmd.insert(2, "--local")
 
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV, timeout=ORCH_TIMEOUT_SEC)
