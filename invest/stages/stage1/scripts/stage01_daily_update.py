@@ -1,5 +1,6 @@
 import subprocess
 import os
+import sys
 import time
 import json
 from datetime import datetime
@@ -21,7 +22,7 @@ def run_script(script_path, retries=3):
     Updated: 2026-02-18
     """
     print(f"[{datetime.now()}] Running {script_path}...")
-    python_bin = os.path.join(ROOT_DIR, 'invest/venv/bin/python')
+    python_bin = os.environ.get('INVEST_PYTHON_BIN', '').strip() or sys.executable
     last_err = None
 
     for i in range(retries):

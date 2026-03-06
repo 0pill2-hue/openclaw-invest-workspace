@@ -1,0 +1,7 @@
+{
+  "assigned_ticket": "JB-20260307-002",
+  "status": "assigned",
+  "error": "recent transition detected ticket=JB-20260307-002 status=BLOCKED review_status=PENDING source=status:BLOCKED",
+  "orchestrator": "recent_transition",
+  "ts": "2026-03-07T01:38:48"
+}
