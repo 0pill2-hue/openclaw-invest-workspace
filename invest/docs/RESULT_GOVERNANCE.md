@@ -1,11 +1,13 @@
-# Backtest Result Governance
+# RESULT_GOVERNANCE
 
 ## Grades
+
 - DRAFT: exploratory/test-only (never official)
 - VALIDATED: data/rule/verification conditions passed
 - PRODUCTION: approved for official reporting/adoption
 
 ## Mandatory rules
+
 1. Missing grade => DRAFT
 2. DRAFT outputs must include `TEST ONLY` watermark/text.
 3. Keep physical separation:
@@ -14,6 +16,7 @@
 4. Official report/adoption is allowed only for PRODUCTION.
 
 ## Minimal promotion checks
+
 - DRAFT -> VALIDATED
   - Data range >= 3 years
   - Cost/slippage explicitly applied
