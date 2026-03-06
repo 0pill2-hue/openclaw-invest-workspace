@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-05-slim-merge",
+  "version": "2026-03-06-two-brain-align",
   "tiers": {
     "L1": [
       "SOUL.md",
@@ -20,5 +20,9 @@
       "invest/docs/OPERATIONS_SOP.md",
       "invest/docs/INVEST_STRUCTURE_POLICY.md"
     ]
+  },
+  "notes": {
+    "memory_daily": "today-only",
+    "memory_core": "MEMORY.md is L2 and main-session-only"
   }
 }
