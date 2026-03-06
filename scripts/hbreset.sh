@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL_PATTERN='llama-server.*Qwen3.5-35B-A3B-Q4_K_M.gguf'
+source "$(cd "$(dirname "$0")" && pwd)/common_env.sh"
+
+MODEL_PATTERN="llama-server.*$(basename "$OPENCLAW_LOCAL_MODEL_PATH")"
 
 pkill -f "$MODEL_PATTERN" || true
 nohup llama-server \
-  -m /Users/jobiseu/models/qwen35/Qwen3.5-35B-A3B-Q4_K_M.gguf \
+  -m "$OPENCLAW_LOCAL_MODEL_PATH" \
   --port 8090 \
   -c 32768 \
   --temp 0.7 \

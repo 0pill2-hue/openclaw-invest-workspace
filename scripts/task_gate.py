@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sqlite3
 import sys
 from pathlib import Path
@@ -26,8 +27,12 @@ def main() -> int:
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
 
+    strict = os.environ.get("OPENCLAW_GATE_STRICT", "0").strip() == "1"
+    expected_assignee = os.environ.get("OPENCLAW_ASSIGNEE", "main").strip() or "main"
+    expected_run_id = os.environ.get("OPENCLAW_RUN_ID", "").strip()
+
     try:
-        row = conn.execute("SELECT status FROM tasks WHERE id=?", (args.ticket,)).fetchone()
+        row = conn.execute("SELECT * FROM tasks WHERE id=?", (args.ticket,)).fetchone()
     except sqlite3.Error as exc:
         print(f"gate fail: db error ({exc})", file=sys.stderr)
         return 2
@@ -42,6 +47,21 @@ def main() -> int:
             file=sys.stderr,
         )
         return 2
+
+    if strict:
+        assignee = (row["assignee"] or "").strip() if "assignee" in row.keys() else ""
+        assigned_run_id = (row["assigned_run_id"] or "").strip() if "assigned_run_id" in row.keys() else ""
+        review_status = (row["review_status"] or "").strip().upper() if "review_status" in row.keys() else ""
+
+        if assignee and assignee != expected_assignee:
+            print(f"gate fail: assignee mismatch (expected={expected_assignee}, actual={assignee})", file=sys.stderr)
+            return 2
+        if expected_run_id and assigned_run_id and assigned_run_id != expected_run_id:
+            print(f"gate fail: run_id mismatch (expected={expected_run_id}, actual={assigned_run_id})", file=sys.stderr)
+            return 2
+        if review_status == "REJECTED":
+            print("gate fail: review_status is REJECTED", file=sys.stderr)
+            return 2
 
     print(f"gate pass: {args.ticket}")
     return 0

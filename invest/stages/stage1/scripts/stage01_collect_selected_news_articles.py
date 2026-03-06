@@ -31,6 +31,13 @@ def _safe_int(raw: Optional[str], default: int, min_v: int = 0) -> int:
         return default
 
 
+def _safe_float(raw: Optional[str], default: float, min_v: float = 0.0) -> float:
+    try:
+        return max(min_v, float((raw or "").strip()))
+    except Exception:
+        return default
+
+
 def _load_json(path: Path, default: Any) -> Any:
     if not path.exists():
         return default
@@ -163,7 +170,7 @@ def _recency_score(published_dt: Optional[datetime], now_dt: datetime) -> int:
     return 0
 
 
-def _priority(row: dict[str, Any], keywords: list[str], now_dt: datetime) -> dict[str, Any]:
+def _priority(row: dict[str, Any], keywords: list[str], now_dt: datetime, recency_weight: float) -> dict[str, Any]:
     text = " ".join(
         [
             str(row.get("title") or ""),
@@ -175,7 +182,7 @@ def _priority(row: dict[str, Any], keywords: list[str], now_dt: datetime) -> dic
     published_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
     rscore = _recency_score(published_dt, now_dt)
     source_bonus = 2 if any((x.get("source_kind") in {"sitemap", "sitemap_feed", "sitemap_rss"}) for x in row.get("discovered_by", [])) else 0
-    score = len(hits) * 10 + rscore + source_bonus
+    score = len(hits) * 10 + (rscore * recency_weight) + source_bonus
 
     one = dict(row)
     one["keyword_hits"] = len(hits)
@@ -349,10 +356,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         return summary
 
     now_dt = datetime.now(timezone.utc)
-    scored = [_priority(r, keywords, now_dt) for r in rows]
+    scored = [_priority(r, keywords, now_dt, args.recency_weight) for r in rows]
 
     scored = [s for s in scored if s.get("keyword_hits", 0) >= args.min_keyword_hits]
-    scored.sort(key=lambda x: (int(x.get("priority_score", 0)), str(x.get("published_dt", ""))), reverse=True)
+    scored.sort(key=lambda x: (float(x.get("priority_score", 0)), str(x.get("published_dt", ""))), reverse=True)
 
     if args.max_candidates > 0:
         scored = scored[: args.max_candidates]
@@ -405,6 +412,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "date_max": dmax,
         "min_keyword_hits": args.min_keyword_hits,
         "max_candidates": args.max_candidates,
+        "recency_weight": args.recency_weight,
         "errors": errors,
         "failure_samples": failures[:30],
     }
@@ -428,7 +436,8 @@ def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Stage1 selected news body collector")
     ap.add_argument("--input-index", default=os.environ.get("NEWS_SELECTED_INPUT_INDEX", ""), help="url index jsonl path (default: latest)")
     ap.add_argument("--min-keyword-hits", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MIN_KEYWORD_HITS"), 1, min_v=0))
-    ap.add_argument("--max-candidates", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MAX_ARTICLES"), 120, min_v=1))
+    ap.add_argument("--max-candidates", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MAX_ARTICLES"), 0, min_v=0))
+    ap.add_argument("--recency-weight", type=float, default=_safe_float(os.environ.get("NEWS_SELECTED_RECENCY_WEIGHT"), 0.0, min_v=0.0))
     ap.add_argument("--min-selected", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MIN_SELECTED"), 1, min_v=0))
     ap.add_argument("--timeout", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_TIMEOUT_SEC"), 18, min_v=3))
     ap.add_argument("--sleep", type=float, default=float(os.environ.get("NEWS_SELECTED_SLEEP_SEC", "0.15")))

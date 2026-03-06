@@ -1,93 +1,60 @@
 #!/usr/bin/env python3
-from pathlib import Path
-import re
+from __future__ import annotations
+
 import json
+import sqlite3
 from datetime import datetime, timedelta
 
-TASKS = Path('/Users/jobiseu/.openclaw/workspace/TASKS.md')
+from runtime_env import TASKS_DB
+
 NOW = datetime.now()
-STALE_MINUTES = 30  # heartbeat 기준: 30분 이상 무활동 감시
+STALE_MINUTES = 30
 
 
-def parse_dt(v: str):
+def parse_dt(v: str | None):
     v = (v or '').strip()
     if not v or v in {'-', 'none', 'None', 'N/A'}:
         return None
-    # 허용: YYYY-MM-DD HH:MM:SS
     try:
         return datetime.strptime(v, '%Y-%m-%d %H:%M:%S')
     except Exception:
         return None
 
 
-def field(line: str, key: str):
-    m = re.search(rf'\|\s*{re.escape(key)}\s*:\s*([^|]+)', line)
-    return m.group(1).strip() if m else None
-
-
-text = TASKS.read_text(encoding='utf-8') if TASKS.exists() else ''
-issues = []
-
-if 'HH:MM | task' in text:
-    issues.append('TASKS.md에 템플릿 placeholder가 남아있음')
-
-section = None
-for raw in text.splitlines():
-    line = raw.strip()
-
-    if line.startswith('### '):
-        section = line
-        continue
-
-    if '`JB-' not in raw or not raw.strip().startswith('- [ ]'):
-        continue
-
-    # ticket id format
-    m_id = re.search(r'`(JB-\d{8}-\d{3}|JB-[^`]+)`', raw)
-    if m_id:
-        tid = m_id.group(1)
-        if not re.match(r'^JB-\d{8}-\d{3}$', tid):
-            issues.append(f'잘못된 ticket_id 형식: {tid}')
-
-    # proof format check
-    if '| proof:' not in raw:
-        issues.append(f'proof 필드 누락: {raw.strip()}')
-
-    if section == '### IN_PROGRESS':
-        started = field(raw, 'started_at')
-        last_act = field(raw, 'last_activity_at')
-        if not started:
-            issues.append(f'IN_PROGRESS started_at 누락: {raw.strip()}')
-        if not last_act:
-            issues.append(f'IN_PROGRESS last_activity_at 누락: {raw.strip()}')
-        dt = parse_dt(last_act)
-        if dt is None:
-            issues.append(f'IN_PROGRESS last_activity_at 파싱 실패: {raw.strip()}')
-        else:
-            if NOW - dt > timedelta(minutes=STALE_MINUTES):
-                issues.append(f'IN_PROGRESS 무활동 {STALE_MINUTES}분 초과: {raw.strip()}')
-
-    if section == '### PAUSED':
-        paused_at = field(raw, 'paused_at')
-        resume_due = field(raw, 'resume_due')
-        pause_reason = field(raw, 'pause_reason')
-        if not paused_at:
-            issues.append(f'PAUSED paused_at 누락: {raw.strip()}')
-        if not pause_reason:
-            issues.append(f'PAUSED pause_reason 누락: {raw.strip()}')
-        if not resume_due:
-            issues.append(f'PAUSED resume_due 누락: {raw.strip()}')
-        else:
-            rd = parse_dt(resume_due)
-            if rd is None:
-                issues.append(f'PAUSED resume_due 파싱 실패: {raw.strip()}')
-            elif NOW > rd:
-                issues.append(f'PAUSED resume_due 초과: {raw.strip()}')
+issues: list[str] = []
+if not TASKS_DB.exists():
+    issues.append(f'tasks db not found: {TASKS_DB}')
+else:
+    conn = sqlite3.connect(str(TASKS_DB))
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT id, status, started_at, last_activity_at, resume_due, review_status FROM tasks"
+    ).fetchall()
+    for row in rows:
+        tid = row['id']
+        status = (row['status'] or '').upper()
+        review_status = (row['review_status'] or '').upper()
+        if status == 'IN_PROGRESS':
+            started = parse_dt(row['started_at'])
+            last_act = parse_dt(row['last_activity_at']) or started
+            if started is None:
+                issues.append(f'IN_PROGRESS started_at 누락: {tid}')
+            if last_act is None:
+                issues.append(f'IN_PROGRESS last_activity_at 누락: {tid}')
+            elif NOW - last_act > timedelta(minutes=STALE_MINUTES):
+                issues.append(f'IN_PROGRESS 무활동 {STALE_MINUTES}분 초과: {tid}')
+        if status == 'BLOCKED':
+            resume_due = parse_dt(row['resume_due'])
+            if resume_due and NOW > resume_due:
+                issues.append(f'BLOCKED resume_due 초과: {tid}')
+        if review_status == 'REJECTED':
+            issues.append(f'review_status=REJECTED: {tid}')
 
 result = {
     'ok': len(issues) == 0,
     'issues': issues,
     'checked_at': NOW.strftime('%Y-%m-%d %H:%M:%S'),
     'stale_minutes': STALE_MINUTES,
+    'db': str(TASKS_DB),
 }
 print(json.dumps(result, ensure_ascii=False))

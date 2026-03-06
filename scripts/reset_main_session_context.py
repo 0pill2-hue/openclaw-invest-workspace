@@ -8,8 +8,10 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-SESSIONS_DIR = Path.home() / ".openclaw" / "agents" / "main" / "sessions"
-SESSIONS_PATH = SESSIONS_DIR / "sessions.json"
+from runtime_env import openclaw_home, sessions_store
+
+SESSIONS_PATH = sessions_store()
+SESSIONS_DIR = SESSIONS_PATH.parent
 DEFAULT_SESSION_KEY = "agent:main:main"
 
 

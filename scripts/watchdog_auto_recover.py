@@ -1,95 +1,65 @@
 #!/usr/bin/env python3
-from pathlib import Path
-import re
-import json
-from datetime import datetime
+from __future__ import annotations
 
-TASKS = Path('/Users/jobiseu/.openclaw/workspace/TASKS.md')
+import json
+import sqlite3
+from datetime import datetime, timedelta
+
+from runtime_env import TASKS_DB
+
+STALE_MINUTES = 30
+
+
+def parse_dt(v: str | None):
+    v = (v or '').strip()
+    if not v:
+        return None
+    try:
+        return datetime.strptime(v, '%Y-%m-%d %H:%M:%S')
+    except Exception:
+        return None
 
 
 def main():
-    if not TASKS.exists():
-        print(json.dumps({"ok": False, "changed": False, "reason": "TASKS.md not found"}, ensure_ascii=False))
+    if not TASKS_DB.exists():
+        print(json.dumps({"ok": False, "changed": False, "reason": f"tasks db not found: {TASKS_DB}"}, ensure_ascii=False))
         return
 
-    lines = TASKS.read_text(encoding='utf-8').splitlines()
+    conn = sqlite3.connect(str(TASKS_DB))
+    conn.row_factory = sqlite3.Row
+    now = datetime.now()
+    rows = conn.execute(
+        "SELECT id, status, started_at, last_activity_at, resume_due, note, blocked_reason FROM tasks WHERE status IN ('IN_PROGRESS','BLOCKED')"
+    ).fetchall()
 
-    sec = None
-    in_prog_idx = []
-    blocked_insert_at = None
-
-    for i, line in enumerate(lines):
-        s = line.strip()
-        if s.startswith('### '):
-            sec = s
-            if s == '### BLOCKED':
-                blocked_insert_at = i + 1
+    moved = []
+    for row in rows:
+        tid = row['id']
+        status = (row['status'] or '').upper()
+        started = parse_dt(row['started_at'])
+        last_act = parse_dt(row['last_activity_at']) or started
+        resume_due = parse_dt(row['resume_due'])
+        reason = ''
+        if status == 'IN_PROGRESS' and last_act and now - last_act > timedelta(minutes=STALE_MINUTES):
+            reason = f'watchdog_stale_in_progress>{STALE_MINUTES}m'
+        elif status == 'BLOCKED' and resume_due and now > resume_due:
+            reason = 'watchdog_resume_due_expired'
+        if not reason:
             continue
-        if sec == '### IN_PROGRESS' and '`JB-' in line and line.strip().startswith('- [ ]'):
-            in_prog_idx.append(i)
+        note = (row['note'] or '').strip()
+        note = (note + '\n' if note else '') + f'auto_recover: {reason} @ {now:%Y-%m-%d %H:%M:%S}'
+        with conn:
+            conn.execute(
+                """
+                UPDATE tasks
+                SET status='BLOCKED', bucket='backlog', blocked_reason=?, note=?, updated_at=?
+                WHERE id=?
+                """,
+                (reason, note, now.strftime('%Y-%m-%d %H:%M:%S'), tid),
+            )
+        moved.append({"id": tid, "reason": reason})
 
-    changes = []
-    moved = 0
-    ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    # Move only tickets with missing proof to BLOCKED automatically.
-    # This prevents infinite warning loops and forces explicit re-attach.
-    for idx in in_prog_idx:
-        line = lines[idx]
-        m = re.search(r'\|\s*proof:\s*(.*)$', line)
-        proof = m.group(1).strip() if m else ''
-        if proof in ('', '-', 'none', 'None', 'N/A'):
-            blocked_line = f"{line} | auto_blocked: watchdog_missing_proof ({ts})"
-            changes.append((idx, blocked_line))
-
-    if not changes:
-        print(json.dumps({"ok": True, "changed": False, "moved": 0}, ensure_ascii=False))
-        return
-
-    # Remove from IN_PROGRESS (reverse order to keep indices stable)
-    for idx, _ in sorted(changes, key=lambda x: x[0], reverse=True):
-        lines.pop(idx)
-        moved += 1
-
-    # Ensure IN_PROGRESS is not empty
-    sec = None
-    in_progress_has_item = False
-    in_progress_header_idx = None
-    for i, line in enumerate(lines):
-        s = line.strip()
-        if s.startswith('### '):
-            sec = s
-            if s == '### IN_PROGRESS':
-                in_progress_header_idx = i
-            continue
-        if sec == '### IN_PROGRESS' and line.strip().startswith('- [ ]') and '없음' not in line:
-            in_progress_has_item = True
-    if in_progress_header_idx is not None and not in_progress_has_item:
-        # insert "없음" right after header if no tasks remain
-        if in_progress_header_idx + 1 >= len(lines) or '없음' not in lines[in_progress_header_idx + 1]:
-            lines.insert(in_progress_header_idx + 1, '- [ ] 없음')
-
-    # Recompute BLOCKED insertion point
-    blocked_insert_at = None
-    for i, line in enumerate(lines):
-        if line.strip() == '### BLOCKED':
-            blocked_insert_at = i + 1
-            break
-
-    if blocked_insert_at is None:
-        print(json.dumps({"ok": False, "changed": False, "reason": "BLOCKED section not found"}, ensure_ascii=False))
-        return
-
-    # Remove placeholder "없음" in BLOCKED when inserting items
-    if blocked_insert_at < len(lines) and lines[blocked_insert_at].strip() == '- [ ] 없음':
-        lines.pop(blocked_insert_at)
-
-    for _, bline in changes:
-        lines.insert(blocked_insert_at, bline)
-        blocked_insert_at += 1
-
-    TASKS.write_text('\n'.join(lines) + '\n', encoding='utf-8')
-    print(json.dumps({"ok": True, "changed": True, "moved": moved}, ensure_ascii=False))
+    print(json.dumps({"ok": True, "changed": bool(moved), "moved": moved, "db": str(TASKS_DB)}, ensure_ascii=False))
 
 
 if __name__ == '__main__':

@@ -2,9 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-LOCAL_MODEL="Qwen3.5-35B-A3B-Q4_K_M.gguf"
-LOCAL_ENDPOINT="http://127.0.0.1:8090/v1/chat/completions"
-REMOTE_MODEL="openai-codex/gpt-5.3-codex"
+source "$(cd "$(dirname "$0")" && pwd)/common_env.sh"
+
+LOCAL_MODEL="${OPENCLAW_LOCAL_MODEL_ID:-Qwen3.5-35B-A3B-Q4_K_M.gguf}"
+LOCAL_ENDPOINT="${OPENCLAW_LOCAL_ENDPOINT:-http://127.0.0.1:8090/v1/chat/completions}"
+REMOTE_MODEL="${OPENCLAW_REMOTE_MODEL_ID:-openai-codex/gpt-5.4}"
 CTX_DIR="/tmp/openclaw_local_ctx"
 CTX_FILE="${CTX_DIR}/session.json"
 RECENT_TURNS=8
@@ -215,7 +217,7 @@ classify_reason_level() {
   fi
 }
 
-call_local_model() {
+call_local() {
   local user_message="$1"
   local context_text="$2"
   local payload
@@ -248,14 +250,14 @@ call_local_model() {
   extract_first_text_payload "$response"
 }
 
-call_remote_model() {
+call_remote() {
   local model="$1"
   local user_message="$2"
   local session_id="$3"
   local response
 
   openclaw models set "$model" >/dev/null
-  response="$(openclaw agent --session-id "$session_id" --message "$user_message" --local --json)"
+  response="$(openclaw agent --session-id "$session_id" --message "$user_message" --json)"
   extract_first_text_payload "$response"
 }
 
@@ -313,13 +315,13 @@ primary_text=""
 if [[ "$route" == "local" ]]; then
   init_context_guard
   context_text="$(build_recent_context)"
-  primary_text="$(call_local_model "$message" "$context_text")"
+  primary_text="$(call_local "$message" "$context_text")"
   append_context_turn "user" "$message"
   append_context_turn "assistant" "$primary_text"
 else
   require_cmd openclaw
   remote_session_id="autoroute-$(date +%s)-$RANDOM"
-  primary_text="$(call_remote_model "$model" "$message" "$remote_session_id")"
+  primary_text="$(call_remote "$model" "$message" "$remote_session_id")"
 fi
 
 printf '%s
@@ -344,7 +346,7 @@ $message
 $primary_text
 VERIFY
 )
-    verifier_text="$(call_remote_model "$REMOTE_MODEL" "$verify_prompt" "$verify_session_id")"
+    verifier_text="$(call_remote "$REMOTE_MODEL" "$verify_prompt" "$verify_session_id")"
     printf '
 [auto-verify:%s]
 %s
@@ -366,7 +368,7 @@ $primary_text
 VERIFY
 )
     verify_context="$(build_recent_context)"
-    local_verifier_text="$(call_local_model "$local_verify_prompt" "$verify_context")"
+    local_verifier_text="$(call_local "$local_verify_prompt" "$verify_context")"
     append_context_turn "user" "$local_verify_prompt"
     append_context_turn "assistant" "$local_verifier_text"
     printf '

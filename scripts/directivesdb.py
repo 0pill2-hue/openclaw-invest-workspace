@@ -11,8 +11,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from runtime_env import DIRECTIVES_DB
+
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DB_PATH = ROOT / "runtime/directives/directives.db"
+DEFAULT_DB_PATH = DIRECTIVES_DB
 DEFAULT_DIRECTIVES_MD_PATH = ROOT / "DIRECTIVES.md"
 DEFAULT_ARCHIVE_MD_PATH = ROOT / "runtime/directives/directives_archive.md"
 
@@ -32,6 +34,10 @@ def connect(db_path: Path) -> sqlite3.Connection:
     ensure_parent(db_path)
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=5000")
     return conn
 
 

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+common_env_repo_root() {
+  if [[ -n "${OPENCLAW_REPO_ROOT:-}" ]]; then
+    printf '%s\n' "$OPENCLAW_REPO_ROOT"
+    return 0
+  fi
+  git rev-parse --show-toplevel 2>/dev/null || cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd
+}
+
+OPENCLAW_REPO_ROOT="$(common_env_repo_root)"
+export OPENCLAW_REPO_ROOT
+
+OPENCLAW_TASKS_DB="${OPENCLAW_TASKS_DB:-$OPENCLAW_REPO_ROOT/runtime/tasks/tasks.db}"
+OPENCLAW_DIRECTIVES_DB="${OPENCLAW_DIRECTIVES_DB:-$OPENCLAW_REPO_ROOT/runtime/directives/directives.db}"
+OPENCLAW_STAGE6_RUNTIME_AUDIT_DIR="${OPENCLAW_STAGE6_RUNTIME_AUDIT_DIR:-$OPENCLAW_REPO_ROOT/invest/stages/stage6/outputs/reports/runtime_audit}"
+OPENCLAW_LOCAL_MODEL_PATH="${OPENCLAW_LOCAL_MODEL_PATH:-$HOME/models/qwen35/Qwen3.5-35B-A3B-Q4_K_M.gguf}"
+OPENCLAW_LOCAL_ENDPOINT="${OPENCLAW_LOCAL_ENDPOINT:-http://127.0.0.1:8090/v1/chat/completions}"
+
+export OPENCLAW_TASKS_DB OPENCLAW_DIRECTIVES_DB OPENCLAW_STAGE6_RUNTIME_AUDIT_DIR
+export OPENCLAW_LOCAL_MODEL_PATH OPENCLAW_LOCAL_ENDPOINT

@@ -18,9 +18,10 @@ import urllib.error
 import urllib.request
 from datetime import datetime
 
+from runtime_env import llama_model_path, sessions_store
 
-LLAMA_MODEL_PATH = "/Users/jobiseu/models/qwen35/Qwen3.5-35B-A3B-Q4_K_M.gguf"
-SESSIONS_STORE = "/Users/jobiseu/.openclaw/agents/main/sessions/sessions.json"
+LLAMA_MODEL_PATH = str(llama_model_path())
+SESSIONS_STORE = str(sessions_store())
 MAIN_SESSION_KEY = "agent:main:main"
 
 LLAMA_SERVER_CMD = [

@@ -96,6 +96,12 @@ def _latest_files(path: Path, pattern: str, limit: int) -> list[Path]:
     return files[: max(0, limit)] if limit > 0 else files
 
 
+def _resolve_cutoff(lookback_days: int) -> pd.Timestamp | None:
+    if lookback_days <= 0:
+        return None
+    return pd.Timestamp.now(tz="Asia/Seoul") - pd.Timedelta(days=lookback_days)
+
+
 def _normalize_text_for_dedup(text: str) -> str:
     s = (text or "").lower()
     s = re.sub(r"\s+", " ", s)
@@ -455,6 +461,7 @@ def _build_from_text_telegram(
     lookback_days: int,
     max_files: int,
     max_messages_per_file: int,
+    include_nosymbol: bool,
 ) -> tuple[list[dict], dict]:
     out: list[dict] = []
     stats = {
@@ -462,12 +469,13 @@ def _build_from_text_telegram(
         "telegram_messages_scanned": 0,
         "telegram_messages_with_symbols": 0,
         "telegram_messages_skipped_no_symbols": 0,
+        "telegram_messages_included_nosymbol": 0,
     }
 
     if not TEXT_TELEGRAM_DIR.exists():
         return out, stats
 
-    cutoff = pd.Timestamp.now(tz="Asia/Seoul") - pd.Timedelta(days=max(0, lookback_days))
+    cutoff = _resolve_cutoff(lookback_days)
 
     files = _latest_files(TEXT_TELEGRAM_DIR, "*.md", max_files)
     for fp in files:
@@ -493,7 +501,7 @@ def _build_from_text_telegram(
             ts = pd.to_datetime(published_at, errors="coerce")
             if pd.isna(ts):
                 continue
-            if ts < cutoff:
+            if cutoff is not None and ts < cutoff:
                 continue
 
             text = re.sub(r"\n{3,}", "\n\n", body).strip()
@@ -501,12 +509,18 @@ def _build_from_text_telegram(
                 continue
 
             symbols = _extract_symbols_from_text(text, name_pairs)
+            source_family = "text_telegram"
             if not symbols:
                 stats["telegram_messages_skipped_no_symbols"] += 1
-                continue
+                if not include_nosymbol:
+                    continue
+                symbols = ["__NOSYMBOL__"]
+                source_family = "text_telegram_nosymbol"
+                stats["telegram_messages_included_nosymbol"] += 1
+            else:
+                stats["telegram_messages_with_symbols"] += 1
 
-            stats["telegram_messages_with_symbols"] += 1
-            rid_seed = f"{fp.name}:{d_raw}:{text[:160]}"
+            rid_seed = f"{fp.name}:{d_raw}:{text[:160]}:{source_family}"
             rid = hashlib.sha1(rid_seed.encode("utf-8", errors="ignore")).hexdigest()[:20]
             out.append(
                 {
@@ -515,6 +529,7 @@ def _build_from_text_telegram(
                     "symbols": symbols,
                     "text": text,
                     "source": f"text/telegram:{fp.stem}",
+                    "source_family": source_family,
                     "content_fingerprint": _content_fingerprint(text),
                 }
             )
@@ -526,18 +541,20 @@ def _build_from_text_blog(
     name_pairs: list[tuple[str, str]],
     lookback_days: int,
     max_files: int,
+    include_nosymbol: bool,
 ) -> tuple[list[dict], dict]:
     out: list[dict] = []
     stats = {
         "blog_files_scanned": 0,
         "blog_docs_with_symbols": 0,
         "blog_docs_skipped_no_symbols": 0,
+        "blog_docs_included_nosymbol": 0,
     }
 
     if not TEXT_BLOG_DIR.exists():
         return out, stats
 
-    cutoff = pd.Timestamp.now(tz="Asia/Seoul") - pd.Timedelta(days=max(0, lookback_days))
+    cutoff = _resolve_cutoff(lookback_days)
     files = sorted(TEXT_BLOG_DIR.rglob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True)
     files = files[: max(0, max_files)] if max_files > 0 else files
 
@@ -556,7 +573,7 @@ def _build_from_text_blog(
         if not published_at:
             continue
         ts = pd.to_datetime(published_at, errors="coerce")
-        if pd.isna(ts) or ts < cutoff:
+        if pd.isna(ts) or (cutoff is not None and ts < cutoff):
             continue
 
         body = _clean_web_md_body(txt)
@@ -565,12 +582,18 @@ def _build_from_text_blog(
             continue
 
         symbols = _extract_symbols_from_text(text, name_pairs)
+        source_family = "text_blog"
         if not symbols:
             stats["blog_docs_skipped_no_symbols"] += 1
-            continue
+            if not include_nosymbol:
+                continue
+            symbols = ["__NOSYMBOL__"]
+            source_family = "text_blog_nosymbol"
+            stats["blog_docs_included_nosymbol"] += 1
+        else:
+            stats["blog_docs_with_symbols"] += 1
 
-        stats["blog_docs_with_symbols"] += 1
-        rid = hashlib.sha1(str(fp).encode("utf-8", errors="ignore")).hexdigest()[:20]
+        rid = hashlib.sha1(f"{str(fp)}:{source_family}".encode("utf-8", errors="ignore")).hexdigest()[:20]
         out.append(
             {
                 "record_id": f"text_blog:{rid}",
@@ -578,6 +601,7 @@ def _build_from_text_blog(
                 "symbols": symbols,
                 "text": text,
                 "source": f"text/blog:{fp.parent.name}",
+                "source_family": source_family,
                 "content_fingerprint": _content_fingerprint(text),
             }
         )
@@ -589,6 +613,7 @@ def _build_from_text_premium(
     name_pairs: list[tuple[str, str]],
     lookback_days: int,
     max_files: int,
+    include_nosymbol: bool,
 ) -> tuple[list[dict], dict]:
     out: list[dict] = []
     stats = {
@@ -596,12 +621,13 @@ def _build_from_text_premium(
         "premium_docs_with_symbols": 0,
         "premium_docs_skipped_no_symbols": 0,
         "premium_docs_skipped_linkmeta": 0,
+        "premium_docs_included_nosymbol": 0,
     }
 
     if not TEXT_PREMIUM_DIR.exists():
         return out, stats
 
-    cutoff = pd.Timestamp.now(tz="Asia/Seoul") - pd.Timedelta(days=max(0, lookback_days))
+    cutoff = _resolve_cutoff(lookback_days)
     files = sorted(TEXT_PREMIUM_DIR.rglob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True)
     files = files[: max(0, max_files)] if max_files > 0 else files
 
@@ -625,7 +651,7 @@ def _build_from_text_premium(
         if not published_at:
             continue
         ts = pd.to_datetime(published_at, errors="coerce")
-        if pd.isna(ts) or ts < cutoff:
+        if pd.isna(ts) or (cutoff is not None and ts < cutoff):
             continue
 
         body = _clean_web_md_body(txt)
@@ -634,12 +660,18 @@ def _build_from_text_premium(
             continue
 
         symbols = _extract_symbols_from_text(text, name_pairs)
+        source_family = "text_premium"
         if not symbols:
             stats["premium_docs_skipped_no_symbols"] += 1
-            continue
+            if not include_nosymbol:
+                continue
+            symbols = ["__NOSYMBOL__"]
+            source_family = "text_premium_nosymbol"
+            stats["premium_docs_included_nosymbol"] += 1
+        else:
+            stats["premium_docs_with_symbols"] += 1
 
-        stats["premium_docs_with_symbols"] += 1
-        rid = hashlib.sha1(str(fp).encode("utf-8", errors="ignore")).hexdigest()[:20]
+        rid = hashlib.sha1(f"{str(fp)}:{source_family}".encode("utf-8", errors="ignore")).hexdigest()[:20]
         out.append(
             {
                 "record_id": f"text_premium:{rid}",
@@ -647,6 +679,7 @@ def _build_from_text_premium(
                 "symbols": symbols,
                 "text": text,
                 "source": f"text/premium:{fp.parent.name}",
+                "source_family": source_family,
                 "content_fingerprint": _content_fingerprint(text),
             }
         )
@@ -658,6 +691,7 @@ def _build_from_text_image_map(
     name_pairs: list[tuple[str, str]],
     lookback_days: int,
     max_files: int,
+    include_nosymbol: bool,
 ) -> tuple[list[dict], dict]:
     out: list[dict] = []
     stats = {
@@ -665,12 +699,13 @@ def _build_from_text_image_map(
         "image_map_docs_with_symbols": 0,
         "image_map_docs_skipped_no_symbols": 0,
         "image_map_docs_invalid_json": 0,
+        "image_map_docs_included_nosymbol": 0,
     }
 
     if not TEXT_IMAGE_MAP_DIR.exists():
         return out, stats
 
-    cutoff = pd.Timestamp.now(tz="Asia/Seoul") - pd.Timedelta(days=max(0, lookback_days))
+    cutoff = _resolve_cutoff(lookback_days)
     files = sorted(TEXT_IMAGE_MAP_DIR.rglob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     files = files[: max(0, max_files)] if max_files > 0 else files
 
@@ -687,17 +722,23 @@ def _build_from_text_image_map(
             continue
 
         ts = pd.Timestamp(fp.stat().st_mtime, unit="s", tz="UTC").tz_convert("Asia/Seoul")
-        if ts < cutoff:
+        if cutoff is not None and ts < cutoff:
             continue
         published_at = ts.isoformat(timespec="seconds")
 
         symbols = _extract_symbols_from_text(text, name_pairs)
+        source_family = "text_image_map"
         if not symbols:
             stats["image_map_docs_skipped_no_symbols"] += 1
-            continue
+            if not include_nosymbol:
+                continue
+            symbols = ["__NOSYMBOL__"]
+            source_family = "text_image_map_nosymbol"
+            stats["image_map_docs_included_nosymbol"] += 1
+        else:
+            stats["image_map_docs_with_symbols"] += 1
 
-        stats["image_map_docs_with_symbols"] += 1
-        rid = hashlib.sha1(str(fp).encode("utf-8", errors="ignore")).hexdigest()[:20]
+        rid = hashlib.sha1(f"{str(fp)}:{source_family}".encode("utf-8", errors="ignore")).hexdigest()[:20]
         out.append(
             {
                 "record_id": f"text_image_map:{rid}",
@@ -705,6 +746,7 @@ def _build_from_text_image_map(
                 "symbols": symbols,
                 "text": text,
                 "source": f"text/image_map:{fp.stem}",
+                "source_family": source_family,
                 "content_fingerprint": _content_fingerprint(text),
             }
         )
@@ -716,18 +758,20 @@ def _build_from_text_images_ocr(
     name_pairs: list[tuple[str, str]],
     lookback_days: int,
     max_files: int,
+    include_nosymbol: bool,
 ) -> tuple[list[dict], dict]:
     out: list[dict] = []
     stats = {
         "images_ocr_files_scanned": 0,
         "images_ocr_docs_with_symbols": 0,
         "images_ocr_docs_skipped_no_symbols": 0,
+        "images_ocr_docs_included_nosymbol": 0,
     }
 
     if not TEXT_IMAGES_OCR_DIR.exists():
         return out, stats
 
-    cutoff = pd.Timestamp.now(tz="Asia/Seoul") - pd.Timedelta(days=max(0, lookback_days))
+    cutoff = _resolve_cutoff(lookback_days)
     files = sorted(TEXT_IMAGES_OCR_DIR.rglob("*.txt"), key=lambda p: p.stat().st_mtime, reverse=True)
     files = files[: max(0, max_files)] if max_files > 0 else files
 
@@ -738,17 +782,23 @@ def _build_from_text_images_ocr(
             continue
 
         ts = pd.Timestamp(fp.stat().st_mtime, unit="s", tz="UTC").tz_convert("Asia/Seoul")
-        if ts < cutoff:
+        if cutoff is not None and ts < cutoff:
             continue
         published_at = ts.isoformat(timespec="seconds")
 
         symbols = _extract_symbols_from_text(txt, name_pairs)
+        source_family = "text_images_ocr"
         if not symbols:
             stats["images_ocr_docs_skipped_no_symbols"] += 1
-            continue
+            if not include_nosymbol:
+                continue
+            symbols = ["__NOSYMBOL__"]
+            source_family = "text_images_ocr_nosymbol"
+            stats["images_ocr_docs_included_nosymbol"] += 1
+        else:
+            stats["images_ocr_docs_with_symbols"] += 1
 
-        stats["images_ocr_docs_with_symbols"] += 1
-        rid = hashlib.sha1(str(fp).encode("utf-8", errors="ignore")).hexdigest()[:20]
+        rid = hashlib.sha1(f"{str(fp)}:{source_family}".encode("utf-8", errors="ignore")).hexdigest()[:20]
         out.append(
             {
                 "record_id": f"text_images_ocr:{rid}",
@@ -756,6 +806,7 @@ def _build_from_text_images_ocr(
                 "symbols": symbols,
                 "text": txt,
                 "source": f"text/images_ocr:{fp.stem}",
+                "source_family": source_family,
                 "content_fingerprint": _content_fingerprint(txt),
             }
         )
@@ -767,13 +818,15 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Build Stage3 input JSONL from Stage1/raw text artifacts")
     p.add_argument("--out-jsonl", default=str(OUT_JSONL_DEFAULT))
     p.add_argument("--summary-json", default=str(OUT_SUMMARY_DEFAULT))
-    p.add_argument("--text-lookback-days", type=int, default=90)
-    p.add_argument("--telegram-max-files", type=int, default=55)
+    p.add_argument("--text-lookback-days", type=int, default=0)
+    p.add_argument("--telegram-max-files", type=int, default=0)
     p.add_argument("--telegram-max-messages-per-file", type=int, default=120)
-    p.add_argument("--blog-max-files", type=int, default=1200)
-    p.add_argument("--premium-max-files", type=int, default=800)
-    p.add_argument("--image-map-max-files", type=int, default=600)
-    p.add_argument("--images-ocr-max-files", type=int, default=400)
+    p.add_argument("--blog-max-files", type=int, default=0)
+    p.add_argument("--premium-max-files", type=int, default=0)
+    p.add_argument("--image-map-max-files", type=int, default=0)
+    p.add_argument("--images-ocr-max-files", type=int, default=0)
+    p.add_argument("--include-nosymbol", dest="include_nosymbol", action="store_true", default=True)
+    p.add_argument("--exclude-nosymbol", dest="include_nosymbol", action="store_false")
     return p.parse_args()
 
 
@@ -792,26 +845,31 @@ def main() -> int:
         lookback_days=args.text_lookback_days,
         max_files=args.telegram_max_files,
         max_messages_per_file=args.telegram_max_messages_per_file,
+        include_nosymbol=args.include_nosymbol,
     )
     blog_rows, blog_stats = _build_from_text_blog(
         name_pairs,
         lookback_days=args.text_lookback_days,
         max_files=args.blog_max_files,
+        include_nosymbol=args.include_nosymbol,
     )
     premium_rows, premium_stats = _build_from_text_premium(
         name_pairs,
         lookback_days=args.text_lookback_days,
         max_files=args.premium_max_files,
+        include_nosymbol=args.include_nosymbol,
     )
     image_map_rows, image_map_stats = _build_from_text_image_map(
         name_pairs,
         lookback_days=args.text_lookback_days,
         max_files=args.image_map_max_files,
+        include_nosymbol=args.include_nosymbol,
     )
     images_ocr_rows, images_ocr_stats = _build_from_text_images_ocr(
         name_pairs,
         lookback_days=args.text_lookback_days,
         max_files=args.images_ocr_max_files,
+        include_nosymbol=args.include_nosymbol,
     )
 
     merged: list[dict] = []
@@ -853,6 +911,36 @@ def main() -> int:
         for r in merged:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
+
+
+    def _infer_missing_reasons(source_key: str, stats_obj: dict) -> list[str]:
+        reasons: list[str] = []
+        files_scanned = int(stats_obj.get(f"{source_key}_files_scanned", 0) or 0)
+        skipped_no_symbols = int(stats_obj.get(f"{source_key}_docs_skipped_no_symbols", 0) or 0)
+        invalid_json = int(stats_obj.get(f"{source_key}_docs_invalid_json", 0) or 0)
+        if files_scanned <= 0:
+            reasons.append("입력 없음")
+        if invalid_json > 0:
+            reasons.append("파싱실패")
+        if skipped_no_symbols > 0:
+            reasons.append("심볼필터")
+        if not reasons:
+            reasons.append("입력 없음")
+        return reasons
+
+    ingestion_validation = {
+        "rows_from_text_image_map": {
+            "rows": len(image_map_rows),
+            "status": "OK" if len(image_map_rows) > 0 else "WARN",
+            "missing_reasons": _infer_missing_reasons("image_map", image_map_stats) if len(image_map_rows) == 0 else [],
+        },
+        "rows_from_text_images_ocr": {
+            "rows": len(images_ocr_rows),
+            "status": "OK" if len(images_ocr_rows) > 0 else "FAIL",
+            "missing_reasons": _infer_missing_reasons("images_ocr", images_ocr_stats) if len(images_ocr_rows) == 0 else [],
+        },
+    }
+
     summary_json.parent.mkdir(parents=True, exist_ok=True)
     summary = {
         "stage": "stage3_input_build",
@@ -883,6 +971,24 @@ def main() -> int:
         "image_map_stats": image_map_stats,
         "images_ocr_stats": images_ocr_stats,
         "text_lookback_days": args.text_lookback_days,
+        "caps_effective": {
+            "text_lookback_days": args.text_lookback_days,
+            "lookback_unlimited": args.text_lookback_days <= 0,
+            "telegram_max_files": args.telegram_max_files,
+            "blog_max_files": args.blog_max_files,
+            "premium_max_files": args.premium_max_files,
+            "image_map_max_files": args.image_map_max_files,
+            "images_ocr_max_files": args.images_ocr_max_files,
+            "max_files_unlimited": {
+                "telegram": args.telegram_max_files <= 0,
+                "blog": args.blog_max_files <= 0,
+                "premium": args.premium_max_files <= 0,
+                "image_map": args.image_map_max_files <= 0,
+                "images_ocr": args.images_ocr_max_files <= 0,
+            },
+            "include_nosymbol": bool(args.include_nosymbol),
+        },
+        "ingestion_validation": ingestion_validation,
         "output_jsonl": str(out_jsonl),
     }
     summary_json.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -899,6 +1005,7 @@ def main() -> int:
             "premium_max_files": args.premium_max_files,
             "image_map_max_files": args.image_map_max_files,
             "images_ocr_max_files": args.images_ocr_max_files,
+            "include_nosymbol": bool(args.include_nosymbol),
         },
         inputs=[
             str(DART_DIR),
