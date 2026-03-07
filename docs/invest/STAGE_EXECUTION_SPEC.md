@@ -22,4 +22,4 @@
 - Stage12: `docs/invest/stage12/README.md`
 
 ## note
-- 삭제된 `STAGE_EXECUTION_SPEC.md`, `STAGE_EXECUTION_SPEC.md`의 역할을 이 문서가 대체한다.
+- 삭제된 `STAGE_RULEBOOK_MASTER.md`, `STAGE_STRATEGY_MASTER.md`의 역할을 이 문서가 대체한다.

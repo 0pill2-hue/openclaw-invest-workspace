@@ -13,7 +13,7 @@ Purpose: 투자 산출물/코드/룰북 경로 정합성 고정 정책
 ### 2) 스테이지 산출물
 
 - 루트(공유): `invest/stages/stage1/outputs/reports/stage_updates/`
-- 스테이지별 Rule/Repro(운영 표준): `invest/stages/stage{1..11}/docs/` (stage_updates 사용 금지)
+- 스테이지별 Rule/Repro(운영 표준): `docs/invest/stage{번호}/` (historical `stage_updates`는 reference로만 유지)
 - 스테이지별 실행 리포트/업데이트: `invest/stages/stage{1..11}/outputs/reports/stage_updates/`
 - 버전 산출물: `invest/stages/stage6/outputs/reports/stage_updates/v*/`
 - 로그(공유): `invest/stages/stage1/outputs/logs/`
