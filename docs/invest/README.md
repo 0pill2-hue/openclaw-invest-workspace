@@ -19,7 +19,7 @@
 - canonical: `STAGE_EXECUTION_SPEC.md`
 
 선택 이유:
-- `STAGE_EXECUTION_SPEC.md`, `STAGE_EXECUTION_SPEC.md`, `STAGE_EXECUTION_SPEC.md` 세 문서는 실제 내용이 모두 stage 상세 문서 링크 인덱스로 사실상 동일했다.
+- `STAGE_RULEBOOK_MASTER.md`, `STAGE_STRATEGY_MASTER.md`, `STAGE_EXECUTION_SPEC.md` 세 문서는 실제 내용이 모두 stage 상세 문서 링크 인덱스로 사실상 동일했다.
 - 그중 `STAGE_EXECUTION_SPEC.md`가 가장 중립적이고, stage 상세 문서가 실행/재현/룰을 함께 담는 현재 구조와 가장 잘 맞는다.
 - 따라서 `STAGE_EXECUTION_SPEC.md`만 남기고 나머지 두 문서는 삭제한다.
 
