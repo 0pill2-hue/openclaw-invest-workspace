@@ -1,0 +1,19 @@
+{
+  "updated_at_utc": "2026-03-07T01:50:26.839056+00:00",
+  "root": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw",
+  "dbs": {
+    "dart": {
+      "manifest_path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json",
+      "source_dir": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw/qualitative/kr/dart",
+      "earliest_date": "20160104",
+      "latest_date": "20260306",
+      "coverage_contiguous_by_month": true,
+      "needs_incremental_update": false,
+      "missing_months_between_range": []
+    }
+  },
+  "policy": {
+    "instruction": "DB/source별 수집 범위 판단과 보고는 각 coverage_summary.json 및 이 인덱스를 SSOT로 사용한다.",
+    "report_before_using_raw_files": true
+  }
+}

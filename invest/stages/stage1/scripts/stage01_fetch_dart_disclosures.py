@@ -1,12 +1,15 @@
 import os
 import json
 import time
+import subprocess
+import sys
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
 
 OUT_DIR = "invest/stages/stage1/outputs/raw/qualitative/kr/dart"
 KEY_FILE = "invest/stages/stage1/inputs/config/dart_api_key.txt"
+COVERAGE_SCRIPT = "invest/stages/stage1/scripts/stage01_update_coverage_manifest.py"
 
 
 def load_key():
@@ -130,6 +133,12 @@ def main():
         print(f"Saved DART disclosures: {len(df)} rows -> {csv_path}")
     else:
         print("Saved DART disclosures: 0 rows")
+
+    rc = subprocess.call([sys.executable, COVERAGE_SCRIPT, "--db", "dart"])
+    if rc != 0:
+        print(f"WARN: coverage manifest update failed rc={rc}")
+    else:
+        print("DART coverage manifest updated")
 
 
 if __name__ == "__main__":
