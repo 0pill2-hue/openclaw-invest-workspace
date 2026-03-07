@@ -26,6 +26,7 @@ NEWS_SELECTED_DIR = RAW_ROOT / "qualitative/market/news/selected_articles"
 TELEGRAM_DIR = RAW_ROOT / "qualitative/text/telegram"
 BLOG_DIR = RAW_ROOT / "qualitative/text/blog"
 PREMIUM_DIR = RAW_ROOT / "qualitative/text/premium"
+MACRO_DIR = RAW_ROOT / "signal/market/macro"
 
 DAILY_UPDATE_STATUS_PATH = RUNTIME_ROOT / "daily_update_status.json"
 POST_COLLECTION_VALIDATE_PATH = RUNTIME_ROOT / "post_collection_validate.json"
@@ -75,6 +76,15 @@ def _normalize_iso_date(raw: str) -> str | None:
     if len(s) >= 10 and s[4] == "-" and s[7] == "-":
         return s[:10].replace("-", "")
     return _normalize_yyyymmdd(s)
+
+
+def _years_ago_yyyymmdd(years: int) -> str:
+    now = datetime.now(timezone.utc).date()
+    try:
+        past = now.replace(year=now.year - years)
+    except ValueError:
+        past = now.replace(month=2, day=28, year=now.year - years)
+    return past.strftime("%Y%m%d")
 
 
 def _manifest_from_dates(*, name: str, kind: str, source_dir: Path, dates: list[str], files_scanned: int, rows_seen: int, reporting_ssot: Path | None = None) -> dict[str, Any]:
@@ -211,7 +221,7 @@ def _csv_source_summary(*, name: str, kind: str, source_dir: Path, pattern: str,
     )
 
 
-def _text_source_summary(*, name: str, kind: str, source_dir: Path, pattern: str, regexes: list[str]) -> dict[str, Any]:
+def _text_source_summary(*, name: str, kind: str, source_dir: Path, pattern: str, regexes: list[str], min_date: str | None = None) -> dict[str, Any]:
     files = sorted(source_dir.rglob(pattern)) if source_dir.exists() else []
     dates: list[str] = []
     compiled = [re.compile(p) for p in regexes]
@@ -228,6 +238,8 @@ def _text_source_summary(*, name: str, kind: str, source_dir: Path, pattern: str
                     continue
                 dt = _normalize_iso_date(raw) or _normalize_yyyymmdd(raw)
                 if dt is not None:
+                    if min_date is not None and dt < min_date:
+                        continue
                     dates.append(dt)
 
     return _manifest_from_dates(
@@ -328,10 +340,13 @@ def _telegram_scope() -> dict[str, Any]:
 
 def _blog_scope() -> dict[str, Any]:
     subdirs = sorted([p for p in BLOG_DIR.iterdir() if p.is_dir()]) if BLOG_DIR.exists() else []
+    years = int(__import__('os').environ.get('BLOG_TARGET_YEARS', '10'))
     return {
         "coverage_basis": "discovered_subdirectories",
         "blog_ids_count": len(subdirs),
-        "note": "blog는 고정 allowlist가 아니라 현재 raw 디렉터리의 blogId/subdir 집합 기준으로 coverage를 본다.",
+        "target_years": years,
+        "active_from": _years_ago_yyyymmdd(years),
+        "note": "blog는 고정 allowlist가 아니라 현재 raw 디렉터리의 blogId/subdir 집합 기준으로 coverage를 본다. earliest/latest 집계는 기본 10년 창 기준이다.",
     }
 
 
@@ -452,11 +467,14 @@ def update_index() -> dict[str, Any]:
     dart = _dart_summary()
     _write_json(DART_MANIFEST_PATH, dart)
 
+    blog_min_date = _years_ago_yyyymmdd(int(__import__('os').environ.get('BLOG_TARGET_YEARS', '10')))
+
     db_summaries = {
         "dart": dart,
         "kr_ohlcv": _csv_source_summary(name="kr_ohlcv", kind="signal.kr", source_dir=KR_OHLCV_DIR, pattern="*.csv", date_columns=["Date"]),
         "kr_supply": _csv_source_summary(name="kr_supply", kind="signal.kr", source_dir=KR_SUPPLY_DIR, pattern="*_supply.csv", date_columns=["날짜", "Date"]),
         "us_ohlcv": _csv_source_summary(name="us_ohlcv", kind="signal.us", source_dir=US_OHLCV_DIR, pattern="*.csv", date_columns=["Date"]),
+        "macro": _csv_source_summary(name="macro", kind="signal.market", source_dir=MACRO_DIR, pattern="*.csv", date_columns=["date", "Date"]),
     }
 
     source_summaries = {
@@ -464,7 +482,7 @@ def update_index() -> dict[str, Any]:
         "news_url_index": _jsonl_source_summary(name="news_url_index", kind="qualitative.market.news", source_dir=NEWS_URL_INDEX_DIR, pattern="*.jsonl", date_fields=["published_date", "published_at"]),
         "news_selected_articles": _jsonl_source_summary(name="news_selected_articles", kind="qualitative.market.news", source_dir=NEWS_SELECTED_DIR, pattern="*.jsonl", date_fields=["published_date", "published_at", "collected_at"]),
         "telegram": _text_source_summary(name="telegram", kind="qualitative.text", source_dir=TELEGRAM_DIR, pattern="*.md", regexes=[r"(?m)^PostDate:\s*([^\n]+)", r"(?m)^Date:\s*([^\n]+)"]),
-        "blog": _text_source_summary(name="blog", kind="qualitative.text", source_dir=BLOG_DIR, pattern="*.md", regexes=[r"(?m)^PublishedDate:\s*([^\n]+)"]),
+        "blog": _text_source_summary(name="blog", kind="qualitative.text", source_dir=BLOG_DIR, pattern="*.md", regexes=[r"(?m)^PublishedDate:\s*([^\n]+)"], min_date=blog_min_date),
         "premium": _text_source_summary(name="premium", kind="qualitative.text", source_dir=PREMIUM_DIR, pattern="*.md", regexes=[r"(?m)^PublishedDate:\s*([^\n]+)", r"(?m)^PostDate:\s*([^\n]+)", r"(?m)^Date:\s*([^\n]+)"]),
     }
 
@@ -490,6 +508,7 @@ def update_index() -> dict[str, Any]:
             {"name": "kr_ohlcv", "kind": "signal.kr", "path": _rel(KR_OHLCV_DIR), "description": "Korean OHLCV by symbol", "catalog_mode": "date_coverage"},
             {"name": "kr_supply", "kind": "signal.kr", "path": _rel(KR_SUPPLY_DIR), "description": "Korean supply/demand by symbol", "catalog_mode": "date_coverage"},
             {"name": "us_ohlcv", "kind": "signal.us", "path": _rel(US_OHLCV_DIR), "description": "US OHLCV by symbol", "catalog_mode": "date_coverage"},
+            {"name": "macro", "kind": "signal.market", "path": _rel(MACRO_DIR), "description": "Market macro time series", "catalog_mode": "date_coverage"},
         ],
         "text_types": [
             {"name": "rss", "kind": "qualitative.market", "path": _rel(RSS_DIR), "description": "RSS item snapshots", "catalog_mode": "date_coverage"},

@@ -16,6 +16,7 @@ Stage1 문서는 이 디렉터리의 두 파일만 유지한다.
 - `signal.kr.ohlcv` — 한국 종목 OHLCV
 - `signal.kr.supply` — 한국 종목 수급
 - `signal.us.ohlcv` — 미국 종목 OHLCV
+- `signal.market.macro` — 매크로 시계열(FRED/글로벌 매크로)
 - `qualitative.kr.dart` — DART 공시 메타
 
 ### 정성 / 텍스트 계열
@@ -23,7 +24,7 @@ Stage1 문서는 이 디렉터리의 두 파일만 유지한다.
 - `qualitative.market.news_url_index` — 뉴스 URL 인덱스
 - `qualitative.market.news_selected_articles` — 선별 뉴스 본문
 - `qualitative.text.telegram` — 텔레그램 채널 수집
-- `qualitative.text.blog` — 블로그 본문 수집
+- `qualitative.text.blog` — 블로그 본문 수집 (기본 coverage 창: 최근 10년)
 - `qualitative.text.premium` — 프리미엄/유료 채널 수집
 - `qualitative.text.image_map` — 이미지-텍스트 매핑 산출
 - `qualitative.text.images_ocr` — OCR 텍스트 산출
