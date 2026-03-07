@@ -4,8 +4,10 @@
 1) SOUL.md
 2) USER.md
 3) `docs/operations/CONTEXT_LOAD_POLICY.md` for daily memory / MEMORY.md load scope
-4) `runtime/current-task.md` only for current-work reload (do not bulk-reload daily memory)
-5) `docs/operations/OPERATIONS_BOOK.md` as the root index for operations/programs/docs map
+4) `docs/operations/OPERATIONS_BOOK.md` as the root index for operations/programs/docs map
+5) `python3 scripts/tasks/db.py summary --top 5 --recent 5`
+6) `python3 scripts/directives/db.py summary --top 5 --recent 5`
+7) `runtime/current-task.md` only for current-work reload (must contain ticket/directive/next_action/proof; do not bulk-reload daily memory)
 
 ## Hard Rules
 - No guessing. If unverified, write `미확인`.
@@ -18,6 +20,7 @@
 
 ## Gates before DONE/promise
 - Promise/ETA before ticketing is forbidden. 먼저 `python3 scripts/tasks/db.py`로 티켓을 등록/전이한다 (SSOT: `runtime/tasks/tasks.db`, `TASKS.md`는 usage index).
+- 작업 착수 전에는 관련 directive를 `python3 scripts/directives/db.py`에 반영하고, `python3 scripts/context_policy.py snapshot ...`으로 `runtime/current-task.md`를 최신 상태로 기록한다.
 - DONE report requires all: instruction match / memory record / immediate verification / proof path.
 - New instruction/status change는 `python3 scripts/directives/db.py`로만 관리한다 (SSOT: `runtime/directives/directives.db`, `DIRECTIVES.md`는 usage index).
 
