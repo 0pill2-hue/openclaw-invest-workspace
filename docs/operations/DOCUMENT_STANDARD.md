@@ -1,6 +1,6 @@
 # DOCUMENT STANDARD
 
-상위 인덱스: `docs/OPERATIONS_BOOK.md`
+상위 인덱스: `docs/operations/OPERATIONS_BOOK.md`
 
 목적: 문서 위치/이름/형식을 최소한으로 정규화해서, 사람이 문서를 찾고 유지하기 쉽게 만든다.
 

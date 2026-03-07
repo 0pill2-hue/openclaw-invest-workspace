@@ -1,6 +1,6 @@
 # OPENCLAW RULES
 
-상위 인덱스: `docs/OPERATIONS_BOOK.md`
+상위 인덱스: `docs/operations/OPERATIONS_BOOK.md`
 
 - 2뇌 구조: Brain 1 = GPT-5.4 (메인), Brain 2 = Local (보조/폴백/요약/수집/배치)
 - Local Brain policy: 요약/압축/추출/폴백만 담당

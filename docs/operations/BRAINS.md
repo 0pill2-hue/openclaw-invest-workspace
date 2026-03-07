@@ -1,6 +1,6 @@
 # BRAINS
 
-상위 인덱스: `docs/OPERATIONS_BOOK.md`
+상위 인덱스: `docs/operations/OPERATIONS_BOOK.md`
 
 주인님 기준 SSOT: 뇌는 2개만 사용한다.
 

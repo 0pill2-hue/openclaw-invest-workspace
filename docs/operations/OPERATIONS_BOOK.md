@@ -1,34 +1,34 @@
 # OPERATIONS BOOK
 
-목적: OpenClaw 운영 문서/운영 프로그램/상태파일의 **루트 인덱스**.
+목적: OpenClaw 운영 문서/운영 프로그램/상태파일의 루트 인덱스.
 
 ## 반드시 읽을 것
-1. `docs/OPERATIONS_BOOK.md` — 운영 전체 지도
-2. `docs/operations/DOCUMENT_STANDARD.md` — 문서 위치/네이밍/작성 표준
-3. `runtime/current-task.md` — 현재 작업 재개 카드(작업 재개 시)
+1. `docs/index.html` — 문서 진입점
+2. `docs/operations/OPERATIONS_BOOK.md` — 운영 전체 지도
+3. `docs/operations/DOCUMENT_STANDARD.md` — 문서 위치/네이밍/작성 표준
+4. `runtime/current-task.md` — 현재 작업 재개 카드(작업 재개 시)
 
 ## 필요 시 읽을 것
 - `HEARTBEAT.md` — heartbeat/복구 규칙
 - `MEMORY.md` — 메인 1:1 초핵심 기억
 - `memory/YYYY-MM-DD.md` — 일일 로그북(통재로딩 금지)
-- `docs/openclaw/BRAINS.md` — 2뇌 역할 분리
-- `docs/CONTRIBUTING.md` — Git/PR/커밋 규칙
-- `docs/openclaw/OPENCLAW_RULES.md` — OpenClaw 로컬뇌/운영 보조 규칙
-- `docs/openclaw/RULES_INDEX.md` — 기존 OpenClaw 규칙 인덱스
+- `docs/operations/BRAINS.md` — 2뇌 역할 분리
+- `docs/operations/CONTRIBUTING.md` — Git/PR/커밋 규칙
+- `docs/operations/OPENCLAW_RULES.md` — OpenClaw/로컬뇌 운영 보조 규칙
+- `docs/operations/RULES_INDEX.md` — 기존 OpenClaw 규칙 인덱스
+- `docs/operations/CONTEXT_LOAD_POLICY.md` — 컨텍스트 로딩 정책
+- `docs/operations/CONTEXT_RESET_READLIST.md` — 리셋 직후 최소 readlist
+- `docs/operations/OPERATING_GOVERNANCE.md` — 운영 고정 기준
+- `docs/operations/WORKSPACE_STRUCTURE.md` — 워크스페이스 구조/배치 기준
+- `docs/operations/OPENCLAW_SYSTEM_BASELINE.md` — 시스템 복구/기준선
 
 ## 루트에 남기는 문서
-다음 문서는 docs 밖 위치 유지가 맞다.
-- `AGENTS.md` — 자동 로드되는 최상위 규칙
+- `AGENTS.md` — 자동 로드 최상위 규칙
 - `SOUL.md`, `USER.md`, `TOOLS.md`, `IDENTITY.md` — 세션 기본 문서
 - `MEMORY.md`, `HEARTBEAT.md` — 시스템/기억 문서
 - `runtime/current-task.md` — 상태파일
 - `memory/*.md` — 기록 파일
 - `DIRECTIVES.md`, `TASKS.md` — SSOT usage index
-
-## docs로 관리하는 문서
-- 운영 기준/인덱스/표준
-- 사람 읽는 설명서/기여 가이드
-- OpenClaw 시스템 운영 참고 문서
 
 ## 운영 프로그램 목록
 | 이름 | 종류 | 역할 | 기본 사용법 | 위치 |
@@ -62,4 +62,4 @@
 ## 갱신 규칙
 - 새 운영 프로그램/운영 문서 추가 시 이 문서를 먼저 갱신한다.
 - 운영 관련 상세 기준은 `docs/operations/DOCUMENT_STANDARD.md`를 따른다.
-- 중복 규칙은 canonical 1곳만 남기고 나머지는 짧은 포인터로 줄인다.
+- 중복 규칙은 canonical 1곳만 남기고 나머지는 제거하거나 usage index만 남긴다.

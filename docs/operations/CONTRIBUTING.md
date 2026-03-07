@@ -1,5 +1,7 @@
 # CONTRIBUTING
 
+상위 인덱스: `docs/operations/OPERATIONS_BOOK.md`
+
 GitHub/작업 브랜치/커밋/PR 규칙의 canonical 문서.
 
 ## 브랜치/머지 정책
@@ -22,13 +24,3 @@ GitHub/작업 브랜치/커밋/PR 규칙의 canonical 문서.
 예외:
 - 민감정보 누출 점검 미완료
 - 대용량 산출물 정리/ignore 정합성 미완료
-
-## 코드 적용 프로세스
-1. 이슈/작업 정의
-2. 기능 브랜치 생성
-3. 구현 + 로컬 검증
-4. PR 생성
-5. 중요 변경 교차리뷰 1회
-6. CI 통과
-7. 승인 후 merge
-8. 배포/운영 반영

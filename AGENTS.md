@@ -6,7 +6,7 @@
 3) memory/YYYY-MM-DD.md (today + yesterday)
 4) MEMORY.md only in main 1:1 session
 5) `runtime/current-task.md` only for current-work reload (do not bulk-reload daily memory)
-6) `docs/OPERATIONS_BOOK.md` as the root index for operations/programs/docs map
+6) `docs/operations/OPERATIONS_BOOK.md` as the root index for operations/programs/docs map
 
 ## Hard Rules
 - No guessing. If unverified, write `미확인`.
@@ -36,7 +36,7 @@
 - 서브에이전트 완료는 **감시(poll) 기반이 아니라 callback/event 기반**으로 처리한다.
 - 서브 시작 시 `ticket_id/run_id`를 전달하고, 완료 시 `openclaw system event --mode now`로 메인을 호출한다.
 - 메인은 완료 이벤트를 수신하면 같은 턴에서 `taskdb proof + 상태전이(DONE/REWORK/BLOCKED)`까지 즉시 처리한다.
-- 운영 상세(컨텍스트 운영, heartbeat, task/directive 절차, 문서 체계)는 `docs/OPERATIONS_BOOK.md`를 따른다.
+- 운영 상세(컨텍스트 운영, heartbeat, task/directive 절차, 문서 체계)는 `docs/operations/OPERATIONS_BOOK.md`를 따른다.
 - 문서 위치/네이밍/작성 형식 표준은 `docs/operations/DOCUMENT_STANDARD.md`를 따른다.
 - Never re-read files you just wrote or edited. You know the contents.
 - Never re-run commands to "verify" unless the outcome was uncertain.
