@@ -2,7 +2,7 @@
 
 ## inputs
 - `/Users/jobiseu/.openclaw/workspace/invest/stages/stage7/outputs/results/validated/stage07_candidates_v5_kr.json`
-- `/Users/jobiseu/.openclaw/workspace/invest/docs/strategy/RULEBOOK_V3.md`
+- `/Users/jobiseu/.openclaw/workspace/docs/invest/strategy/RULEBOOK_V3.md`
 - `/Users/jobiseu/.openclaw/workspace/docs/invest/stage7/stage_updates/stage07_candidates_v5_kr.md`
 
 ## run_command(or process)
@@ -45,6 +45,6 @@
 - numeric 단독 1등이 gate 우회로 ADOPT로 표기되면 FAIL_STOP
 
 ## proof
-- `/Users/jobiseu/.openclaw/workspace/invest/docs/strategy/RULEBOOK_V3.md`
+- `/Users/jobiseu/.openclaw/workspace/docs/invest/strategy/RULEBOOK_V3.md`
 - `/Users/jobiseu/.openclaw/workspace/docs/invest/stage8/stage_updates/stage08_cutoff_design_v5_kr.md`
 - `/Users/jobiseu/.openclaw/workspace/docs/invest/stage7/stage_updates/stage07_candidates_v4_kr.md`
