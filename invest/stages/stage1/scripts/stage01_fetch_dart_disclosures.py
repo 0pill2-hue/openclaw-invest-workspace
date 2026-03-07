@@ -122,10 +122,6 @@ def main():
             print(f"DART page {p}/{total_page} acc_rows={len(rows)}")
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    raw_path = os.path.join(OUT_DIR, f"dart_list_{ts}.json")
-    with open(raw_path, "w", encoding="utf-8") as f:
-        json.dump({"bgn_de": bgn, "end_de": end, "total_count": total_count, "rows": rows}, f, ensure_ascii=False, indent=2)
-
     if rows:
         df = pd.DataFrame(rows)
         csv_path = os.path.join(OUT_DIR, f"dart_list_{ts}.csv")

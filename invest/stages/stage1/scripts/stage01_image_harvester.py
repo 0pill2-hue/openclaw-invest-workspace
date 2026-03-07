@@ -22,6 +22,7 @@ SEEN_PATH = "invest/stages/stage1/outputs/raw/qualitative/text/images_ocr/seen_u
 
 DOWNLOAD_TIMEOUT = int(os.environ.get("IMAGE_DL_TIMEOUT", "15"))
 OCR_TIMEOUT = int(os.environ.get("OCR_TIMEOUT", "20"))
+OCR_LANG = (os.environ.get("IMAGE_OCR_LANG", "kor+eng").strip() or "kor+eng")
 MAX_RUNTIME_SEC = int(os.environ.get("IMAGE_HARVEST_MAX_RUNTIME", "2400"))
 MAX_FILES_SCAN = int(os.environ.get("IMAGE_HARVEST_MAX_FILES", "5000"))
 MAX_MAP_ITEMS = int(os.environ.get("IMAGE_HARVEST_MAX_ITEMS", "500"))
@@ -201,7 +202,7 @@ def hash_url(url):
 
 
 def ocr_image(path):
-    # Uses tesseract CLI (eng)
+    # Uses tesseract CLI (env-configurable, default kor+eng)
     """
     Role: ocr_image 함수 역할 설명
     Input: 입력 타입/의미 명시
@@ -213,7 +214,7 @@ def ocr_image(path):
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         out_base = tmp.name
     try:
-        subprocess.run(["tesseract", path, out_base, "-l", "eng"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=OCR_TIMEOUT)
+        subprocess.run(["tesseract", path, out_base, "-l", OCR_LANG], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=OCR_TIMEOUT)
         txt_path = out_base + ".txt"
         if os.path.exists(txt_path):
             with open(txt_path, "r", encoding="utf-8", errors="ignore") as f:

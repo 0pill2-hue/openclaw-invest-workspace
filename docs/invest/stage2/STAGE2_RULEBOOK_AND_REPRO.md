@@ -12,7 +12,7 @@
 - `invest/stages/stage2/inputs/upstream_stage1/master/kr_stock_list.csv`
 - `invest/stages/stage2/inputs/upstream_stage1/raw/signal/kr/ohlcv/*.csv`
 - `invest/stages/stage2/inputs/upstream_stage1/raw/signal/kr/supply/*_supply.csv`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/kr/dart/*.{csv,json}`
+- `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/kr/dart/*.csv`
 - `invest/stages/stage2/inputs/upstream_stage1/raw/signal/us/ohlcv/*.csv`
 - `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/market/rss/*.json`
 - `invest/stages/stage2/inputs/upstream_stage1/raw/signal/market/macro/*`

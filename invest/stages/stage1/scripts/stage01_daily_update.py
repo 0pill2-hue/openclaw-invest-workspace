@@ -93,7 +93,7 @@ def main():
         'invest/stages/stage1/scripts/stage01_build_news_url_index.py',
         'invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py',
         'invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py',
-        'invest/stages/stage1/scripts/stage01_scrape_telegram_public_fallback.py',
+        'invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py',
         'invest/stages/stage1/scripts/stage01_image_harvester.py',
         'invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py',
         'invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py',
@@ -133,6 +133,8 @@ def main():
         json.dump(status, f, ensure_ascii=False, indent=2)
 
     print(f"[{datetime.now()}] Daily Data Update Pipeline Completed. status={status_path}")
+    if status["failed_count"] > 0:
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()

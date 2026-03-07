@@ -38,7 +38,7 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - RSS: `invest/stages/stage1/outputs/raw/qualitative/market/rss/*.json`
   - 뉴스 URL 인덱스: `invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/*.jsonl`
   - 선별 뉴스 본문: `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl`
-  - DART: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/*.json`
+  - DART: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/*.csv`
   - DART coverage SSOT: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json`
   - 텍스트/텔레그램/프리미엄/OCR: `invest/stages/stage1/outputs/raw/qualitative/text/`
 - 런타임 상태: `invest/stages/stage1/outputs/runtime/daily_update_status.json`, `invest/stages/stage1/outputs/runtime/post_collection_validate.json`
@@ -66,6 +66,7 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
 - Telegram launchd 엔트리 위치: `invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py`
   - 인증 환경변수가 있으면 `stage01_scrape_telegram_highspeed.py` 우선 실행
   - 실패하거나 인증 정보가 없으면 `stage01_scrape_telegram_public_fallback.py`로 전환
+  - 실행 결과/실사용 collector는 `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`에 기록
 - 체인 fail-close 위치: `invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh`
   - `stage01_checkpoint_gate.py` 또는 `stage01_post_collection_validate.py`가 실패하면 Stage2 이후를 막고 종료한다.
 

@@ -11,7 +11,7 @@
 입력 JSONL: `invest/stages/stage3/inputs/stage2_text_meta_records.jsonl`
 
 빌더(`stage03_build_input_jsonl.py`) 인입원:
-1. DART: `upstream_stage1/raw/qualitative/kr/dart/*.json`
+1. DART: `upstream_stage1/raw/qualitative/kr/dart/*.csv`
 2. RSS: `upstream_stage1/raw/qualitative/market/rss/*.json`
 3. macro summary: `upstream_stage1/raw/signal/market/macro/macro_summary.json`
 4. Stage2 clean qualitative text 전체:

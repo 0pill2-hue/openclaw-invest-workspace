@@ -84,8 +84,8 @@ def _norm_code(v: object) -> str:
     return s.upper()
 
 
-def _latest_json(path: Path) -> Path | None:
-    files = sorted(path.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+def _latest_csv(path: Path) -> Path | None:
+    files = sorted(path.glob("*.csv"), key=lambda p: p.stat().st_mtime, reverse=True)
     return files[0] if files else None
 
 
@@ -264,12 +264,15 @@ def _extract_text_from_image_map_obj(obj: object) -> str:
 
 
 def _build_from_dart() -> tuple[list[dict], str]:
-    fp = _latest_json(DART_DIR)
+    fp = _latest_csv(DART_DIR)
     if fp is None:
         return [], ""
 
-    obj = json.loads(fp.read_text(encoding="utf-8"))
-    rows = obj.get("rows", []) if isinstance(obj, dict) else []
+    try:
+        rows = pd.read_csv(fp, dtype=str).fillna("").to_dict("records")
+    except Exception:
+        return [], str(fp)
+
     out: list[dict] = []
 
     for i, r in enumerate(rows, start=1):

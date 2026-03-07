@@ -10,6 +10,7 @@ COMMON_INPUT_DATA_DIR = INVEST_DIR / "stages/stage1/outputs"
 RAW_ROOT = COMMON_INPUT_DATA_DIR / "raw"
 OUT_PATH = STAGE1_DIR / "outputs/runtime/post_collection_validate.json"
 OCR_POSTPROCESS_VALIDATE_PATH = STAGE1_DIR / "outputs/runtime/stage01_ocr_postprocess_validate.json"
+TELEGRAM_COLLECTOR_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_collector_status.json"
 
 SOURCE_SPECS = [
     {
@@ -51,7 +52,7 @@ SOURCE_SPECS = [
     {
         "name": "raw/qualitative/kr/dart",
         "script": "invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py",
-        "patterns": ["raw/qualitative/kr/dart/dart_list_*.*"],
+        "patterns": ["raw/qualitative/kr/dart/dart_list_*.csv"],
         "min_count_env": "STAGE1_VALIDATE_MIN_KR_DART",
         "min_count_default": 100,
         "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_KR_DART",
@@ -86,12 +87,13 @@ SOURCE_SPECS = [
     },
     {
         "name": "raw/qualitative/text/telegram",
-        "script": "invest/stages/stage1/scripts/stage01_scrape_telegram_public_fallback.py",
+        "script": "invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py",
         "patterns": ["raw/qualitative/text/telegram/**/*.md"],
         "min_count_env": "STAGE1_VALIDATE_MIN_TEXT_TELEGRAM",
         "min_count_default": 1,
         "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_TEXT_TELEGRAM",
         "max_age_default": 168 * 3600,
+        "runtime_status_path": TELEGRAM_COLLECTOR_STATUS_PATH,
     },
     {
         "name": "raw/qualitative/text/blog",
@@ -195,6 +197,22 @@ def build_raw_tree_coverage(now_ts: float) -> dict:
     }
 
 
+def _load_runtime_status(path_value) -> dict | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if not path.exists():
+        return {"exists": False}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            payload["exists"] = True
+            return payload
+    except Exception as exc:
+        return {"exists": False, "parse_error": type(exc).__name__}
+    return {"exists": False}
+
+
 def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]:
     files = _collect_files(spec["patterns"])
     min_count = _safe_int_env(spec["min_count_env"], spec["min_count_default"])
@@ -229,6 +247,10 @@ def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]
         "max_age_sec": max_age_sec if freshness_applied else None,
         "errors": errors,
     }
+    runtime_status = _load_runtime_status(spec.get("runtime_status_path"))
+    if runtime_status is not None:
+        detail["runtime_status"] = runtime_status
+        detail["collector_used"] = runtime_status.get("successful_collector") or runtime_status.get("selected_collector")
     failure = None if ok else {"source": spec["name"], "script": spec["script"], "error": "; ".join(errors)}
     return ok, detail, failure
 

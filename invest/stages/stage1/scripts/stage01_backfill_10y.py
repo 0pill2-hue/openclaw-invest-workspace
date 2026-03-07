@@ -61,7 +61,10 @@ def main() -> int:
     ap.add_argument("--news-selected-max-articles", type=int, default=int(os.environ.get("NEWS_SELECTED_MAX_ARTICLES", "160")))
     ap.add_argument("--news-selected-min-keyword-hits", type=int, default=int(os.environ.get("NEWS_SELECTED_MIN_KEYWORD_HITS", "1")))
 
-    ap.add_argument("--telegram-force-full", action="store_true", default=True)
+    tg_mode = ap.add_mutually_exclusive_group()
+    tg_mode.add_argument("--telegram-force-full", dest="telegram_force_full", action="store_true")
+    tg_mode.add_argument("--telegram-incremental-only", dest="telegram_force_full", action="store_false")
+    ap.set_defaults(telegram_force_full=os.environ.get("TELEGRAM_FORCE_FULL_BACKFILL", "1").strip().lower() in ("1", "true", "yes"))
     ap.add_argument("--telegram-global-timeout-sec", type=int, default=int(os.environ.get("TELEGRAM_SCRAPE_GLOBAL_TIMEOUT_SEC", "7200")))
     ap.add_argument("--telegram-per-channel-timeout-sec", type=int, default=int(os.environ.get("TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC", "600")))
     ap.add_argument("--telegram-max-messages-per-channel", type=int, default=int(os.environ.get("TELEGRAM_MAX_MESSAGES_PER_CHANNEL", "0")))
@@ -150,7 +153,7 @@ def main() -> int:
                     "TELEGRAM_TARGET_YEARS": str(years),
                     "TELEGRAM_BOOTSTRAP_LOOKBACK_DAYS": str(365 * years),
                     "TELEGRAM_FORCE_FULL_BACKFILL": "1" if args.telegram_force_full else "0",
-                    "TELEGRAM_INCREMENTAL_ONLY": "1",
+                    "TELEGRAM_INCREMENTAL_ONLY": "0" if args.telegram_force_full else "1",
                     "TELEGRAM_MAX_MESSAGES_PER_CHANNEL": str(max(0, args.telegram_max_messages_per_channel)),
                     "TELEGRAM_SCRAPE_GLOBAL_TIMEOUT_SEC": str(max(60, args.telegram_global_timeout_sec)),
                     "TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC": str(max(30, args.telegram_per_channel_timeout_sec)),

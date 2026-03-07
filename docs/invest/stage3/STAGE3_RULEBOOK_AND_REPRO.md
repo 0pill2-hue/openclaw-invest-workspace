@@ -6,7 +6,7 @@
 - 원칙: 감성/주목도(attention/sentiment) 직접 점수축 사용 금지
 
 ## 입력 (Inputs)
-- `invest/stages/stage3/inputs/upstream_stage1/raw/qualitative/kr/dart/*.json`
+- `invest/stages/stage3/inputs/upstream_stage1/raw/qualitative/kr/dart/*.csv`
 - `invest/stages/stage3/inputs/upstream_stage1/raw/qualitative/market/rss/*.json`
 - `invest/stages/stage3/inputs/upstream_stage1/raw/signal/market/macro/macro_summary.json`
 - `invest/stages/stage3/inputs/upstream_stage2_clean/qualitative/text/{telegram,blog,premium,image_map,images_ocr}`
