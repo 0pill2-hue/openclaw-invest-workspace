@@ -1,6 +1,18 @@
 # DIRECTIVES.md
-SSOT는 `runtime/directives/directives.db` 입니다.
-등록/상태전이/조회는 `python3 scripts/directives/db.py`로만 수행합니다.
-요약 확인: `python3 scripts/directives/db.py summary --top 5 --recent 5`
-작업 실행 전 `python3 scripts/directives/gate.py --id <directive_id>`를 반드시 통과합니다.
-기존 장문 원장은 `runtime/directives/directives_archive.md`를 사용합니다.
+
+## 역할
+- DIRECTIVES usage index
+- 실제 SSOT는 문서가 아니라 DB/CLI이다.
+
+## SSOT
+- DB: `runtime/directives/directives.db`
+- 등록/상태전이/조회: `python3 scripts/directives/db.py`
+
+## 기본 명령
+- 요약 확인:
+  - `python3 scripts/directives/db.py summary --top 5 --recent 5`
+- 실행 전 게이트:
+  - `python3 scripts/directives/gate.py --id <directive_id>`
+
+## 기록 원장
+- 기존 장문 원장: `runtime/directives/directives_archive.md`

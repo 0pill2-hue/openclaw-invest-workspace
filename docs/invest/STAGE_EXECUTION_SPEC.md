@@ -3,7 +3,7 @@
 역할: **Stage 진입 인덱스**.
 
 이 문서는 stage 상세 실행/재현/canonical 문서의 링크 인덱스만 담당한다.
-세부 전략/룰/입출력/검증은 각 stage 문서에서 관리한다.
+세부 전략, 룰, 입출력, 검증은 각 stage 문서에서 관리한다.
 
 ## Active stages
 - Stage1: `docs/invest/stage1/STAGE1_RULEBOOK_AND_REPRO.md`
@@ -21,5 +21,5 @@
 - Stage11: `docs/invest/stage11/README.md`
 - Stage12: `docs/invest/stage12/README.md`
 
-## note
-- 삭제된 `STAGE_RULEBOOK_MASTER.md`, `STAGE_STRATEGY_MASTER.md`의 역할을 이 문서가 대체한다.
+## Note
+- 삭제된 `STAGE_RULEBOOK_MASTER.md`와 `STAGE_STRATEGY_MASTER.md`의 역할을 이 문서가 대체한다.
