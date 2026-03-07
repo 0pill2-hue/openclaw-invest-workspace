@@ -2,7 +2,8 @@
 
 ## 상태
 - RESERVED
-- 현재 stage11 전용 실행 스크립트/룰북 미구현
+- DRAFT_PLACEHOLDER
 
-## canonical
-- 코드/룰북 확정 전까지 I/O 정의 미확정
+## 설명
+- 현재 stage11 전용 실행 스크립트/룰북은 없다.
+- 구조 슬롯만 존재하며 canonical 실행 문서는 아니다.

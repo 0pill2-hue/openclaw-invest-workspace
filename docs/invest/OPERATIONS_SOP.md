@@ -53,7 +53,7 @@
 
 - 실행 중심 문장 사용(현재 진행/완료/다음 액션 명시)
 - 완료 보고에는 proof 경로 1개 이상 포함
-- 보고 cadence/SLA canonical은 `docs/openclaw/OPERATING_GOVERNANCE.md`를 따른다.
+- 보고 cadence/SLA canonical은 `docs/operations/OPERATING_GOVERNANCE.md`를 따른다.
 
 ## 6) Timezone Policy
 

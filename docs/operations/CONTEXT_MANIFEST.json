@@ -4,7 +4,7 @@
     "L1": [
       "SOUL.md",
       "USER.md",
-      "docs/operations/RULES_INDEX.md",
+      "docs/operations/OPERATIONS_BOOK.md",
       "docs/operations/CONTEXT_LOAD_POLICY.md",
       "DIRECTIVES.md",
       "TASKS.md"
@@ -17,8 +17,8 @@
       "docs/operations/OPENCLAW_SYSTEM_BASELINE.md",
       "docs/operations/WORKSPACE_STRUCTURE.md",
       "docs/operations/OPERATING_GOVERNANCE.md",
-      "invest/docs/OPERATIONS_SOP.md",
-      "invest/docs/INVEST_STRUCTURE_POLICY.md"
+      "docs/invest/OPERATIONS_SOP.md",
+      "docs/invest/INVEST_STRUCTURE_POLICY.md"
     ]
   },
   "notes": {

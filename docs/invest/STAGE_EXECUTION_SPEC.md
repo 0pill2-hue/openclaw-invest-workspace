@@ -1,17 +1,25 @@
-# STAGE_EXECUTION_SPEC
+# STAGE EXECUTION SPEC
 
-본 문서는 stage별 상세 실행 절차를 담지 않는 **인덱스 문서**입니다.
+역할: **Stage 진입 인덱스**.
 
-## Stage 상세 실행/재현 문서
+이 문서는 stage 상세 실행/재현/canonical 문서의 링크 인덱스만 담당한다.
+세부 전략/룰/입출력/검증은 각 stage 문서에서 관리한다.
 
+## Active stages
 - Stage1: `docs/invest/stage1/STAGE1_RULEBOOK_AND_REPRO.md`
 - Stage2: `docs/invest/stage2/STAGE2_RULEBOOK_AND_REPRO.md`
 - Stage3: `docs/invest/stage3/STAGE3_RULEBOOK_AND_REPRO.md`
 - Stage4: `docs/invest/stage4/STAGE4_RULEBOOK_AND_REPRO.md`
 - Stage5: `docs/invest/stage5/STAGE5_RULEBOOK_AND_REPRO.md`
 - Stage6: `docs/invest/stage6/STAGE6_RULEBOOK_AND_REPRO.md`
+- Stage7: `docs/invest/stage7/STAGE7_RULEBOOK_AND_REPRO.md`
 
-## 공통 원칙
+## Reserved / historical stages
+- Stage8: `docs/invest/stage8/README.md`
+- Stage9: `docs/invest/stage9/README.md`
+- Stage10: `docs/invest/stage10/README.md`
+- Stage11: `docs/invest/stage11/README.md`
+- Stage12: `docs/invest/stage12/README.md`
 
-- stage 상세(입력/출력/명령/검증)는 각 stage docs에서만 관리
-- `invest/docs`는 공통 정책/거버넌스만 유지
+## note
+- 삭제된 `STAGE_EXECUTION_SPEC.md`, `STAGE_EXECUTION_SPEC.md`의 역할을 이 문서가 대체한다.

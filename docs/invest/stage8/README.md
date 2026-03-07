@@ -1,9 +1,10 @@
 # Stage8 Docs
 
 ## 상태
-- DRAFT_PLACEHOLDER
-- 현재 stage8 전용 실행 스크립트는 미구현(미확인 아님: 코드 없음)
+- RESERVED
+- HISTORICAL_ONLY
 
-## canonical
-- stage8의 공식 I/O는 실행 코드 구현 시 확정
-- 기존 `docs/stage_updates/*` 문서는 이력/근거 보존용(HISTORICAL)
+## 설명
+- 현재 stage8 전용 실행 스크립트는 없다.
+- 이 디렉터리의 상세 문서는 historical/legacy reference로만 유지한다.
+- 현재 canonical 실행 문서가 아니다.

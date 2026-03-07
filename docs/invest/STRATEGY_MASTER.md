@@ -1,9 +1,13 @@
 # STRATEGY_MASTER
 
+역할: **공통 SSOT**.
+
 투자 파이프라인의 공통 전략 원칙과 단계 흐름만 정의하는 상위 SSOT다.
 세부 실행 규칙, 재현 절차, 파일 링크는 각 stage 문서에서만 관리한다.
 
-Stage 상세 설계/재현/파일 링크는 invest/stages/stageN/docs/*에서만 관리한다(SSOT).
+Stage 상세 설계/재현/파일 링크 canonical:
+- `docs/invest/stage1/` ~ `docs/invest/stage12/`
+- stage 진입 인덱스: `docs/invest/STAGE_EXECUTION_SPEC.md`
 
 ## 공통 운영 원칙
 - 단계는 순차 파이프라인으로 운영하며 upstream 실패 시 downstream 진입을 금지한다.
@@ -18,4 +22,5 @@ Stage 상세 설계/재현/파일 링크는 invest/stages/stageN/docs/*에서만
 4. Stage4: 상위 입력을 결합해 가치 계산과 핵심 검증 산출물을 만든다.
 5. Stage5: 검증 가능한 feature set을 산출해 선발/평가 단계 입력을 준비한다.
 6. Stage6: 베이스라인 비교와 후보 선발을 수행해 운영 판단 직전 결과를 만든다.
-7. Stage7~Stage12: 확장/심화 운영 슬롯으로 예약되어 있으며 현재는 RESERVED 상태다.
+7. Stage7: 튜닝 입력 인터페이스를 생성하는 활성 단계다.
+8. Stage8~Stage12: RESERVED/HISTORICAL/GOVERNANCE 슬롯이며 README 상태를 우선 확인한다.

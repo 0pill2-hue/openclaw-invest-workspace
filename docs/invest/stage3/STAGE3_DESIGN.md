@@ -76,7 +76,7 @@
 
 ## 7) 재현 명령
 ```bash
-cd /Users/jobiseu/.openclaw/workspace
+cd "$(git rev-parse --show-toplevel)"
 
 python3 -m py_compile \
   invest/stages/stage3/scripts/stage03_build_input_jsonl.py \
