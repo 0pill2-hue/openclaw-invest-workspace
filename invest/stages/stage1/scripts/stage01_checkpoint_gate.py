@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
 import glob
 import json
 import os
@@ -7,11 +10,9 @@ from pathlib import Path
 import pandas as pd
 
 STAGE1_DIR = Path(__file__).resolve().parents[1]
-INVEST_DIR = Path(__file__).resolve().parents[3]
-COMMON_INPUT_DATA_DIR = INVEST_DIR / "stages/stage1/outputs"
+COMMON_INPUT_DATA_DIR = STAGE1_DIR / "outputs"
 RAW_ROOT = COMMON_INPUT_DATA_DIR / "raw"
 OUT = STAGE1_DIR / "outputs/reports/data_quality/stage01_checkpoint_status.json"
-
 
 CHECKS = [
     ("kr_ohlcv", "raw/signal/kr/ohlcv/*.csv", 2800),
@@ -62,9 +63,9 @@ def check_dart_continuity(max_gap_days: int = 14):
         return ["dart: no files"], {}
 
     all_days = set()
-    for f in files:
+    for path in files:
         try:
-            for chunk in pd.read_csv(f, usecols=["rcept_dt"], chunksize=200000):
+            for chunk in pd.read_csv(path, usecols=["rcept_dt"], chunksize=200000):
                 s = pd.to_datetime(chunk["rcept_dt"].astype(str), format="%Y%m%d", errors="coerce").dropna()
                 all_days.update(s.dt.date.tolist())
         except Exception:
@@ -126,15 +127,15 @@ def check_raw_tree_coverage():
 
     details = {
         "leaf_dir_count": len(dirs),
-        "covered_leaf_dirs": len([item for item in dirs if item["file_count"] > 0]),
-        "empty_leaf_dir_count": len([item for item in dirs if item["file_count"] == 0]),
-        "empty_leaf_dirs": [item["dir"] for item in dirs if item["file_count"] == 0],
+        "covered_leaf_dirs": len([x for x in dirs if x["file_count"] > 0]),
+        "empty_leaf_dir_count": len([x for x in dirs if x["file_count"] == 0]),
+        "empty_leaf_dirs": [x["dir"] for x in dirs if x["file_count"] == 0],
         "dirs": dirs,
     }
     return [], details
 
 
-def main():
+def main() -> int:
     failures = []
     details = {}
 
@@ -163,7 +164,8 @@ def main():
     print(json.dumps(payload, ensure_ascii=False))
     if not payload["ok"]:
         raise SystemExit(1)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

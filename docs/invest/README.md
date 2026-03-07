@@ -1,6 +1,8 @@
 # INVEST README
 
-역할: **투자 공통 SSOT와 stage 진입 문서 인덱스**.
+## 역할
+- 투자 파이프라인의 공통 SSOT와 stage 진입 인덱스를 제공한다.
+- stage별 운영 상세는 상위 문서가 아니라 stage RULEBOOK을 본다.
 
 ## 공통 SSOT
 - `STRATEGY_MASTER.md` — 공통 전략 원칙과 단계 흐름 SSOT
@@ -16,12 +18,12 @@
 - `BOOTSTRAP_REPRODUCTION.md`
 
 ## Stage 진입 인덱스
-- canonical: `STAGE_EXECUTION_SPEC.md`
+- canonical index: `STAGE_EXECUTION_SPEC.md`
 
-## 단일화 이유
-- `STAGE_RULEBOOK_MASTER.md`, `STAGE_STRATEGY_MASTER.md`, `STAGE_EXECUTION_SPEC.md` 세 문서는 실제 내용이 모두 stage 상세 문서 링크 인덱스였다.
-- 그중 `STAGE_EXECUTION_SPEC.md`가 가장 중립적이고, 현재 구조에서 stage 상세 문서의 실행/재현/룰 링크를 함께 안내하기에 가장 적합했다.
-- 따라서 `STAGE_EXECUTION_SPEC.md`만 남기고 나머지 두 문서는 삭제했다.
+## Stage 상세 문서 정책
+- stage 운영 상세의 canonical 위치는 `invest/stages/stageN/docs/STAGE{N}_RULEBOOK_AND_REPRO.md`다.
+- 상위 문서는 공통 정책/링크 허브만 담당한다.
+- Stage1은 이 정책을 적용했다.
 
 ## 우선순위
 1. `RULEBOOK_MASTER.md`

@@ -10,7 +10,14 @@ RUNTIME_DIR = WORKSPACE_ROOT / "invest/stages/stage1/outputs/runtime"
 EVENT_LOG_PATH = RUNTIME_DIR / "pipeline_events.jsonl"
 
 
-def append_pipeline_event(source: str, status: str, count: int = 0, errors: Iterable[str] | None = None, note: str = "") -> None:
+def append_pipeline_event(
+    source: str,
+    status: str,
+    count: int = 0,
+    errors: Iterable[str] | None = None,
+    note: str = "",
+) -> None:
+    """Append a single stage1 pipeline event to the runtime event log."""
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     payload = {
         "ts": datetime.now(timezone.utc).isoformat(),

@@ -14,7 +14,7 @@
 
 ## 상세 stage 룰북 위치
 
-- Stage1: `docs/invest/stage1/STAGE1_RULEBOOK_AND_REPRO.md`
+- Stage1: `invest/stages/stage1/docs/STAGE1_RULEBOOK_AND_REPRO.md`
 - Stage2: `docs/invest/stage2/STAGE2_RULEBOOK_AND_REPRO.md`
 - Stage3: `docs/invest/stage3/STAGE3_RULEBOOK_AND_REPRO.md`
 - Stage4: `docs/invest/stage4/STAGE4_RULEBOOK_AND_REPRO.md`

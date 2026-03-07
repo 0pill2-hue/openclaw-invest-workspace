@@ -1,12 +1,13 @@
 # STAGE EXECUTION SPEC
 
-역할: **Stage 진입 인덱스**.
+## 역할
+- stage 상세 문서의 링크 허브 역할만 담당한다.
+- 실행/재현/입출력/검증 상세는 각 stage RULEBOOK에서 관리한다.
 
-이 문서는 stage 상세 실행/재현/canonical 문서의 링크 인덱스만 담당한다.
-세부 전략, 룰, 입출력, 검증은 각 stage 문서에서 관리한다.
+## Canonical stage detail
+- Stage1: `invest/stages/stage1/docs/STAGE1_RULEBOOK_AND_REPRO.md`
 
-## Active stages
-- Stage1: `docs/invest/stage1/STAGE1_RULEBOOK_AND_REPRO.md`
+## Legacy stage detail (out of scope in this task)
 - Stage2: `docs/invest/stage2/STAGE2_RULEBOOK_AND_REPRO.md`
 - Stage3: `docs/invest/stage3/STAGE3_RULEBOOK_AND_REPRO.md`
 - Stage4: `docs/invest/stage4/STAGE4_RULEBOOK_AND_REPRO.md`
@@ -22,4 +23,5 @@
 - Stage12: `docs/invest/stage12/README.md`
 
 ## Note
-- 삭제된 `STAGE_RULEBOOK_MASTER.md`와 `STAGE_STRATEGY_MASTER.md`의 역할을 이 문서가 대체한다.
+- Stage1은 stage 폴더 내부 docs 구조로 canonical을 이동했다.
+- Stage2 이상은 이번 작업 범위 밖이라 legacy 경로를 유지한다.

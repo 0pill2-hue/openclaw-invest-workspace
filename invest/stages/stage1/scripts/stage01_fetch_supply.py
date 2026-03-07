@@ -1,149 +1,166 @@
-import FinanceDataReader as fdr
-from pykrx import stock
-import pandas as pd
+#!/usr/bin/env python3
+from __future__ import annotations
+
 import os
-import sys
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-try:
-    from pipeline_logger import append_pipeline_event
-except ImportError:
-    def append_pipeline_event(*args, **kwargs):
-        """
-        Role: append_pipeline_event 함수 역할 설명
-        Input: 입력 타입/의미 명시
-        Output: 반환 타입/의미 명시
-        Side effect: 파일 저장/외부 호출/상태 변경 여부
-        Author: 조비스
-        Updated: 2026-02-18
-        """
-        pass
+import pandas as pd
+from pykrx import stock
+
+from pipeline_logger import append_pipeline_event
+from stage01_atomic_io import append_report_rows, atomic_write_csv, merge_dedup_sort
+
+ROOT = Path(__file__).resolve().parents[4]
+STOCK_LIST_PATH = ROOT / "invest/stages/stage1/outputs/master/kr_stock_list.csv"
+OUT_DIR = ROOT / "invest/stages/stage1/outputs/raw/signal/kr/supply"
+ANOMALY_REPORT_PATH = ROOT / "invest/stages/stage1/outputs/reports/data_quality/stage01_supply_anomalies.csv"
 
 
-def _sanitize_supply(code: str, df_new: pd.DataFrame):
-    """
-    Role: _sanitize_supply 함수 역할 설명
-    Input: 입력 타입/의미 명시
-    Output: 반환 타입/의미 명시
-    Side effect: 파일 저장/외부 호출/상태 변경 여부
-    Author: 조비스
-    Updated: 2026-02-18
-    """
-    if df_new is None or df_new.empty:
-        return df_new, pd.DataFrame()
-
-    x = df_new.copy().reset_index().rename(columns={'index': 'Date'})
-    # pykrx index name could be 날짜
-    if '날짜' in x.columns and 'Date' not in x.columns:
-        x = x.rename(columns={'날짜': 'Date'})
-    x['Date'] = pd.to_datetime(x['Date'], errors='coerce')
-
-    # 표준 컬럼 매핑
+def _to_standard(df_new: pd.DataFrame) -> pd.DataFrame:
+    x = df_new.copy().reset_index().rename(columns={"index": "Date", "날짜": "Date"})
     cols = list(x.columns)
-    # 기대: Date + [기관합계,기타법인,개인,외국인합계,전체]
     if len(cols) >= 6:
         x = x.iloc[:, :6]
-        x.columns = ['Date', 'Inst', 'Corp', 'Indiv', 'Foreign', 'Total']
-
-    for c in ['Inst', 'Corp', 'Indiv', 'Foreign', 'Total']:
-        x[c] = pd.to_numeric(x[c], errors='coerce')
-
-    bad = x[x['Date'].isna() | x[['Inst', 'Corp', 'Indiv', 'Foreign', 'Total']].isna().any(axis=1)].copy()
-    if not bad.empty:
-        bad['reason'] = 'invalid_date_or_nonnumeric'
-
-    # Stage1은 수집/원천(raw)까지만 담당한다. 검역(quarantine) 파일 저장은 Stage2 단일 책임.
-    clean = x[~x.index.isin(bad.index)].copy()
-    clean = clean.set_index('Date').sort_index()[['Inst', 'Corp', 'Indiv', 'Foreign', 'Total']]
-    return clean, bad
+        x.columns = ["Date", "Inst", "Corp", "Indiv", "Foreign", "Total"]
+    else:
+        for c in ["Inst", "Corp", "Indiv", "Foreign", "Total"]:
+            if c not in x.columns:
+                x[c] = None
+    x["Date"] = pd.to_datetime(x["Date"], errors="coerce")
+    for c in ["Inst", "Corp", "Indiv", "Foreign", "Total"]:
+        x[c] = pd.to_numeric(x[c], errors="coerce")
+    return x[["Date", "Inst", "Corp", "Indiv", "Foreign", "Total"]]
 
 
-def fetch_supply_data():
-    """
-    Role: fetch_supply_data 함수 역할 설명
-    Input: 입력 타입/의미 명시
-    Output: 반환 타입/의미 명시
-    Side effect: 파일 저장/외부 호출/상태 변경 여부
-    Author: 조비스
-    Updated: 2026-02-18
-    """
-    full_collection = os.environ.get('FULL_COLLECTION', '0').strip().lower() in ('1', 'true', 'yes')
-    stock_list_path = 'invest/stages/stage1/outputs/master/kr_stock_list.csv'
-    if not os.path.exists(stock_list_path):
-        print("Stock list not found.")
-        return
+def _build_anomaly_rows(code: str, x: pd.DataFrame) -> pd.DataFrame:
+    if x.empty:
+        return pd.DataFrame()
+    records = []
 
-    df_stocks = pd.read_csv(stock_list_path)
-    df_stocks['Code'] = df_stocks['Code'].astype(str).str.zfill(6)
-    
-    raw_output_dir = 'invest/stages/stage1/outputs/raw/signal/kr/supply'
-    os.makedirs(raw_output_dir, exist_ok=True)
+    invalid_date = x["Date"].isna()
+    if invalid_date.any():
+        for _, _r in x[invalid_date].iterrows():
+            records.append({"code": code, "date": "", "reason": "invalid_date", "detail": "Date parse failed"})
 
-    # Define timeframe: last 10 years (base) / incremental to today
-    end_date = datetime.now().strftime('%Y%m%d')
-    base_start_date = (datetime.now() - timedelta(days=365*10)).strftime('%Y%m%d')
+    non_numeric = x[["Inst", "Corp", "Indiv", "Foreign", "Total"]].isna().any(axis=1)
+    if non_numeric.any():
+        for _, r in x[non_numeric].iterrows():
+            records.append(
+                {
+                    "code": code,
+                    "date": r["Date"].strftime("%Y-%m-%d") if pd.notna(r["Date"]) else "",
+                    "reason": "non_numeric_supply_value",
+                    "detail": "one_or_more_columns_nan",
+                }
+            )
 
-    print(f"Starting Supply data collection for {len(df_stocks)} stocks up to {end_date} (incremental enabled)...")
+    if not records:
+        return pd.DataFrame()
+    return pd.DataFrame.from_records(records)
 
-    success_count = 0
+
+def _load_existing(path: Path) -> pd.DataFrame | None:
+    if not path.exists():
+        return None
+    prev = pd.read_csv(path)
+    if "Date" not in prev.columns and len(prev.columns) >= 1:
+        prev = prev.rename(columns={prev.columns[0]: "Date"})
+    for c in ["Inst", "Corp", "Indiv", "Foreign", "Total"]:
+        if c not in prev.columns:
+            prev[c] = None
+    return prev[["Date", "Inst", "Corp", "Indiv", "Foreign", "Total"]]
+
+
+def fetch_supply_data() -> int:
+    full_collection = os.environ.get("FULL_COLLECTION", "0").strip().lower() in ("1", "true", "yes")
+
+    if not STOCK_LIST_PATH.exists():
+        msg = f"Stock list not found: {STOCK_LIST_PATH}"
+        append_pipeline_event("fetch_supply", "FAIL", 0, [msg], "missing stock list")
+        print(msg)
+        return 1
+
+    df_stocks = pd.read_csv(STOCK_LIST_PATH)
+    df_stocks["Code"] = df_stocks["Code"].astype(str).str.zfill(6)
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    end_date = datetime.now().strftime("%Y%m%d")
+    base_start = (datetime.now() - timedelta(days=365 * 10)).strftime("%Y%m%d")
+
+    ok_count = 0
     fail_count = 0
-    for idx, row in df_stocks.iterrows():
-        code = row['Code']
-        name = row['Name']
-        file_path = os.path.join(raw_output_dir, f"{code}_supply.csv")
+    skip_count = 0
+    errors: list[str] = []
 
-        # 증분 수집: 기존 파일이 있으면 마지막 날짜 이후부터 수집
-        start_date = base_start_date
-        if (not full_collection) and os.path.exists(file_path):
-            try:
-                df_existing = pd.read_csv(file_path)
-                if '날짜' in df_existing.columns:
-                    last_date = pd.to_datetime(df_existing['날짜']).max()
-                else:
-                    last_date = pd.to_datetime(df_existing.iloc[:, 0]).max()
-                next_date = (last_date + timedelta(days=1)).strftime('%Y%m%d')
-                if next_date > end_date:
-                    continue
-                start_date = next_date
-            except Exception:
-                start_date = base_start_date
+    for idx, row in df_stocks.iterrows():
+        code = row["Code"]
+        name = row.get("Name", "")
+        file_path = OUT_DIR / f"{code}_supply.csv"
 
         try:
-            # 순매수(수급) 데이터: 날짜별 순매수
-            df = stock.get_market_trading_value_by_date(start_date, end_date, code, on='순매수')
-            if not df.empty:
-                clean_df, bad_df = _sanitize_supply(code, df)
-                if clean_df is not None and not clean_df.empty:
-                    if os.path.exists(file_path):
-                        clean_df.to_csv(file_path, mode='a', header=False)
-                    else:
-                        clean_df.to_csv(file_path)
-                    success_count += 1
-                    if success_count % 50 == 0:
-                        print(f"Progress: {idx+1}/{len(df_stocks)} stocks collected.")
-                else:
-                    fail_count += 1
-            else:
-                fail_count += 1
-
-            time.sleep(0.05)
-
-        except Exception as e:
-            print(f"Error fetching supply for {code} ({name}): {e}")
+            existing = _load_existing(file_path)
+        except Exception as exc:
             fail_count += 1
-            time.sleep(0.5)
+            errors.append(f"{code}: existing_parse_failed:{exc}")
+            continue
 
-    status = "OK" if fail_count == 0 else "WARN"
+        start_date = base_start
+        if not full_collection and existing is not None and not existing.empty:
+            try:
+                last_date = pd.to_datetime(existing["Date"], errors="coerce").max()
+                if pd.notna(last_date):
+                    next_date = (last_date + timedelta(days=1)).strftime("%Y%m%d")
+                    if next_date > end_date:
+                        skip_count += 1
+                        continue
+                    start_date = next_date
+            except Exception:
+                start_date = base_start
+
+        try:
+            fetched = stock.get_market_trading_value_by_date(start_date, end_date, code, on="순매수")
+            if fetched is None or fetched.empty:
+                skip_count += 1
+                continue
+
+            x = _to_standard(fetched)
+            anomaly_rows = _build_anomaly_rows(code, x)
+            append_report_rows(ANOMALY_REPORT_PATH, anomaly_rows)
+
+            # Stage1 raw 원칙: invalid_date만 제외하고 값은 보존한다.
+            x = x[x["Date"].notna()].copy()
+            x["Date"] = x["Date"].dt.strftime("%Y-%m-%d")
+
+            merged = merge_dedup_sort(existing, x, key_columns=["Date"])
+            atomic_write_csv(merged, file_path, index=False)
+            ok_count += 1
+
+            if (ok_count + fail_count + skip_count) % 50 == 0:
+                print(
+                    f"Progress: {idx+1}/{len(df_stocks)} "
+                    f"(ok={ok_count}, fail={fail_count}, skip={skip_count})"
+                )
+            time.sleep(0.03)
+        except Exception as exc:
+            fail_count += 1
+            errors.append(f"{code}({name}): {exc}")
+            time.sleep(0.2)
+
+    status = "OK" if fail_count == 0 else "FAIL"
     append_pipeline_event(
         source="fetch_supply",
         status=status,
-        count=success_count,
-        errors=[],
-        note=f"KR supply done. total={len(df_stocks)} ok={success_count} fail={fail_count}",
+        count=ok_count,
+        errors=errors,
+        note=f"total={len(df_stocks)} ok={ok_count} fail={fail_count} skip={skip_count}",
     )
-    print("Supply data collection completed.")
+
+    print(f"KR supply done: ok={ok_count} fail={fail_count} skip={skip_count}")
+    return 0 if fail_count == 0 else 1
+
 
 if __name__ == "__main__":
-    fetch_supply_data()
+    raise SystemExit(fetch_supply_data())
