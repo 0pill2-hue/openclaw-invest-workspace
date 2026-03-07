@@ -1,34 +1,26 @@
-#!/usr/bin/env python3
-from __future__ import annotations
-
 import json
 import os
 import re
-import subprocess
 import sys
 import time
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
-from pathlib import Path
 from typing import Optional
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 try:
     import feedparser
 except ModuleNotFoundError:
-    ROOT = Path(__file__).resolve().parents[4]
-    env_python = os.environ.get("INVEST_PYTHON_BIN", "").strip()
-    candidate = Path(env_python) if env_python else ROOT / ".venv/bin/python3"
-    if candidate.exists() and os.access(candidate, os.X_OK) and Path(sys.executable).resolve() != candidate.resolve():
-        os.execv(str(candidate), [str(candidate)] + sys.argv)
-    print("[error] feedparser is not installed. Install with: pip install feedparser", file=sys.stderr)
+    # Cron may run with system python; re-exec with workspace venv if available.
+    venv_py = '/Users/jobiseu/.openclaw/workspace/.venv/bin/python3'
+    if os.path.exists(venv_py) and os.path.realpath(sys.executable) != os.path.realpath(venv_py):
+        os.execv(venv_py, [venv_py] + sys.argv)
     raise
 
 from pipeline_logger import append_pipeline_event
 
-ROOT = Path(__file__).resolve().parents[4]
-DATA_DIR = ROOT / "invest/stages/stage1/outputs/raw/qualitative/market/rss"
-CONFIG_PATH = ROOT / "invest/stages/stage1/inputs/config/news_sources.json"
+DATA_DIR = "invest/stages/stage1/outputs/raw/qualitative/market/rss"
+CONFIG_PATH = "invest/stages/stage1/inputs/config/news_sources.json"
 RE_YMD = re.compile(r"(20\d{2})[-./]?(\d{1,2})[-./]?(\d{1,2})")
 
 
@@ -43,6 +35,11 @@ def _safe_int(name: str, default: int, min_v: int = 0) -> int:
         return max(min_v, int(os.environ.get(name, str(default)).strip()))
     except Exception:
         return default
+
+
+def _safe_date(name: str, default: str) -> datetime:
+    raw = os.environ.get(name, default).strip()
+    return _parse_iso_or_ymd(raw, fallback=default)
 
 
 def _parse_iso_or_ymd(raw: str, fallback: str) -> datetime:
@@ -63,6 +60,7 @@ def _parse_iso_or_ymd(raw: str, fallback: str) -> datetime:
 
 
 def _resolve_target_date() -> tuple[datetime, int]:
+    # Priority: explicit date > target years(default 10y)
     raw_date = os.environ.get("RSS_BACKFILL_TARGET_DATE", "").strip()
     if raw_date:
         dt = _parse_iso_or_ymd(raw_date, fallback="2016-01-01")
@@ -82,10 +80,15 @@ def _paged_url(base_url: str, page_no: int) -> str:
     return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlencode(q), parsed.fragment))
 
 
-def load_config() -> dict:
-    if not CONFIG_PATH.exists():
+def load_config():
+    if not os.path.exists(CONFIG_PATH):
         return {"keywords": [], "feeds": {}}
-    return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def ensure_dir(path):
+    os.makedirs(path, exist_ok=True)
 
 
 def _to_iso(dt: Optional[datetime]) -> str:
@@ -126,6 +129,7 @@ def _parse_datetime(raw: str) -> Optional[datetime]:
 
 
 def _normalize_published(entry: dict) -> tuple[str, str]:
+    """return (published_iso, source)"""
     st = entry.get("published_parsed") or entry.get("updated_parsed")
     if st:
         try:
@@ -147,13 +151,13 @@ def _normalize_published(entry: dict) -> tuple[str, str]:
     return "", "undated"
 
 
-def fetch_feed(name: str, url: str) -> tuple[list[dict], dict]:
+def fetch_feed(name, url):
     enable_paged_backfill = _truthy(os.environ.get("RSS_ENABLE_PAGED_BACKFILL", "1"), default=True)
     max_pages = _safe_int("RSS_BACKFILL_MAX_PAGES", 120, min_v=1)
     max_empty_pages = _safe_int("RSS_BACKFILL_MAX_EMPTY_PAGES", 2, min_v=1)
     target_dt, target_years = _resolve_target_date()
 
-    items: list[dict] = []
+    items = []
     seen_keys = set()
     page = 1
     no_new_pages = 0
@@ -196,12 +200,15 @@ def fetch_feed(name: str, url: str) -> tuple[list[dict], dict]:
 
         if not enable_paged_backfill:
             break
+
         if new_on_page == 0:
             no_new_pages += 1
         else:
             no_new_pages = 0
+
         if no_new_pages >= max_empty_pages:
             break
+
         if oldest_dt is not None and oldest_dt <= target_dt:
             break
 
@@ -221,32 +228,30 @@ def fetch_feed(name: str, url: str) -> tuple[list[dict], dict]:
     return items, meta
 
 
-def filter_items(items: list[dict], keywords: list[str]) -> list[dict]:
+def filter_items(items, keywords):
     if _truthy(os.environ.get("RSS_DISABLE_KEYWORD_FILTER", "0"), default=False):
         return items
     if not keywords:
         return items
     filtered = []
     for it in items:
-        text = f"{it.get('title', '')} {it.get('summary', '')}"
+        text = f"{it.get('title','')} {it.get('summary','')}"
         if any(k.lower() in text.lower() for k in keywords):
             filtered.append(it)
     return filtered
 
 
-def main() -> int:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+def main():
+    ensure_dir(DATA_DIR)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-
-    out: dict = {}
+    out = {}
     cfg = load_config()
     feeds = cfg.get("feeds", {})
     keywords = cfg.get("keywords", [])
-
-    errors: list[str] = []
+    errors = []
     total_items = 0
     feeds_with_items = 0
-    per_feed_meta: list[dict] = []
+    per_feed_meta = []
 
     for name, url in feeds.items():
         try:
@@ -254,14 +259,14 @@ def main() -> int:
             filtered = filter_items(items, keywords)
             out[name] = filtered
             total_items += len(filtered)
-            if filtered:
+            if len(filtered) > 0:
                 feeds_with_items += 1
             meta["items_after_filter"] = len(filtered)
             per_feed_meta.append(meta)
             time.sleep(0.5)
-        except Exception as exc:
-            out[name] = {"error": str(exc)}
-            errors.append(f"{name}: {exc}")
+        except Exception as e:
+            out[name] = {"error": str(e)}
+            errors.append(f"{name}: {e}")
 
     out["_meta"] = {
         "timestamp": ts,
@@ -270,18 +275,16 @@ def main() -> int:
     }
 
     out_name = f"rss_{ts}.json"
-    (DATA_DIR / out_name).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    with open(os.path.join(DATA_DIR, out_name), "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=2)
 
     min_total_items = int(os.environ.get("RSS_MIN_TOTAL_ITEMS", "1"))
     min_feeds_with_items = int(os.environ.get("RSS_MIN_FEEDS_WITH_ITEMS", "1"))
-
-    hard_fail_reasons: list[str] = []
+    hard_fail_reasons = []
     if total_items < max(0, min_total_items):
         hard_fail_reasons.append(f"total_items={total_items} < min_total_items={min_total_items}")
     if feeds_with_items < max(0, min_feeds_with_items):
-        hard_fail_reasons.append(
-            f"feeds_with_items={feeds_with_items} < min_feeds_with_items={min_feeds_with_items}"
-        )
+        hard_fail_reasons.append(f"feeds_with_items={feeds_with_items} < min_feeds_with_items={min_feeds_with_items}")
 
     status = "FAIL" if hard_fail_reasons else ("OK" if not errors else "WARN")
     pipeline_errors = errors + hard_fail_reasons
@@ -296,15 +299,10 @@ def main() -> int:
             f"target_years={os.environ.get('RSS_BACKFILL_TARGET_YEARS','10')}"
         ),
     )
-
-    print(
-        f"Saved {len(out)-1} feeds -> {DATA_DIR} "
-        f"(status={status}, total_items={total_items}, feeds_with_items={feeds_with_items})"
-    )
+    print(f"Saved {len(out)-1} feeds -> {DATA_DIR} (status={status}, total_items={total_items}, feeds_with_items={feeds_with_items})")
     if status == "FAIL":
         raise SystemExit(1)
-    return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

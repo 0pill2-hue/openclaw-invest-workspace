@@ -1,23 +1,13 @@
-#!/usr/bin/env python3
-from __future__ import annotations
-
-import json
+import FinanceDataReader as fdr
+import pandas as pd
 import os
 import sys
 import time
-from pathlib import Path
-
-import FinanceDataReader as fdr
-import pandas as pd
-
-from pipeline_logger import append_pipeline_event
+import json
 
 INCLUDED_MARKETS = ("KOSPI", "KOSDAQ", "KOSDAQ GLOBAL")
 INCLUDED_MARKET_IDS = ("STK", "KSQ")
 DEFAULT_FALLBACK_CACHE_TTL_HOURS = 6
-
-ROOT = Path(__file__).resolve().parents[4]
-OUTPUT_PATH = ROOT / "invest/stages/stage1/outputs/master/kr_stock_list.csv"
 
 
 def _resolve_fallback_cache_ttl_hours() -> int:
@@ -25,15 +15,30 @@ def _resolve_fallback_cache_ttl_hours() -> int:
     try:
         ttl = int(raw)
     except ValueError:
+        print(
+            f"[warn] Invalid KR_STOCK_LIST_FALLBACK_TTL_HOURS='{raw}'. "
+            f"Using default {DEFAULT_FALLBACK_CACHE_TTL_HOURS}h."
+        )
         ttl = DEFAULT_FALLBACK_CACHE_TTL_HOURS
-    return ttl if ttl > 0 else DEFAULT_FALLBACK_CACHE_TTL_HOURS
+
+    if ttl <= 0:
+        print(
+            f"[warn] Non-positive KR_STOCK_LIST_FALLBACK_TTL_HOURS={ttl}. "
+            f"Using default {DEFAULT_FALLBACK_CACHE_TTL_HOURS}h."
+        )
+        ttl = DEFAULT_FALLBACK_CACHE_TTL_HOURS
+    return ttl
 
 
 FALLBACK_CACHE_TTL_HOURS = _resolve_fallback_cache_ttl_hours()
 FALLBACK_CACHE_TTL_SECONDS = FALLBACK_CACHE_TTL_HOURS * 3600
 
 
-def _looks_like_krx_json_response_error(exc: Exception) -> bool:
+def _looks_like_krx_json_response_error(exc):
+    """
+    KRX endpoint occasionally returns an empty/non-JSON payload.
+    FinanceDataReader then surfaces JSONDecodeError (or similar ValueError text).
+    """
     if isinstance(exc, json.JSONDecodeError):
         return True
     message = str(exc).strip().lower()
@@ -50,6 +55,7 @@ def _normalize_and_filter_universe(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame()
 
     x = df.copy()
+
     if "Code" in x.columns:
         x["Code"] = x["Code"].astype(str).str.zfill(6)
 
@@ -70,12 +76,11 @@ def _normalize_and_filter_universe(df: pd.DataFrame) -> pd.DataFrame:
     return x
 
 
-def _fetch_krx_listing_with_retry(max_retries: int = 4, base_backoff_sec: float = 1.0) -> pd.DataFrame:
-    last_exc: Exception | None = None
-
+def _fetch_krx_listing_with_retry(max_retries=4, base_backoff_sec=1.0):
+    last_exc = None
     for attempt in range(1, max_retries + 1):
         try:
-            df_krx = fdr.StockListing("KRX")
+            df_krx = fdr.StockListing('KRX')
             if df_krx is None or (isinstance(df_krx, pd.DataFrame) and df_krx.empty):
                 raise ValueError("KRX listing response is empty")
             return df_krx
@@ -86,22 +91,27 @@ def _fetch_krx_listing_with_retry(max_retries: int = 4, base_backoff_sec: float 
                 sleep_sec = base_backoff_sec * (2 ** (attempt - 1))
                 print(
                     f"[warn] KRX listing fetch failed (attempt {attempt}/{max_retries}) "
-                    f"{type(exc).__name__}: {exc}. retry in {sleep_sec:.1f}s"
+                    f"with transient response issue: {type(exc).__name__}: {exc}. "
+                    f"retrying in {sleep_sec:.1f}s..."
                 )
                 time.sleep(sleep_sec)
                 continue
+
             break
 
-    print("[warn] KRX unified listing failed repeatedly. fallback to KOSPI/KOSDAQ merge")
+    print(
+        "[warn] KRX unified listing endpoint failed repeatedly. "
+        "falling back to KOSPI/KOSDAQ merge."
+    )
     try:
-        parts: list[pd.DataFrame] = []
+        parts = []
         for market in ("KOSPI", "KOSDAQ", "KOSDAQ GLOBAL"):
             try:
                 df = fdr.StockListing(market)
                 if df is not None and not df.empty:
                     parts.append(df)
-            except Exception as exc:
-                print(f"[warn] fallback market listing failed ({market}): {type(exc).__name__}: {exc}")
+            except Exception as e:
+                print(f"[warn] fallback market listing failed ({market}): {type(e).__name__}: {e}")
 
         if not parts:
             raise RuntimeError("fallback returned empty frames for all target markets")
@@ -109,7 +119,7 @@ def _fetch_krx_listing_with_retry(max_retries: int = 4, base_backoff_sec: float 
         merged = pd.concat(parts, ignore_index=True)
         dedup_cols = [c for c in ("Code", "Name", "Symbol") if c in merged.columns]
         if dedup_cols:
-            merged = merged.drop_duplicates(subset=[dedup_cols[0]], keep="first")
+            merged = merged.drop_duplicates(subset=dedup_cols[0], keep="first")
         else:
             merged = merged.drop_duplicates(keep="first")
         return merged
@@ -118,125 +128,90 @@ def _fetch_krx_listing_with_retry(max_retries: int = 4, base_backoff_sec: float 
             "Failed to fetch stock list via both KRX and market fallback. "
             f"krx_error_type={type(last_exc).__name__ if last_exc else 'unknown'}, "
             f"krx_error={last_exc}, "
-            f"fallback_error_type={type(fallback_exc).__name__}, fallback_error={fallback_exc}"
+            f"fallback_error_type={type(fallback_exc).__name__}, "
+            f"fallback_error={fallback_exc}"
         ) from fallback_exc
 
 
-def fetch_kr_stock_list() -> int:
+def fetch_kr_stock_list():
+    """
+    Role: fetch_kr_stock_list 함수 역할 설명
+    Input: 입력 타입/의미 명시
+    Output: 반환 타입/의미 명시
+    Side effect: 파일 저장/외부 호출/상태 변경 여부
+    Author: 조비스
+    Updated: 2026-03-04
+    """
+    output_path = 'invest/stages/stage1/outputs/master/kr_stock_list.csv'
     print("Fetching KRX stock list...")
+    # Universe policy: include only KOSPI + KOSDAQ family (KOSDAQ GLOBAL included), exclude KONEX.
     try:
         df_krx = _fetch_krx_listing_with_retry()
         df_universe = _normalize_and_filter_universe(df_krx)
         if df_universe.empty:
-            raise RuntimeError("Filtered universe is empty after market policy")
+            raise RuntimeError("Filtered universe is empty after applying market policy")
 
-        OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        df_universe.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        df_universe.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-        market_counts = (
-            df_universe["Market"].value_counts(dropna=False).to_dict()
-            if "Market" in df_universe.columns
-            else {}
-        )
-        print(f"Saved {len(df_universe)} stocks to {OUTPUT_PATH}")
-        print(f"Universe policy include={INCLUDED_MARKETS}, exclude=others (e.g., KONEX)")
+        if "Market" in df_universe.columns:
+            market_counts = df_universe["Market"].value_counts(dropna=False).to_dict()
+        else:
+            market_counts = {}
+
+        print(f"Saved {len(df_universe)} stocks to {output_path}")
+        print(f"Universe policy: include={INCLUDED_MARKETS}, exclude=others (e.g., KONEX)")
         print(f"Market breakdown: {market_counts}")
-
-        append_pipeline_event(
-            source="fetch_stock_list",
-            status="OK",
-            count=len(df_universe),
-            errors=[],
-            note=f"market_breakdown={market_counts}",
-        )
-        return 0
-
+        return
     except Exception as exc:
-        if OUTPUT_PATH.exists():
+        if os.path.exists(output_path):
             try:
-                cache_mtime = OUTPUT_PATH.stat().st_mtime
+                cache_mtime = os.path.getmtime(output_path)
             except OSError as stat_exc:
-                append_pipeline_event(
-                    source="fetch_stock_list",
-                    status="FAIL",
-                    count=0,
-                    errors=[f"cache_stat_failed:{stat_exc}", f"krx_error:{exc}"],
-                    note="fail-close",
+                print(
+                    f"[warn] Live KRX fetch failed ({type(exc).__name__}: {exc}) and "
+                    f"cache stat failed ({type(stat_exc).__name__}: {stat_exc})."
                 )
-                print(f"[error] Cached stock list stat failed: {stat_exc}", file=sys.stderr)
-                return 1
+                raise RuntimeError("Cached stock list stat failed; fallback not allowed.") from stat_exc
 
             cache_age_seconds = time.time() - cache_mtime
             if cache_age_seconds < 0:
-                append_pipeline_event(
-                    source="fetch_stock_list",
-                    status="FAIL",
-                    count=0,
-                    errors=[f"future_cache_mtime cache_age_seconds={cache_age_seconds}"],
-                    note="fail-close",
+                raise RuntimeError(
+                    "Cached stock list has future mtime; fallback not allowed. "
+                    f"cache_age_seconds={cache_age_seconds:.1f}"
                 )
-                print("[error] Cached stock list has future mtime; fallback denied", file=sys.stderr)
-                return 1
 
             if cache_age_seconds > FALLBACK_CACHE_TTL_SECONDS:
                 cache_age_hours = cache_age_seconds / 3600
-                append_pipeline_event(
-                    source="fetch_stock_list",
-                    status="FAIL",
-                    count=0,
-                    errors=[
-                        f"stale_cache cache_age_hours={cache_age_hours:.2f} ttl_hours={FALLBACK_CACHE_TTL_HOURS}",
-                        f"krx_error:{exc}",
-                    ],
-                    note="fail-close",
-                )
                 print(
-                    "[error] Live KRX fetch failed and cache is stale; fallback denied "
-                    f"(age={cache_age_hours:.2f}h, ttl={FALLBACK_CACHE_TTL_HOURS}h)",
-                    file=sys.stderr,
+                    f"[warn] Live KRX fetch failed ({type(exc).__name__}: {exc}) but cache is stale. "
+                    f"cache_age_hours={cache_age_hours:.2f}, ttl_hours={FALLBACK_CACHE_TTL_HOURS}. "
+                    "Fallback denied (fail-close)."
                 )
-                return 1
+                raise RuntimeError(
+                    "Cached stock list is older than fallback TTL; refusing stale fallback. "
+                    f"cache_age_hours={cache_age_hours:.2f}, ttl_hours={FALLBACK_CACHE_TTL_HOURS}"
+                )
 
-            cached = pd.read_csv(OUTPUT_PATH)
+            cached = pd.read_csv(output_path)
             cached_filtered = _normalize_and_filter_universe(cached)
             if not cached_filtered.empty:
-                cached_filtered.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
-                append_pipeline_event(
-                    source="fetch_stock_list",
-                    status="WARN",
-                    count=len(cached_filtered),
-                    errors=[f"live_fetch_failed:{exc}"],
-                    note=(
-                        f"fallback_cache_used age_hours={cache_age_seconds / 3600:.2f} "
-                        f"ttl_hours={FALLBACK_CACHE_TTL_HOURS}"
-                    ),
-                )
+                cached_filtered.to_csv(output_path, index=False, encoding='utf-8-sig')
                 print(
-                    f"[warn] Live fetch failed ({type(exc).__name__}: {exc}); "
-                    f"using cached list within TTL ({cache_age_seconds / 3600:.2f}h)"
+                    f"[warn] Live KRX fetch failed ({type(exc).__name__}: {exc}). "
+                    f"Using cached+filtered stock list within TTL: {output_path} "
+                    f"({len(cached_filtered)} rows, age_hours={cache_age_seconds / 3600:.2f}, "
+                    f"ttl_hours={FALLBACK_CACHE_TTL_HOURS})."
                 )
-                return 0
+                return
 
-            append_pipeline_event(
-                source="fetch_stock_list",
-                status="FAIL",
-                count=0,
-                errors=["cached_stock_list_empty_after_filter", f"krx_error:{exc}"],
-                note="fail-close",
-            )
-            print("[error] Cached stock list exists but is empty after filtering", file=sys.stderr)
-            return 1
-
-        append_pipeline_event(
-            source="fetch_stock_list",
-            status="FAIL",
-            count=0,
-            errors=[str(exc)],
-            note="no_cache",
-        )
-        print(f"[error] {exc}", file=sys.stderr)
-        return 1
+            raise RuntimeError("Cached stock list exists but is empty after market filtering.")
+        raise
 
 
 if __name__ == "__main__":
-    raise SystemExit(fetch_kr_stock_list())
+    try:
+        fetch_kr_stock_list()
+    except Exception as e:
+        print(f"[error] {e}", file=sys.stderr)
+        raise SystemExit(1)

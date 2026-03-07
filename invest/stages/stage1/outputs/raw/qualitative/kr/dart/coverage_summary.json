@@ -2,9 +2,9 @@
   "name": "dart",
   "kind": "qualitative.kr",
   "source_dir": "invest/stages/stage1/outputs/raw/qualitative/kr/dart",
-  "updated_at_utc": "2026-03-07T08:40:17.103036+00:00",
-  "files_scanned": 411,
-  "rows_seen": 3106608,
+  "updated_at_utc": "2026-03-07T07:56:38.338498+00:00",
+  "files_scanned": 410,
+  "rows_seen": 3103797,
   "coverage": {
     "earliest_date": "20160104",
     "latest_date": "20260306",
@@ -158,7 +158,7 @@
       "2023": 235471,
       "2024": 247507,
       "2025": 248581,
-      "2026": 747454
+      "2026": 744643
     },
     "month_row_counts": {
       "201601": 33018,
@@ -283,7 +283,7 @@
       "202512": 18433,
       "202601": 19577,
       "202602": 431101,
-      "202603": 296776
+      "202603": 293965
     },
     "unique_dates_count": 2510
   },
@@ -708,8 +708,7 @@
       "dart_list_20260307_134009.csv": 2811,
       "dart_list_20260307_144008.csv": 2811,
       "dart_list_20260307_154008.csv": 2811,
-      "dart_list_20260307_164005.csv": 2811,
-      "dart_list_20260307_174010.csv": 2811
+      "dart_list_20260307_164005.csv": 2811
     }
   }
 }
