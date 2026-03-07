@@ -22,7 +22,8 @@ def run_script(script_path, retries=3):
     Updated: 2026-02-18
     """
     print(f"[{datetime.now()}] Running {script_path}...")
-    python_bin = os.environ.get('INVEST_PYTHON_BIN', '').strip() or sys.executable
+    env_python = os.environ.get('INVEST_PYTHON_BIN', '').strip()
+    python_bin = env_python if env_python and Path(env_python).is_file() and os.access(env_python, os.X_OK) else sys.executable
     last_err = None
 
     for i in range(retries):
@@ -91,6 +92,8 @@ def main():
         'invest/stages/stage1/scripts/stage01_fetch_news_rss.py',
         'invest/stages/stage1/scripts/stage01_build_news_url_index.py',
         'invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py',
+        'invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py',
+        'invest/stages/stage1/scripts/stage01_scrape_telegram_public_fallback.py',
         'invest/stages/stage1/scripts/stage01_image_harvester.py',
         'invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py',
         'invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py',

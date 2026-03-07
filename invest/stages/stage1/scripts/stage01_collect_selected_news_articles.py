@@ -17,11 +17,26 @@ ROOT = Path(__file__).resolve().parents[4]
 URL_INDEX_DIR = ROOT / "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index"
 OUT_DIR = ROOT / "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles"
 RUNTIME_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/news_selected_articles_status.json"
+URL_INDEX_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/news_url_index_status.json"
 NEWS_CONFIG_PATH = ROOT / "invest/stages/stage1/inputs/config/news_sources.json"
 TEXT_FILTER_PATH = ROOT / "invest/stages/stage1/inputs/config/text_filter_keywords.json"
 
 UA = "Mozilla/5.0 (compatible; stage01-news-select/1.0; +https://openclaw.local)"
 DATE_RE = re.compile(r"(20\d{2})[-./]?(\d{1,2})[-./]?(\d{1,2})")
+PAYWALL_DOMAIN_PENALTIES = {
+    "bloomberg.com": 18.0,
+    "wsj.com": 16.0,
+    "barrons.com": 14.0,
+    "ft.com": 14.0,
+    "theinformation.com": 20.0,
+}
+PAYWALL_DOMAIN_CANDIDATE_CAP = {
+    "bloomberg.com": 2,
+    "wsj.com": 2,
+    "barrons.com": 1,
+    "ft.com": 1,
+    "theinformation.com": 1,
+}
 
 
 def _safe_int(raw: Optional[str], default: int, min_v: int = 0) -> int:
@@ -80,28 +95,14 @@ def _load_keywords() -> list[str]:
     return uniq
 
 
-def _read_latest_url_index(path_override: str) -> tuple[Path, list[dict[str, Any]]]:
-    if path_override:
-        p = (ROOT / path_override).resolve() if not Path(path_override).is_absolute() else Path(path_override)
-        rows = []
-        with p.open("r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    rows.append(json.loads(line))
-                except Exception:
-                    continue
-        return p, rows
+def _resolve_index_path(path_override: str) -> Path:
+    return (ROOT / path_override).resolve() if path_override and not Path(path_override).is_absolute() else Path(path_override)
 
-    files = sorted(URL_INDEX_DIR.glob("*.jsonl"), key=lambda x: x.stat().st_mtime, reverse=True)
-    if not files:
-        return URL_INDEX_DIR / "_missing_.jsonl", []
 
-    p = files[0]
+
+def _load_jsonl_rows(path: Path) -> list[dict[str, Any]]:
     rows = []
-    with p.open("r", encoding="utf-8") as f:
+    with path.open("r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -110,7 +111,79 @@ def _read_latest_url_index(path_override: str) -> tuple[Path, list[dict[str, Any
                 rows.append(json.loads(line))
             except Exception:
                 continue
-    return p, rows
+    return rows
+
+
+
+def _preferred_url_index_path() -> Path:
+    status = _load_json(URL_INDEX_STATUS_PATH, {})
+    status_path = str(status.get("index_file") or "").strip() if isinstance(status, dict) else ""
+    if status_path:
+        p = _resolve_index_path(status_path)
+        if p.exists():
+            return p
+
+    files = sorted(URL_INDEX_DIR.glob("*.jsonl"), key=lambda x: x.stat().st_mtime, reverse=True)
+    if not files:
+        return URL_INDEX_DIR / "_missing_.jsonl"
+    return files[0]
+
+
+
+def _dedupe_url_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_url: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        url = str(row.get("url") or "").strip()
+        if not url:
+            continue
+        prev = by_url.get(url)
+        if prev is None:
+            by_url[url] = row
+            continue
+
+        prev_dt = _parse_date(str(prev.get("published_at") or prev.get("published_date") or ""))
+        curr_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
+        prev_key = (
+            1 if prev_dt else 0,
+            prev_dt.isoformat() if prev_dt else "",
+            len(str(prev.get("summary") or "")),
+            len(str(prev.get("title") or "")),
+        )
+        curr_key = (
+            1 if curr_dt else 0,
+            curr_dt.isoformat() if curr_dt else "",
+            len(str(row.get("summary") or "")),
+            len(str(row.get("title") or "")),
+        )
+        if curr_key >= prev_key:
+            by_url[url] = row
+
+    merged = list(by_url.values())
+    merged.sort(key=lambda x: (str(x.get("published_date") or ""), str(x.get("published_at") or ""), str(x.get("url") or "")), reverse=True)
+    return merged
+
+
+
+def _read_url_index_rows(path_override: str, merge_all: bool) -> tuple[list[Path], list[dict[str, Any]]]:
+    if path_override:
+        p = _resolve_index_path(path_override)
+        return [p], _load_jsonl_rows(p)
+
+    files = sorted(URL_INDEX_DIR.glob("*.jsonl"), key=lambda x: x.stat().st_mtime, reverse=True)
+    if not files:
+        missing = _preferred_url_index_path()
+        return [missing], []
+
+    if not merge_all:
+        p = _preferred_url_index_path()
+        if not p.exists():
+            return [p], []
+        return [p], _load_jsonl_rows(p)
+
+    rows: list[dict[str, Any]] = []
+    for p in files:
+        rows.extend(_load_jsonl_rows(p))
+    return files, _dedupe_url_rows(rows)
 
 
 def _parse_date(raw: str) -> Optional[datetime]:
@@ -170,6 +243,36 @@ def _recency_score(published_dt: Optional[datetime], now_dt: datetime) -> int:
     return 0
 
 
+def _canonical_domain(raw: str) -> str:
+    host = (raw or "").strip().lower()
+    if not host:
+        return ""
+    if ":" in host:
+        host = host.split(":", 1)[0]
+    if host.startswith("www."):
+        host = host[4:]
+    return host
+
+
+
+def _domain_penalty(host: str) -> float:
+    host = _canonical_domain(host)
+    for domain, penalty in PAYWALL_DOMAIN_PENALTIES.items():
+        if host == domain or host.endswith(f".{domain}"):
+            return penalty
+    return 0.0
+
+
+
+def _domain_candidate_cap(host: str) -> int:
+    host = _canonical_domain(host)
+    for domain, cap in PAYWALL_DOMAIN_CANDIDATE_CAP.items():
+        if host == domain or host.endswith(f".{domain}"):
+            return cap
+    return 0
+
+
+
 def _priority(row: dict[str, Any], keywords: list[str], now_dt: datetime, recency_weight: float) -> dict[str, Any]:
     text = " ".join(
         [
@@ -182,12 +285,16 @@ def _priority(row: dict[str, Any], keywords: list[str], now_dt: datetime, recenc
     published_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
     rscore = _recency_score(published_dt, now_dt)
     source_bonus = 2 if any((x.get("source_kind") in {"sitemap", "sitemap_feed", "sitemap_rss"}) for x in row.get("discovered_by", [])) else 0
-    score = len(hits) * 10 + (rscore * recency_weight) + source_bonus
+    host = _canonical_domain(str(row.get("source_domain") or urlparse(str(row.get("url") or "")).netloc))
+    domain_penalty = _domain_penalty(host)
+    score = len(hits) * 10 + (rscore * recency_weight) + source_bonus - domain_penalty
 
     one = dict(row)
+    one["source_domain"] = host or row.get("source_domain") or ""
     one["keyword_hits"] = len(hits)
     one["keywords_matched"] = hits[:20]
     one["priority_score"] = score
+    one["domain_penalty"] = domain_penalty
     one["published_dt"] = published_dt.isoformat() if published_dt else ""
     return one
 
@@ -323,6 +430,24 @@ def _collect_article(session: requests.Session, row: dict[str, Any], timeout: in
     }
 
 
+def _limit_paywall_domain_candidates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    kept = []
+    limited_counts: dict[str, int] = {}
+    for row in rows:
+        host = _canonical_domain(str(row.get("source_domain") or urlparse(str(row.get("url") or "")).netloc))
+        cap = _domain_candidate_cap(host)
+        if cap <= 0:
+            kept.append(row)
+            continue
+        used = limited_counts.get(host, 0)
+        if used >= cap:
+            continue
+        limited_counts[host] = used + 1
+        kept.append(row)
+    return kept
+
+
+
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
@@ -337,8 +462,59 @@ def _date_min_max(rows: list[dict[str, Any]]) -> tuple[str, str]:
     return min(dates), max(dates)
 
 
+def _select_year_spread_candidates(rows: list[dict[str, Any]], target_dt: Optional[datetime], yearly_quota: int, max_candidates: int) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    if target_dt is None or yearly_quota <= 0:
+        selected = rows[:max_candidates] if max_candidates > 0 else list(rows)
+        return selected, {}
+
+    eligible = []
+    overflow = []
+    for row in rows:
+        published_dt = _parse_date(str(row.get("published_dt") or row.get("published_at") or row.get("published_date") or ""))
+        if published_dt is not None and published_dt >= target_dt:
+            eligible.append(row)
+        else:
+            overflow.append(row)
+
+    by_year: dict[int, list[dict[str, Any]]] = {}
+    for row in eligible:
+        published_dt = _parse_date(str(row.get("published_dt") or row.get("published_at") or row.get("published_date") or ""))
+        if published_dt is None:
+            overflow.append(row)
+            continue
+        by_year.setdefault(published_dt.year, []).append(row)
+
+    picked: list[dict[str, Any]] = []
+    picked_urls: set[str] = set()
+    yearly_counts: dict[str, int] = {}
+
+    for year in sorted(by_year):
+        year_rows = sorted(by_year[year], key=lambda x: (float(x.get("priority_score", 0)), str(x.get("published_dt", ""))), reverse=True)
+        take = year_rows[:yearly_quota]
+        yearly_counts[str(year)] = len(take)
+        for row in take:
+            url = str(row.get("url") or "")
+            if url in picked_urls:
+                continue
+            picked.append(row)
+            picked_urls.add(url)
+
+    for row in rows:
+        if max_candidates > 0 and len(picked) >= max_candidates:
+            break
+        url = str(row.get("url") or "")
+        if url in picked_urls:
+            continue
+        picked.append(row)
+        picked_urls.add(url)
+
+    if max_candidates > 0:
+        picked = picked[:max_candidates]
+    return picked, yearly_counts
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
-    index_file, rows = _read_latest_url_index(args.input_index)
+    index_files, rows = _read_url_index_rows(args.input_index, args.merge_all_indexes)
     keywords = _load_keywords()
 
     if not rows:
@@ -346,7 +522,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "status": "FAIL",
             "reason": "url_index_empty_or_missing",
-            "index_file": str(index_file),
+            "index_file": str(index_files[0]) if index_files else "",
+            "index_files": [str(p) for p in index_files],
             "selected_count": 0,
         }
         RUNTIME_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -360,9 +537,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     scored = [s for s in scored if s.get("keyword_hits", 0) >= args.min_keyword_hits]
     scored.sort(key=lambda x: (float(x.get("priority_score", 0)), str(x.get("published_dt", ""))), reverse=True)
+    scored = _limit_paywall_domain_candidates(scored)
 
-    if args.max_candidates > 0:
-        scored = scored[: args.max_candidates]
+    target_dt = _parse_date(args.target_date) if args.target_date else None
+    scored, yearly_counts = _select_year_spread_candidates(
+        scored,
+        target_dt=target_dt,
+        yearly_quota=args.yearly_quota,
+        max_candidates=args.max_candidates,
+    )
 
     session = requests.Session()
     session.headers.update({"User-Agent": UA, "Accept": "text/html,application/xhtml+xml"})
@@ -401,7 +584,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "status": status,
         "worker_mode": "single_serial",
-        "index_file": str(index_file.relative_to(ROOT)) if index_file.exists() else str(index_file),
+        "index_file": str(index_files[0].relative_to(ROOT)) if index_files and index_files[0].exists() else (str(index_files[0]) if index_files else ""),
+        "index_files": [str(p.relative_to(ROOT)) if p.exists() and ROOT in p.parents else str(p) for p in index_files],
+        "index_file_count": len(index_files),
+        "merge_all_indexes": bool(args.merge_all_indexes and not args.input_index),
         "output_file": str(out_file.relative_to(ROOT)),
         "url_index_count": len(rows),
         "keyword_pool_size": len(keywords),
@@ -413,6 +599,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "min_keyword_hits": args.min_keyword_hits,
         "max_candidates": args.max_candidates,
         "recency_weight": args.recency_weight,
+        "target_date": args.target_date,
+        "yearly_quota": args.yearly_quota,
+        "yearly_candidate_counts": yearly_counts,
         "errors": errors,
         "failure_samples": failures[:30],
     }
@@ -434,10 +623,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Stage1 selected news body collector")
-    ap.add_argument("--input-index", default=os.environ.get("NEWS_SELECTED_INPUT_INDEX", ""), help="url index jsonl path (default: latest)")
+    ap.add_argument("--input-index", default=os.environ.get("NEWS_SELECTED_INPUT_INDEX", ""), help="url index jsonl path (default: auto-discover)")
+    ap.add_argument("--merge-all-indexes", action="store_true", default=os.environ.get("NEWS_SELECTED_MERGE_ALL_INDEXES", "1").strip().lower() in {"1", "true", "yes", "on"}, help="merge all url_index jsonl files in news folder before selection")
     ap.add_argument("--min-keyword-hits", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MIN_KEYWORD_HITS"), 1, min_v=0))
     ap.add_argument("--max-candidates", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MAX_ARTICLES"), 0, min_v=0))
     ap.add_argument("--recency-weight", type=float, default=_safe_float(os.environ.get("NEWS_SELECTED_RECENCY_WEIGHT"), 0.0, min_v=0.0))
+    ap.add_argument("--target-date", default=os.environ.get("NEWS_SELECTED_TARGET_DATE", ""))
+    ap.add_argument("--yearly-quota", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_YEARLY_QUOTA"), 3, min_v=0))
     ap.add_argument("--min-selected", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MIN_SELECTED"), 1, min_v=0))
     ap.add_argument("--timeout", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_TIMEOUT_SEC"), 18, min_v=3))
     ap.add_argument("--sleep", type=float, default=float(os.environ.get("NEWS_SELECTED_SLEEP_SEC", "0.15")))

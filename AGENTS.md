@@ -28,7 +28,7 @@
 - 스킬은 과업과 정확히 맞을 때만 사용하고, 미적합하면 스킬 미사용으로 직접 수행.
 
 ## Algorithm/Docs Governance
-- Before algorithm work: check `invest/docs/strategy/STRATEGY_MASTER.md` and declare change type (Strategy|Rule|Tuning).
+- Before algorithm work: check `docs/invest/STRATEGY_MASTER.md` and declare change type (Strategy|Rule|Tuning).
 - System/strategy changes must sync related docs.
 - Result label required: DRAFT | VALIDATED | PRODUCTION (official reporting = PRODUCTION only).
 

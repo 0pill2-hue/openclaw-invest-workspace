@@ -837,16 +837,6 @@ async def main():
                 })
                 print(f"  Finished: {title} [{mode}] new_messages={new_msgs}", flush=True)
 
-                try:
-                    subprocess.run(
-                        ["python3", "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/update_dashboard.py"],
-                        timeout=max(1, DASHBOARD_TIMEOUT_SEC),
-                        check=False,
-                    )
-                except subprocess.TimeoutExpired:
-                    msg = f"update_dashboard timeout after {DASHBOARD_TIMEOUT_SEC}s"
-                    error_list.append(msg)
-                    print(f"  Warning: {msg}", flush=True)
 
             except asyncio.TimeoutError:
                 msg = f"{title}: channel timeout after {PER_CHANNEL_TIMEOUT_SEC}s"
@@ -921,16 +911,6 @@ async def main():
                     )
                     retried = True
 
-                    try:
-                        subprocess.run(
-                            ["python3", "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/update_dashboard.py"],
-                            timeout=max(1, DASHBOARD_TIMEOUT_SEC),
-                            check=False,
-                        )
-                    except subprocess.TimeoutExpired:
-                        msg = f"update_dashboard timeout after {DASHBOARD_TIMEOUT_SEC}s"
-                        error_list.append(msg)
-                        print(f"  Warning: {msg}", flush=True)
                     break
                 except asyncio.TimeoutError:
                     retry_error = f"timeout after {TIMEOUT_RETRY_SEC}s"

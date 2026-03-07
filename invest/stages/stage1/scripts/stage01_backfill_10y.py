@@ -135,6 +135,8 @@ def main() -> int:
                 {
                     "NEWS_SELECTED_MAX_ARTICLES": str(max(1, args.news_selected_max_articles)),
                     "NEWS_SELECTED_MIN_KEYWORD_HITS": str(max(0, args.news_selected_min_keyword_hits)),
+                    "NEWS_SELECTED_TARGET_DATE": target_date,
+                    "NEWS_SELECTED_YEARLY_QUOTA": os.environ.get("NEWS_SELECTED_YEARLY_QUOTA", "3"),
                 },
             )
         )

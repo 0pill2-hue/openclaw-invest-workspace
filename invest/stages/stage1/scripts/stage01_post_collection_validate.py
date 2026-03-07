@@ -7,7 +7,9 @@ from pathlib import Path
 STAGE1_DIR = Path(__file__).resolve().parents[1]
 INVEST_DIR = Path(__file__).resolve().parents[3]
 COMMON_INPUT_DATA_DIR = INVEST_DIR / "stages/stage1/outputs"
+RAW_ROOT = COMMON_INPUT_DATA_DIR / "raw"
 OUT_PATH = STAGE1_DIR / "outputs/runtime/post_collection_validate.json"
+OCR_POSTPROCESS_VALIDATE_PATH = STAGE1_DIR / "outputs/runtime/stage01_ocr_postprocess_validate.json"
 
 SOURCE_SPECS = [
     {
@@ -65,6 +67,24 @@ SOURCE_SPECS = [
         "max_age_default": 72 * 3600,
     },
     {
+        "name": "raw/qualitative/market/news/url_index",
+        "script": "invest/stages/stage1/scripts/stage01_build_news_url_index.py",
+        "patterns": ["raw/qualitative/market/news/url_index/*.jsonl"],
+        "min_count_env": "STAGE1_VALIDATE_MIN_NEWS_URL_INDEX",
+        "min_count_default": 1,
+        "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_NEWS_URL_INDEX",
+        "max_age_default": 72 * 3600,
+    },
+    {
+        "name": "raw/qualitative/market/news/selected_articles",
+        "script": "invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py",
+        "patterns": ["raw/qualitative/market/news/selected_articles/*.jsonl"],
+        "min_count_env": "STAGE1_VALIDATE_MIN_NEWS_SELECTED_ARTICLES",
+        "min_count_default": 1,
+        "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_NEWS_SELECTED_ARTICLES",
+        "max_age_default": 72 * 3600,
+    },
+    {
         "name": "raw/qualitative/text/telegram",
         "script": "invest/stages/stage1/scripts/stage01_scrape_telegram_public_fallback.py",
         "patterns": ["raw/qualitative/text/telegram/**/*.md"],
@@ -85,10 +105,28 @@ SOURCE_SPECS = [
     {
         "name": "raw/qualitative/text/premium",
         "script": "invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py",
-        "patterns": ["raw/qualitative/text/premium/**/*.md"],
+        "patterns": ["raw/qualitative/text/premium/**/*.md", "raw/qualitative/text/premium/**/*.json"],
         "min_count_env": "STAGE1_VALIDATE_MIN_TEXT_PREMIUM",
         "min_count_default": 1,
         "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_TEXT_PREMIUM",
+        "max_age_default": 168 * 3600,
+    },
+    {
+        "name": "raw/qualitative/text/image_map",
+        "script": "invest/stages/stage1/scripts/stage01_image_harvester.py",
+        "patterns": ["raw/qualitative/text/image_map/*.json"],
+        "min_count_env": "STAGE1_VALIDATE_MIN_TEXT_IMAGE_MAP",
+        "min_count_default": 1,
+        "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_TEXT_IMAGE_MAP",
+        "max_age_default": 168 * 3600,
+    },
+    {
+        "name": "raw/qualitative/text/images_ocr",
+        "script": "invest/stages/stage1/scripts/stage01_image_harvester.py",
+        "patterns": ["raw/qualitative/text/images_ocr/*"],
+        "min_count_env": "STAGE1_VALIDATE_MIN_TEXT_IMAGES_OCR",
+        "min_count_default": 1,
+        "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_TEXT_IMAGES_OCR",
         "max_age_default": 168 * 3600,
     },
 ]
@@ -109,6 +147,52 @@ def _collect_files(patterns: list[str]) -> list[Path]:
         files.extend(COMMON_INPUT_DATA_DIR.glob(pattern))
     uniq = sorted({f.resolve() for f in files if f.is_file()})
     return [Path(x) for x in uniq]
+
+
+def _leaf_directories(root: Path) -> list[Path]:
+    if not root.exists():
+        return []
+    leaves = []
+    for directory in sorted([p for p in root.rglob("*") if p.is_dir()]):
+        child_dirs = [c for c in directory.iterdir() if c.is_dir() and not c.name.startswith(".")]
+        if child_dirs:
+            continue
+        leaves.append(directory)
+    return leaves
+
+
+def _dir_snapshot(directory: Path, now_ts: float) -> dict:
+    files = sorted([p for p in directory.rglob("*") if p.is_file() and not p.name.startswith(".")])
+    latest_mtime = max((f.stat().st_mtime for f in files), default=None)
+    suffix_counts = {}
+    zero_byte_count = 0
+    for file_path in files:
+        if file_path.stat().st_size == 0:
+            zero_byte_count += 1
+        suffix = file_path.suffix or "<no_ext>"
+        suffix_counts[suffix] = suffix_counts.get(suffix, 0) + 1
+    return {
+        "dir": str(directory.relative_to(COMMON_INPUT_DATA_DIR)),
+        "file_count": len(files),
+        "zero_byte_count": zero_byte_count,
+        "latest": datetime.fromtimestamp(latest_mtime).isoformat() if latest_mtime else None,
+        "latest_age_sec": int(now_ts - latest_mtime) if latest_mtime else None,
+        "suffix_counts": dict(sorted(suffix_counts.items())),
+    }
+
+
+def build_raw_tree_coverage(now_ts: float) -> dict:
+    leaf_dirs = _leaf_directories(RAW_ROOT)
+    snapshots = [_dir_snapshot(directory, now_ts) for directory in leaf_dirs]
+    empty_leaf_dirs = [item["dir"] for item in snapshots if item["file_count"] == 0]
+    return {
+        "root": str(RAW_ROOT.relative_to(COMMON_INPUT_DATA_DIR)),
+        "leaf_dir_count": len(snapshots),
+        "covered_leaf_dirs": len([item for item in snapshots if item["file_count"] > 0]),
+        "empty_leaf_dir_count": len(empty_leaf_dirs),
+        "empty_leaf_dirs": empty_leaf_dirs,
+        "dirs": snapshots,
+    }
 
 
 def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]:
@@ -149,6 +233,52 @@ def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]
     return ok, detail, failure
 
 
+def load_ocr_postprocess_detail() -> tuple[dict, dict | None]:
+    if not OCR_POSTPROCESS_VALIDATE_PATH.exists():
+        detail = {
+            "source": "runtime/stage01_ocr_postprocess_validate.json",
+            "ok": False,
+            "error": "ocr_postprocess_validate_missing",
+        }
+        return detail, {
+            "source": "runtime/stage01_ocr_postprocess_validate.json",
+            "script": "invest/stages/stage1/scripts/stage01_ocr_postprocess_validate.py",
+            "error": "ocr_postprocess_validate_missing",
+        }
+
+    try:
+        payload = json.loads(OCR_POSTPROCESS_VALIDATE_PATH.read_text(encoding="utf-8"))
+    except Exception as exc:
+        detail = {
+            "source": "runtime/stage01_ocr_postprocess_validate.json",
+            "ok": False,
+            "error": f"ocr_postprocess_validate_parse_error:{type(exc).__name__}",
+        }
+        return detail, {
+            "source": "runtime/stage01_ocr_postprocess_validate.json",
+            "script": "invest/stages/stage1/scripts/stage01_ocr_postprocess_validate.py",
+            "error": detail["error"],
+        }
+
+    detail = {
+        "source": "runtime/stage01_ocr_postprocess_validate.json",
+        "ok": bool(payload.get("ok", False)),
+        "message": payload.get("message", ""),
+        "recent_success_count": payload.get("recent_success_count", 0),
+        "recent_failed_count": payload.get("recent_failed_count", 0),
+        "latest_txt_age_sec": payload.get("latest_txt_age_sec"),
+        "errors": payload.get("errors", []),
+    }
+    failure = None
+    if not detail["ok"]:
+        failure = {
+            "source": "runtime/stage01_ocr_postprocess_validate.json",
+            "script": "invest/stages/stage1/scripts/stage01_ocr_postprocess_validate.py",
+            "error": "; ".join(detail.get("errors", [])) or detail.get("message", "ocr_postprocess_validate_failed"),
+        }
+    return detail, failure
+
+
 def main():
     now_ts = time.time()
     details = []
@@ -159,15 +289,22 @@ def main():
         if not ok and failure is not None:
             failures.append(failure)
 
+    ocr_detail, ocr_failure = load_ocr_postprocess_detail()
+    details.append(ocr_detail)
+    if ocr_failure is not None:
+        failures.append(ocr_failure)
+
+    raw_tree_coverage = build_raw_tree_coverage(now_ts)
     ok = len(failures) == 0
     payload = {
         "timestamp": datetime.now().isoformat(),
         "ok": True if ok else False,
         "message": "post collection validation ok" if ok else f"post collection validation has {len(failures)} failed checks",
         "failed_count": len(failures),
-        "mode": "stage1_core_sources",
+        "mode": "stage1_raw_full_coverage",
         "failures": failures,
         "details": details,
+        "raw_tree_coverage": raw_tree_coverage,
     }
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

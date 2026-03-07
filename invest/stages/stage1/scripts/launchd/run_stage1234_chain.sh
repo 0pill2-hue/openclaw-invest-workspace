@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd /Users/jobiseu/.openclaw/workspace
+ROOT="$(cd "$(dirname "$0")/../../../../.." && pwd)"
+cd "$ROOT"
+PYTHON_BIN="${INVEST_PYTHON_BIN:-python3}"
+export REPO_ROOT="$ROOT"
 
 mkdir -p \
   invest/stages/stage1/outputs/logs/runtime \
@@ -88,7 +91,7 @@ run_with_retry() {
   for ((attempt=1; attempt<=attempts; attempt++)); do
     log "${stage} attempt ${attempt}/${attempts} start (timeout=${timeout_s}s)"
 
-    if /usr/bin/python3 - "$timeout_s" "$@" >> "$logfile" 2>&1 <<'PY'
+    if "$PYTHON_BIN" - "$timeout_s" "$@" >> "$logfile" 2>&1 <<'PY'
 import subprocess, sys
 
 timeout = int(sys.argv[1])
@@ -122,7 +125,7 @@ PY
 }
 
 stage2_gate_once() {
-  /usr/bin/python3 - >> "invest/stages/stage2/outputs/logs/runtime/launchd_stage02_auto.log" 2>&1 <<'PY'
+  "$PYTHON_BIN" - >> "invest/stages/stage2/outputs/logs/runtime/launchd_stage02_auto.log" 2>&1 <<'PY'
 #!/usr/bin/env python3
 import glob
 import json
@@ -133,12 +136,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-ROOT = Path('/Users/jobiseu/.openclaw/workspace')
+ROOT = Path(os.environ['REPO_ROOT']).resolve()
 TZ = ZoneInfo('Asia/Seoul')
 STATE_PATH = ROOT / 'invest/stages/stage2/outputs/runtime/stage02_auto_state.json'
 STAGE2_QC_SCRIPT = ROOT / 'invest/stages/stage2/scripts/stage02_qc_cleaning_full.py'
 STAGE2_REFINE_SCRIPT = ROOT / 'invest/stages/stage2/scripts/stage02_onepass_refine_full.py'
-PYTHON_BIN = '/usr/bin/python3'
+PYTHON_BIN = os.environ.get('INVEST_PYTHON_BIN', 'python3')
 
 WINDOW_MODE = os.getenv('STAGE2_WINDOW_MODE', 'daily').lower()
 COOLDOWN_HOURS = int(os.getenv('STAGE2_COOLDOWN_HOURS', '6'))
@@ -315,11 +318,11 @@ log "stage1234 chain start run_key=${RUN_KEY}"
 
 # Stage1
 run_with_retry "stage01_daily_update" 5400 2 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \
-  /usr/bin/python3 invest/stages/stage1/scripts/stage01_daily_update.py
+  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_daily_update.py
 
 set +e
 run_with_retry "stage01_checkpoint_gate" 900 1 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \
-  /usr/bin/python3 invest/stages/stage1/scripts/stage01_checkpoint_gate.py
+  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_checkpoint_gate.py
 S1_CHECKPOINT_RC=$?
 set -e
 if [[ $S1_CHECKPOINT_RC -ne 0 ]]; then
@@ -328,7 +331,7 @@ fi
 
 set +e
 run_with_retry "stage01_post_collection_validate" 900 1 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \
-  /usr/bin/python3 invest/stages/stage1/scripts/stage01_post_collection_validate.py
+  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_post_collection_validate.py
 S1_POST_COLLECTION_RC=$?
 set -e
 if [[ $S1_POST_COLLECTION_RC -ne 0 ]]; then
@@ -338,7 +341,17 @@ log "stage01 gates passed (checkpoint+post_collection, run_key=${RUN_KEY})"
 
 # Stage1 OCR rolling (attach tmp/image_map 미처리 큐 점진 소진)
 run_with_retry "stage01_images_ocr_rolling" 1200 1 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \
-  /usr/bin/python3 invest/stages/stage1/scripts/stage01_run_images_ocr_rolling.py --batch-size "${STAGE01_OCR_ROLLING_BATCH:-80}" --max-scan "${STAGE01_OCR_ROLLING_SCAN:-5000}"
+  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_run_images_ocr_rolling.py --batch-size "${STAGE01_OCR_ROLLING_BATCH:-80}" --max-scan "${STAGE01_OCR_ROLLING_SCAN:-5000}"
+
+set +e
+run_with_retry "stage01_ocr_postprocess_validate" 600 1 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \
+  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_ocr_postprocess_validate.py
+S1_OCR_VALIDATE_RC=$?
+set -e
+if [[ $S1_OCR_VALIDATE_RC -ne 0 ]]; then
+  fail_close_exit 13 "stage01_ocr_postprocess_validate failed rc=${S1_OCR_VALIDATE_RC}"
+fi
+log "stage01 OCR postprocess validate passed (run_key=${RUN_KEY})"
 
 # Stage2 (run_key/cooldown/cutoff 게이트 포함)
 set +e
@@ -350,13 +363,13 @@ if [[ $S2_GATE_RC -ne 0 ]]; then
 fi
 
 # Stage2 상태 판독 (fail-close: success가 아니면 stage4/4 금지)
-S2_STATUS=$(/usr/bin/python3 - <<'PY'
+S2_STATUS=$("$PYTHON_BIN" - <<'PY'
 import json
 from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-p = Path('/Users/jobiseu/.openclaw/workspace/invest/stages/stage2/outputs/runtime/stage02_auto_state.json')
+p = Path(os.environ['REPO_ROOT']).resolve() / 'invest/stages/stage2/outputs/runtime/stage02_auto_state.json'
 if not p.exists():
     print('missing_state')
     raise SystemExit
@@ -379,11 +392,11 @@ log "stage02 gate passed (run_key=${RUN_KEY})"
 
 # Stage3 입력 빌드 (Stage1 raw -> Stage3 JSONL)
 run_with_retry "stage03_input_build" 900 2 "invest/stages/stage3/outputs/logs/runtime/launchd_stage03_local_brain.log" \
-  /usr/bin/python3 invest/stages/stage3/scripts/stage03_build_input_jsonl.py
+  "$PYTHON_BIN" invest/stages/stage3/scripts/stage03_build_input_jsonl.py
 
 # Stage3 (local brain attention gate)
 STAGE3_CMD=(
-  /usr/bin/python3
+  "$PYTHON_BIN"
   invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py
   --input-jsonl invest/stages/stage3/inputs/stage2_text_meta_records.jsonl
   --output-csv invest/stages/stage3/outputs/features/attention_sentiment_features.csv
@@ -395,10 +408,10 @@ fi
 run_with_retry "stage03_local_brain_attention" 1800 2 "invest/stages/stage3/outputs/logs/runtime/launchd_stage03_local_brain.log" "${STAGE3_CMD[@]}"
 
 # Stage4+4 run_key idempotency
-LAST_KEY=$(/usr/bin/python3 - <<'PY'
+LAST_KEY=$("$PYTHON_BIN" - <<'PY'
 import json
 from pathlib import Path
-p = Path('/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/stage1234_chain_state.json')
+p = Path(os.environ['REPO_ROOT']).resolve() / 'invest/stages/stage1/outputs/runtime/stage1234_chain_state.json'
 if not p.exists():
     print('')
     raise SystemExit
@@ -417,18 +430,18 @@ fi
 
 # Stage4
 run_with_retry "stage04_value_calc" 3600 2 "invest/stages/stage4/outputs/logs/runtime/launchd_stage04_auto.log" \
-  /Users/jobiseu/.openclaw/workspace/invest/venv/bin/python /Users/jobiseu/.openclaw/workspace/invest/stages/stage4/scripts/calculate_stage4_values.py
+  "$PYTHON_BIN" invest/stages/stage4/scripts/calculate_stage4_values.py
 
 # Stage5
 run_with_retry "stage05_feature_engineer" 3600 2 "invest/stages/stage5/outputs/logs/runtime/launchd_stage05_auto.log" \
-  /usr/bin/python3 invest/stages/stage5/scripts/stage05_feature_engineer.py
+  "$PYTHON_BIN" invest/stages/stage5/scripts/stage05_feature_engineer.py
 
-/usr/bin/python3 - <<PY
+"$PYTHON_BIN" - <<PY
 import json
 from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
-p = Path('/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/stage1234_chain_state.json')
+p = Path(os.environ['REPO_ROOT']).resolve() / 'invest/stages/stage1/outputs/runtime/stage1234_chain_state.json'
 state = {}
 if p.exists():
     try:

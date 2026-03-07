@@ -224,13 +224,15 @@ def _record_from_parts(url: str, published_raw: str, title: str, summary: str, s
     if not nurl:
         return None
     dt = _parse_datetime(published_raw)
+    parsed_host = (urlparse(nurl).netloc or "").lower().strip()
+    canonical_domain = parsed_host or (source_domain or "").lower().strip()
     return {
         "url": nurl,
         "published_at": _to_iso(dt),
         "published_date": _date_str(dt),
         "title": (title or "").strip(),
         "summary": (summary or "").strip(),
-        "source_domain": source_domain,
+        "source_domain": canonical_domain,
         "source_kind": source_kind,
         "source_name": source_name,
         "source_url": source_url,

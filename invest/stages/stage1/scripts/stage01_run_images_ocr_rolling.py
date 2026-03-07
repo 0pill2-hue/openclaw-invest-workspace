@@ -19,6 +19,7 @@ RUNTIME_ATTACH_DIR = WORKSPACE_ROOT / "invest/stages/stage1/outputs/runtime/tele
 RAW_IMAGE_MAP_DIR = WORKSPACE_ROOT / "invest/stages/stage1/outputs/raw/qualitative/text/image_map"
 OUT_TXT_DIR = WORKSPACE_ROOT / "invest/stages/stage1/outputs/raw/qualitative/text/images_ocr"
 CHECKPOINT_PATH = WORKSPACE_ROOT / "invest/stages/stage1/outputs/runtime/stage01_images_ocr_rolling_checkpoint.json"
+LATEST_STATS_PATH = WORKSPACE_ROOT / "invest/stages/stage1/outputs/runtime/stage01_images_ocr_rolling_latest.json"
 
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff"}
 
@@ -160,12 +161,29 @@ def main() -> int:
     checkpoint["total_processed"] = int(checkpoint.get("total_processed", 0)) + processed_now
     _save_checkpoint(CHECKPOINT_PATH, checkpoint)
 
+    latest_stats = {
+        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "batch_size": args.batch_size,
+        "max_scan": args.max_scan,
+        "dry_run": args.dry_run,
+        "queued": len(queue),
+        "processed_now": processed_now,
+        "success": success,
+        "failed": failed,
+        "remaining_est": max(0, len(candidates) - len(queue)),
+        "checkpoint": str(CHECKPOINT_PATH.relative_to(WORKSPACE_ROOT)),
+        "output_dir": str(OUT_TXT_DIR.relative_to(WORKSPACE_ROOT)),
+    }
+    LATEST_STATS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    LATEST_STATS_PATH.write_text(json.dumps(latest_stats, ensure_ascii=False, indent=2), encoding="utf-8")
+
     print(
         "OCR_ROLLING_DONE "
         f"queued={len(queue)} processed_now={processed_now} success={success} failed={failed} "
         f"remaining_est={max(0, len(candidates)-len(queue))} dry_run={args.dry_run}"
     )
     print(f"OCR_ROLLING_CHECKPOINT={CHECKPOINT_PATH}")
+    print(f"OCR_ROLLING_STATS={LATEST_STATS_PATH}")
     return 0
 
 

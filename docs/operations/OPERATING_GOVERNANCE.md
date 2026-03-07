@@ -4,6 +4,8 @@
 
 게이트 운영의 고정 기준(실행 SOP, 보고 SLA, Git 규칙)을 관리한다.
 
+투자 전략 canonical: `docs/invest/STRATEGY_MASTER.md`
+
 ## 실행 SOP
 1. stage 실행
 2. stage gate check
