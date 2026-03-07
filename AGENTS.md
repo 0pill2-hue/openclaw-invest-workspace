@@ -3,10 +3,9 @@
 ## Session Load (minimal)
 1) SOUL.md
 2) USER.md
-3) memory/YYYY-MM-DD.md (today only)
-4) MEMORY.md only in main 1:1 session
-5) `runtime/current-task.md` only for current-work reload (do not bulk-reload daily memory)
-6) `docs/operations/OPERATIONS_BOOK.md` as the root index for operations/programs/docs map
+3) `docs/operations/CONTEXT_LOAD_POLICY.md` for daily memory / MEMORY.md load scope
+4) `runtime/current-task.md` only for current-work reload (do not bulk-reload daily memory)
+5) `docs/operations/OPERATIONS_BOOK.md` as the root index for operations/programs/docs map
 
 ## Hard Rules
 - No guessing. If unverified, write `미확인`.

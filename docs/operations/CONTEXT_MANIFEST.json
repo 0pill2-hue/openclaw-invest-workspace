@@ -22,7 +22,6 @@
     ]
   },
   "notes": {
-    "memory_daily": "today-only",
-    "memory_core": "MEMORY.md is L2 and main-session-only"
+    "memory_scope_policy": "see docs/operations/CONTEXT_LOAD_POLICY.md"
   }
 }
