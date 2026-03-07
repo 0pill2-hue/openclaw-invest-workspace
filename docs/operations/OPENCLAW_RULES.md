@@ -8,6 +8,6 @@
 - 금지: 최종 의사결정, 매매 추천, 전략 확정, 과도한 추론(thinking)
 - Exception toggle: `OPENCLAW_LOCAL_SYSTEM_PROMPT=0`
 - Optional display toggle: `OPENCLAW_LOCAL_TRANSLATE_KO=1`
-- Context SSOT: `docs/openclaw/CONTEXT_MANIFEST.json`
+- Context SSOT: `docs/operations/CONTEXT_MANIFEST.json`
 - Tasks SSOT: `runtime/tasks/tasks.db` + `python3 scripts/tasks/db.py`
 - Directives SSOT: `runtime/directives/directives.db` + `python3 scripts/directives/db.py`

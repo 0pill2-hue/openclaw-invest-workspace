@@ -1,0 +1,28 @@
+{
+  "version": "2026-03-07-docs-operations-consolidated",
+  "tiers": {
+    "L1": [
+      "SOUL.md",
+      "USER.md",
+      "docs/operations/RULES_INDEX.md",
+      "docs/operations/CONTEXT_LOAD_POLICY.md",
+      "DIRECTIVES.md",
+      "TASKS.md"
+    ],
+    "L2": [
+      "MEMORY.md",
+      "docs/operations/BRAINS.md",
+      "docs/operations/CONTRIBUTING.md",
+      "docs/operations/CONTEXT_RESET_READLIST.md",
+      "docs/operations/OPENCLAW_SYSTEM_BASELINE.md",
+      "docs/operations/WORKSPACE_STRUCTURE.md",
+      "docs/operations/OPERATING_GOVERNANCE.md",
+      "invest/docs/OPERATIONS_SOP.md",
+      "invest/docs/INVEST_STRUCTURE_POLICY.md"
+    ]
+  },
+  "notes": {
+    "memory_daily": "today-only",
+    "memory_core": "MEMORY.md is L2 and main-session-only"
+  }
+}
