@@ -1,8 +1,8 @@
 {
-  "db": "dart",
+  "name": "dart",
   "kind": "qualitative.kr",
   "source_dir": "invest/stages/stage1/outputs/raw/qualitative/kr/dart",
-  "updated_at_utc": "2026-03-07T07:12:43.615421+00:00",
+  "updated_at_utc": "2026-03-07T07:26:31.089382+00:00",
   "files_scanned": 409,
   "rows_seen": 3100986,
   "coverage": {

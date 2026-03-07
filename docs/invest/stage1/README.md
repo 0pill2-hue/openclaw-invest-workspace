@@ -11,8 +11,11 @@ Stage1 문서는 이 디렉터리의 두 파일만 유지한다.
 - 핵심 출력: `outputs/master`, `outputs/raw`, `outputs/runtime`, `outputs/logs`
 - Telegram 인증/폴백, DART, RSS, 뉴스, OCR 수집 규칙은 RUNBOOK에 통합했다.
 - 백필 명령과 운영 재현 명령도 RUNBOOK에만 남긴다.
-- 새 문서를 추가하지 말고 Stage1 운영 변경은 RUNBOOK 갱신으로 반영한다.
+- Stage1 운영 변경은 기본적으로 RUNBOOK에 반영한다.
+- 미해결 운영 이슈는 `TODO.md`에 tracked 상태로 남긴다.
 - 공통 전략/단계 개요는 `docs/invest/STRATEGY_MASTER.md`, `docs/invest/STAGES_OVERVIEW.md`를 따른다.
 
 ## 바로가기
 - [RUNBOOK.md](./RUNBOOK.md)
+- [TODO.md](./TODO.md)
+- raw coverage catalog: `invest/stages/stage1/outputs/raw/source_coverage_index.json`

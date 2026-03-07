@@ -1,15 +1,18 @@
 {
-  "updated_at_utc": "2026-03-07T07:14:10.276809+00:00",
+  "updated_at_utc": "2026-03-07T07:28:10.320074+00:00",
   "root": "invest/stages/stage1/outputs/raw",
   "dbs": {
     "dart": {
-      "manifest_path": "invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json",
       "source_dir": "invest/stages/stage1/outputs/raw/qualitative/kr/dart",
       "earliest_date": "20160104",
       "latest_date": "20260306",
       "coverage_contiguous_by_month": true,
       "needs_incremental_update": false,
-      "missing_months_between_range": []
+      "missing_months_between_range": [],
+      "unique_dates_count": 2510,
+      "files_scanned": 409,
+      "rows_seen": 3100986,
+      "manifest_path": "invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json"
     },
     "kr_ohlcv": {
       "source_dir": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv",
@@ -70,6 +73,118 @@
       "files_scanned": 154,
       "rows_seen": 15315
     },
+    "news_url_index": {
+      "source_dir": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index",
+      "earliest_date": "20161201",
+      "latest_date": "20260307",
+      "coverage_contiguous_by_month": true,
+      "needs_incremental_update": false,
+      "missing_months_between_range": [],
+      "unique_dates_count": 3384,
+      "files_scanned": 8,
+      "rows_seen": 4684150,
+      "scope": {
+        "coverage_basis": "configured_news_feeds + observed url_index/selected_articles",
+        "configured_feed_count": 8,
+        "config_path": "invest/stages/stage1/inputs/config/news_sources.json",
+        "latest_url_index_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260307-010647.jsonl",
+        "latest_selected_articles_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/selected_articles_merged.jsonl"
+      }
+    },
+    "news_selected_articles": {
+      "source_dir": "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles",
+      "earliest_date": "20191007",
+      "latest_date": "20260307",
+      "coverage_contiguous_by_month": false,
+      "needs_incremental_update": false,
+      "missing_months_between_range": [
+        "201911",
+        "201912",
+        "202001",
+        "202002",
+        "202003",
+        "202004",
+        "202005",
+        "202006",
+        "202007",
+        "202008",
+        "202009",
+        "202010",
+        "202011",
+        "202012",
+        "202101",
+        "202102",
+        "202103",
+        "202104",
+        "202105",
+        "202106",
+        "202107",
+        "202108",
+        "202109",
+        "202110",
+        "202111",
+        "202112",
+        "202201",
+        "202202",
+        "202203",
+        "202204",
+        "202205",
+        "202206",
+        "202207",
+        "202208",
+        "202209",
+        "202210",
+        "202211",
+        "202212",
+        "202301",
+        "202302",
+        "202303",
+        "202304",
+        "202305",
+        "202306",
+        "202307",
+        "202308",
+        "202309",
+        "202310",
+        "202311",
+        "202312",
+        "202401",
+        "202403",
+        "202404",
+        "202405",
+        "202406",
+        "202407",
+        "202408",
+        "202409",
+        "202410",
+        "202411",
+        "202412",
+        "202501",
+        "202502",
+        "202503",
+        "202504",
+        "202505",
+        "202506",
+        "202507",
+        "202508",
+        "202509",
+        "202510",
+        "202511",
+        "202512",
+        "202601",
+        "202602"
+      ],
+      "unique_dates_count": 8,
+      "files_scanned": 11,
+      "rows_seen": 8113,
+      "scope": {
+        "coverage_basis": "configured_news_feeds + observed url_index/selected_articles",
+        "configured_feed_count": 8,
+        "config_path": "invest/stages/stage1/inputs/config/news_sources.json",
+        "latest_url_index_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260307-010647.jsonl",
+        "latest_selected_articles_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/selected_articles_merged.jsonl"
+      }
+    },
     "telegram": {
       "source_dir": "invest/stages/stage1/outputs/raw/qualitative/text/telegram",
       "earliest_date": "20191025",
@@ -79,7 +194,33 @@
       "missing_months_between_range": [],
       "unique_dates_count": 2318,
       "files_scanned": 67,
-      "rows_seen": 285077
+      "rows_seen": 285077,
+      "scope": {
+        "coverage_basis": "telegram_allowlist + observed md artifacts",
+        "allowlist_path": "invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt",
+        "allowlist_count": 44,
+        "public_fallback_files": 28,
+        "full_files": 38,
+        "recovered_files": 1,
+        "missing_public_fallback_entries": [
+          "1378197756",
+          "2390268997",
+          "2615735039",
+          "2813172739",
+          "3459933106",
+          "3582708361",
+          "3726591964",
+          "heyda46",
+          "invest",
+          "jamsilgaemi",
+          "level",
+          "qualityinvest",
+          "songjongsik",
+          "statalebangsong",
+          "stock",
+          "tosoha1"
+        ]
+      }
     },
     "blog": {
       "source_dir": "invest/stages/stage1/outputs/raw/qualitative/text/blog",
@@ -250,7 +391,12 @@
       ],
       "unique_dates_count": 2640,
       "files_scanned": 35500,
-      "rows_seen": 35144
+      "rows_seen": 35144,
+      "scope": {
+        "coverage_basis": "discovered_subdirectories",
+        "blog_ids_count": 633,
+        "note": "blog는 고정 allowlist가 아니라 현재 raw 디렉터리의 blogId/subdir 집합 기준으로 coverage를 본다."
+      }
     },
     "premium": {
       "source_dir": "invest/stages/stage1/outputs/raw/qualitative/text/premium",
@@ -261,33 +407,5060 @@
       "missing_months_between_range": [],
       "unique_dates_count": 0,
       "files_scanned": 971,
-      "rows_seen": 0
+      "rows_seen": 0,
+      "scope": {
+        "coverage_basis": "premium discovery json + observed markdown files",
+        "discovery_path": "invest/stages/stage1/outputs/raw/qualitative/text/premium/startale_channel_direct/_discovery.json",
+        "discovery_exists": true,
+        "discovery_unique_urls": 445,
+        "discovery_url_source": "channel_pagination"
+      }
     }
   },
+  "raw_tree": [
+    {
+      "path": "invest/stages/stage1/outputs/raw",
+      "direct_file_count": 1,
+      "recursive_file_count": 43674,
+      "subdir_count": 2,
+      "latest_mtime_utc": "2026-03-07T07:26:31.107312+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative",
+      "direct_file_count": 0,
+      "recursive_file_count": 37376,
+      "subdir_count": 3,
+      "latest_mtime_utc": "2026-03-07T07:26:31.107312+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/kr",
+      "direct_file_count": 0,
+      "recursive_file_count": 620,
+      "subdir_count": 1,
+      "latest_mtime_utc": "2026-03-07T07:26:31.107312+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/kr/dart",
+      "direct_file_count": 620,
+      "recursive_file_count": 620,
+      "subdir_count": 1,
+      "latest_mtime_utc": "2026-03-07T07:26:31.107312+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/kr/dart/tagged",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/market",
+      "direct_file_count": 0,
+      "recursive_file_count": 175,
+      "subdir_count": 2,
+      "latest_mtime_utc": "2026-03-07T07:05:13.175758+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/market/news",
+      "direct_file_count": 0,
+      "recursive_file_count": 21,
+      "subdir_count": 2,
+      "latest_mtime_utc": "2026-03-07T01:34:45.248734+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles",
+      "direct_file_count": 12,
+      "recursive_file_count": 12,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:34:45.248734+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index",
+      "direct_file_count": 8,
+      "recursive_file_count": 9,
+      "subdir_count": 1,
+      "latest_mtime_utc": "2026-03-07T01:06:50.358727+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/_superseded",
+      "direct_file_count": 1,
+      "recursive_file_count": 1,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T11:31:33.281699+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/market/rss",
+      "direct_file_count": 154,
+      "recursive_file_count": 154,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T07:05:13.175758+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text",
+      "direct_file_count": 0,
+      "recursive_file_count": 36581,
+      "subdir_count": 5,
+      "latest_mtime_utc": "2026-03-07T04:12:40.201792+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog",
+      "direct_file_count": 0,
+      "recursive_file_count": 35500,
+      "subdir_count": 633,
+      "latest_mtime_utc": "2026-03-07T04:12:40.201792+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/07leader",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:42.294078+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/2222ty",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:05.947823+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/2jonis2",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:57:22.330731+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/68083015",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:35.027602+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/6apples",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:37:06.844684+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/87_investant",
+      "direct_file_count": 91,
+      "recursive_file_count": 91,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:08:07.569573+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/8seagull8",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:17:09.674746+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/a463508",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:40:48.977580+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/a_day_to_walk",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:59:57.278435+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/academypark",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:10.445912+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/acejji81",
+      "direct_file_count": 32,
+      "recursive_file_count": 32,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:06:17.017602+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/acubook",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:48.973324+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ad2021",
+      "direct_file_count": 121,
+      "recursive_file_count": 121,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:16.329352+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/aerokiy",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:23.923281+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ajuksaek",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:47.698325+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/akirus",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:21:23.889394+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/akrckd0305",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/alcamist",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:41:34.944043+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/alon_korea",
+      "direct_file_count": 84,
+      "recursive_file_count": 84,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:26:51.557462+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/alswothd",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:48:47.494060+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/alteking",
+      "direct_file_count": 75,
+      "recursive_file_count": 75,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T15:05:21.048501+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/anopi",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:08:04.930219+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/anorien",
+      "direct_file_count": 2,
+      "recursive_file_count": 2,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:59.956607+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ansrl23",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:15:03.657342+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/apharm",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:01.556753+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/apxk1000",
+      "direct_file_count": 110,
+      "recursive_file_count": 110,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:01:57.633059+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/aramsiwonpapa",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:57.547785+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/are_potato",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:03:41.283929+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/arsjj",
+      "direct_file_count": 49,
+      "recursive_file_count": 49,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T07:12:33.140146+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/artes75",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:56:27.294815+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/assistant-m",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/audistar",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:58.690424+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/avarter",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:51:09.328482+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/awwwf3",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:35:39.346033+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/badahuni",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:20:51.342739+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/badajr",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:01:35.560263+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/balance1987",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bananakoala",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bankertofu",
+      "direct_file_count": 62,
+      "recursive_file_count": 62,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T13:09:22.170958+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/barry4manilow",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:12:52.388255+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/be-free2",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:30:41.609750+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bear_economy",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:26.585559+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/becomingmunger",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:44:43.055422+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ben-akiva",
+      "direct_file_count": 41,
+      "recursive_file_count": 41,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:51:42.755119+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/better_haru",
+      "direct_file_count": 3,
+      "recursive_file_count": 3,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:45:53.500674+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bhlab25",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:01:01.832230+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bhplayer",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bibimgugsu",
+      "direct_file_count": 42,
+      "recursive_file_count": 42,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:58:56.626192+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bigpicture-storage",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:14.155441+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/biotech_kdi",
+      "direct_file_count": 145,
+      "recursive_file_count": 145,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:45:53.991546+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/blenglo",
+      "direct_file_count": 57,
+      "recursive_file_count": 57,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:35:29.900686+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bluedog10",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:45:43.061624+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/booka02",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:14:48.750308+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/bookmarkromanticwolf",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:09:47.197692+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/brandyou",
+      "direct_file_count": 1,
+      "recursive_file_count": 1,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:57:18.846153+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/brett78",
+      "direct_file_count": 51,
+      "recursive_file_count": 51,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:06:25.952908+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/briller_research",
+      "direct_file_count": 357,
+      "recursive_file_count": 357,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T11:47:54.891786+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/butterfly_asset",
+      "direct_file_count": 2,
+      "recursive_file_count": 2,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:46:57.873051+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cami2898",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:35.052776+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/capist23",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:06:47.759329+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/capitalistway",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:22:10.805458+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cart10101",
+      "direct_file_count": 15,
+      "recursive_file_count": 15,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:19:21.504221+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/caruspuer",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:49:54.020252+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cashcat_90",
+      "direct_file_count": 33,
+      "recursive_file_count": 33,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:09:09.510554+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cazet1",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:14:38.706153+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/centum_tiger",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:02:30.580110+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/changseob_lee",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:31.640173+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/chesspain",
+      "direct_file_count": 44,
+      "recursive_file_count": 44,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:34:26.486338+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/chickenstocktv",
+      "direct_file_count": 125,
+      "recursive_file_count": 125,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T07:10:23.686677+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/chumy",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:11:42.358365+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ci_100",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:05:17.653622+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cih2996",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:07:14.166477+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/citc97",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:16:21.649021+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cjhsonseep",
+      "direct_file_count": 45,
+      "recursive_file_count": 45,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:51:59.056506+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/closer-jun",
+      "direct_file_count": 3,
+      "recursive_file_count": 3,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:52:22.904737+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cms7977",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:27.802990+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cocopalm9419",
+      "direct_file_count": 121,
+      "recursive_file_count": 121,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:09:21.081213+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/complex7774",
+      "direct_file_count": 16,
+      "recursive_file_count": 16,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:17:24.705995+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/congs1114",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:55.791817+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cooldavidoff",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:31:22.477219+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/copy911",
+      "direct_file_count": 141,
+      "recursive_file_count": 141,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:19:09.421910+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cottage261",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:13:43.712146+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/coutal",
+      "direct_file_count": 402,
+      "recursive_file_count": 402,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:08:10.938063+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cowboy-2004",
+      "direct_file_count": 67,
+      "recursive_file_count": 67,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:10:18.475303+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/creation88",
+      "direct_file_count": 83,
+      "recursive_file_count": 83,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:34:16.351805+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/crush212121",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:10:41.027841+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cy0098",
+      "direct_file_count": 14,
+      "recursive_file_count": 14,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:37:31.643777+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cy2863",
+      "direct_file_count": 404,
+      "recursive_file_count": 404,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T21:06:26.875016+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cybermw",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T13:09:44.255339+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/cymoore98",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:39:04.028249+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/daemos2",
+      "direct_file_count": 207,
+      "recursive_file_count": 207,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:09:39.202388+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dag0nrider",
+      "direct_file_count": 211,
+      "recursive_file_count": 211,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:24:09.008440+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/danechoi93",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/darkstork",
+      "direct_file_count": 6,
+      "recursive_file_count": 6,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:37:52.878656+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/darksulin",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:53:34.738556+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/darksun1998",
+      "direct_file_count": 2,
+      "recursive_file_count": 2,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:58:17.398045+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/daruijk",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:50:05.011127+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dashno",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:32:23.325931+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/david_invest",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:16.790370+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dbsgus2012",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:59:37.438958+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ddowoo",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:42:00.119006+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/deekelly",
+      "direct_file_count": 34,
+      "recursive_file_count": 34,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:14:28.639573+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/delta0413",
+      "direct_file_count": 41,
+      "recursive_file_count": 41,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:44:30.490005+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/desertfox_28",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:19:41.132579+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dh3508",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:16.165102+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dishwasher24",
+      "direct_file_count": 242,
+      "recursive_file_count": 242,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:25:52.096485+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dj2koo",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:39:04.898334+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/djgkrrl1234",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:06.262508+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dkanchup",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:14:27.508582+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dkdk053",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:34.982081+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dkim0210",
+      "direct_file_count": 401,
+      "recursive_file_count": 401,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:10.267468+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dlaldhr0821",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:03:20.267067+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dlwnsqud123",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:15:28.699277+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dmsgh32",
+      "direct_file_count": 91,
+      "recursive_file_count": 91,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:21:32.588865+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dnjsrlid",
+      "direct_file_count": 88,
+      "recursive_file_count": 88,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:07:36.118337+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dny_gn",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:23:48.430061+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/doctordk",
+      "direct_file_count": 123,
+      "recursive_file_count": 123,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:11:34.967702+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dogtae79",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:47:41.095721+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/domine90",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:10:07.018501+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dominique815",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:21:53.826907+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/donghe83",
+      "direct_file_count": 70,
+      "recursive_file_count": 70,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:30:55.337928+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/donyon3",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:48.831010+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/doodoos_",
+      "direct_file_count": 38,
+      "recursive_file_count": 38,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:12:19.936188+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/doreamer",
+      "direct_file_count": 120,
+      "recursive_file_count": 120,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:20:23.405947+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dosangi",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dpwl111111",
+      "direct_file_count": 199,
+      "recursive_file_count": 199,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:19:42.885194+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dragonsoaring",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/drghkim",
+      "direct_file_count": 52,
+      "recursive_file_count": 52,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:56:29.449832+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/drleepr",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:06:20.805501+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dss544749",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:20:57.574690+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dufpd12",
+      "direct_file_count": 41,
+      "recursive_file_count": 41,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:07:38.811056+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/duxtyhermes13",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:59:24.035803+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dvc90",
+      "direct_file_count": 81,
+      "recursive_file_count": 81,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:37.542244+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/echomarket",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:11:24.607070+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/economy_meal",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:06:34.263775+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ehdgus0wkd",
+      "direct_file_count": 16,
+      "recursive_file_count": 16,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:00:23.448436+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ehgur06",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:57:40.526739+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ejkkkkk",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:42:24.762711+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/eksqlwnstj",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:41:19.084697+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/elang616",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:13.228839+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/englhk",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:14:11.080659+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/erdia92",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:16:05.034199+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/esouthsky",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:16:01.836475+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/etranger-7",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:10:25.287937+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/eugene8998",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:15:35.663197+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/exfeelman2",
+      "direct_file_count": 79,
+      "recursive_file_count": 79,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:07:41.305650+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ezioboy",
+      "direct_file_count": 2,
+      "recursive_file_count": 2,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:58:04.394853+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/fateinvestor",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:31.960649+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/fatherink",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:47:06.284297+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ffengineer",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:12:27.109979+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/fifajw",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:04:58.705948+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/fire_buja",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:28.760781+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/firelifestyle",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:58:16.236608+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/firetiger580",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:35:29.345113+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/flovestan",
+      "direct_file_count": 14,
+      "recursive_file_count": 14,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:34:36.928530+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/flowerinsnow_23",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:13:35.502230+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/foolishest",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:08:30.310201+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/foreconomy",
+      "direct_file_count": 358,
+      "recursive_file_count": 358,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:19:52.058942+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/forfreedaddy",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:24.520518+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/forhuni_",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:12:01.039202+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/forysd1986",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:39:05.423974+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/fractal1985",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:35:52.763780+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/free0165",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:02:02.354240+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/free_souling",
+      "direct_file_count": 32,
+      "recursive_file_count": 32,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:28:44.265806+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/freechip",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:40:12.179944+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/freelufang",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:09:53.557999+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/freestrong",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:37:57.457614+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/freestyle-good",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/frincipia",
+      "direct_file_count": 74,
+      "recursive_file_count": 74,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:12:56.150748+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/funfun_playground",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:33.186669+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/furmea21",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:11:39.774168+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/future100k",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:08:27.362198+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/galdoo113",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T07:06:18.999585+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gangnam_0208",
+      "direct_file_count": 218,
+      "recursive_file_count": 218,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:05:28.899761+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gatewaypla",
+      "direct_file_count": 34,
+      "recursive_file_count": 34,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:07:00.140391+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gaunyu",
+      "direct_file_count": 409,
+      "recursive_file_count": 409,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:11:59.287401+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gentlealgu",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:37:07.846924+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/georgechae",
+      "direct_file_count": 182,
+      "recursive_file_count": 182,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:10:39.409521+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ggbbvv",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:51:23.857296+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ginius94",
+      "direct_file_count": 35,
+      "recursive_file_count": 35,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:31:21.141622+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gipsy99",
+      "direct_file_count": 55,
+      "recursive_file_count": 55,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:36:43.822110+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gkdldy2004",
+      "direct_file_count": 150,
+      "recursive_file_count": 150,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:20:03.278194+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gkfn-whddlf",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gkhigh",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:03:12.350054+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/glory4u_lee",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:42:48.292262+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gmyhhj",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:00.875249+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gnoietop",
+      "direct_file_count": 39,
+      "recursive_file_count": 39,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T03:27:59.923657+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/god73187318",
+      "direct_file_count": 46,
+      "recursive_file_count": 46,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:26:37.392728+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/goharder",
+      "direct_file_count": 12,
+      "recursive_file_count": 12,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:39:21.368890+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/googooinvest",
+      "direct_file_count": 1,
+      "recursive_file_count": 1,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:52:00.121267+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/goose_pb",
+      "direct_file_count": 38,
+      "recursive_file_count": 38,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:19:56.322470+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/goziptoe",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:57:48.154087+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gravityventures",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:23:30.203506+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/greatahn",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:06:49.974162+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/greatmaya",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:47.035797+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/green_finance",
+      "direct_file_count": 62,
+      "recursive_file_count": 62,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T08:05:09.053794+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/groom_ym",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:22:37.152605+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/guidetothemarket",
+      "direct_file_count": 33,
+      "recursive_file_count": 33,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:52:19.286769+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gunbaram",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:36.421591+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gusgh4497",
+      "direct_file_count": 78,
+      "recursive_file_count": 78,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:49:39.144736+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/haeng2",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:19.808306+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/haines",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:38:04.871834+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/handhwang",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:20.941544+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hankangking",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:15:35.494495+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/happy_wishes",
+      "direct_file_count": 79,
+      "recursive_file_count": 79,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:15:01.402286+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/happysowoo",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:29:37.197348+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/happysun1203",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:45:12.670407+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hardtoread",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:31.260418+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hch0714",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hearchoi",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:34:08.953650+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hellowheesun",
+      "direct_file_count": 50,
+      "recursive_file_count": 50,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T14:09:16.871606+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hempty",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:13:55.205941+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/heyda46",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:00:05.100012+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hhhan0319",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:14.717459+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hhhhnk",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:21:28.396580+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hifnkmj",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:11:08.141442+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hismail38",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:22:29.253031+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hitori9",
+      "direct_file_count": 62,
+      "recursive_file_count": 62,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T20:09:25.755819+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hitter27",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:09:10.976992+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hjahn07",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hk926219",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:54:28.662771+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hkm6589",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:26:07.510602+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hls2683445",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:04:31.144339+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hodolry",
+      "direct_file_count": 15,
+      "recursive_file_count": 15,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T03:13:43.548685+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hogo0513",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:48:08.455423+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hoknight",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:41.120002+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hollis21",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:12:10.865002+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/homiru",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:24:53.849205+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hong790610",
+      "direct_file_count": 17,
+      "recursive_file_count": 17,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:42:40.843293+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hsw0548",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:12:51.419370+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hsyoonnv",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:27:09.956017+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hukssari1",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:46:38.445780+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/huyoung74",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:17:27.515594+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hwan1343",
+      "direct_file_count": 119,
+      "recursive_file_count": 119,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:35:30.619345+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hyosuby2005",
+      "direct_file_count": 42,
+      "recursive_file_count": 42,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:00:41.994832+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hyucky_u",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:31:54.212839+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hyunjunserene",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:08:11.677917+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/hyy4467",
+      "direct_file_count": 400,
+      "recursive_file_count": 400,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:36:28.787442+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/i0178704",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:55.285910+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/i_mhappy",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/iampoohoo",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:00:46.628878+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/icebeara27",
+      "direct_file_count": 62,
+      "recursive_file_count": 62,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:43:21.318233+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ikwjjang1",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:13:20.681868+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/illther2",
+      "direct_file_count": 131,
+      "recursive_file_count": 131,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:05:11.436666+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/inacien777",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:53:48.148729+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/incomplete2030",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:01:29.186274+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/infodepot",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:16:10.553947+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/insertkn",
+      "direct_file_count": 120,
+      "recursive_file_count": 120,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:21:22.479515+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/insightfulproject",
+      "direct_file_count": 9,
+      "recursive_file_count": 9,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:26:47.315383+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/insightstreet",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:15:30.452420+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/invesor",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:58:42.301643+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/invesqueeze",
+      "direct_file_count": 401,
+      "recursive_file_count": 401,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:14:29.991551+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/investing1004",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T15:10:58.584738+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/investinghistory",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:32:42.526886+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/investor124",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:52.152937+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ioveguswn",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:29.009192+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/iridescent_stock",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:13:14.575393+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/iseethefuture",
+      "direct_file_count": 6,
+      "recursive_file_count": 6,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:17:56.016567+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/isimas1004",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/itsthend",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:05:49.769762+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ivletters",
+      "direct_file_count": 77,
+      "recursive_file_count": 77,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:43:45.089206+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jaden-agent",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:05:45.376817+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jaeyounglim",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:18.426406+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jakieint",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jakojako",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:17:34.637830+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/james_lee_advisors",
+      "direct_file_count": 4,
+      "recursive_file_count": 4,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T12:06:40.874591+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jamon___",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:18:20.337659+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jawvmfox",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:15:56.023309+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jay-diary",
+      "direct_file_count": 2,
+      "recursive_file_count": 2,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:05:25.048626+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jeesuwon",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:15:03.734898+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jelkajelka",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:53.012427+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jeunkim",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:13:17.297697+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jh54552",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:31:27.773062+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jhpark0680",
+      "direct_file_count": 45,
+      "recursive_file_count": 45,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:32:31.044085+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ji092205",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:28:31.666301+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jihoon3211",
+      "direct_file_count": 10,
+      "recursive_file_count": 10,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:43:23.102755+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jindongyu",
+      "direct_file_count": 11,
+      "recursive_file_count": 11,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:21:15.039202+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jino245",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:35:03.661166+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jjangee1",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:58:48.145710+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jjanjie3",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:40:04.907090+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jkim0625",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:56:08.347985+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jonber_man",
+      "direct_file_count": 112,
+      "recursive_file_count": 112,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:27:56.288230+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/joongboonmeo",
+      "direct_file_count": 81,
+      "recursive_file_count": 81,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:48:16.650031+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jpilot97",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:14:32.704258+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jpsme",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:54:57.131732+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jsi4914",
+      "direct_file_count": 122,
+      "recursive_file_count": 122,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T07:13:17.178414+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jun0042000",
+      "direct_file_count": 29,
+      "recursive_file_count": 29,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:46:44.123196+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/junsa26",
+      "direct_file_count": 38,
+      "recursive_file_count": 38,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:08:44.082669+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/junwithanalysis",
+      "direct_file_count": 41,
+      "recursive_file_count": 41,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:47.766073+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jwjw7207",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:11.883924+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jyleenew",
+      "direct_file_count": 8,
+      "recursive_file_count": 8,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:26:52.763235+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/jyt4159",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kafca21",
+      "direct_file_count": 120,
+      "recursive_file_count": 120,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:39:24.014984+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kangeungu7",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kawai214",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:38.268754+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kbomb2000",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:39:20.564317+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kch0539",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:48:16.373633+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kedkorea",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:28.700660+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kentoo1",
+      "direct_file_count": 4,
+      "recursive_file_count": 4,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:55:14.468235+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/keo8410",
+      "direct_file_count": 78,
+      "recursive_file_count": 78,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:43:47.810922+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/keumssoa",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:51:26.372718+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/khiro38",
+      "direct_file_count": 63,
+      "recursive_file_count": 63,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T04:07:48.005020+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kih8591",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:15:46.628529+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kim4bu_",
+      "direct_file_count": 35,
+      "recursive_file_count": 35,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:05:22.185750+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kimcharger",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:04.779221+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kimsinvest",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:12:38.054709+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/king-nera",
+      "direct_file_count": 92,
+      "recursive_file_count": 92,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T07:12:06.962608+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/king881213",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:36:40.668283+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kinvestors",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:19:28.761936+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kjg0012",
+      "direct_file_count": 81,
+      "recursive_file_count": 81,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:44.185441+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kjysss2",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:19:24.800402+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kkjsyj",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:05:59.090389+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/km_doit",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:04:04.063287+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/km_joshua",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:08:56.768208+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kmandu02",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:52:43.413002+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kmecheck",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:50.190911+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kmnpsh_",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kmsmir04",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:31:08.778265+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/knightngo1",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:53.593077+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/knpu87",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:11:06.207276+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kob1805",
+      "direct_file_count": 99,
+      "recursive_file_count": 99,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T21:07:29.561387+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/koolio77",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:36:05.117847+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/korea_hun88",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:22:15.668181+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/koreanpartner",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:20:50.143372+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kp_soonhwan",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:17:47.661693+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kradish",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:36:22.560863+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ks200331022",
+      "direct_file_count": 34,
+      "recursive_file_count": 34,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T04:12:40.201792+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ksh4243",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ksjist",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:55:36.863085+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kskim2k4",
+      "direct_file_count": 79,
+      "recursive_file_count": 79,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:10:10.059595+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ksy_0226",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:48:34.165240+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kth3276",
+      "direct_file_count": 246,
+      "recursive_file_count": 246,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:55:16.427200+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kttoto",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:18:49.321380+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kucpa80",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:39:31.164825+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kukuri923",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:05:40.769275+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kurtsw23",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:14:02.864022+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kwak18230",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:27:59.610496+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kwonwhitefield",
+      "direct_file_count": 92,
+      "recursive_file_count": 92,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:15:20.633116+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kychoi84",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:46:58.868819+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kyooo4444",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:47:24.919350+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/kyoung_bum",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:12:14.732144+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/labbug1786",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:30:03.930663+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/laimcho",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:16:32.227645+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lalalazzzz_",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:20:53.293086+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lambofd",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:32.931767+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ldk27",
+      "direct_file_count": 81,
+      "recursive_file_count": 81,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:13:42.889099+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/learn_to_earn",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:06:37.269644+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lepain-",
+      "direct_file_count": 17,
+      "recursive_file_count": 17,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:51:09.013903+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lewisse",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:41:17.168042+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lhd1371",
+      "direct_file_count": 43,
+      "recursive_file_count": 43,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:34:44.673532+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lidoresearch",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:09:26.273249+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lifemento",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:45.177334+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/likemoso",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:43.849794+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/likenero",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:42:21.547984+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/limsk1212",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:50.138175+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lionelcruz",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:57:29.084863+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/listener72",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:48:59.430603+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/llzard",
+      "direct_file_count": 25,
+      "recursive_file_count": 25,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:09:27.481283+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/long_sight",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/longtermgrowthinvest",
+      "direct_file_count": 242,
+      "recursive_file_count": 242,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:07:29.776597+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lookingin82",
+      "direct_file_count": 151,
+      "recursive_file_count": 151,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:04:30.315188+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/love392722",
+      "direct_file_count": 34,
+      "recursive_file_count": 34,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T08:12:36.236176+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lqmania",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:57:46.535550+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lucas5342",
+      "direct_file_count": 9,
+      "recursive_file_count": 9,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:56:35.644361+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lucidyo",
+      "direct_file_count": 120,
+      "recursive_file_count": 120,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:46:11.425090+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/luckyguydb",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lunasea12345",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:08:33.757268+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lunaticd",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:04:37.438256+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/luy1978",
+      "direct_file_count": 25,
+      "recursive_file_count": 25,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T20:07:42.403248+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lyrainvestment",
+      "direct_file_count": 8,
+      "recursive_file_count": 8,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:39:44.007787+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/lyw01",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:16:20.016678+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/m_uniq",
+      "direct_file_count": 20,
+      "recursive_file_count": 20,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:50:55.808296+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/magpie_invest",
+      "direct_file_count": 107,
+      "recursive_file_count": 107,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T21:06:03.010193+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mailing2000",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:02:57.394631+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/make_money_big",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:44:58.784462+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/masterwu",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:33.339021+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mattingly",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:11.116888+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mc_nemesis",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:29:22.576569+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mdgs12391",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:27.460674+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/meanhope",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:17.436774+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mentalist_999",
+      "direct_file_count": 56,
+      "recursive_file_count": 56,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:19:35.336387+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mgh34",
+      "direct_file_count": 83,
+      "recursive_file_count": 83,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:32:39.814351+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mgheroes",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/minj0707",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:27:24.063805+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mjh809",
+      "direct_file_count": 32,
+      "recursive_file_count": 32,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:10:31.869037+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mktgguy",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:56:34.461599+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/modestytoknowledge",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:59.642035+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mok7593",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:38.217598+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/moonhyeon82",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:00:23.797443+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/moonis777",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:15.326276+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/morgoth",
+      "direct_file_count": 28,
+      "recursive_file_count": 28,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:28:35.395353+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mosma_1982",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:42.280304+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mrrezzo",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:48:11.798120+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mss0908",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:43:38.836879+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mutandis",
+      "direct_file_count": 41,
+      "recursive_file_count": 41,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:02:45.917566+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/muziq",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:50:37.427225+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/mymoneymoney",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:07:40.067126+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/naelgrade",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:57:58.930799+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/naltle27",
+      "direct_file_count": 22,
+      "recursive_file_count": 22,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T04:11:55.239909+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/namecco",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:07.341558+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nanowave",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:21.070673+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nasa911",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:36:44.640313+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nation775",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:45:47.097615+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/natufre",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:28:00.075704+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nedned",
+      "direct_file_count": 58,
+      "recursive_file_count": 58,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:03:28.129533+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/new-cat",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:08.874026+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/new10yrs",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:16:18.788036+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nicker0122",
+      "direct_file_count": 76,
+      "recursive_file_count": 76,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:05:19.959215+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nihil76",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:37:38.117517+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nohwang",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:03:37.648518+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nomoney_so",
+      "direct_file_count": 42,
+      "recursive_file_count": 42,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T03:44:32.237114+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/noruda11",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:36.863872+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/noshortcut_life",
+      "direct_file_count": 403,
+      "recursive_file_count": 403,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T14:08:09.679680+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nosurprise1",
+      "direct_file_count": 4,
+      "recursive_file_count": 4,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:56:11.268771+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/notfreedom",
+      "direct_file_count": 81,
+      "recursive_file_count": 81,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:07:46.439432+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/nurisd",
+      "direct_file_count": 82,
+      "recursive_file_count": 82,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:01:52.063701+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/oak1227",
+      "direct_file_count": 423,
+      "recursive_file_count": 423,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:08:42.281748+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ogok2010",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ojh3525",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:11:40.467990+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ok5645",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:22.380513+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/omniknight41",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:19:04.403306+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/omoplata_31",
+      "direct_file_count": 53,
+      "recursive_file_count": 53,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:20:38.242787+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/onejejuwave",
+      "direct_file_count": 8,
+      "recursive_file_count": 8,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T08:08:21.300847+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/onion_asset",
+      "direct_file_count": 83,
+      "recursive_file_count": 83,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:08:13.840388+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/onroori",
+      "direct_file_count": 11,
+      "recursive_file_count": 11,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:52:15.914615+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/onrs45",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:36:47.391499+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/oonglog",
+      "direct_file_count": 408,
+      "recursive_file_count": 408,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:13:56.703530+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/opop126",
+      "direct_file_count": 6,
+      "recursive_file_count": 6,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:28:10.210839+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/oracle0923",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:26:39.838732+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/pangpangteri",
+      "direct_file_count": 120,
+      "recursive_file_count": 120,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:34:27.655187+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/papa2023-",
+      "direct_file_count": 19,
+      "recursive_file_count": 19,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:21:43.271423+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/paradise___",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:25.695175+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/patience-",
+      "direct_file_count": 1,
+      "recursive_file_count": 1,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:05.223061+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/pause0",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:23:48.633992+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/pcsggo",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:43:14.556927+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/pg5598",
+      "direct_file_count": 54,
+      "recursive_file_count": 54,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:10:17.069200+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/pianolmjk",
+      "direct_file_count": 6,
+      "recursive_file_count": 6,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:50:17.362177+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/pivotinve",
+      "direct_file_count": 82,
+      "recursive_file_count": 82,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:27.672298+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/poj6289",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:51:35.089054+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/pokara61",
+      "direct_file_count": 33,
+      "recursive_file_count": 33,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:08:19.574747+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/poly1575",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:18:10.938893+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/positive_routine",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:04.117339+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/postnietzsch",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:06:51.586698+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/pqkrwls",
+      "direct_file_count": 120,
+      "recursive_file_count": 120,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:58:12.230177+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/prinz0912",
+      "direct_file_count": 78,
+      "recursive_file_count": 78,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:11:52.239022+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/project0347",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:30.393413+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/prolee74",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:08:11.254218+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/psc1228",
+      "direct_file_count": 1,
+      "recursive_file_count": 1,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:57:42.371013+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/psychojo26",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ptm0228",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:39:36.014652+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/puipuia1",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/q1772",
+      "direct_file_count": 124,
+      "recursive_file_count": 124,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T14:05:59.494550+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/qowoals119",
+      "direct_file_count": 74,
+      "recursive_file_count": 74,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:07:06.365954+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/qqqspyman",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:59:51.360221+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/qudgml0873",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:33:59.222021+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/qufekfgo_",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:19:32.019857+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/r123k120",
+      "direct_file_count": 76,
+      "recursive_file_count": 76,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:18:28.825787+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ranto28",
+      "direct_file_count": 46,
+      "recursive_file_count": 46,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T04:09:28.507294+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rdinvest",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:58:17.116753+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/reallio78",
+      "direct_file_count": 41,
+      "recursive_file_count": 41,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:25:54.800065+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/realmanreal",
+      "direct_file_count": 12,
+      "recursive_file_count": 12,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:08:25.417963+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/realtyincome___",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:26:30.654042+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rechts",
+      "direct_file_count": 11,
+      "recursive_file_count": 11,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:21:03.606446+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/renosong",
+      "direct_file_count": 29,
+      "recursive_file_count": 29,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:34:32.962627+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rhapsody11",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:02:04.034154+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rhapwm126",
+      "direct_file_count": 70,
+      "recursive_file_count": 70,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:37:58.053312+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rhrrnak1",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:05:38.259654+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/riamunger",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:09.450241+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/richandsmart",
+      "direct_file_count": 56,
+      "recursive_file_count": 56,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:05:41.721350+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/richyun0108",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:29.797026+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rkdakxl",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:06:08.659836+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rladudrl78",
+      "direct_file_count": 62,
+      "recursive_file_count": 62,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T13:09:27.687040+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rlckqo",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:40:30.052074+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rnjs1016k",
+      "direct_file_count": 18,
+      "recursive_file_count": 18,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T21:11:50.139975+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rocky1979",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rolleiholic",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/royvalue",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:44:13.288325+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rozxwoongs",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:09:39.939985+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rrapport",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:54:56.193913+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ru_bryunak",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:04:56.951550+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rubylime",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:52:50.985824+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/runningwell",
+      "direct_file_count": 121,
+      "recursive_file_count": 121,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T07:10:45.986068+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/rusticlife_w_growth",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:46:03.393213+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ryan",
+      "direct_file_count": 3,
+      "recursive_file_count": 3,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:52.030257+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ryankim1106",
+      "direct_file_count": 275,
+      "recursive_file_count": 275,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:20:07.734968+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/s103800",
+      "direct_file_count": 84,
+      "recursive_file_count": 84,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:09:19.761257+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/s2ethan",
+      "direct_file_count": 402,
+      "recursive_file_count": 402,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T14:12:19.203117+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/saatan83",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:22.236537+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sactac",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:05:25.993091+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/saladin1014",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:18:21.336939+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/samadi2014",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:28:01.766322+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sancheck2",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:29:50.294719+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sangbaei",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:20:30.921879+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sangsang----",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:30:01.019392+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sapainvest",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:39:48.238427+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sardinism",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:23:42.494539+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sas4321",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:17:04.048822+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sawoo111",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:56.612436+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sayusayme71",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:41:57.409548+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sazuha",
+      "direct_file_count": 123,
+      "recursive_file_count": 123,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T08:11:07.106272+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sbobin",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:01:41.404488+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/scienceconomy",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:18:50.370786+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/searosea",
+      "direct_file_count": 2,
+      "recursive_file_count": 2,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:19.260052+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/secondlevelthinking",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:54.197604+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/secreatkim",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:12.535724+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/seeme_twice",
+      "direct_file_count": 7,
+      "recursive_file_count": 7,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:19:26.764173+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/seok1051",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:44:47.026279+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/seokho0815",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:38:16.824965+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/seosky1080",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:44.023450+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/seungji5182",
+      "direct_file_count": 355,
+      "recursive_file_count": 355,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:20:00.313995+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/shakey7",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:48:55.488033+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sharp40",
+      "direct_file_count": 58,
+      "recursive_file_count": 58,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:19:44.701249+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/shimseok12",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:57:02.653731+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/shin0503988",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:58.159455+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/shinhyhy",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:54:04.180884+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/shinook430",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:34:11.749817+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/shinyforfifty",
+      "direct_file_count": 85,
+      "recursive_file_count": 85,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:30:13.533489+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/shyman23",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:38:26.262473+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sic_11y",
+      "direct_file_count": 3,
+      "recursive_file_count": 3,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:55:41.425819+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/siegetruck",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:03.336429+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/silverspiri5",
+      "direct_file_count": 36,
+      "recursive_file_count": 36,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T07:13:03.119048+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/silvury",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:24:49.506614+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sjay34",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:56:58.251683+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sjjn0517",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:40:00.023699+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sjs0330",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ske4548",
+      "direct_file_count": 401,
+      "recursive_file_count": 401,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:13:01.780687+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/skel7800",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:11:01.670092+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/skimplan",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:11:36.747894+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/skwwkd1",
+      "direct_file_count": 97,
+      "recursive_file_count": 97,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:00:17.332953+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sleepingwell-",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:32:58.743145+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/snowball1008",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/somewhaterror",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:07:01.599540+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sommer4023",
+      "direct_file_count": 33,
+      "recursive_file_count": 33,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:58:51.807903+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sososnow162",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:53:17.188926+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ssinmusa",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:30.130417+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ssupershy",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/stalbert",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:07:20.238876+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/stalk0218",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:02.357316+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/staple-",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:11:29.940286+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/startale-",
+      "direct_file_count": 62,
+      "recursive_file_count": 62,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:05:33.947277+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/startawoo",
+      "direct_file_count": 24,
+      "recursive_file_count": 24,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:58:46.214778+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/stock_reader100",
+      "direct_file_count": 13,
+      "recursive_file_count": 13,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:10:20.842044+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/stocksos",
+      "direct_file_count": 120,
+      "recursive_file_count": 120,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:03:53.163916+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/stocktrip-",
+      "direct_file_count": 17,
+      "recursive_file_count": 17,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:12:13.706588+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/studying-investor",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:39.466799+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/su34576",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:55:41.399459+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sungdory",
+      "direct_file_count": 61,
+      "recursive_file_count": 61,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T13:10:41.492873+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sunsetfrappuccino",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:46:12.874030+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/sunstudy-",
+      "direct_file_count": 58,
+      "recursive_file_count": 58,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:55:11.712581+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/superantbaby",
+      "direct_file_count": 71,
+      "recursive_file_count": 71,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:07:33.467416+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/swboom1",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:50:17.427544+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/swcha1977",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:09:04.584523+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/syprus",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:45.578468+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tae1020",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:55:23.676081+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tama2020",
+      "direct_file_count": 64,
+      "recursive_file_count": 64,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:10:17.912482+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tamer",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:52:24.980702+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tatzu1",
+      "direct_file_count": 23,
+      "recursive_file_count": 23,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:16:01.146600+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tbzka3",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:15:14.127560+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/teamoergosum",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:01:19.563859+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tenbagger10x",
+      "direct_file_count": 37,
+      "recursive_file_count": 37,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:58:19.853931+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tgh1120",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:19:47.065884+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/the-5-element",
+      "direct_file_count": 120,
+      "recursive_file_count": 120,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T22:07:36.309962+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/thinkingdepth",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:26.582070+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/thyoon55",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T02:05:55.475473+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tiger_94",
+      "direct_file_count": 2,
+      "recursive_file_count": 2,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:47:52.544309+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tirael",
+      "direct_file_count": 351,
+      "recursive_file_count": 351,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T08:06:51.960195+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tjdgus_sk",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tkdska3",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:06:25.905752+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tks6028",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tlsdnwls0511",
+      "direct_file_count": 22,
+      "recursive_file_count": 22,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:01:39.735665+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tmdejr1267",
+      "direct_file_count": 20,
+      "recursive_file_count": 20,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:27:01.923315+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tmikooja",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T08:06:25.471500+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tndhrrudals1",
+      "direct_file_count": 105,
+      "recursive_file_count": 105,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:02:46.700639+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tony668",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:32:23.826582+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tosoha1",
+      "direct_file_count": 31,
+      "recursive_file_count": 31,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T13:08:04.047780+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/triple___m",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:58:05.677794+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/trizkee",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:18:37.835247+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/truthkg2",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:13:01.742373+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/twkim517",
+      "direct_file_count": 13,
+      "recursive_file_count": 13,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:49:44.444510+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/tyutyu357",
+      "direct_file_count": 401,
+      "recursive_file_count": 401,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T17:06:00.341885+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ubermensch815",
+      "direct_file_count": 77,
+      "recursive_file_count": 77,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:07:41.908171+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/uihansol",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:51.885651+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ultech11",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:43:22.410431+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/uncastle0426",
+      "direct_file_count": 107,
+      "recursive_file_count": 107,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T10:01:40.766938+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/undal",
+      "direct_file_count": 85,
+      "recursive_file_count": 85,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:32:50.056857+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/universal_man",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/unknown-player",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:07:22.186205+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/unlimitedi",
+      "direct_file_count": 360,
+      "recursive_file_count": 360,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T03:12:10.792566+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/untildie44",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:23:10.881901+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/upower",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:59:09.323537+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/usstock_",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:22:12.582946+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/v013579",
+      "direct_file_count": 15,
+      "recursive_file_count": 15,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:27:20.227151+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/valparaiso",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:50:13.744789+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/valueinvestor",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:49:25.217068+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/vanback",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:02:28.937608+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/vaon1",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:40:56.959716+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/vi2008",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:42:24.946026+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/victor9",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:09:12.307681+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/vigfow",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:43:49.013750+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/vuddjs2591",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:33:36.069794+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/webnuri7",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:49:40.829445+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/wei-jung",
+      "direct_file_count": 40,
+      "recursive_file_count": 40,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:38:36.952055+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/westguys",
+      "direct_file_count": 45,
+      "recursive_file_count": 45,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:47:23.886761+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/will1009__",
+      "direct_file_count": 33,
+      "recursive_file_count": 33,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:25:31.061849+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/windalpha",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:06:54.552281+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/withnesta",
+      "direct_file_count": 33,
+      "recursive_file_count": 33,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:08:48.430414+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/wizsoo",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:40:19.471239+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/wjdrjstjr21",
+      "direct_file_count": 35,
+      "recursive_file_count": 35,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:25:15.477103+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/wjsbduwi1873",
+      "direct_file_count": 8,
+      "recursive_file_count": 8,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:17:29.096055+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/wkosin",
+      "direct_file_count": 35,
+      "recursive_file_count": 35,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:44:27.170531+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/wls0528_",
+      "direct_file_count": 101,
+      "recursive_file_count": 101,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:07:49.146997+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/wonjun1928",
+      "direct_file_count": 50,
+      "recursive_file_count": 50,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T03:27:12.267065+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/xkalwm4",
+      "direct_file_count": 84,
+      "recursive_file_count": 84,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T09:53:19.441634+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yak_bro",
+      "direct_file_count": 35,
+      "recursive_file_count": 35,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:36:14.631792+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yc0627",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:06:53.150139+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/ydhdl",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:04:48.224016+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/year100_200",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yes_invest",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:17:24.582397+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yeux1122",
+      "direct_file_count": 80,
+      "recursive_file_count": 80,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:03:37.056384+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yfgh2001",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:21:24.517809+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yjnam7",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yminsong",
+      "direct_file_count": 84,
+      "recursive_file_count": 84,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:31:43.077816+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/youngs_mine",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:18.807442+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yukkkiii-",
+      "direct_file_count": 0,
+      "recursive_file_count": 0,
+      "subdir_count": 0,
+      "latest_mtime_utc": null
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yyjun212720",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:50:08.042949+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/yym0202",
+      "direct_file_count": 60,
+      "recursive_file_count": 60,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T05:53:58.792279+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/zaino1",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T22:15:14.854461+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/zakarta117",
+      "direct_file_count": 5,
+      "recursive_file_count": 5,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:46:38.953569+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/zarido",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T00:07:25.083102+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/zero_family",
+      "direct_file_count": 30,
+      "recursive_file_count": 30,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T01:18:12.130163+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/zeromind6",
+      "direct_file_count": 42,
+      "recursive_file_count": 42,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:35:22.061783+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/zjasptnayo",
+      "direct_file_count": 84,
+      "recursive_file_count": 84,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T23:27:01.535023+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog/zoazoayou12",
+      "direct_file_count": 3,
+      "recursive_file_count": 3,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T21:51:19.777224+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/image_map",
+      "direct_file_count": 24,
+      "recursive_file_count": 24,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:03:00.258195+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/images_ocr",
+      "direct_file_count": 17,
+      "recursive_file_count": 17,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:06:31.705824+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/premium",
+      "direct_file_count": 0,
+      "recursive_file_count": 973,
+      "subdir_count": 2,
+      "latest_mtime_utc": "2026-03-07T01:09:49.333240+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/premium/startale",
+      "direct_file_count": 428,
+      "recursive_file_count": 972,
+      "subdir_count": 2,
+      "latest_mtime_utc": "2026-03-07T01:09:49.333240+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/BLOCKED_PAYWALL_OR_SESSION",
+      "direct_file_count": 281,
+      "recursive_file_count": 281,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:09:49.330888+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/_stale_blocked_archive_20260305",
+      "direct_file_count": 263,
+      "recursive_file_count": 263,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T11:34:55.357336+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/premium/startale_channel_direct",
+      "direct_file_count": 1,
+      "recursive_file_count": 1,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-05T17:33:25.725326+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/qualitative/text/telegram",
+      "direct_file_count": 67,
+      "recursive_file_count": 67,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T02:40:58.322281+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/signal",
+      "direct_file_count": 0,
+      "recursive_file_count": 6297,
+      "subdir_count": 3,
+      "latest_mtime_utc": "2026-03-07T01:03:34.430780+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/signal/kr",
+      "direct_file_count": 0,
+      "recursive_file_count": 5764,
+      "subdir_count": 2,
+      "latest_mtime_utc": "2026-03-06T06:10:40.179940+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv",
+      "direct_file_count": 2882,
+      "recursive_file_count": 2882,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T06:10:40.179940+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/signal/kr/supply",
+      "direct_file_count": 2882,
+      "recursive_file_count": 2882,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-02T13:43:09+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/signal/market",
+      "direct_file_count": 0,
+      "recursive_file_count": 24,
+      "subdir_count": 1,
+      "latest_mtime_utc": "2026-03-07T01:03:34.430780+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/signal/market/macro",
+      "direct_file_count": 24,
+      "recursive_file_count": 24,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-07T01:03:34.430780+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/signal/us",
+      "direct_file_count": 0,
+      "recursive_file_count": 509,
+      "subdir_count": 1,
+      "latest_mtime_utc": "2026-03-06T22:10:37.549069+00:00"
+    },
+    {
+      "path": "invest/stages/stage1/outputs/raw/signal/us/ohlcv",
+      "direct_file_count": 509,
+      "recursive_file_count": 509,
+      "subdir_count": 0,
+      "latest_mtime_utc": "2026-03-06T22:10:37.549069+00:00"
+    }
+  ],
   "runtime_health": {
-    "last_checked_utc": "2026-03-07T07:14:10.278471+00:00",
+    "last_checked_utc": "2026-03-07T07:28:12.216332+00:00",
     "daily_update": {
       "ok": null,
       "failed_count": 1,
-      "known_failure": "invest/stages/stage1/scripts/stage01_fetch_stock_list.py",
-      "known_error_summary": "/Users/jobiseu/.openclaw/workspace/invest/venv/lib/python3.14/site-packages/requests/__init__.py:86: RequestsDependencyWarning: Unable to find acceptable character detection dependency (chardet or charset_normalizer).\n  warnings.warn(\n[error] Cached stock list is older than fallback TTL; refusing stale fallback. cache_age_hours=64.42, ttl_hours=6"
+      "failures": [
+        {
+          "script": "invest/stages/stage1/scripts/stage01_fetch_stock_list.py",
+          "error": "/Users/jobiseu/.openclaw/workspace/invest/venv/lib/python3.14/site-packages/requests/__init__.py:86: RequestsDependencyWarning: Unable to find acceptable character detection dependency (chardet or charset_normalizer).\n  warnings.warn(\n[error] Cached stock list is older than fallback TTL; refusing stale fallback. cache_age_hours=64.42, ttl_hours=6"
+        }
+      ],
+      "fallbacks_used": []
     },
     "post_collection_validate": {
       "ok": false,
       "failed_count": 1,
-      "known_failure_source": "raw/signal/kr/supply",
-      "known_failure_reason": "latest_age_sec=386806 > max_age_sec=345600"
+      "failed_sources": [
+        {
+          "source": "raw/signal/kr/supply",
+          "errors": [
+            "latest_age_sec=386806 > max_age_sec=345600"
+          ],
+          "collector_used": null
+        }
+      ]
     },
     "telegram_collector_status": {
       "expected_path": "invest/stages/stage1/outputs/runtime/telegram_collector_status.json",
       "exists": true,
-      "selected_collector": "highspeed",
-      "successful_collector": "highspeed",
-      "fallback_used": false
+      "payload": {
+        "saved_at": "2026-03-07T07:00:02.634617+00:00",
+        "has_secret_env": true,
+        "selected_collector": "highspeed",
+        "successful_collector": "highspeed",
+        "fallback_used": false,
+        "ok": true,
+        "final_returncode": 0,
+        "attempts": [
+          {
+            "collector": "highspeed",
+            "script": "invest/stages/stage1/scripts/stage01_scrape_telegram_highspeed.py",
+            "returncode": 0,
+            "ok": true
+          }
+        ]
+      }
+    },
+    "news_url_index_status": {
+      "expected_path": "invest/stages/stage1/outputs/runtime/news_url_index_status.json",
+      "exists": true,
+      "payload": {
+        "timestamp": "2026-03-07T01:06:50.484110+00:00",
+        "status": "PASS",
+        "worker_mode": "single_serial",
+        "feeds": 8,
+        "sources": [
+          {
+            "source": "yonhap_economy",
+            "kind": "rss",
+            "raw_items": 480,
+            "unique_added": 123,
+            "oldest": "2026-03-06"
+          },
+          {
+            "source": "yonhap_economy",
+            "kind": "sitemap",
+            "sitemaps_checked": 34,
+            "raw_items": 3438,
+            "unique_added": 3317,
+            "oldest": "2026-03-03"
+          },
+          {
+            "source": "yonhap_stock",
+            "kind": "rss",
+            "raw_items": 0,
+            "unique_added": 0,
+            "oldest": ""
+          },
+          {
+            "source": "yonhap_stock",
+            "kind": "sitemap",
+            "sitemaps_checked": 34,
+            "raw_items": 3438,
+            "unique_added": 0,
+            "oldest": "2026-03-03"
+          },
+          {
+            "source": "mk_economy",
+            "kind": "rss",
+            "raw_items": 150,
+            "unique_added": 50,
+            "oldest": "2026-03-06"
+          },
+          {
+            "source": "mk_economy",
+            "kind": "sitemap",
+            "sitemaps_checked": 140,
+            "raw_items": 54488,
+            "unique_added": 52754,
+            "oldest": "2026-03-04"
+          },
+          {
+            "source": "hankyung_market",
+            "kind": "rss",
+            "raw_items": 0,
+            "unique_added": 0,
+            "oldest": ""
+          },
+          {
+            "source": "hankyung_market",
+            "kind": "sitemap",
+            "sitemaps_checked": 140,
+            "raw_items": 43456,
+            "unique_added": 42732,
+            "oldest": "2025-11-07"
+          },
+          {
+            "source": "reuters_business",
+            "kind": "rss",
+            "raw_items": 0,
+            "unique_added": 0,
+            "oldest": ""
+          },
+          {
+            "source": "reuters_business",
+            "kind": "sitemap",
+            "sitemaps_checked": 140,
+            "raw_items": 3285,
+            "unique_added": 3276,
+            "oldest": "2019-09-16"
+          },
+          {
+            "source": "reuters_markets",
+            "kind": "rss",
+            "raw_items": 0,
+            "unique_added": 0,
+            "oldest": ""
+          },
+          {
+            "source": "reuters_markets",
+            "kind": "sitemap",
+            "sitemaps_checked": 18,
+            "raw_items": 0,
+            "unique_added": 0,
+            "oldest": ""
+          },
+          {
+            "source": "wsj_markets",
+            "kind": "rss",
+            "raw_items": 60,
+            "unique_added": 20,
+            "oldest": "2025-01-25"
+          },
+          {
+            "source": "wsj_markets",
+            "kind": "sitemap",
+            "sitemaps_checked": 27,
+            "raw_items": 0,
+            "unique_added": 0,
+            "oldest": ""
+          },
+          {
+            "source": "bloomberg_markets",
+            "kind": "rss",
+            "raw_items": 0,
+            "unique_added": 0,
+            "oldest": ""
+          },
+          {
+            "source": "bloomberg_markets",
+            "kind": "sitemap",
+            "sitemaps_checked": 140,
+            "raw_items": 769369,
+            "unique_added": 764676,
+            "oldest": "2016-12-01"
+          }
+        ],
+        "url_count": 866948,
+        "date_min": "2016-12-01",
+        "date_max": "2026-03-07",
+        "index_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260307-010647.jsonl",
+        "target_date": "",
+        "errors": []
+      }
+    },
+    "news_selected_articles_status": {
+      "expected_path": "invest/stages/stage1/outputs/runtime/news_selected_articles_status.json",
+      "exists": true,
+      "payload": {
+        "timestamp": "2026-03-07T01:34:45.250990+00:00",
+        "status": "PASS",
+        "worker_mode": "single_serial",
+        "index_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260307-010647.jsonl",
+        "index_files": [
+          "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260307-010647.jsonl",
+          "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260307-003529.jsonl",
+          "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260306-224944.jsonl",
+          "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260306-185822.jsonl",
+          "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260306-172804.jsonl",
+          "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260305-225615.jsonl",
+          "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260305-172928.jsonl",
+          "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260305-113457.jsonl"
+        ],
+        "index_file_count": 8,
+        "merge_all_indexes": true,
+        "output_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/selected_articles_20260307-013445.jsonl",
+        "url_index_count": 875714,
+        "keyword_pool_size": 76,
+        "candidate_count": 4512,
+        "selected_count": 2511,
+        "failed_count": 2001,
+        "date_min": "2019-10-07",
+        "date_max": "2026-03-07",
+        "min_keyword_hits": 1,
+        "max_candidates": 0,
+        "recency_weight": 0.0,
+        "target_date": "",
+        "yearly_quota": 3,
+        "yearly_candidate_counts": {},
+        "errors": [],
+        "failure_samples": [
+          {
+            "url": "https://www.bloomberg.com/news/articles/2017-11-01/fed-chair-drama-steals-spotlight-from-fomc-decision-day-guide",
+            "reason": "http_403",
+            "priority_score": 34.0,
+            "keyword_hits": 5
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/boards-policy-regulation/feds-kashkari-says-iran-war-obscures-monetary-policy-outlook-2026-03-03",
+            "reason": "http_401",
+            "priority_score": 32.0,
+            "keyword_hits": 3
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/sustainable-finance-reporting/softbanks-paypay-delays-ipo-roadshow-launch-sources-say-iran-attack-rattles-2026-03-02",
+            "reason": "http_401",
+            "priority_score": 32.0,
+            "keyword_hits": 3
+          },
+          {
+            "url": "https://www.reuters.com/world/india/india-aims-raise-197-billion-ipos-state-run-firms-by-2030-2026-02-23",
+            "reason": "http_401",
+            "priority_score": 32.0,
+            "keyword_hits": 3
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/boards-policy-regulation/first-citizens-ceo-frank-holding-named-federal-advisory-council-2026-02-10",
+            "reason": "http_401",
+            "priority_score": 32.0,
+            "keyword_hits": 3
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/boards-policy-regulation/feds-miran-says-data-suggests-americans-arent-shouldering-tariff-hit-2026-02-09",
+            "reason": "http_401",
+            "priority_score": 32.0,
+            "keyword_hits": 3
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/boards-policy-regulation/feds-miran-says-weaker-dollar-not-affecting-monetary-policy-choices-2026-02-09",
+            "reason": "http_401",
+            "priority_score": 32.0,
+            "keyword_hits": 3
+          },
+          {
+            "url": "https://www.wsj.com/articles/building-products-distributor-qxo-launching-hostile-bid-for-beacon-de024410?mod=rss_markets_main",
+            "reason": "http_401",
+            "priority_score": 30.0,
+            "keyword_hits": 3
+          },
+          {
+            "url": "https://www.bloomberg.com/news/live-blog/2025-10-29/fomc-rate-decision-and-fed-chair-news-conference",
+            "reason": "http_403",
+            "priority_score": 24.0,
+            "keyword_hits": 4
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/fair-tax",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/environmental-justice",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/circular-economy",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/world/middle-east/saudi-arabia-remains-strong-fiscal-position-finance-ministry-spokesperson-tells-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/world/middle-east/israeli-airstrikes-pound-beirut-suburb-hezbollah-warns-israelis-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/fr/affaires/friedrich-merz-face-son-premier-test-lectoral-rgional-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/world/middle-east/iran-war-see-how-tanker-traffic-collapsed-strait-hormuz-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/fr/affaires/usa-les-ventes-au-dtail-ont-baiss-moins-que-prvu-en-janvier-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/business/energy/saudi-led-opec-oil-output-jump-ahead-iran-strikes-reuters-survey-finds-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/fr/affaires/usa-lconomie-dtruit-92000-emplois-en-fvrier-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/business/united-airlines-warns-fuel-cost-spike-after-iran-strike-hit-quarterly-results-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/fr/affaires/wall-street-ouvre-en-nette-baisse-le-ptrole-et-lemploi-inquitent-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/it/azienda/eni-avvia-evacuazione-personale-straniero-da-giacimento-zubair-iraq-fonti-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/sustainable-finance-reporting/outgoing-bp-chief-auchincloss-earned-53-million-pounds-2025-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/sports/pirovano-takes-first-downhill-win-aicher-closes-vonn-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/fr/affaires/en-direct-septime-jour-de-bombardements-en-iran-isral-frappe-la-banlieue-sud-de-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/business/energy/mideast-crude-premiums-spike-iran-war-platts-dubai-change-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/sustainability/boards-policy-regulation/italy-highspeed-rail-market-open-third-player-regulator-says-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/business/energy/us-airlines-no-longer-hedge-fuel-costs-that-could-hurt-margins-if-iran-conflict-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/world/asia-pacific/dollar-set-steepest-weekly-gain-year-iran-crisis-boosts-haven-bid-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          },
+          {
+            "url": "https://www.reuters.com/business/energy/crude-gas-tankers-with-cargoes-sailing-iranian-ports-despite-war-sources-say-2026-03-06",
+            "reason": "http_401",
+            "priority_score": 22.0,
+            "keyword_hits": 2
+          }
+        ]
+      }
     }
   },
   "policy": {
     "instruction": "DB/source별 수집 범위 판단과 보고는 source_coverage_index.json 및 개별 coverage summary 기준으로 수행한다.",
-    "report_before_using_raw_files": true
+    "report_before_using_raw_files": true,
+    "raw_tree_instruction": "raw 전체 폴더 구조와 파일 수는 raw_tree를 기준으로 확인한다."
   }
 }
