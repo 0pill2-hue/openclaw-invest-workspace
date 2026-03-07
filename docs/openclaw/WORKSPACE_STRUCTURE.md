@@ -19,11 +19,15 @@ Purpose: invest 안/밖 포함 워크스페이스 구조와 문서 배치 기준
 - `DIRECTIVES.md`
 - `TASKS.md`
 - `HEARTBEAT.md`
-- `BRAINS.md`
 - `SOUL.md`
 - `USER.md`
 - `TOOLS.md`
 - `IDENTITY.md`
+
+별도 docs canonical:
+- `docs/openclaw/BRAINS.md`
+- `docs/openclaw/OPENCLAW_RULES.md`
+- `docs/CONTRIBUTING.md`
 
 ## 3) docs/openclaw 배치 기준
 - OpenClaw 시스템 운영/복구/컨텍스트 정책 문서만 유지

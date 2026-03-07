@@ -10,9 +10,9 @@
 
 ## 2) L2 보조 규칙 (필요 시)
 - `MEMORY.md` — MAIN 1:1 세션에서만 로드하는 핵심 원칙/보안/트레이딩 안전
-- `BRAINS.md` — 2뇌 역할 분업
+- `docs/openclaw/BRAINS.md` — 2뇌 역할 분업
 - `HEARTBEAT.md` — 헬스체크 루프
-- `CONTRIBUTING.md` — Git/PR 운영
+- `docs/CONTRIBUTING.md` — Git/PR 운영
 
 ## 3) 사용자/페르소나
 - `SOUL.md`, `USER.md`, `TOOLS.md`, `IDENTITY.md`

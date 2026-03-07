@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenClaw Workspace Docs Index</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:980px;margin:40px auto;padding:0 20px;line-height:1.6;color:#111}
+    h1,h2{margin-top:1.4em} code{background:#f4f4f4;padding:2px 6px;border-radius:6px} ul{padding-left:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px} .card{border:1px solid #ddd;border-radius:12px;padding:16px}
+  </style>
+</head>
+<body>
+  <h1>Docs Index</h1>
+  <p>문서 루트 진입점. 운영/시스템/참고 문서를 여기서 찾는다.</p>
+
+  <h2>반드시 먼저 볼 것</h2>
+  <ul>
+    <li><a href="OPERATIONS_BOOK.md">OPERATIONS_BOOK.md</a> — 운영 전체 인덱스</li>
+    <li><a href="operations/DOCUMENT_STANDARD.md">operations/DOCUMENT_STANDARD.md</a> — 문서 표준</li>
+  </ul>
+
+  <h2>주요 문서</h2>
+  <div class="grid">
+    <div class="card"><strong>운영</strong><br><a href="OPERATIONS_BOOK.md">OPERATIONS_BOOK.md</a></div>
+    <div class="card"><strong>문서 표준</strong><br><a href="operations/DOCUMENT_STANDARD.md">DOCUMENT_STANDARD.md</a></div>
+    <div class="card"><strong>OpenClaw 규칙 인덱스</strong><br><a href="openclaw/RULES_INDEX.md">RULES_INDEX.md</a></div>
+    <div class="card"><strong>기여 가이드</strong><br><a href="CONTRIBUTING.md">CONTRIBUTING.md</a></div>
+    <div class="card"><strong>2뇌 운영</strong><br><a href="openclaw/BRAINS.md">BRAINS.md</a></div>
+    <div class="card"><strong>로컬뇌/OpenClaw 규칙</strong><br><a href="openclaw/OPENCLAW_RULES.md">OPENCLAW_RULES.md</a></div>
+  </div>
+
+  <h2>루트에 남는 비-docs 문서</h2>
+  <ul>
+    <li><code>AGENTS.md</code> — 자동 로드 최상위 규칙</li>
+    <li><code>HEARTBEAT.md</code> — heartbeat 규칙</li>
+    <li><code>MEMORY.md</code>, <code>memory/*.md</code> — 기억/기록</li>
+    <li><code>runtime/current-task.md</code> — 현재 작업 상태</li>
+    <li><code>DIRECTIVES.md</code>, <code>TASKS.md</code> — SSOT usage index</li>
+  </ul>
+</body>
+</html>

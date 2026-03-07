@@ -1,15 +1,5 @@
-# OPENCLAW_RULES.md
-- 2뇌 구조: Brain 1 = GPT-5.4 (메인), Brain 2 = Local (보조/폴백/요약/수집/배치)
-- Local Brain policy: 요약/압축/추출/폴백만 담당한다.
-- Local Brain I/O policy: 입력/출력은 English only로 유지한다.
-- 금지: 최종 의사결정, 매매 추천, 전략 확정, 과도한 추론(thinking).
-- Exception toggle: `OPENCLAW_LOCAL_SYSTEM_PROMPT=0` 이면 자동 주입을 끈다.
-- Optional display toggle: `OPENCLAW_LOCAL_TRANSLATE_KO=1` 이면 EN 응답 뒤에 KO 번역을 후처리로 붙인다.
-- Local brain run example: `nohup scripts/heartbeat/reset_local_brain.sh >/tmp/openclaw_hbreset.log 2>&1 &`
-- Healthcheck example: `curl -fsS http://127.0.0.1:8090/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"Qwen3.5-35B-A3B-Q4_K_M.gguf","messages":[{"role":"user","content":"ping"}],"max_tokens":8,"temperature":0.0}'`
-- Stop example: `pkill -f "llama-server.*Qwen3.5-35B-A3B-Q4_K_M.gguf"`
-- Context SSOT: `docs/openclaw/CONTEXT_MANIFEST.json`
-- Tasks SSOT: `runtime/tasks/tasks.db` + `python3 scripts/tasks/db.py`
-- Directives SSOT: `runtime/directives/directives.db` + `python3 scripts/directives/db.py`
-- Hard rules: 추측 금지(`미확인`), 승인 게이트 준수, 시크릿 평문 금지, Git-only
-- Memory 정책: `memory/YYYY-MM-DD.md`는 today only, `MEMORY.md`는 L2 + main 1:1 session only
+# OPENCLAW RULES
+
+Canonical 문서: `docs/openclaw/OPENCLAW_RULES.md`
+
+이 루트 파일은 짧은 포인터입니다.

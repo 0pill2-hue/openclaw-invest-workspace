@@ -19,6 +19,6 @@ Drift rule: 이 문서는 `docs/openclaw/CONTEXT_MANIFEST.json`과 동일한 로
 - 지시 SSOT: `runtime/directives/directives.db` + `scripts/directives/db.py` + `scripts/directives/gate.py` (`DIRECTIVES.md`는 usage index)
 - 구조/경로: docs/openclaw/WORKSPACE_STRUCTURE.md, invest/docs/INVEST_STRUCTURE_POLICY.md
 - 투자 실행 SOP: invest/docs/OPERATIONS_SOP.md
-- 브레인 라우팅: BRAINS.md
+- 브레인 라우팅: docs/openclaw/BRAINS.md
 - 스킬 충돌: AGENTS.md (Workflow/Skill Rules)
-- Git: CONTRIBUTING.md
+- Git: docs/CONTRIBUTING.md

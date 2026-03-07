@@ -22,7 +22,7 @@ Purpose: 컨텍스트 절감 + 안전성 유지 로딩 정책
 - 코드 수정/리팩토링: AGENTS.md + `TASKS.md`/`DIRECTIVES.md`(usage index) + DB/CLI 기준으로 수행
 - 보고/운영 이슈: OPERATING_GOVERNANCE + `scripts/directives/db.py list` 기준 확인
 - 시스템/구조 변경: OPENCLAW_SYSTEM_BASELINE + WORKSPACE_STRUCTURE
-- 뇌 역할/폴백 기준 확인: BRAINS.md
+- 뇌 역할/폴백 기준 확인: docs/openclaw/BRAINS.md
 
 ## 운영 KPI (권장)
 - 리셋 후 작업시작시간(TTR)

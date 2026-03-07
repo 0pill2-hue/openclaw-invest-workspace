@@ -29,7 +29,7 @@ Purpose: 게이트 운영의 고정 기준(임계치 버전, 실행 SOP, 보고 
   1) 민감정보 포함 여부
   2) 실행/문법/게이트 검증 통과 여부
   3) TASKS + memory/YYYY-MM-DD.md 업데이트 필요 여부
-- Push 타이밍 SSOT: `CONTRIBUTING.md`의 `2-1) Push 타이밍 정책`
+- Push 타이밍 SSOT: `docs/CONTRIBUTING.md`의 Push 타이밍 정책
 
 ## 5) 모델 운용 원칙
 - 1번 뇌(GPT-5.4): 기본 실행, 설계, 판단, 검증, 최종 결정

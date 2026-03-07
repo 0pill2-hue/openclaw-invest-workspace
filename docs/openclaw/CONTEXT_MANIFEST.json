@@ -11,8 +11,8 @@
     ],
     "L2": [
       "MEMORY.md",
-      "BRAINS.md",
-      "CONTRIBUTING.md",
+      "docs/openclaw/BRAINS.md",
+      "docs/CONTRIBUTING.md",
       "docs/openclaw/CONTEXT_RESET_READLIST.md",
       "docs/openclaw/OPENCLAW_SYSTEM_BASELINE.md",
       "docs/openclaw/WORKSPACE_STRUCTURE.md",
