@@ -12,6 +12,26 @@
       "missing_months_between_range": []
     }
   },
+  "runtime_health": {
+    "last_checked_utc": "2026-03-07T01:09:57.449196",
+    "daily_update": {
+      "ok": false,
+      "failed_count": 1,
+      "known_failure": "invest/stages/stage1/scripts/stage01_fetch_stock_list.py",
+      "known_error_summary": "Cached stock list is older than fallback TTL; refusing stale fallback"
+    },
+    "post_collection_validate": {
+      "ok": false,
+      "failed_count": 1,
+      "known_failure_source": "raw/signal/kr/supply",
+      "known_failure_reason": "latest_age_sec exceeded max_age_sec"
+    },
+    "telegram_collector_status": {
+      "expected_path": "invest/stages/stage1/outputs/runtime/telegram_collector_status.json",
+      "exists": false,
+      "note": "status file will appear after wrapper-based telegram collection runs"
+    }
+  },
   "policy": {
     "instruction": "DB/source별 수집 범위 판단과 보고는 각 coverage_summary.json 및 이 인덱스를 SSOT로 사용한다.",
     "report_before_using_raw_files": true
