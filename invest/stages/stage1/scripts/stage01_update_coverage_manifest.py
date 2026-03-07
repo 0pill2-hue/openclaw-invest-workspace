@@ -484,9 +484,30 @@ def update_index() -> dict[str, Any]:
     sources["news_selected_articles"]["scope"] = _news_scope()
     sources["premium"]["scope"] = _premium_scope()
 
+    taxonomy = {
+        "db_types": [
+            {"name": "dart", "kind": "qualitative.kr", "path": _rel(DART_DIR), "description": "DART disclosure metadata", "catalog_mode": "date_coverage"},
+            {"name": "kr_ohlcv", "kind": "signal.kr", "path": _rel(KR_OHLCV_DIR), "description": "Korean OHLCV by symbol", "catalog_mode": "date_coverage"},
+            {"name": "kr_supply", "kind": "signal.kr", "path": _rel(KR_SUPPLY_DIR), "description": "Korean supply/demand by symbol", "catalog_mode": "date_coverage"},
+            {"name": "us_ohlcv", "kind": "signal.us", "path": _rel(US_OHLCV_DIR), "description": "US OHLCV by symbol", "catalog_mode": "date_coverage"},
+        ],
+        "text_types": [
+            {"name": "rss", "kind": "qualitative.market", "path": _rel(RSS_DIR), "description": "RSS item snapshots", "catalog_mode": "date_coverage"},
+            {"name": "news_url_index", "kind": "qualitative.market.news", "path": _rel(NEWS_URL_INDEX_DIR), "description": "News URL index jsonl", "catalog_mode": "date_coverage"},
+            {"name": "news_selected_articles", "kind": "qualitative.market.news", "path": _rel(NEWS_SELECTED_DIR), "description": "Selected article bodies jsonl", "catalog_mode": "date_coverage"},
+            {"name": "telegram", "kind": "qualitative.text", "path": _rel(TELEGRAM_DIR), "description": "Telegram channel markdown captures", "catalog_mode": "date_coverage"},
+            {"name": "blog", "kind": "qualitative.text", "path": _rel(BLOG_DIR), "description": "Blog markdown captures by blog id", "catalog_mode": "date_coverage"},
+            {"name": "premium", "kind": "qualitative.text", "path": _rel(PREMIUM_DIR), "description": "Premium/startale markdown captures", "catalog_mode": "date_coverage"},
+            {"name": "image_map", "kind": "qualitative.text", "path": _rel(RAW_ROOT / 'qualitative/text/image_map'), "description": "Image-to-text mapping artifacts", "catalog_mode": "tree_only"},
+            {"name": "images_ocr", "kind": "qualitative.text", "path": _rel(RAW_ROOT / 'qualitative/text/images_ocr'), "description": "OCR text artifacts", "catalog_mode": "tree_only"},
+        ],
+        "note": "Stage1 source taxonomy. date_coverage sources track earliest/latest; tree_only sources are tracked via raw_tree until date semantics are defined.",
+    }
+
     index = {
         "updated_at_utc": datetime.now(timezone.utc).isoformat(),
         "root": _rel(RAW_ROOT),
+        "taxonomy": taxonomy,
         "dbs": dbs,
         "sources": sources,
         "raw_tree": _raw_tree_catalog(),

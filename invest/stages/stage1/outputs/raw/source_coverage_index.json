@@ -1,6 +1,97 @@
 {
-  "updated_at_utc": "2026-03-07T07:28:10.320074+00:00",
+  "updated_at_utc": "2026-03-07T07:48:57.438438+00:00",
   "root": "invest/stages/stage1/outputs/raw",
+  "taxonomy": {
+    "db_types": [
+      {
+        "name": "dart",
+        "kind": "qualitative.kr",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/kr/dart",
+        "description": "DART disclosure metadata",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "kr_ohlcv",
+        "kind": "signal.kr",
+        "path": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv",
+        "description": "Korean OHLCV by symbol",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "kr_supply",
+        "kind": "signal.kr",
+        "path": "invest/stages/stage1/outputs/raw/signal/kr/supply",
+        "description": "Korean supply/demand by symbol",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "us_ohlcv",
+        "kind": "signal.us",
+        "path": "invest/stages/stage1/outputs/raw/signal/us/ohlcv",
+        "description": "US OHLCV by symbol",
+        "catalog_mode": "date_coverage"
+      }
+    ],
+    "text_types": [
+      {
+        "name": "rss",
+        "kind": "qualitative.market",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/market/rss",
+        "description": "RSS item snapshots",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "news_url_index",
+        "kind": "qualitative.market.news",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index",
+        "description": "News URL index jsonl",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "news_selected_articles",
+        "kind": "qualitative.market.news",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles",
+        "description": "Selected article bodies jsonl",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "telegram",
+        "kind": "qualitative.text",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/text/telegram",
+        "description": "Telegram channel markdown captures",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "blog",
+        "kind": "qualitative.text",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/text/blog",
+        "description": "Blog markdown captures by blog id",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "premium",
+        "kind": "qualitative.text",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/text/premium",
+        "description": "Premium/startale markdown captures",
+        "catalog_mode": "date_coverage"
+      },
+      {
+        "name": "image_map",
+        "kind": "qualitative.text",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/text/image_map",
+        "description": "Image-to-text mapping artifacts",
+        "catalog_mode": "tree_only"
+      },
+      {
+        "name": "images_ocr",
+        "kind": "qualitative.text",
+        "path": "invest/stages/stage1/outputs/raw/qualitative/text/images_ocr",
+        "description": "OCR text artifacts",
+        "catalog_mode": "tree_only"
+      }
+    ],
+    "note": "Stage1 source taxonomy. date_coverage sources track earliest/latest; tree_only sources are tracked via raw_tree until date semantics are defined."
+  },
   "dbs": {
     "dart": {
       "source_dir": "invest/stages/stage1/outputs/raw/qualitative/kr/dart",
@@ -10,8 +101,8 @@
       "needs_incremental_update": false,
       "missing_months_between_range": [],
       "unique_dates_count": 2510,
-      "files_scanned": 409,
-      "rows_seen": 3100986,
+      "files_scanned": 410,
+      "rows_seen": 3103797,
       "manifest_path": "invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json"
     },
     "kr_ohlcv": {
@@ -421,30 +512,30 @@
     {
       "path": "invest/stages/stage1/outputs/raw",
       "direct_file_count": 1,
-      "recursive_file_count": 43674,
+      "recursive_file_count": 43675,
       "subdir_count": 2,
-      "latest_mtime_utc": "2026-03-07T07:26:31.107312+00:00"
+      "latest_mtime_utc": "2026-03-07T07:47:18.634132+00:00"
     },
     {
       "path": "invest/stages/stage1/outputs/raw/qualitative",
       "direct_file_count": 0,
-      "recursive_file_count": 37376,
+      "recursive_file_count": 37377,
       "subdir_count": 3,
-      "latest_mtime_utc": "2026-03-07T07:26:31.107312+00:00"
+      "latest_mtime_utc": "2026-03-07T07:47:18.634132+00:00"
     },
     {
       "path": "invest/stages/stage1/outputs/raw/qualitative/kr",
       "direct_file_count": 0,
-      "recursive_file_count": 620,
+      "recursive_file_count": 621,
       "subdir_count": 1,
-      "latest_mtime_utc": "2026-03-07T07:26:31.107312+00:00"
+      "latest_mtime_utc": "2026-03-07T07:47:18.634132+00:00"
     },
     {
       "path": "invest/stages/stage1/outputs/raw/qualitative/kr/dart",
-      "direct_file_count": 620,
-      "recursive_file_count": 620,
+      "direct_file_count": 621,
+      "recursive_file_count": 621,
       "subdir_count": 1,
-      "latest_mtime_utc": "2026-03-07T07:26:31.107312+00:00"
+      "latest_mtime_utc": "2026-03-07T07:47:18.634132+00:00"
     },
     {
       "path": "invest/stages/stage1/outputs/raw/qualitative/kr/dart/tagged",
@@ -5054,7 +5145,7 @@
     }
   ],
   "runtime_health": {
-    "last_checked_utc": "2026-03-07T07:28:12.216332+00:00",
+    "last_checked_utc": "2026-03-07T07:48:59.336416+00:00",
     "daily_update": {
       "ok": null,
       "failed_count": 1,
@@ -5083,7 +5174,7 @@
       "expected_path": "invest/stages/stage1/outputs/runtime/telegram_collector_status.json",
       "exists": true,
       "payload": {
-        "saved_at": "2026-03-07T07:00:02.634617+00:00",
+        "saved_at": "2026-03-07T07:30:02.637156+00:00",
         "has_secret_env": true,
         "selected_collector": "highspeed",
         "successful_collector": "highspeed",
