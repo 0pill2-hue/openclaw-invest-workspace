@@ -34,9 +34,9 @@
 - 성격: **보고/감시 가드**
 
 ### `tasks watchdog`
-- 범위: stale `IN_PROGRESS`, `resume_due` 초과 task 감지/전환
-- 현재 동작: stale task를 `BLOCKED`로 되돌림
-- 성격: **ledger 정합성 가드**
+- 범위: stale `IN_PROGRESS`, `resume_due` 초과 task 감지/전환 + context threshold의 메인 reset 트리거 전달
+- 현재 동작: stale task를 `BLOCKED`로 되돌리고, context threshold에서는 maintenance task와 메인 wake event를 통해 메인이 현재 step 완료 후 reset을 실행하게 한다.
+- 성격: **ledger 정합성 + 메인 reset 트리거 가드**
 
 ### `auto-dispatch`
 - 범위: assign-next → 메인 오케스트레이터 호출 → 티켓 close 확인

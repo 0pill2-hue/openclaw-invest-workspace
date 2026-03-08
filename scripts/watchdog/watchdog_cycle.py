@@ -24,7 +24,7 @@ MAINTENANCE_TASK_SPECS = {
     'context': {
         'id': 'WD-CONTEXT-HYGIENE',
         'title': 'watchdog maintenance: context handoff/작업연속성 정리',
-        'scope': 'context threshold 초과/current-task mismatch/context-handoff 검증 시 handoff 준비·재개 우선, 필요 시에만 clean reset/cutover 정리',
+        'scope': 'context threshold 초과/current-task mismatch/context-handoff 검증 시 메인을 깨워 현재 step 완료 후 reset·재개까지 정리',
     },
 }
 
@@ -104,6 +104,14 @@ def normalize_issues(validate_payload: dict[str, Any], recover_payload: dict[str
         text = str(issue).strip()
         if text:
             issues.append(text)
+
+    detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
+    required_action = str(detail.get('required_action') or detail.get('context_handoff_required_action') or '').strip()
+    if required_action == 'finish_current_step_then_reset':
+        current_ticket = str(detail.get('current_task_ticket_id') or '-').strip() or '-'
+        token_info = str(detail.get('context_tokens_high') or '-').strip() or '-'
+        issues.append(f'context_reset_required:{current_ticket}:{token_info}')
+
     if validate_payload.get("parse_error"):
         issues.append("watchdog_validate_parse_error")
     if recover_payload.get("parse_error"):
@@ -249,7 +257,11 @@ def build_notify_text(validate_payload: dict[str, Any], recover_payload: dict[st
     parts.append(f"issues={len(issues)}")
     if issue_preview:
         parts.append(issue_preview)
-    parts.append("현재 step 완료 후 reset·proof·보고·후속정리")
+    required_action = str(context_detail.get('required_action') or context_detail.get('context_handoff_required_action') or '').strip()
+    if required_action == 'finish_current_step_then_reset':
+        parts.append("메인실행: 현재 step 완료 후 reset → 새 세션에서 runtime/context-handoff.md 읽고 next_action 재개 → WD-CONTEXT-HYGIENE 완료")
+    else:
+        parts.append("현재 step 완료 후 reset·proof·보고·후속정리")
     return " / ".join(parts)
 
 

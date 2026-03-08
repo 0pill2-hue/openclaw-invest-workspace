@@ -48,13 +48,13 @@ parent: `docs/operations/OPERATIONS_BOOK.md`
 - 실패 시: non-zero 또는 parse_error
 
 ### `scripts/watchdog/context_hygiene.py`
-- 역할: context resume-check strict, context-handoff 유효성, blocked_with_proof_no_reason, current-task snapshot↔taskdb 상태 불일치, closed ticket 잔존, session context token threshold(기본 120k 도달/초과 시점) 같은 최소 hygiene 검사
+- 역할: context resume-check strict, context-handoff 유효성, blocked_with_proof_no_reason, current-task snapshot↔taskdb 상태 불일치, closed ticket 잔존, session context token threshold(기본 120k 도달/초과 시점) 같은 최소 hygiene 검사와 `finish_current_step_then_reset` handoff 갱신
 - 주 입력: `runtime/current-task.md`, `runtime/context-handoff.md`, `runtime/tasks/tasks.db`, `scripts/context_policy.py` 상태 조회, `openclaw status --json`
 - 주 출력: hygiene JSON
 - 실패 시: `ok=false`, issue 목록 반환
 
 ### `scripts/watchdog/watchdog_cycle.py`
-- 역할: validate + recover + context hygiene를 묶고, 이상 시 메인 에이전트를 즉시 깨우며 maintenance task(`WD-TASK-HYGIENE`, `WD-CONTEXT-HYGIENE`)를 자동 등록/갱신
+- 역할: validate + recover + context hygiene를 묶고, 이상 시 메인 에이전트를 즉시 깨우며 maintenance task(`WD-TASK-HYGIENE`, `WD-CONTEXT-HYGIENE`)를 자동 등록/갱신. context threshold는 fail로만 두지 않고 **synthetic reset trigger**로 승격해, 메인이 현재 step을 끝낸 뒤 reset을 실행하도록 깨운다.
 - 주 입력: watchdog 하위 검사 결과
 - 주 출력: 종합 JSON, `runtime/tasks/watchdog_notify_state.json`, maintenance task 상태 반영
 - 실패 시: `openclaw system event --mode now`로 메인 notify

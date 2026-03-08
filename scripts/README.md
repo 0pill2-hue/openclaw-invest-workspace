@@ -15,7 +15,7 @@
 - `scripts/watchdog/`
   - `watchdog_validate.py`: TASK ledger 정합성 검사
   - `watchdog_recover.py`: stale task 자동 BLOCKED 전환
-  - `context_hygiene.py`: current-task/context-handoff/resume-check/blocked-proof hygiene 검사 + 120k threshold handoff 준비/재개 판단
+  - `context_hygiene.py`: current-task/context-handoff/resume-check/blocked-proof hygiene 검사 + 120k threshold에서 `finish_current_step_then_reset` handoff 갱신
   - `watchdog_cycle.py`: watchdog validate/recover + context hygiene + main notify cycle
   - `launchd_watchdog.sh`: watchdog용 launchd 진입 쉘
 - `scripts/directives/`
