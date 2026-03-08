@@ -65,7 +65,7 @@ def refresh_handoff(total_tokens: int | None) -> tuple[int, dict]:
         '--trigger',
         'context_tokens_high',
         '--required-action',
-        'prepare_handoff',
+        'finish_current_step_then_prepare_handoff',
         '--threshold',
         str(CONTEXT_TOKEN_THRESHOLD),
         '--notes',
@@ -134,7 +134,7 @@ def main() -> int:
     detail['context_token_threshold'] = CONTEXT_TOKEN_THRESHOLD
     total_tokens = primary_session.get('totalTokens')
     if isinstance(total_tokens, int) and total_tokens >= CONTEXT_TOKEN_THRESHOLD:
-        issues.append(f'context_tokens_high:{total_tokens}>={CONTEXT_TOKEN_THRESHOLD}')
+        detail['context_tokens_high'] = f'{total_tokens}>={CONTEXT_TOKEN_THRESHOLD}'
         detail['required_action'] = 'finish_current_step_then_prepare_handoff'
         refresh_rc, refresh_payload = refresh_handoff(total_tokens)
         detail['handoff_refresh_rc'] = refresh_rc

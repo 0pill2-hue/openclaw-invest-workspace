@@ -137,9 +137,7 @@ def next_sort_order(conn: sqlite3.Connection, bucket: str) -> int:
 
 def build_context_metadata(context_payload: dict[str, Any], grouped_issues: list[str]) -> dict[str, str]:
     detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
-    required_action = str(detail.get('context_handoff_required_action') or '').strip() or (
-        'prepare_handoff' if any(str(issue).startswith('context_tokens_high') for issue in grouped_issues) else '-'
-    )
+    required_action = str(detail.get('context_handoff_required_action') or '').strip() or str(detail.get('required_action') or '').strip() or '-'
     return {
         'active_ticket_id': str(detail.get('current_task_ticket_id') or '-'),
         'business_goal': str(detail.get('current_goal') or '-'),
