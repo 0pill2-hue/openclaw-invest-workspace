@@ -488,7 +488,7 @@ def build_reload_bundle(mode: str, top: int, recent: int) -> dict:
         'policy': {
             'main_soft_target': 120000,
             'main_hard_target': 120000,
-            'main_action_at_hard': 'prepare_handoff',
+            'main_action_at_hard': 'finish_current_step_then_prepare_handoff',
             'main_reset_style': 'validated_handoff_then_reset_if_needed',
             'local_action_at_task_end': 'flush',
             'daily_memory_reload': 'forbidden',
@@ -645,7 +645,7 @@ def cmd_decide(args: argparse.Namespace) -> int:
     tokens = args.tokens
     if args.mode == 'main':
         if tokens >= args.hard:
-            action = 'prepare_handoff'
+            action = 'finish_current_step_then_prepare_handoff'
         else:
             action = 'keep'
     else:

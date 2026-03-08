@@ -9,9 +9,9 @@
 재로딩 목록 자체는 `CONTEXT_RESET_READLIST.md`, 로딩 규칙은 `CONTEXT_LOAD_POLICY.md`를 따른다.
 
 ## 핵심 기준
-- 메인 5.4 세션: **120k 도달/초과 시점에는 우선 validated handoff/checkpoint를 준비**하고, 실제 clean reset/cutover는 작업 연속성·응답 상태·실제 필요성을 보고 수행한다.
+- 메인 5.4 세션: **120k 도달/초과 시점에는 현재 진행 중인 작업 step을 먼저 완료/체크포인트**하고, 그 다음 validated handoff를 준비한다. 실제 clean reset/cutover는 그 이후에도 필요할 때만 수행한다.
 - 120k 미만 구간은 별도 선제 경고/감시를 두지 않고, 불필요한 운영 오버헤드를 만들지 않는다.
-- 메인 hard action 기본값: `prepare_handoff` (필요 시에만 `runtime/context-handoff.md` 검증 후 clean reset/cutover)
+- 메인 hard action 기본값: `finish_current_step_then_prepare_handoff` (필요 시에만 `runtime/context-handoff.md` 검증 후 clean reset/cutover)
 - 로컬뇌: task 종료 시 flush
 - 재로딩: 기본 규칙 + `runtime/current-task.md` + `runtime/context-handoff.md` + TASKS/DIRECTIVES DB summary
 - `memory/YYYY-MM-DD.md`는 기록/검색용이며 통재로딩 금지

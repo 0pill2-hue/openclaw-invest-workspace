@@ -138,7 +138,7 @@ def next_sort_order(conn: sqlite3.Connection, bucket: str) -> int:
 def build_context_metadata(context_payload: dict[str, Any], grouped_issues: list[str]) -> dict[str, str]:
     detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
     required_action = str(detail.get('context_handoff_required_action') or '').strip() or (
-        'clean_reset' if any(str(issue).startswith('context_tokens_high') for issue in grouped_issues) else '-'
+        'prepare_handoff' if any(str(issue).startswith('context_tokens_high') for issue in grouped_issues) else '-'
     )
     return {
         'active_ticket_id': str(detail.get('current_task_ticket_id') or '-'),
@@ -251,7 +251,7 @@ def build_notify_text(validate_payload: dict[str, Any], recover_payload: dict[st
     parts.append(f"issues={len(issues)}")
     if issue_preview:
         parts.append(issue_preview)
-    parts.append("handoff/current-task 확인 후 작업재개 우선·필요 시 reset·proof·보고·후속정리")
+    parts.append("현재 step 완료 후 handoff 준비·필요 시 reset·proof·보고·후속정리")
     return " / ".join(parts)
 
 

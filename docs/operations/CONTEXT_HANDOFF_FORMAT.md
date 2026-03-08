@@ -48,7 +48,7 @@
 - `business_goal`: 원래 업무 목표. 예) Stage1 canonical 완료
 - `last_completed_step`: 방금 끝낸 실제 업무 단계
 - `next_action`: reset 직후 바로 이어갈 1개 액션
-- `required_action`: 기본 `read_then_resume`, 임계치 대응 시 기본값은 `prepare_handoff`이며 실제 reset이 꼭 필요할 때만 `clean_reset`
+- `required_action`: 기본 `read_then_resume`, 임계치 대응 시 기본값은 `finish_current_step_then_prepare_handoff`이며 실제 reset이 꼭 필요할 때만 `clean_reset`
 - `reset_guard`: 기본 `valid_handoff_required_before_clean_reset`
 - `trigger`: `work_update` | `context_tokens_high` 등
 
