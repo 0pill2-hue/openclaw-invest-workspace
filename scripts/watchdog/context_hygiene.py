@@ -20,6 +20,13 @@ CONTEXT_POLICY = ROOT / "scripts/context_policy.py"
 CURRENT_TASK = current_task_path()
 CONTEXT_HANDOFF = context_handoff_path()
 CONTEXT_TOKEN_THRESHOLD = int(os.environ.get('WATCHDOG_CONTEXT_TOKEN_THRESHOLD', '120000'))
+NONTERMINAL_BLOCKED_PHASES = {'subagent_running', 'awaiting_callback'}
+
+
+def is_waiting_callback_state(db_task: dict[str, str]) -> bool:
+    status = (db_task.get('task_status') or '').strip().upper()
+    phase = (db_task.get('task_phase') or '').strip().lower()
+    return status == 'BLOCKED' and phase in NONTERMINAL_BLOCKED_PHASES
 
 
 def run_json_command(command: list[str]) -> tuple[int, dict]:
@@ -182,14 +189,19 @@ def main() -> int:
     if ticket_id and ticket_id not in PLACEHOLDER_VALUES:
         db_task = load_task_state(ticket_id)
         db_status = (db_task.get('task_status') or '').strip().upper()
+        db_phase = (db_task.get('task_phase') or '').strip().lower()
+        waiting_callback = is_waiting_callback_state(db_task)
         detail['current_task_db_status'] = db_status or '-'
+        detail['current_task_db_phase'] = db_phase or '-'
         detail['current_task_db_runtime_state'] = db_task.get('task_runtime_state', '') or '-'
+        detail['current_task_waiting_callback'] = waiting_callback
         if not db_task:
             issues.append(f'current_task_ticket_missing_in_db:{ticket_id}')
         else:
             if task_status and task_status not in PLACEHOLDER_VALUES and task_status != db_status:
-                issues.append(f'current_task_status_mismatch:{ticket_id}:snapshot={task_status}:db={db_status}')
-            if db_status in {'DONE', 'BLOCKED'}:
+                if not (waiting_callback and task_status in {'IN_PROGRESS', 'BLOCKED'}):
+                    issues.append(f'current_task_status_mismatch:{ticket_id}:snapshot={task_status}:db={db_status}')
+            if db_status in {'DONE', 'BLOCKED'} and not waiting_callback:
                 issues.append(f'current_task_points_to_closed_db_task:{ticket_id}:{db_status}')
 
     result = {

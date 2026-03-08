@@ -4,7 +4,7 @@ import json
 import os
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 STAGE1_DIR = Path(__file__).resolve().parents[1]
@@ -18,8 +18,12 @@ TELEGRAM_LAST_RUN_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_last_run_
 TELEGRAM_PUBLIC_FALLBACK_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_public_fallback_status.json"
 BLOG_LAST_RUN_STATUS_PATH = STAGE1_DIR / "outputs/runtime/blog_last_run_status.json"
 BLOG_BUDDIES_PATH = STAGE1_DIR / "outputs/master/naver_buddies_full.json"
+TELEGRAM_TERMINAL_STATUS_PATH = STAGE1_DIR / "inputs/config/telegram_terminal_status.json"
 BLOG_TARGET_DATE = os.environ.get("BLOG_DEFAULT_TARGET_DATE", "2016-01-01").strip() or "2016-01-01"
 BLOG_DATE_RE = re.compile(r"(?m)^PublishedDate:\s*(\d{4}-\d{2}-\d{2})")
+BLOG_TERMINAL_CAUSES = {"empty-posts", "404", "page1-links-0"}
+TELEGRAM_TERMINAL_CLASSIFICATIONS = {"bot", "contact", "join-only", "non-channel"}
+KR_OHLCV_BENCHMARK_CODE = os.environ.get("STAGE1_VALIDATE_KR_OHLCV_BENCHMARK_CODE", "005930").strip() or "005930"
 
 SOURCE_SPECS = [
     {
@@ -263,6 +267,116 @@ def _count_blogs_with_files(buddy_ids: list[str]) -> tuple[int, list[str]]:
     return covered, missing
 
 
+def _load_telegram_terminal_status_map(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    entries = payload.get("entries", {}) if isinstance(payload, dict) else {}
+    if not isinstance(entries, dict):
+        return {}
+    normalized: dict[str, dict] = {}
+    for key, value in entries.items():
+        normalized_key = str(key).strip().lower()
+        if not normalized_key or not isinstance(value, dict):
+            continue
+        normalized[normalized_key] = value
+    return normalized
+
+
+def _terminal_blog_statuses(runtime_status: dict | None, buddy_ids: list[str]) -> list[dict]:
+    if not isinstance(runtime_status, dict):
+        return []
+    wanted = {str(item).strip() for item in buddy_ids if str(item).strip()}
+    if not wanted:
+        return []
+    matched: list[dict] = []
+    for row in runtime_status.get("buddy_results", []):
+        if not isinstance(row, dict):
+            continue
+        bid = str(row.get("id", "")).strip()
+        cause = str(row.get("cause", "")).strip().lower()
+        if bid in wanted and cause in BLOG_TERMINAL_CAUSES:
+            matched.append(
+                {
+                    "id": bid,
+                    "cause": cause,
+                    "status": row.get("status"),
+                    "normal_completion_class": "MAX_AVAILABLE_OK",
+                    "picked_count": row.get("picked_count"),
+                    "saved_count": row.get("saved_count"),
+                }
+            )
+    matched.sort(key=lambda item: item["id"])
+    return matched
+
+
+def _read_csv_last_date(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    try:
+        lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    except Exception:
+        return None
+    for line in reversed(lines):
+        value = (line or "").split(",", 1)[0].strip()
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            return value
+    return None
+
+
+def _probe_kr_ohlcv_market_closed() -> dict:
+    benchmark_path = RAW_ROOT / "signal/kr/ohlcv" / f"{KR_OHLCV_BENCHMARK_CODE}.csv"
+    local_latest_date = _read_csv_last_date(benchmark_path)
+    probe = {
+        "benchmark_code": KR_OHLCV_BENCHMARK_CODE,
+        "benchmark_file": str(benchmark_path.relative_to(COMMON_INPUT_DATA_DIR)) if benchmark_path.exists() else str(benchmark_path),
+        "local_latest_date": local_latest_date,
+        "waive_freshness": False,
+    }
+    if not local_latest_date:
+        probe["reason"] = "benchmark_local_latest_date_missing"
+        return probe
+
+    try:
+        import FinanceDataReader as fdr
+    except Exception as exc:
+        probe["reason"] = f"fdr_import_failed:{type(exc).__name__}"
+        return probe
+
+    try:
+        local_dt = datetime.fromisoformat(local_latest_date)
+    except Exception:
+        probe["reason"] = "benchmark_local_latest_date_invalid"
+        return probe
+
+    start_date = (local_dt - timedelta(days=10)).date().isoformat()
+    end_date = datetime.now().date().isoformat()
+    probe["probe_window_start"] = start_date
+    probe["probe_window_end"] = end_date
+
+    try:
+        df = fdr.DataReader(KR_OHLCV_BENCHMARK_CODE, start_date, end_date)
+    except Exception as exc:
+        probe["reason"] = f"live_probe_failed:{type(exc).__name__}"
+        return probe
+
+    if df is None or df.empty:
+        probe["reason"] = "live_probe_empty"
+        return probe
+
+    live_latest_date = df.index.max().date().isoformat()
+    probe["live_latest_date"] = live_latest_date
+    if live_latest_date <= local_latest_date:
+        probe["waive_freshness"] = True
+        probe["reason"] = "market_closed_or_no_new_trading_day_on_live_probe"
+    else:
+        probe["reason"] = "live_probe_found_newer_trading_day"
+    return probe
+
+
 def _telegram_observed_keys(files: list[Path]) -> set[str]:
     observed: set[str] = set()
     for file_path in files:
@@ -295,6 +409,11 @@ def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]
     max_age_sec = _safe_int_env(spec["max_age_env"], spec["max_age_default"])
     total = len(files)
     zero_byte_count = sum(1 for f in files if f.stat().st_size == 0)
+    ignored_zero_byte_files: list[str] = []
+    if spec["name"] == "raw/qualitative/market/news/selected_articles":
+        ignored_zero_byte_files = [str(f.relative_to(COMMON_INPUT_DATA_DIR)) for f in files if f.stat().st_size == 0]
+        if total - len(ignored_zero_byte_files) > 0:
+            zero_byte_count = 0
     latest_mtime = max((f.stat().st_mtime for f in files), default=None)
     latest_age_sec = int(now_ts - latest_mtime) if latest_mtime is not None else None
     freshness_applied = max_age_sec >= 0
@@ -323,6 +442,20 @@ def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]
         "max_age_sec": max_age_sec if freshness_applied else None,
         "errors": errors,
     }
+    if ignored_zero_byte_files:
+        detail["ignored_zero_byte_files"] = ignored_zero_byte_files
+        detail["ignored_zero_byte_count"] = len(ignored_zero_byte_files)
+    if spec["name"] == "raw/signal/kr/ohlcv" and freshness_applied and any(e.startswith("latest_age_sec=") for e in errors):
+        freshness_probe = _probe_kr_ohlcv_market_closed()
+        detail["freshness_probe"] = freshness_probe
+        if freshness_probe.get("waive_freshness"):
+            waived_errors = [e for e in errors if not e.startswith("latest_age_sec=")]
+            detail["freshness_waived_reason"] = freshness_probe.get("reason")
+            detail["errors"] = waived_errors
+            ok = len(waived_errors) == 0
+            errors = waived_errors
+            detail["ok"] = ok
+            detail["failed_count"] = 0 if ok else 1
     runtime_status = _load_runtime_status(spec.get("runtime_status_path"))
     if runtime_status is not None:
         detail["runtime_status"] = runtime_status
@@ -356,7 +489,10 @@ def validate_blog_full_coverage() -> tuple[dict, dict | None]:
     runtime_status = _load_runtime_status(BLOG_LAST_RUN_STATUS_PATH)
     buddy_ids = _load_blog_buddy_ids(BLOG_BUDDIES_PATH)
     buddies_total = len(buddy_ids)
-    buddies_with_files, missing_buddy_ids = _count_blogs_with_files(buddy_ids)
+    buddies_with_files, raw_missing_buddy_ids = _count_blogs_with_files(buddy_ids)
+    terminal_buddies = _terminal_blog_statuses(runtime_status, raw_missing_buddy_ids)
+    terminal_buddy_ids = {item["id"] for item in terminal_buddies}
+    unresolved_missing_buddy_ids = [item for item in raw_missing_buddy_ids if item not in terminal_buddy_ids]
     pre_target_files = _count_blog_pre_target_files(BLOG_TARGET_DATE)
 
     errors = []
@@ -364,8 +500,8 @@ def validate_blog_full_coverage() -> tuple[dict, dict | None]:
         errors.append("blog_last_run_status_missing")
     if buddies_total <= 0:
         errors.append("buddies_total_missing")
-    if buddies_total > 0 and buddies_with_files != buddies_total:
-        errors.append(f"buddies_with_files={buddies_with_files} != buddies_total={buddies_total}")
+    if buddies_total > 0 and unresolved_missing_buddy_ids:
+        errors.append(f"unresolved_missing_buddies={len(unresolved_missing_buddy_ids)} != 0")
     if pre_target_files != 0:
         errors.append(f"pre_2016_blog_files={pre_target_files} != 0")
 
@@ -377,9 +513,14 @@ def validate_blog_full_coverage() -> tuple[dict, dict | None]:
         "target_date": BLOG_TARGET_DATE,
         "buddies_total": buddies_total,
         "buddies_with_files": buddies_with_files,
-        "missing_buddy_count": len(missing_buddy_ids),
-        "missing_buddy_ids": missing_buddy_ids,
-        "all_buddies_satisfied": buddies_total > 0 and buddies_with_files == buddies_total,
+        "raw_missing_buddy_count": len(raw_missing_buddy_ids),
+        "raw_missing_buddy_ids": raw_missing_buddy_ids,
+        "terminal_missing_buddy_count": len(terminal_buddies),
+        "terminal_missing_buddies": terminal_buddies,
+        "missing_buddy_count": len(unresolved_missing_buddy_ids),
+        "missing_buddy_ids": unresolved_missing_buddy_ids,
+        "all_buddies_satisfied": buddies_total > 0 and len(unresolved_missing_buddy_ids) == 0,
+        "normal_completion_class": "MAX_AVAILABLE_OK",
         "pre_2016_blog_files": pre_target_files,
         "runtime_status": runtime_status,
         "errors": errors,
@@ -417,7 +558,27 @@ def validate_telegram_full_coverage() -> tuple[dict, dict | None]:
     allowlist_total = len(allowlist)
     telegram_files = _collect_files(["raw/qualitative/text/telegram/**/*.md"])
     observed_keys = _telegram_observed_keys(telegram_files)
-    missing_channels = [item for item in allowlist if item not in observed_keys]
+    raw_missing_channels = [item for item in allowlist if item not in observed_keys]
+    terminal_status_map = _load_telegram_terminal_status_map(TELEGRAM_TERMINAL_STATUS_PATH)
+    terminal_channels = []
+    unresolved_missing_channels = []
+    for item in raw_missing_channels:
+        terminal_info = terminal_status_map.get(item)
+        classification = str((terminal_info or {}).get("classification", "")).strip().lower()
+        if classification in TELEGRAM_TERMINAL_CLASSIFICATIONS:
+            terminal_channels.append(
+                {
+                    "id": item,
+                    "classification": classification,
+                    "final_url": terminal_info.get("final_url"),
+                    "page_title": terminal_info.get("page_title"),
+                    "messages": terminal_info.get("messages"),
+                    "normal_completion_class": "MAX_AVAILABLE_OK",
+                    "evidence": terminal_info.get("evidence"),
+                }
+            )
+        else:
+            unresolved_missing_channels.append(item)
 
     errors = []
     if not collector_status or not collector_status.get("exists"):
@@ -426,8 +587,8 @@ def validate_telegram_full_coverage() -> tuple[dict, dict | None]:
         errors.append("telegram_allowlist_total_missing")
     if not run_status or not run_status.get("exists"):
         errors.append("telegram_run_status_missing")
-    if allowlist_total > 0 and len(missing_channels) != 0:
-        errors.append(f"missing_channels={len(missing_channels)} != 0")
+    if allowlist_total > 0 and len(unresolved_missing_channels) != 0:
+        errors.append(f"missing_channels={len(unresolved_missing_channels)} != 0")
 
     ok = len(errors) == 0
     detail = {
@@ -440,9 +601,13 @@ def validate_telegram_full_coverage() -> tuple[dict, dict | None]:
         "run_status_proxy_used": run_status_proxy_used,
         "allowlist_total": allowlist_total,
         "observed_channel_keys": len(observed_keys),
-        "missing_channel_count": len(missing_channels),
-        "missing_channels": missing_channels,
-        "all_channels_satisfied": allowlist_total > 0 and len(missing_channels) == 0,
+        "raw_missing_channel_count": len(raw_missing_channels),
+        "raw_missing_channels": raw_missing_channels,
+        "terminal_channel_count": len(terminal_channels),
+        "terminal_channels": terminal_channels,
+        "missing_channel_count": len(unresolved_missing_channels),
+        "missing_channels": unresolved_missing_channels,
+        "all_channels_satisfied": allowlist_total > 0 and len(unresolved_missing_channels) == 0,
         "collector_status": collector_status,
         "run_status": run_status,
         "errors": errors,

@@ -15,6 +15,10 @@ runtime/**/*.db
 # High-churn generated artifacts (do not track)
 invest/stages/stage*/outputs/**
 invest/stages/stage*/inputs/**
+!invest/stages/stage2/inputs/
+!invest/stages/stage2/inputs/config/
+!invest/stages/stage2/inputs/config/stage2_runtime_config.json
+!invest/stages/stage2/inputs/config/stage2_reason_config.json
 invest/stages/stage3/inputs/stage2_text_meta_records.jsonl
 invest/stages/stage1/outputs/runtime/telegram_scrape_*.json
 invest/stages/stage1/outputs/runtime/telegram_attach_tmp/**

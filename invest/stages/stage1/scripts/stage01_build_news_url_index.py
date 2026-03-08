@@ -8,7 +8,7 @@ import time
 import gzip
 from collections import deque
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -39,6 +39,15 @@ TRACKING_QUERY_KEYS = {
     "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
     "gclid", "fbclid", "mc_cid", "mc_eid", "guccounter", "cmpid",
 }
+GUARDIAN_API_URL = "https://content.guardianapis.com/search"
+DEFAULT_GUARDIAN_QUERY_GROUPS = [
+    "Fed OR FOMC OR inflation OR rates OR CPI OR PCE OR recession",
+    "ECB OR central bank OR stimulus OR liquidity OR currency",
+    "oil OR OPEC OR gas OR commodity OR copper OR steel",
+    "semiconductor OR chip OR AI OR battery OR EV OR supply chain",
+    "regulation OR tariff OR sanction OR antitrust OR IPO OR M&A OR SEC",
+]
+DEFAULT_GUARDIAN_SECTION = "business"
 
 
 @dataclass
@@ -140,6 +149,57 @@ def _extract_dt_from_struct(struct_time: Any) -> Optional[datetime]:
         return None
 
 
+def _guardian_enabled(args: argparse.Namespace, config: dict[str, Any], target_dt: Optional[datetime]) -> bool:
+    if getattr(args, "guardian_enable", False):
+        return True
+    if target_dt is None:
+        return False
+    return any(str(k).lower().startswith("guardian") for k in (config.get("feeds", {}) or {}).keys())
+
+
+def _guardian_query_groups() -> list[str]:
+    raw = os.environ.get("GUARDIAN_QUERY_GROUPS", "").strip()
+    if not raw:
+        return list(DEFAULT_GUARDIAN_QUERY_GROUPS)
+    out = [part.strip() for part in raw.split("||") if part.strip()]
+    return out or list(DEFAULT_GUARDIAN_QUERY_GROUPS)
+
+
+def _month_start(dt: date) -> date:
+    return date(dt.year, dt.month, 1)
+
+
+def _month_end(dt: date) -> date:
+    if dt.month == 12:
+        return date(dt.year, 12, 31)
+    return date(dt.year, dt.month + 1, 1) - timedelta(days=1)
+
+
+def _next_month(dt: date) -> date:
+    if dt.month == 12:
+        return date(dt.year + 1, 1, 1)
+    return date(dt.year, dt.month + 1, 1)
+
+
+def _guardian_month_slices(target_dt: Optional[datetime], end_dt: Optional[datetime], max_months: int) -> list[tuple[str, str]]:
+    start = _month_start((target_dt or datetime.now(timezone.utc)).date())
+    finish = _month_end((end_dt or datetime.now(timezone.utc)).date())
+    if finish < start:
+        return []
+
+    slices: list[tuple[str, str]] = []
+    cursor = start
+    while cursor <= finish:
+        end_cursor = _month_end(cursor)
+        if end_cursor > finish:
+            end_cursor = finish
+        slices.append((cursor.isoformat(), end_cursor.isoformat()))
+        cursor = _next_month(cursor)
+        if max_months > 0 and len(slices) >= max_months:
+            break
+    return slices
+
+
 def _resolve_seeds(config: dict[str, Any]) -> list[FeedSeed]:
     feeds = config.get("feeds", {}) if isinstance(config, dict) else {}
     out: list[FeedSeed] = []
@@ -220,14 +280,14 @@ def _rss_page_url(base_url: str, page_no: int) -> str:
     return urlunparse((p.scheme, p.netloc, p.path, p.params, urlencode(q), p.fragment))
 
 
-def _record_from_parts(url: str, published_raw: str, title: str, summary: str, source_domain: str, source_kind: str, source_name: str, source_url: str) -> Optional[dict[str, Any]]:
+def _record_from_parts(url: str, published_raw: str, title: str, summary: str, source_domain: str, source_kind: str, source_name: str, source_url: str, extra: Optional[dict[str, Any]] = None) -> Optional[dict[str, Any]]:
     nurl = _normalize_url(url)
     if not nurl:
         return None
     dt = _parse_datetime(published_raw)
     parsed_host = (urlparse(nurl).netloc or "").lower().strip()
     canonical_domain = parsed_host or (source_domain or "").lower().strip()
-    return {
+    payload = {
         "url": nurl,
         "published_at": _to_iso(dt),
         "published_date": _date_str(dt),
@@ -238,6 +298,11 @@ def _record_from_parts(url: str, published_raw: str, title: str, summary: str, s
         "source_name": source_name,
         "source_url": source_url,
     }
+    if isinstance(extra, dict):
+        for key, value in extra.items():
+            if value not in (None, ""):
+                payload[key] = value
+    return payload
 
 
 def _merge_record(existing: dict[str, Any], incoming: dict[str, Any]) -> dict[str, Any]:
@@ -248,6 +313,10 @@ def _merge_record(existing: dict[str, Any], incoming: dict[str, Any]) -> dict[st
         existing["title"] = incoming.get("title", "")
     if len(incoming.get("summary", "")) > len(existing.get("summary", "")):
         existing["summary"] = incoming.get("summary", "")
+
+    for key in ("api_url", "section_name", "query_group", "query_slice"):
+        if (not existing.get(key)) and incoming.get(key):
+            existing[key] = incoming.get(key)
 
     seen = {(x.get("source_kind"), x.get("source_name"), x.get("source_url")) for x in existing.get("discovered_by", [])}
     key = (incoming.get("source_kind"), incoming.get("source_name"), incoming.get("source_url"))
@@ -498,6 +567,116 @@ def _collect_from_sitemaps(
     }
 
 
+def _collect_from_guardian_open_platform(
+    session: requests.Session,
+    records: dict[str, dict[str, Any]],
+    target_dt: Optional[datetime],
+    end_dt: Optional[datetime],
+    max_months: int,
+    max_pages_per_slice: int,
+    page_size: int,
+    timeout: int,
+    sleep_sec: float,
+) -> dict[str, Any]:
+    slices = _guardian_month_slices(target_dt, end_dt, max_months)
+    if not slices:
+        return {
+            "source": "guardian_open_platform",
+            "kind": "guardian_open_platform",
+            "query_groups": 0,
+            "slices": 0,
+            "raw_items": 0,
+            "unique_added": 0,
+            "oldest": "",
+        }
+
+    total_raw = 0
+    added = 0
+    oldest: Optional[datetime] = None
+    queries = _guardian_query_groups()
+    api_key = os.environ.get("GUARDIAN_API_KEY", "test").strip() or "test"
+
+    for query in queries:
+        for from_date, to_date in slices:
+            for page in range(1, max_pages_per_slice + 1):
+                params = {
+                    "api-key": api_key,
+                    "q": query,
+                    "section": DEFAULT_GUARDIAN_SECTION,
+                    "from-date": from_date,
+                    "to-date": to_date,
+                    "page-size": str(page_size),
+                    "page": str(page),
+                    "show-fields": "headline,trailText",
+                    "order-by": "newest",
+                }
+                try:
+                    r = session.get(GUARDIAN_API_URL, params=params, timeout=timeout)
+                except Exception:
+                    break
+                if r.status_code >= 400:
+                    break
+                try:
+                    payload = r.json()
+                except Exception:
+                    break
+                response = payload.get("response", {}) if isinstance(payload, dict) else {}
+                results = response.get("results", []) if isinstance(response, dict) else []
+                if not isinstance(results, list) or not results:
+                    break
+
+                new_on_page = 0
+                for item in results:
+                    if not isinstance(item, dict):
+                        continue
+                    total_raw += 1
+                    rec = _record_from_parts(
+                        url=str(item.get("webUrl") or ""),
+                        published_raw=str(item.get("webPublicationDate") or ""),
+                        title=str((item.get("fields") or {}).get("headline") or item.get("webTitle") or ""),
+                        summary=str((item.get("fields") or {}).get("trailText") or ""),
+                        source_domain="theguardian.com",
+                        source_kind="guardian_open_platform",
+                        source_name="guardian_open_platform",
+                        source_url=r.url,
+                        extra={
+                            "api_url": str(item.get("apiUrl") or ""),
+                            "section_name": str(item.get("sectionName") or ""),
+                            "query_group": query,
+                            "query_slice": f"{from_date}:{to_date}",
+                        },
+                    )
+                    if not rec:
+                        continue
+                    dt = _parse_datetime(rec.get("published_at") or rec.get("published_date") or "")
+                    if dt:
+                        oldest = dt if oldest is None else min(oldest, dt)
+                    key = rec["url"]
+                    if key in records:
+                        _merge_record(records[key], rec)
+                    else:
+                        rec["discovered_by"] = [{"source_kind": rec["source_kind"], "source_name": rec["source_name"], "source_url": rec["source_url"]}]
+                        records[key] = rec
+                        added += 1
+                        new_on_page += 1
+
+                if new_on_page == 0:
+                    break
+                time.sleep(sleep_sec)
+
+    return {
+        "source": "guardian_open_platform",
+        "kind": "guardian_open_platform",
+        "query_groups": len(queries),
+        "slices": len(slices),
+        "raw_items": total_raw,
+        "unique_added": added,
+        "oldest": _date_str(oldest),
+        "target_date": _date_str(target_dt),
+        "end_date": _date_str(end_dt),
+    }
+
+
 def _load_config() -> dict[str, Any]:
     if not CONFIG_PATH.exists():
         return {"feeds": {}}
@@ -524,22 +703,23 @@ def _date_min_max(rows: list[dict[str, Any]]) -> tuple[str, str]:
 def run(args: argparse.Namespace) -> dict[str, Any]:
     config = _load_config()
     seeds = _resolve_seeds(config)
-    if not seeds:
+    target_dt = _parse_datetime(args.target_date) if args.target_date else None
+    guardian_enabled = _guardian_enabled(args, config, target_dt)
+    if not seeds and not guardian_enabled:
         summary = {
             "status": "FAIL",
-            "reason": "no_feeds_in_news_sources",
+            "reason": "no_feeds_or_guardian_backfill_sources",
             "url_count": 0,
             "index_file": "",
         }
         RUNTIME_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
         RUNTIME_STATUS_PATH.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
-        append_pipeline_event(source="build_news_url_index", status="FAIL", count=0, errors=["no_feeds_in_news_sources"], note="feeds=0")
+        append_pipeline_event(source="build_news_url_index", status="FAIL", count=0, errors=["no_feeds_or_guardian_backfill_sources"], note="feeds=0 guardian=0")
         return summary
 
     session = requests.Session()
-    session.headers.update({"User-Agent": UA, "Accept": "application/xml,text/xml,text/html;q=0.9,*/*;q=0.8"})
+    session.headers.update({"User-Agent": UA, "Accept": "application/xml,text/xml,text/html;q=0.9,application/json;q=0.9,*/*;q=0.8"})
 
-    target_dt = _parse_datetime(args.target_date) if args.target_date else None
     records: dict[str, dict[str, Any]] = {}
     per_source = []
 
@@ -567,6 +747,22 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
         )
 
+    guardian_end_dt = _parse_datetime(args.guardian_end_date) if args.guardian_end_date else None
+    if guardian_enabled:
+        per_source.append(
+            _collect_from_guardian_open_platform(
+                session=session,
+                records=records,
+                target_dt=target_dt,
+                end_dt=guardian_end_dt,
+                max_months=args.guardian_max_months,
+                max_pages_per_slice=args.guardian_max_pages_per_slice,
+                page_size=args.guardian_page_size,
+                timeout=args.timeout,
+                sleep_sec=args.sleep,
+            )
+        )
+
     rows = sorted(records.values(), key=lambda x: (x.get("published_date", ""), x.get("url", "")), reverse=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     out_file = OUT_DIR / f"url_index_{ts}.jsonl"
@@ -584,6 +780,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "status": status,
         "worker_mode": "single_serial",
         "feeds": len(seeds),
+        "guardian_enabled": guardian_enabled,
         "sources": per_source,
         "url_count": len(rows),
         "date_min": dmin,
@@ -609,13 +806,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser(description="Stage1 news URL index builder (RSS archive + sitemap)")
+    ap = argparse.ArgumentParser(description="Stage1 news URL index builder (RSS archive + sitemap + Guardian Open Platform backfill)")
     ap.add_argument("--rss-max-pages", type=int, default=_safe_int(os.environ.get("NEWS_INDEX_RSS_MAX_PAGES"), 40, min_v=1))
     ap.add_argument("--max-sitemaps", type=int, default=_safe_int(os.environ.get("NEWS_INDEX_MAX_SITEMAPS"), 140, min_v=1))
     ap.add_argument("--timeout", type=int, default=_safe_int(os.environ.get("NEWS_INDEX_TIMEOUT_SEC"), 18, min_v=3))
     ap.add_argument("--sleep", type=float, default=float(os.environ.get("NEWS_INDEX_SLEEP_SEC", "0.12")))
     ap.add_argument("--min-urls", type=int, default=_safe_int(os.environ.get("NEWS_INDEX_MIN_URLS"), 1, min_v=0))
     ap.add_argument("--target-date", default=os.environ.get("NEWS_INDEX_TARGET_DATE", ""))
+    ap.add_argument("--guardian-enable", action="store_true", default=os.environ.get("GUARDIAN_ENABLE", "0").strip().lower() in {"1", "true", "yes", "on"})
+    ap.add_argument("--guardian-end-date", default=os.environ.get("GUARDIAN_END_DATE", ""))
+    ap.add_argument("--guardian-max-months", type=int, default=_safe_int(os.environ.get("GUARDIAN_MAX_MONTHS"), 60, min_v=0))
+    ap.add_argument("--guardian-max-pages-per-slice", type=int, default=_safe_int(os.environ.get("GUARDIAN_MAX_PAGES_PER_SLICE"), 1, min_v=1))
+    ap.add_argument("--guardian-page-size", type=int, default=_safe_int(os.environ.get("GUARDIAN_PAGE_SIZE"), 50, min_v=1))
     return ap.parse_args()
 
 

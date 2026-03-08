@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any, Optional
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from fnmatch import fnmatch
 
 import requests
@@ -38,6 +38,16 @@ PAYWALL_DOMAIN_CANDIDATE_CAP = {
     "barrons.com": 1,
     "ft.com": 1,
     "theinformation.com": 1,
+}
+FREE_SOURCE_PRIORITY_BONUS = {
+    "theguardian.com": 6.0,
+    "guardianapis.com": 6.0,
+    "federalreserve.gov": 7.0,
+    "ecb.europa.eu": 7.0,
+    "sec.gov": 7.0,
+}
+FREE_SOURCE_KIND_BONUS = {
+    "guardian_open_platform": 6.0,
 }
 
 
@@ -318,6 +328,16 @@ def _domain_candidate_cap(host: str) -> int:
     return 0
 
 
+def _source_priority_bonus(row: dict[str, Any], host: str) -> float:
+    kind = str(row.get("source_kind") or "").strip().lower()
+    if kind in FREE_SOURCE_KIND_BONUS:
+        return FREE_SOURCE_KIND_BONUS[kind]
+    for domain, bonus in FREE_SOURCE_PRIORITY_BONUS.items():
+        if host == domain or host.endswith(f'.{domain}'):
+            return bonus
+    return 0.0
+
+
 
 def _priority(row: dict[str, Any], keywords: list[str], now_dt: datetime, recency_weight: float) -> dict[str, Any]:
     text = " ".join(
@@ -332,17 +352,93 @@ def _priority(row: dict[str, Any], keywords: list[str], now_dt: datetime, recenc
     rscore = _recency_score(published_dt, now_dt)
     source_bonus = 2 if any((x.get("source_kind") in {"sitemap", "sitemap_feed", "sitemap_rss"}) for x in row.get("discovered_by", [])) else 0
     host = _canonical_domain(str(row.get("source_domain") or urlparse(str(row.get("url") or "")).netloc))
+    free_source_bonus = _source_priority_bonus(row, host)
     domain_penalty = _domain_penalty(host)
-    score = len(hits) * 10 + (rscore * recency_weight) + source_bonus - domain_penalty
+    score = len(hits) * 10 + (rscore * recency_weight) + source_bonus + free_source_bonus - domain_penalty
 
     one = dict(row)
     one["source_domain"] = host or row.get("source_domain") or ""
     one["keyword_hits"] = len(hits)
     one["keywords_matched"] = hits[:20]
     one["priority_score"] = score
+    one["source_priority_bonus"] = free_source_bonus
     one["domain_penalty"] = domain_penalty
     one["published_dt"] = published_dt.isoformat() if published_dt else ""
     return one
+
+
+def _guardian_api_url(raw: str) -> str:
+    api_url = str(raw or "").strip()
+    if not api_url:
+        return ""
+    try:
+        parsed = urlparse(api_url)
+    except Exception:
+        return ""
+    if not parsed.scheme or not parsed.netloc:
+        return ""
+    query = dict(parse_qsl(parsed.query, keep_blank_values=True))
+    query.setdefault("api-key", os.environ.get("GUARDIAN_API_KEY", "test").strip() or "test")
+    fields = {part.strip() for part in str(query.get("show-fields") or "").split(",") if part.strip()}
+    fields.update({"headline", "trailText", "bodyText"})
+    query["show-fields"] = ",".join(sorted(fields))
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlencode(query, doseq=True), parsed.fragment))
+
+
+
+def _collect_guardian_article(session: requests.Session, row: dict[str, Any], timeout: int) -> dict[str, Any]:
+    api_url = _guardian_api_url(str(row.get("api_url") or ""))
+    if not api_url:
+        return {"ok": False, "reason": "guardian_api_url_missing", "url": str(row.get("url") or "")}
+
+    now = datetime.now(timezone.utc).isoformat()
+    try:
+        resp = session.get(api_url, timeout=timeout, headers={"Accept": "application/json", "User-Agent": UA})
+    except Exception as e:
+        return {"ok": False, "reason": f"guardian_api_error:{type(e).__name__}", "url": str(row.get("url") or ""), "collected_at": now}
+
+    if resp.status_code >= 400:
+        return {"ok": False, "reason": f"guardian_api_http_{resp.status_code}", "url": str(row.get("url") or ""), "collected_at": now, "http_status": resp.status_code}
+
+    try:
+        payload = resp.json()
+    except Exception as e:
+        return {"ok": False, "reason": f"guardian_api_json_error:{type(e).__name__}", "url": str(row.get("url") or ""), "collected_at": now}
+
+    content = ((payload or {}).get("response") or {}).get("content") or {}
+    if not isinstance(content, dict):
+        return {"ok": False, "reason": "guardian_api_no_content", "url": str(row.get("url") or ""), "collected_at": now}
+
+    fields = content.get("fields") or {}
+    body = _normalize_text(str(fields.get("bodyText") or ""))
+    if len(body) < 280:
+        return {"ok": False, "reason": "guardian_api_short_or_empty_body", "url": str(row.get("url") or content.get("webUrl") or ""), "collected_at": now}
+
+    published_raw = str(content.get("webPublicationDate") or row.get("published_at") or row.get("published_date") or "")
+    published_dt = _parse_date(published_raw)
+    url = str(content.get("webUrl") or row.get("url") or "")
+    source_domain = _canonical_domain(str(row.get("source_domain") or urlparse(url).netloc)) or "theguardian.com"
+
+    return {
+        "ok": True,
+        "url": url,
+        "source_domain": source_domain,
+        "source_kind": str(row.get("source_kind") or "guardian_open_platform"),
+        "title": str(fields.get("headline") or content.get("webTitle") or row.get("title") or ""),
+        "published_at": published_dt.isoformat() if published_dt else "",
+        "published_date": published_dt.date().isoformat() if published_dt else "",
+        "summary": str(fields.get("trailText") or row.get("summary") or ""),
+        "body": body,
+        "body_chars": len(body),
+        "priority_score": row.get("priority_score", 0),
+        "keyword_hits": row.get("keyword_hits", 0),
+        "keywords_matched": row.get("keywords_matched", []),
+        "http_status": resp.status_code,
+        "extractor": "guardian_open_platform_api",
+        "collected_at": now,
+        "worker_mode": "single_serial",
+    }
+
 
 
 def _extract_title(soup: BeautifulSoup) -> str:
@@ -429,6 +525,12 @@ def _collect_article(session: requests.Session, row: dict[str, Any], timeout: in
     url = str(row.get("url") or "")
     now = datetime.now(timezone.utc).isoformat()
 
+    source_kind = str(row.get("source_kind") or "").strip().lower()
+    if source_kind == "guardian_open_platform" or str(row.get("api_url") or "").strip().startswith("https://content.guardianapis.com/"):
+        guardian_item = _collect_guardian_article(session, row, timeout)
+        if guardian_item.get("ok"):
+            return guardian_item
+
     try:
         resp = session.get(url, timeout=timeout)
     except Exception as e:
@@ -437,12 +539,36 @@ def _collect_article(session: requests.Session, row: dict[str, Any], timeout: in
     if resp.status_code >= 400:
         return {"ok": False, "reason": f"http_{resp.status_code}", "url": url, "collected_at": now, "http_status": resp.status_code}
 
+    content_type = str(resp.headers.get("Content-Type") or "").lower()
+    if content_type and not any(token in content_type for token in ("text/html", "application/xhtml+xml", "text/plain", "application/xml", "text/xml")):
+        return {
+            "ok": False,
+            "reason": f"unsupported_content_type:{content_type.split(';', 1)[0]}",
+            "url": url,
+            "collected_at": now,
+            "http_status": resp.status_code,
+        }
+
     html = resp.text
     soup = BeautifulSoup(html, "html.parser")
     title = _extract_title(soup) or str(row.get("title") or "")
     published_raw = _extract_published(soup, html)
-    published_dt = _parse_date(published_raw) or _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
+    row_published_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
+    extracted_published_dt = _parse_date(published_raw)
+    published_dt = row_published_dt
+    if extracted_published_dt is not None:
+        if row_published_dt is None or abs((extracted_published_dt - row_published_dt).days) <= 370:
+            published_dt = extracted_published_dt
     body, extractor = _extract_body(soup)
+
+    if not title.strip():
+        return {
+            "ok": False,
+            "reason": "missing_title",
+            "url": url,
+            "http_status": resp.status_code,
+            "collected_at": now,
+        }
 
     if len(body) < 280:
         return {
@@ -454,12 +580,13 @@ def _collect_article(session: requests.Session, row: dict[str, Any], timeout: in
             "collected_at": now,
         }
 
-    host = urlparse(url).netloc.lower()
+    host = _canonical_domain(urlparse(url).netloc)
 
     return {
         "ok": True,
         "url": url,
-        "source_domain": row.get("source_domain") or host,
+        "source_domain": _canonical_domain(str(row.get("source_domain") or host)) or host,
+        "source_kind": str(row.get("source_kind") or ""),
         "title": title,
         "published_at": published_dt.isoformat() if published_dt else "",
         "published_date": published_dt.date().isoformat() if published_dt else "",

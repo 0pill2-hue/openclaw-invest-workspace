@@ -6,6 +6,8 @@ from datetime import datetime
 
 import pandas as pd
 
+from stage2_config import load_stage2_config_bundle
+
 # Paths (stage-local input boundary)
 STAGE2_ROOT = Path(__file__).resolve().parents[1]
 UPSTREAM_STAGE1 = STAGE2_ROOT / 'inputs' / 'upstream_stage1'
@@ -25,12 +27,24 @@ MASTER_LIST_PATH = str(UPSTREAM_STAGE1 / 'master/kr_stock_list.csv')
 CLEAN_BASE = str(STAGE2_OUT_BASE / 'clean')
 Q_BASE = str(STAGE2_OUT_BASE / 'quarantine')
 REPORT_DIR = str(STAGE2_OUT_BASE / 'reports')
-STAGE2_QC_VERSION = '2026-03-08-stage2-qc-r2'
-HARD_FAIL_TYPES = {'missing_target_file', 'processing_error', 'zero_clean_folder'}
-INCLUDED_MARKETS = {"KOSPI", "KOSDAQ", "KOSDAQ GLOBAL"}
-INCLUDED_MARKET_IDS = {"STK", "KSQ"}
-MIN_VALID_VOLUME = 10
-MAX_DAILY_RET_ABS = 0.35
+STAGE2_QC_VERSION = '2026-03-08-stage2-qc-r3'
+
+STAGE2_CONFIG_BUNDLE = load_stage2_config_bundle()
+STAGE2_RUNTIME_CONFIG = STAGE2_CONFIG_BUNDLE['runtime']
+STAGE2_REASON_CONFIG = STAGE2_CONFIG_BUNDLE['reason']
+STAGE2_CONFIG_PROVENANCE = STAGE2_CONFIG_BUNDLE['provenance']
+
+QC_RUNTIME_CONFIG = STAGE2_RUNTIME_CONFIG['qc']
+QC_REASON_CONFIG = STAGE2_REASON_CONFIG['qc']
+QC_UNIVERSE_CONFIG = QC_RUNTIME_CONFIG['universe']
+QC_THRESHOLD_CONFIG = QC_RUNTIME_CONFIG['thresholds']
+QC_ANOMALY_TAXONOMY = QC_REASON_CONFIG['anomaly_taxonomy']
+
+HARD_FAIL_TYPES = set(QC_ANOMALY_TAXONOMY['fail_types'])
+INCLUDED_MARKETS = set(QC_UNIVERSE_CONFIG['included_markets'])
+INCLUDED_MARKET_IDS = set(QC_UNIVERSE_CONFIG['included_market_ids'])
+MIN_VALID_VOLUME = int(QC_THRESHOLD_CONFIG['min_valid_volume'])
+MAX_DAILY_RET_ABS = float(QC_THRESHOLD_CONFIG['max_daily_ret_abs'])
 
 os.makedirs(REPORT_DIR, exist_ok=True)
 
@@ -312,6 +326,12 @@ def run_qc():
             'kr_include_markets': sorted(INCLUDED_MARKETS),
             'kr_exclude_markets': 'others (e.g., KONEX)',
         },
+        'anomaly_taxonomy': {
+            'row_quarantine_reasons': list(QC_ANOMALY_TAXONOMY['row_quarantine_reasons']),
+            'warn_types': list(QC_ANOMALY_TAXONOMY['warn_types']),
+            'fail_types': sorted(HARD_FAIL_TYPES),
+        },
+        'config_provenance': STAGE2_CONFIG_PROVENANCE,
         'groups': report_data,
         'totals': {
             'target_files': total_target,
@@ -339,7 +359,10 @@ def run_qc():
         f.write("# Data Cleaning QC Report (Signal Validation Only)\n\n")
         f.write(f"Executed at: {summary['executed_at']}\n")
         f.write(f"QC version: {summary['qc_version']}\n")
-        f.write("Writer policy: kr/us signal canonical writer=`stage02_qc_cleaning_full.py`, stage02_onepass_refine_full.py=`market signal + qualitative only`\n\n")
+        f.write("Writer policy: kr/us signal canonical writer=`stage02_qc_cleaning_full.py`, stage02_onepass_refine_full.py=`market signal + qualitative only`\n")
+        f.write(f"Runtime config: {STAGE2_CONFIG_PROVENANCE['runtime_config_path']} ({STAGE2_CONFIG_PROVENANCE['runtime_config_sha1']})\n")
+        f.write(f"Reason config: {STAGE2_CONFIG_PROVENANCE['reason_config_path']} ({STAGE2_CONFIG_PROVENANCE['reason_config_sha1']})\n")
+        f.write(f"Config bundle SHA1: {STAGE2_CONFIG_PROVENANCE['bundle_sha1']}\n\n")
         f.write("Universe policy (KR): include KOSPI/KOSDAQ/KOSDAQ GLOBAL, exclude others (e.g., KONEX).\n\n")
 
         f.write("## Coverage Summary\n\n")
@@ -360,6 +383,10 @@ def run_qc():
         f.write("\n## Validation Gate\n\n")
         f.write(f"- pass={summary['validation']['pass']}\n")
         f.write(f"- hard_fail_types={', '.join(summary['validation']['hard_fail_types'])}\n")
+        f.write("\n## Anomaly Taxonomy\n\n")
+        f.write(f"- row_quarantine_reasons={', '.join(summary['anomaly_taxonomy']['row_quarantine_reasons'])}\n")
+        f.write(f"- warn_types={', '.join(summary['anomaly_taxonomy']['warn_types'])}\n")
+        f.write(f"- fail_types={', '.join(summary['anomaly_taxonomy']['fail_types'])}\n")
 
         f.write("\n## Anomalies\n\n")
         if not anomalies:
@@ -368,17 +395,17 @@ def run_qc():
             for a in anomalies:
                 t = a.get('type', 'unknown')
                 if t == 'full_quarantine':
-                    f.write(f"- **FULL QUARANTINE**: `{a['group']}/{a['file']}` ({a['rows']} rows).\n")
+                    f.write(f"- **full_quarantine**: `{a['group']}/{a['file']}` ({a['rows']} rows).\n")
                 elif t == 'high_quarantine_ratio':
-                    f.write(f"- **HIGH Q RATIO**: `{a['group']}/{a['file']}` ratio={a['ratio']}.\n")
+                    f.write(f"- **high_quarantine_ratio**: `{a['group']}/{a['file']}` ratio={a['ratio']}.\n")
                 elif t == 'zero_clean_folder':
-                    f.write(f"- **ZERO CLEAN FOLDER**: `{a['group']}`.\n")
+                    f.write(f"- **zero_clean_folder**: `{a['group']}`.\n")
                 elif t == 'empty_input_file':
-                    f.write(f"- **EMPTY INPUT**: `{a['group']}/{a['file']}`.\n")
+                    f.write(f"- **empty_input_file**: `{a['group']}/{a['file']}`.\n")
                 elif t == 'missing_target_file':
-                    f.write(f"- **MISSING TARGET FILE**: `{a['group']}/{a['file']}`.\n")
+                    f.write(f"- **missing_target_file**: `{a['group']}/{a['file']}`.\n")
                 elif t == 'processing_error':
-                    f.write(f"- **PROCESSING ERROR**: `{a['group']}/{a['file']}` error=`{a.get('error', '')}`\n")
+                    f.write(f"- **processing_error**: `{a['group']}/{a['file']}` error=`{a.get('error', '')}`\n")
                 else:
                     f.write(f"- {a}\n")
 

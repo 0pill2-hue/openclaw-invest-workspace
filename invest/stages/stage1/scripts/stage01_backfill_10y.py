@@ -60,7 +60,7 @@ def main() -> int:
     ap.add_argument("--news-index-rss-pages", type=int, default=int(os.environ.get("NEWS_INDEX_RSS_MAX_PAGES", "80")))
     ap.add_argument("--news-index-max-sitemaps", type=int, default=int(os.environ.get("NEWS_INDEX_MAX_SITEMAPS", "220")))
     ap.add_argument("--news-selected-max-articles", type=int, default=int(os.environ.get("NEWS_SELECTED_MAX_ARTICLES", "160")))
-    ap.add_argument("--news-selected-min-keyword-hits", type=int, default=int(os.environ.get("NEWS_SELECTED_MIN_KEYWORD_HITS", "1")))
+    ap.add_argument("--news-selected-min-keyword-hits", type=int, default=int(os.environ.get("NEWS_SELECTED_MIN_KEYWORD_HITS", "0")))
 
     tg_mode = ap.add_mutually_exclusive_group()
     tg_mode.add_argument("--telegram-force-full", dest="telegram_force_full", action="store_true")
@@ -130,6 +130,11 @@ def main() -> int:
                     "NEWS_INDEX_TARGET_DATE": target_date,
                     "NEWS_INDEX_RSS_MAX_PAGES": str(max(1, args.news_index_rss_pages)),
                     "NEWS_INDEX_MAX_SITEMAPS": str(max(1, args.news_index_max_sitemaps)),
+                    "GUARDIAN_ENABLE": os.environ.get("GUARDIAN_ENABLE", "1"),
+                    "GUARDIAN_END_DATE": os.environ.get("GUARDIAN_END_DATE", "2019-12-31"),
+                    "GUARDIAN_MAX_MONTHS": os.environ.get("GUARDIAN_MAX_MONTHS", "48"),
+                    "GUARDIAN_MAX_PAGES_PER_SLICE": os.environ.get("GUARDIAN_MAX_PAGES_PER_SLICE", "1"),
+                    "GUARDIAN_PAGE_SIZE": os.environ.get("GUARDIAN_PAGE_SIZE", "50"),
                 },
             )
         )
@@ -140,8 +145,12 @@ def main() -> int:
                 {
                     "NEWS_SELECTED_MAX_ARTICLES": str(max(1, args.news_selected_max_articles)),
                     "NEWS_SELECTED_MIN_KEYWORD_HITS": str(max(0, args.news_selected_min_keyword_hits)),
+                    "NEWS_SELECTED_MAX_ATTEMPTS": os.environ.get("NEWS_SELECTED_MAX_ATTEMPTS", "5000"),
                     "NEWS_SELECTED_TARGET_DATE": target_date,
-                    "NEWS_SELECTED_YEARLY_QUOTA": os.environ.get("NEWS_SELECTED_YEARLY_QUOTA", "3"),
+                    "NEWS_SELECTED_YEARLY_QUOTA": os.environ.get("NEWS_SELECTED_YEARLY_QUOTA", "50"),
+                    "NEWS_SELECTED_SKIP_EXISTING": os.environ.get("NEWS_SELECTED_SKIP_EXISTING", "1"),
+                    "NEWS_SELECTED_EXCLUDED_DOMAINS": os.environ.get("NEWS_SELECTED_EXCLUDED_DOMAINS", "bloomberg.com,wsj.com"),
+                    "NEWS_SELECTED_EXCLUDED_URL_PATTERNS": os.environ.get("NEWS_SELECTED_EXCLUDED_URL_PATTERNS", "/graphics/,/video/"),
                 },
             )
         )

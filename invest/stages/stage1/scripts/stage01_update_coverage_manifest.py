@@ -36,10 +36,13 @@ NEWS_URL_INDEX_STATUS_PATH = RUNTIME_ROOT / "news_url_index_status.json"
 NEWS_SELECTED_STATUS_PATH = RUNTIME_ROOT / "news_selected_articles_status.json"
 
 TELEGRAM_ALLOWLIST_PATH = ROOT / "invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt"
+TELEGRAM_TERMINAL_STATUS_PATH = ROOT / "invest/stages/stage1/inputs/config/telegram_terminal_status.json"
 NEWS_SOURCES_CONFIG_PATH = ROOT / "invest/stages/stage1/inputs/config/news_sources.json"
 PREMIUM_DISCOVERY_PATH = PREMIUM_DIR / "startale_channel_direct/_discovery.json"
 BUDDIES_PATH = ROOT / "invest/stages/stage1/outputs/master/naver_buddies_full.json"
 BLOG_FIXED_START_DATE = "20160101"
+BLOG_TERMINAL_CAUSES = {"empty-posts", "404", "page1-links-0"}
+TELEGRAM_TERMINAL_CLASSIFICATIONS = {"bot", "contact", "join-only", "non-channel"}
 
 
 def _load_json(path: Path) -> dict[str, Any] | list[Any] | None:
@@ -337,30 +340,87 @@ def _telegram_observed_keys(files: list[Path]) -> set[str]:
     return observed
 
 
+def _load_telegram_terminal_status_map() -> dict[str, dict[str, Any]]:
+    payload = _load_json(TELEGRAM_TERMINAL_STATUS_PATH) or {}
+    entries = payload.get("entries", {}) if isinstance(payload, dict) else {}
+    if not isinstance(entries, dict):
+        return {}
+    normalized: dict[str, dict[str, Any]] = {}
+    for key, value in entries.items():
+        normalized_key = str(key).strip().lower()
+        if not normalized_key or not isinstance(value, dict):
+            continue
+        normalized[normalized_key] = value
+    return normalized
+
+
+def _load_blog_terminal_statuses() -> dict[str, dict[str, Any]]:
+    payload = _load_json(RUNTIME_ROOT / "blog_last_run_status.json") or {}
+    if not isinstance(payload, dict):
+        return {}
+    terminal: dict[str, dict[str, Any]] = {}
+    for row in payload.get("buddy_results", []):
+        if not isinstance(row, dict):
+            continue
+        bid = str(row.get("id", "")).strip()
+        cause = str(row.get("cause", "")).strip().lower()
+        if bid and cause in BLOG_TERMINAL_CAUSES:
+            terminal[bid] = {
+                "cause": cause,
+                "status": row.get("status"),
+                "picked_count": row.get("picked_count"),
+                "saved_count": row.get("saved_count"),
+                "normal_completion_class": "MAX_AVAILABLE_OK",
+            }
+    return terminal
+
+
 def _telegram_scope() -> dict[str, Any]:
-    allowlist = _read_noncomment_lines(TELEGRAM_ALLOWLIST_PATH)
+    allowlist = [item.strip().lower() for item in _read_noncomment_lines(TELEGRAM_ALLOWLIST_PATH)]
     files = sorted(TELEGRAM_DIR.glob("*.md")) if TELEGRAM_DIR.exists() else []
     public_files = sorted(TELEGRAM_DIR.glob("*_public_fallback.md")) if TELEGRAM_DIR.exists() else []
     full_files = [p for p in files if p.name.endswith("_full.md")]
     recovered_files = [p for p in files if p.name.endswith("_recovered.md")]
     observed_keys = _telegram_observed_keys(files)
-    missing_allowlist_entries = [x for x in allowlist if x not in observed_keys]
+    raw_missing_allowlist_entries = [x for x in allowlist if x not in observed_keys]
+    terminal_status_map = _load_telegram_terminal_status_map()
+    terminal_allowlist_entries = []
+    unresolved_missing_allowlist_entries = []
+    for item in raw_missing_allowlist_entries:
+        terminal_info = terminal_status_map.get(item)
+        classification = str((terminal_info or {}).get("classification", "")).strip().lower()
+        if classification in TELEGRAM_TERMINAL_CLASSIFICATIONS:
+            terminal_allowlist_entries.append(
+                {
+                    "id": item,
+                    "classification": classification,
+                    "final_url": terminal_info.get("final_url"),
+                    "page_title": terminal_info.get("page_title"),
+                    "messages": terminal_info.get("messages"),
+                    "normal_completion_class": "MAX_AVAILABLE_OK",
+                }
+            )
+        else:
+            unresolved_missing_allowlist_entries.append(item)
     collector_status = _load_json(TELEGRAM_COLLECTOR_STATUS_PATH) or {}
     return {
-        "coverage_basis": "telegram allowlist registry + observed markdown artifacts",
+        "coverage_basis": "telegram allowlist registry + observed markdown artifacts + terminal/non-archive registry",
         "allowlist_path": _rel(TELEGRAM_ALLOWLIST_PATH),
         "allowlist_count": len(allowlist),
+        "terminal_registry_path": _rel(TELEGRAM_TERMINAL_STATUS_PATH),
         "observed_channel_keys": len(observed_keys),
         "public_fallback_files": len(public_files),
         "full_files": len(full_files),
         "recovered_files": len(recovered_files),
-        "missing_allowlist_entries": missing_allowlist_entries,
-        "all_channels_satisfied": len(allowlist) > 0 and len(missing_allowlist_entries) == 0,
+        "raw_missing_allowlist_entries": raw_missing_allowlist_entries,
+        "terminal_allowlist_entries": terminal_allowlist_entries,
+        "missing_allowlist_entries": unresolved_missing_allowlist_entries,
+        "all_channels_satisfied": len(allowlist) > 0 and len(unresolved_missing_allowlist_entries) == 0,
         "dynamic_registry": True,
         "auto_expands_on_allowlist_update": True,
         "current_registry_ssot": _rel(TELEGRAM_ALLOWLIST_PATH),
         "collector_status": collector_status if isinstance(collector_status, dict) else None,
-        "note": "telegram coverage는 allowlist 전체를 기준으로 판단하며, 새 채널이 allowlist에 추가되면 다음 수집/검증/카탈로그 갱신에서 자동 포함된다.",
+        "note": "telegram coverage는 allowlist 전체를 기준으로 보되, 직접 확인된 contact/join-only/non-channel/bot 대상은 terminal registry로 MAX_AVAILABLE_OK 정상종결 처리한다.",
     }
 
 
@@ -382,28 +442,39 @@ def _blog_scope() -> dict[str, Any]:
     subdirs = sorted([p for p in BLOG_DIR.iterdir() if p.is_dir()]) if BLOG_DIR.exists() else []
     buddy_ids = _load_blog_buddy_ids()
     covered_buddy_ids: list[str] = []
-    missing_buddy_ids: list[str] = []
+    raw_missing_buddy_ids: list[str] = []
     for bid in buddy_ids:
         blog_dir = BLOG_DIR / bid
         has_md = blog_dir.exists() and any(p.is_file() for p in blog_dir.glob("*.md"))
         if has_md:
             covered_buddy_ids.append(bid)
         else:
-            missing_buddy_ids.append(bid)
+            raw_missing_buddy_ids.append(bid)
+    terminal_statuses = _load_blog_terminal_statuses()
+    terminal_missing_buddies = [
+        {"id": bid, **terminal_statuses[bid]}
+        for bid in raw_missing_buddy_ids
+        if bid in terminal_statuses
+    ]
+    unresolved_missing_buddy_ids = [bid for bid in raw_missing_buddy_ids if bid not in terminal_statuses]
     return {
-        "coverage_basis": "naver buddies registry + observed blogId subdirectories",
+        "coverage_basis": "naver buddies registry + observed blogId subdirectories + terminal max-available causes",
         "buddy_registry_path": _rel(BUDDIES_PATH),
         "buddy_registry_count": len(buddy_ids),
         "blog_ids_count": len(subdirs),
         "buddies_with_files_count": len(covered_buddy_ids),
-        "missing_buddy_count": len(missing_buddy_ids),
-        "missing_buddy_ids": missing_buddy_ids,
+        "raw_missing_buddy_count": len(raw_missing_buddy_ids),
+        "raw_missing_buddy_ids": raw_missing_buddy_ids,
+        "terminal_missing_buddy_count": len(terminal_missing_buddies),
+        "terminal_missing_buddies": terminal_missing_buddies,
+        "missing_buddy_count": len(unresolved_missing_buddy_ids),
+        "missing_buddy_ids": unresolved_missing_buddy_ids,
         "active_from": BLOG_FIXED_START_DATE,
-        "all_buddies_satisfied": len(buddy_ids) > 0 and len(missing_buddy_ids) == 0,
+        "all_buddies_satisfied": len(buddy_ids) > 0 and len(unresolved_missing_buddy_ids) == 0,
         "dynamic_registry": True,
         "auto_expands_on_registry_update": True,
         "current_registry_ssot": _rel(BUDDIES_PATH),
-        "note": "blog coverage는 raw 하위 디렉터리 수가 아니라 naver_buddies_full registry 전체가 최소 1개 markdown을 가지는지와 2016-01-01 이후 데이터만을 기준으로 본다. 새 이웃이 registry에 추가되면 다음 수집/검증/카탈로그 갱신에서 자동 포함된다.",
+        "note": "blog coverage는 registry 전체를 기준으로 보되 empty-posts/404/page1-links-0처럼 더 가져올 원문이 없는 케이스는 MAX_AVAILABLE_OK 정상종결로 처리한다.",
     }
 
 

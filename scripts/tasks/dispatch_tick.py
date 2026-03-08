@@ -27,6 +27,7 @@ ORCH_AGENT_ID = os.environ.get("OPENCLAW_ORCH_AGENT_ID", "main").strip() or "mai
 ORCH_TIMEOUT_SEC = 180
 CLOSE_WAIT_SEC = 20
 RECENT_TRANSITION_WINDOW_MINUTES = 15
+NONTERMINAL_BLOCKED_PHASES = {"subagent_running", "awaiting_callback"}
 
 SUBPROCESS_ENV = dict(os.environ)
 SUBPROCESS_ENV["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
@@ -49,6 +50,18 @@ def parse_task_dt(value: str) -> datetime | None:
         return datetime.fromisoformat(text)
     except ValueError:
         return None
+
+
+def extract_phase(note: str | None) -> str:
+    text = (note or "").strip()
+    for line in text.splitlines():
+        if line.startswith("phase:"):
+            return line.split(":", 1)[1].strip().lower()
+    return ""
+
+
+def is_waiting_callback_state(status: str, phase: str) -> bool:
+    return status == "BLOCKED" and phase.lower() in NONTERMINAL_BLOCKED_PHASES
 
 
 def append_debug_log(
@@ -223,7 +236,7 @@ def ticket_closure_state(ticket_id: str) -> tuple[bool, str, str, str]:
     conn.row_factory = sqlite3.Row
     try:
         row = conn.execute(
-            "SELECT status, review_status FROM tasks WHERE id=?",
+            "SELECT status, review_status, note FROM tasks WHERE id=?",
             (ticket_id,),
         ).fetchone()
     finally:
@@ -234,9 +247,14 @@ def ticket_closure_state(ticket_id: str) -> tuple[bool, str, str, str]:
 
     status = (row["status"] or "").upper()
     review = (row["review_status"] or "").upper()
-    closed = status in {"DONE", "BLOCKED"} or review in {"PASS", "REWORK"}
+    phase = extract_phase(row["note"])
+    waiting_callback = is_waiting_callback_state(status, phase)
+    closed = (status == "DONE") or (status == "BLOCKED" and not waiting_callback) or review in {"PASS", "REWORK"}
     source = transition_source(status, review)
-    return closed, f"status={status} review_status={review} source={source}", status, review
+    detail = f"status={status} review_status={review} source={source}"
+    if phase:
+        detail += f" phase={phase}"
+    return closed, detail, status, review
 
 
 def wait_for_close(ticket_id: str, seconds: int = CLOSE_WAIT_SEC) -> tuple[bool, str, str, str]:
@@ -261,7 +279,7 @@ def recent_run_transition(run_id: str) -> tuple[bool, str, str, str]:
         recent_runs = [run_id] if run_id else []
         rows = conn.execute(
             """
-            SELECT id, status, review_status, assigned_run_id, assigned_at, updated_at
+            SELECT id, status, review_status, note, assigned_run_id, assigned_at, updated_at
             FROM tasks
             WHERE assignee=?
               AND COALESCE(assigned_run_id, '')!=''
@@ -288,9 +306,14 @@ def recent_run_transition(run_id: str) -> tuple[bool, str, str, str]:
     for row in recent_rows:
         db_status = (row["status"] or "").upper()
         db_review_status = (row["review_status"] or "").upper()
-        if db_status in {"DONE", "BLOCKED"} or db_review_status in {"PASS", "REWORK"}:
+        db_phase = extract_phase(row["note"])
+        waiting_callback = is_waiting_callback_state(db_status, db_phase)
+        if db_status == "DONE" or (db_status == "BLOCKED" and not waiting_callback) or db_review_status in {"PASS", "REWORK"}:
             source = transition_source(db_status, db_review_status)
-            return True, row["id"], db_status, f"{db_review_status} source={source}"
+            detail = f"{db_review_status} source={source}".strip()
+            if db_phase:
+                detail += f" phase={db_phase}"
+            return True, row["id"], db_status, detail.strip()
 
     return False, "", "", ""
 

@@ -127,6 +127,11 @@ def build_profile_specs(profile: str) -> list[dict[str, Any]]:
                     'NEWS_INDEX_TARGET_DATE': TARGET_DATE_2016,
                     'NEWS_INDEX_RSS_MAX_PAGES': os.environ.get('NEWS_INDEX_RSS_MAX_PAGES', '120'),
                     'NEWS_INDEX_MAX_SITEMAPS': os.environ.get('NEWS_INDEX_MAX_SITEMAPS', '300'),
+                    'GUARDIAN_ENABLE': os.environ.get('GUARDIAN_ENABLE', '1'),
+                    'GUARDIAN_END_DATE': os.environ.get('GUARDIAN_END_DATE', '2019-12-31'),
+                    'GUARDIAN_MAX_MONTHS': os.environ.get('GUARDIAN_MAX_MONTHS', '48'),
+                    'GUARDIAN_MAX_PAGES_PER_SLICE': os.environ.get('GUARDIAN_MAX_PAGES_PER_SLICE', '1'),
+                    'GUARDIAN_PAGE_SIZE': os.environ.get('GUARDIAN_PAGE_SIZE', '50'),
                 },
             ),
             _spec(

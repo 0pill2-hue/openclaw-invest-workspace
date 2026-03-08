@@ -14,6 +14,8 @@ from html import unescape
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from urllib.request import Request, urlopen
 
+from stage2_config import load_stage2_config_bundle
+
 # TODO(refactor-phase2): move core refine logic into invest.pipeline modules (behavior-preserving migration).
 try:
     import invest.pipeline  # noqa: F401
@@ -29,7 +31,7 @@ CLEAN_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'clean')
 # Stage2가 유일한 검역(quarantine) 저장 단계다. Stage1은 raw/상태 파일만 저장한다.
 Q_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'quarantine')
 REPORT_DIR = os.path.join(STAGE2_ROOT, 'outputs', 'reports', 'qc')
-STAGE2_RULE_VERSION = 'stage2-refine-20260308-r2'
+STAGE2_RULE_VERSION = 'stage2-refine-20260308-r3'
 STAGE2_ENABLE_LINK_ENRICHMENT = os.environ.get('STAGE2_ENABLE_LINK_ENRICHMENT', '0').strip().lower() in ('1', 'true', 'yes')
 FOLDERS = [
     'kr/dart',
@@ -60,83 +62,55 @@ FOLDER_ALIAS = {
     'market/news/rss': 'market/rss',
 }
 
-BLOG_UI_MARKERS = {
-    '본문 바로가기', '카테고리 이동', '검색', 'my메뉴 열기', '메뉴 바로가기', '이 블로그',
-}
-PREMIUM_BOILERPLATE_MARKERS = {
-    'disclaimer', '본 포스팅에 수록된 내용은', '매수/매도 추천', '투자 결과에 대한 법적 책임소재',
-    '별도의 투자 상담', '구독자 여러분 스스로 공부',
-}
+STAGE2_CONFIG_BUNDLE = load_stage2_config_bundle()
+STAGE2_RUNTIME_CONFIG = STAGE2_CONFIG_BUNDLE['runtime']
+STAGE2_REASON_CONFIG = STAGE2_CONFIG_BUNDLE['reason']
+STAGE2_CONFIG_PROVENANCE = STAGE2_CONFIG_BUNDLE['provenance']
+STAGE2_CONFIG_SHA1 = STAGE2_CONFIG_PROVENANCE['bundle_sha1']
+
+REFINE_RUNTIME_CONFIG = STAGE2_RUNTIME_CONFIG['refine']
+REFINE_REASON_CONFIG = STAGE2_REASON_CONFIG['refine']
+TEXT_VALIDATION_CONFIG = REFINE_RUNTIME_CONFIG['text_validation']
+DEDUP_CONFIG = REFINE_RUNTIME_CONFIG['dedup']
+FILTER_CONFIG = REFINE_RUNTIME_CONFIG['filters']
+LINK_ENRICHMENT_CONFIG = REFINE_RUNTIME_CONFIG['link_enrichment']
+ATTACHMENT_CLEANUP_CONFIG = FILTER_CONFIG.get('attachment_cleanup', {})
+
+BLOG_UI_MARKERS = set(FILTER_CONFIG['blog_ui_markers'])
+PREMIUM_BOILERPLATE_MARKERS = set(FILTER_CONFIG['premium_boilerplate_markers'])
+ATTACHMENT_DROP_LINE_PATTERNS = tuple(ATTACHMENT_CLEANUP_CONFIG.get('drop_line_patterns', []))
+ATTACHMENT_DROP_BLOCK_PATTERNS = tuple(ATTACHMENT_CLEANUP_CONFIG.get('drop_block_patterns', []))
 
 # 텍스트 정제 최소 길이(의미 있는 단문을 과도 격리하지 않도록 완화)
-BLOG_MIN_EFFECTIVE_LEN = 80
-TELEGRAM_MIN_EFFECTIVE_LEN = 60
-PREMIUM_MIN_EFFECTIVE_LEN = 100
-SELECTED_ARTICLES_MIN_TEXT_LEN = 80
-DEDUP_MIN_FP_TEXT_LEN = 80
-SHORT_MEANINGFUL_MIN_LEN = 45
+BLOG_MIN_EFFECTIVE_LEN = int(TEXT_VALIDATION_CONFIG['blog_min_effective_len'])
+TELEGRAM_MIN_EFFECTIVE_LEN = int(TEXT_VALIDATION_CONFIG['telegram_min_effective_len'])
+PREMIUM_MIN_EFFECTIVE_LEN = int(TEXT_VALIDATION_CONFIG['premium_min_effective_len'])
+SELECTED_ARTICLES_MIN_TEXT_LEN = int(TEXT_VALIDATION_CONFIG['selected_articles_min_text_len'])
+DEDUP_MIN_FP_TEXT_LEN = int(DEDUP_CONFIG['min_fingerprint_text_len'])
+SHORT_MEANINGFUL_MIN_LEN = int(TEXT_VALIDATION_CONFIG['short_meaningful_min_len'])
 
-DEDUP_TARGET_FOLDERS = {
-    'market/news/selected_articles',
-    'text/blog',
-    'text/telegram',
-    'text/premium/startale',
-}
-
-TARGET_LINK_ENRICH_FOLDERS = {
-    'text/blog',
-    'text/telegram',
-    'text/premium/startale',
-}
+DEDUP_TARGET_FOLDERS = set(DEDUP_CONFIG['target_folders'])
+TARGET_LINK_ENRICH_FOLDERS = set(LINK_ENRICHMENT_CONFIG['target_folders'])
 
 URL_PATTERN = re.compile(r'https?://[^\s<>()\[\]{}"\']+', flags=re.IGNORECASE)
 ATTACH_TEXT_BLOCK_RE = re.compile(r'(?is)\[ATTACH_TEXT\]\s*(.*?)\s*\[/ATTACH_TEXT\]')
-TRACKING_QUERY_PREFIXES = (
-    'utm_', 'fbclid', 'gclid', 'igshid', 'mc_cid', 'mc_eid', 'spm', 'ref', 'ref_src',
-)
-ALLOWED_LINK_DOMAIN_SUFFIXES = (
-    'naver.com',
-    'telegra.ph',
-    't.me',
-    'medium.com',
-    'coindesk.com',
-    'cointelegraph.com',
-    'theblock.co',
-    'bloomberg.com',
-    'reuters.com',
-    'cnbc.com',
-    'marketwatch.com',
-    'investing.com',
-    'yahoo.com',
-    'yna.co.kr',
-    'yonhapnews.co.kr',
-    'hankyung.com',
-    'mk.co.kr',
-    'sedaily.com',
-    'edaily.co.kr',
-    'fnnews.com',
-    'newsis.com',
-    'chosun.com',
-    'joongang.co.kr',
-    'donga.com',
-    'khan.co.kr',
-    'hani.co.kr',
-)
+TRACKING_QUERY_PREFIXES = tuple(FILTER_CONFIG['tracking_query_prefixes'])
+ALLOWED_LINK_DOMAIN_SUFFIXES = tuple(FILTER_CONFIG['allowed_link_domain_suffixes'])
 # allowlist 확장 모드(기본 ON): 뉴스/리포트 링크 누락 최소화
-LINK_ENRICH_ALLOW_ALL_DOMAINS = os.environ.get('LINK_ENRICH_ALLOW_ALL_DOMAINS', '1').strip().lower() in ('1', 'true', 'yes')
-BLOCKED_LINK_DOMAIN_SUFFIXES = (
-    'telegram.org', 'web.telegram.org',
-    'facebook.com', 'instagram.com', 'x.com', 'twitter.com',
-)
+LINK_ENRICH_ALLOW_ALL_DOMAINS = os.environ.get(
+    'LINK_ENRICH_ALLOW_ALL_DOMAINS',
+    '1' if LINK_ENRICHMENT_CONFIG.get('allow_all_domains_default', True) else '0',
+).strip().lower() in ('1', 'true', 'yes')
+BLOCKED_LINK_DOMAIN_SUFFIXES = tuple(FILTER_CONFIG['blocked_link_domain_suffixes'])
 
-LINK_FETCH_TIMEOUT_SEC = 6
-LINK_FETCH_MAX_RETRIES = 3
-LINK_FETCH_BACKOFF_BASE_SEC = 0.7
-LINK_FETCH_MAX_BYTES = 350_000
-LINK_FETCH_MAX_TEXT_CHARS = 3_000
-LINK_ENRICH_MAX_URLS_PER_FILE = 12
-LINK_ENRICH_MAX_TOTAL_CHARS = 4000
-LINK_ENRICH_MIN_EFFECTIVE_ADD = 50
+LINK_FETCH_TIMEOUT_SEC = int(LINK_ENRICHMENT_CONFIG['fetch_timeout_sec'])
+LINK_FETCH_MAX_RETRIES = int(LINK_ENRICHMENT_CONFIG['fetch_max_retries'])
+LINK_FETCH_BACKOFF_BASE_SEC = float(LINK_ENRICHMENT_CONFIG['fetch_backoff_base_sec'])
+LINK_FETCH_MAX_BYTES = int(LINK_ENRICHMENT_CONFIG['fetch_max_bytes'])
+LINK_FETCH_MAX_TEXT_CHARS = int(LINK_ENRICHMENT_CONFIG['fetch_max_text_chars'])
+LINK_ENRICH_MAX_URLS_PER_FILE = int(LINK_ENRICHMENT_CONFIG['max_urls_per_file'])
+LINK_ENRICH_MAX_TOTAL_CHARS = int(LINK_ENRICHMENT_CONFIG['max_total_chars'])
+LINK_ENRICH_MIN_EFFECTIVE_ADD = int(LINK_ENRICHMENT_CONFIG['min_effective_add'])
 
 os.makedirs(REPORT_DIR, exist_ok=True)
 
@@ -205,6 +179,7 @@ def _output_paths(base_dir: str, folder: str, rel_path: str) -> list[str]:
 def _current_index_meta() -> dict:
     return {
         'stage2_rule_version': STAGE2_RULE_VERSION,
+        'stage2_config_sha1': STAGE2_CONFIG_SHA1,
         'link_enrichment_enabled': bool(STAGE2_ENABLE_LINK_ENRICHMENT),
         'folders': list(FOLDERS),
     }
@@ -249,7 +224,7 @@ def _reset_output_tree(base_dir: str):
 
 def _file_sig(path: str) -> str:
     st = os.stat(path)
-    key = f"{STAGE2_RULE_VERSION}:{int(STAGE2_ENABLE_LINK_ENRICHMENT)}:{st.st_size}:{int(st.st_mtime)}:{path}".encode('utf-8')
+    key = f"{STAGE2_RULE_VERSION}:{STAGE2_CONFIG_SHA1}:{int(STAGE2_ENABLE_LINK_ENRICHMENT)}:{st.st_size}:{int(st.st_mtime)}:{path}".encode('utf-8')
     return hashlib.sha1(key).hexdigest()
 
 
@@ -515,14 +490,21 @@ def _extract_attach_text(content: str) -> str:
     return '\n'.join(chunks).strip()
 
 
-def _merge_effective_with_attach(effective: str, content: str) -> str:
-    attach = _text_without_urls(_extract_attach_text(content))
-    if not attach:
-        return (effective or '').strip()
-    base = (effective or '').strip()
-    if not base:
-        return attach
-    return f"{base}\n{attach}"
+def _strip_attachment_residue(content: str) -> str:
+    cleaned = content or ''
+    for pat in ATTACHMENT_DROP_BLOCK_PATTERNS:
+        cleaned = re.sub(pat, '\n', cleaned)
+
+    kept_lines = []
+    for raw in cleaned.splitlines():
+        s = raw.strip()
+        if s and any(re.match(pat, s) for pat in ATTACHMENT_DROP_LINE_PATTERNS):
+            continue
+        kept_lines.append(raw.rstrip())
+
+    text = '\n'.join(kept_lines)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip() + ('\n' if text.strip() else '')
 
 
 def _build_link_source_text(content: str, attach_text: str = '') -> str:
@@ -720,7 +702,7 @@ def _needs_link_enrichment(content: str, effective: str, min_len: int, url_count
     return ratio < 0.55
 
 
-def _collect_unique_enrichment_blocks(canonical_urls: list[str], base_effective: str) -> tuple[list[tuple[str, str]], int]:
+def _collect_unique_enrichment_blocks(canonical_urls: list[str], base_effective: str) -> tuple[list[tuple[str, str]], int, dict]:
     seen_fp = set()
     if base_effective.strip():
         seen_fp.add(_fingerprint(base_effective))
@@ -728,12 +710,27 @@ def _collect_unique_enrichment_blocks(canonical_urls: list[str], base_effective:
     blocks = []
     content_dup_count = 0
     total_chars = 0
+    fetch_meta = {
+        'attempted_urls': 0,
+        'successful_urls': 0,
+        'fetch_failed_urls': 0,
+        'disallowed_urls': 0,
+        'fetched_text_too_short_urls': 0,
+    }
 
     for cu in canonical_urls[:LINK_ENRICH_MAX_URLS_PER_FILE]:
-        fetched_text, _ = _fetch_link_text(cu)
+        fetch_meta['attempted_urls'] += 1
+        fetched_text, fetch_error = _fetch_link_text(cu)
         if not fetched_text:
+            if fetch_error == 'disallowed_domain':
+                fetch_meta['disallowed_urls'] += 1
+            elif fetch_error == 'fetched_text_too_short':
+                fetch_meta['fetched_text_too_short_urls'] += 1
+            else:
+                fetch_meta['fetch_failed_urls'] += 1
             continue
 
+        fetch_meta['successful_urls'] += 1
         candidates = []
         for seg in re.split(r'\n{2,}', fetched_text):
             s = re.sub(r'\s+', ' ', seg).strip()
@@ -765,7 +762,7 @@ def _collect_unique_enrichment_blocks(canonical_urls: list[str], base_effective:
         if total_chars >= LINK_ENRICH_MAX_TOTAL_CHARS:
             break
 
-    return blocks, content_dup_count
+    return blocks, content_dup_count, fetch_meta
 
 
 def _inject_enriched_content(content: str, folder: str, blocks: list[tuple[str, str]], canonical_urls: list[str]) -> str:
@@ -803,6 +800,29 @@ def _inject_enriched_content(content: str, folder: str, blocks: list[tuple[str, 
     return content.rstrip() + '\n\n' + '\n'.join(enrich_buf).strip() + '\n'
 
 
+def _text_reason_prefix(normalized_folder: str) -> str:
+    return {
+        'text/blog': 'blog',
+        'text/telegram': 'telegram',
+        'text/premium/startale': 'premium',
+    }.get(normalized_folder, 'text')
+
+
+def _text_body_reason(normalized_folder: str, effective: str) -> str:
+    prefix = _text_reason_prefix(normalized_folder)
+    if normalized_folder == 'text/premium/startale':
+        if not (effective or '').strip():
+            return 'premium_effective_body_empty_or_boilerplate'
+        return 'premium_effective_body_too_short'
+    if not (effective or '').strip():
+        return f'{prefix}_effective_body_empty'
+    return f'{prefix}_effective_body_too_short'
+
+
+def _link_fetch_failure_reason(normalized_folder: str) -> str:
+    return f"{_text_reason_prefix(normalized_folder)}_link_body_fetch_failed"
+
+
 def _validate_blog_text(content: str) -> tuple[bool, str, dict]:
     has_date = bool(re.search(r'(?mi)^(Date|PublishedDate)\s*:\s*.+$', content or ''))
     has_source = bool(re.search(r'(?mi)^Source\s*:\s*https?://\S+', content or ''))
@@ -817,13 +837,12 @@ def _validate_blog_text(content: str) -> tuple[bool, str, dict]:
         marker_filters=BLOG_UI_MARKERS,
     )
     effective = _text_without_urls(body)
-    effective = _merge_effective_with_attach(effective, content)
     context = {
         'effective': effective,
         'min_len': BLOG_MIN_EFFECTIVE_LEN,
     }
     if len(effective) < BLOG_MIN_EFFECTIVE_LEN and not _is_meaningful_short_text(effective):
-        return False, 'blog_effective_body_too_short', context
+        return False, _text_body_reason('text/blog', effective), context
     return True, '', context
 
 
@@ -849,13 +868,12 @@ def _validate_telegram_text(content: str) -> tuple[bool, str, dict]:
         ],
     )
     effective = _text_without_urls(body)
-    effective = _merge_effective_with_attach(effective, content)
     context = {
         'effective': effective,
         'min_len': TELEGRAM_MIN_EFFECTIVE_LEN,
     }
     if len(effective) < TELEGRAM_MIN_EFFECTIVE_LEN and not _is_meaningful_short_text(effective):
-        return False, 'telegram_effective_body_too_short', context
+        return False, _text_body_reason('text/telegram', effective), context
     return True, '', context
 
 
@@ -884,13 +902,12 @@ def _validate_premium_text(content: str) -> tuple[bool, str, dict]:
         marker_filters=PREMIUM_BOILERPLATE_MARKERS,
     )
     effective = _text_without_urls(effective_body)
-    effective = _merge_effective_with_attach(effective, content)
     context = {
         'effective': effective,
         'min_len': PREMIUM_MIN_EFFECTIVE_LEN,
     }
     if len(effective) < PREMIUM_MIN_EFFECTIVE_LEN and not _is_meaningful_short_text(effective):
-        return False, 'premium_effective_body_too_short_or_boilerplate', context
+        return False, _text_body_reason('text/premium/startale', effective), context
 
     return True, '', context
 
@@ -907,30 +924,34 @@ def _validate_text_by_folder(content: str, normalized_folder: str) -> tuple[bool
 
 def _is_short_reason(reason: str) -> bool:
     return reason in {
+        'blog_effective_body_empty',
         'blog_effective_body_too_short',
+        'telegram_effective_body_empty',
         'telegram_effective_body_too_short',
-        'premium_effective_body_too_short_or_boilerplate',
+        'premium_effective_body_empty_or_boilerplate',
+        'premium_effective_body_too_short',
     }
 
 
 def sanitize_text(path: str, folder: str = ''):
     try:
         with open(path, 'r', encoding='utf-8') as f:
-            content = f.read()
+            raw_content = f.read()
 
-        raw_trim = (content or '').strip()
+        raw_trim = (raw_content or '').strip()
         if len(raw_trim) < 10:
             return None, 'text_too_short', {}
 
-        attach_text = _extract_attach_text(content)
+        attach_text = _extract_attach_text(raw_content)
         if attach_text:
             LINK_RUNTIME_STATS['attachment_blocks_seen'] += 1
             LINK_RUNTIME_STATS['attachment_text_chars_total'] += len(attach_text)
 
         normalized_folder = _normalize_folder(folder)
-        ok, reason, ctx = _validate_text_by_folder(content, normalized_folder)
+        cleaned_content = _strip_attachment_residue(raw_content)
+        ok, reason, ctx = _validate_text_by_folder(cleaned_content, normalized_folder)
         if ok:
-            return content, None, {'link_enriched': False, 'canonical_urls': 0}
+            return cleaned_content, None, {'link_enriched': False, 'canonical_urls': 0, 'attachment_residue_removed': cleaned_content != raw_content}
 
         if not STAGE2_ENABLE_LINK_ENRICHMENT:
             return None, reason, {'link_enriched': False, 'link_enrichment_enabled': False}
@@ -938,24 +959,26 @@ def sanitize_text(path: str, folder: str = ''):
         if normalized_folder not in TARGET_LINK_ENRICH_FOLDERS or not _is_short_reason(reason):
             return None, reason, {}
 
-        link_source_text = _build_link_source_text(content, attach_text)
+        link_source_text = _build_link_source_text(raw_content, attach_text)
         raw_urls = _extract_urls(link_source_text)
         LINK_RUNTIME_STATS['url_raw_extracted_total'] += len(raw_urls)
         canonical_urls, deduped = _canonical_dedup_urls(raw_urls)
         LINK_RUNTIME_STATS['url_canonical_total'] += len(canonical_urls)
         LINK_RUNTIME_STATS['url_deduped_within_file'] += deduped
 
-        if not _needs_link_enrichment(content, ctx.get('effective', ''), int(ctx.get('min_len', 0)), len(canonical_urls)):
+        if not _needs_link_enrichment(cleaned_content, ctx.get('effective', ''), int(ctx.get('min_len', 0)), len(canonical_urls)):
             return None, reason, {}
 
         LINK_RUNTIME_STATS['enrichment_attempt_files'] += 1
-        blocks, content_dup_count = _collect_unique_enrichment_blocks(canonical_urls, ctx.get('effective', ''))
+        blocks, content_dup_count, fetch_meta = _collect_unique_enrichment_blocks(canonical_urls, ctx.get('effective', ''))
         LINK_RUNTIME_STATS['content_fingerprint_dedup'] += content_dup_count
         if not blocks:
             LINK_RUNTIME_STATS['enrichment_still_quarantined_files'] += 1
-            return None, reason, {}
+            if fetch_meta.get('attempted_urls', 0) > 0 and fetch_meta.get('successful_urls', 0) == 0 and fetch_meta.get('fetch_failed_urls', 0) > 0:
+                return None, _link_fetch_failure_reason(normalized_folder), {'link_enriched': False, **fetch_meta}
+            return None, reason, {'link_enriched': False, **fetch_meta}
 
-        enriched_content = _inject_enriched_content(content, normalized_folder, blocks, canonical_urls)
+        enriched_content = _inject_enriched_content(cleaned_content, normalized_folder, blocks, canonical_urls)
         ok2, reason2, _ = _validate_text_by_folder(enriched_content, normalized_folder)
         if ok2:
             LINK_RUNTIME_STATS['enrichment_applied_files'] += 1
@@ -964,12 +987,13 @@ def sanitize_text(path: str, folder: str = ''):
                 'link_enriched': True,
                 'canonical_urls': len(canonical_urls),
                 'enriched_blocks': len(blocks),
+                'attachment_residue_removed': cleaned_content != raw_content,
             }
 
         LINK_RUNTIME_STATS['enrichment_still_quarantined_files'] += 1
         return None, reason2, {}
     except Exception as e:
-        return None, str(e), {}
+        return None, f'exception:{type(e).__name__}:{e}', {}
 
 
 def _flatten_rss_entries(data) -> list[dict]:
@@ -1036,8 +1060,8 @@ def sanitize_json(path: str, folder: str = ''):
                 return None, reason
 
         return data, None
-    except Exception as e:
-        return None, str(e)
+    except Exception:
+        return None, 'invalid_json'
 
 
 def _ensure_parent(path: str):
@@ -1416,6 +1440,15 @@ def _duplicate_meta(duplicate: dict | None) -> dict:
     }
 
 
+def _reason_taxonomy_snapshot() -> dict:
+    snapshot = json.loads(json.dumps(REFINE_REASON_CONFIG, ensure_ascii=False))
+    snapshot['terminal_quarantine_reasons'] = snapshot['quarantine_reason_groups']
+    snapshot['max_available_policy'] = snapshot['reason_filter_taxonomy']['max_available']
+    snapshot['warn_report_issue_types'] = snapshot['report_issue_filters']['warn']
+    snapshot['fail_report_issue_types'] = snapshot['report_issue_filters']['fail']
+    return snapshot
+
+
 def _read_jsonl_records(path: str) -> tuple[list[dict], list[dict]]:
     rows = []
     errors = []
@@ -1619,6 +1652,8 @@ def run_full_refine(force_rebuild: bool = False):
                 'type': 'missing_input_folder',
                 'folder': folder,
                 'path': raw_dir,
+                'required': folder in REQUIRED_REFINE_FOLDERS,
+                'severity': 'fail' if folder in REQUIRED_REFINE_FOLDERS else 'warn',
             }
             if folder in REQUIRED_REFINE_FOLDERS:
                 hard_fail_issues.append(issue)
@@ -1811,6 +1846,7 @@ def run_full_refine(force_rebuild: bool = False):
 
     report_path = os.path.join(REPORT_DIR, f"FULL_REFINE_REPORT_{timestamp}.md")
     report_json_path = os.path.join(REPORT_DIR, f"FULL_REFINE_REPORT_{timestamp}.json")
+    reason_taxonomy = _reason_taxonomy_snapshot()
 
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write("# Full Refinement Report\n\n")
@@ -1819,6 +1855,9 @@ def run_full_refine(force_rebuild: bool = False):
         f.write(f"- Run Mode: {run_mode}\n")
         f.write(f"- Processed Index: {'reset' if force_rebuild else 'reuse_if_signature_matches'}\n")
         f.write(f"- Incremental Signature Salt: {STAGE2_RULE_VERSION}\n")
+        f.write(f"- Config Bundle SHA1: {STAGE2_CONFIG_PROVENANCE['bundle_sha1']}\n")
+        f.write(f"- Runtime Config: {STAGE2_CONFIG_PROVENANCE['runtime_config_path']} ({STAGE2_CONFIG_PROVENANCE['runtime_config_sha1']})\n")
+        f.write(f"- Reason Config: {STAGE2_CONFIG_PROVENANCE['reason_config_path']} ({STAGE2_CONFIG_PROVENANCE['reason_config_sha1']})\n")
         f.write(f"- Clean Base: {final_clean_base}\n")
         f.write(f"- Quarantine Base: {final_q_base}\n")
         f.write("- Writer policy: market signal + qualitative canonical writer=`stage02_onepass_refine_full.py`, kr/us signal canonical writer=`stage02_qc_cleaning_full.py`\n")
@@ -1868,11 +1907,27 @@ def run_full_refine(force_rebuild: bool = False):
         f.write(f"- url_fetch_failure={int(LINK_RUNTIME_STATS.get('url_fetch_failure', 0))}\n")
         f.write(f"- url_disallowed={int(LINK_RUNTIME_STATS.get('url_disallowed', 0))}\n")
         f.write(f"- content_fingerprint_dedup={int(LINK_RUNTIME_STATS.get('content_fingerprint_dedup', 0))}\n")
+        f.write("\n## Reason / Filter / Quarantine Taxonomy\n\n")
+        f.write("- reason_filter_taxonomy:\n")
+        for name, meta in reason_taxonomy['reason_filter_taxonomy'].items():
+            f.write(f"  - {name}: {meta['description']}\n")
+            if meta.get('includes'):
+                f.write(f"    - includes: {', '.join(meta['includes'])}\n")
+            if meta.get('reasons'):
+                f.write(f"    - reasons: {', '.join(meta['reasons'])}\n")
+        f.write("- quarantine_reason_groups:\n")
+        for category, reasons in reason_taxonomy['quarantine_reason_groups'].items():
+            f.write(f"  - {category}: {', '.join(reasons)}\n")
+        f.write("- normalizable_clean_transforms: " + ', '.join(reason_taxonomy['normalizable_clean_transforms']) + "\n")
+        f.write("- report_issue_filters.warn: " + ', '.join(reason_taxonomy['report_issue_filters']['warn']) + "\n")
+        f.write("- report_issue_filters.fail: " + ', '.join(reason_taxonomy['report_issue_filters']['fail']) + "\n")
         f.write("\n## Corpus-level Qualitative Dedup\n\n")
         f.write(f"- bootstrap_files={int(corpus_dedup_registry.get('bootstrap_files', 0))}\n")
         f.write(f"- bootstrap_records={int(corpus_dedup_registry.get('bootstrap_records', 0))}\n")
         f.write(f"- registered_items={int(corpus_dedup_registry.get('registered_items', 0))}\n")
         f.write(f"- duplicate_items={int(corpus_dedup_registry.get('duplicate_items', 0))}\n")
+        for rule in reason_taxonomy['corpus_dedup_rules']:
+            f.write(f"- dedup_rule[{rule['name']}] => {rule['duplicate_reason']} ({rule['description']})\n")
 
     dedup_urls_total = int(LINK_RUNTIME_STATS.get('url_deduped_within_file', 0) + LINK_RUNTIME_STATS.get('url_cache_hits', 0))
 
@@ -1883,9 +1938,11 @@ def run_full_refine(force_rebuild: bool = False):
         'processed_index_policy': 'reset' if force_rebuild else 'reuse_if_signature_matches',
         'incremental_signature': {
             'salt': STAGE2_RULE_VERSION,
+            'config_bundle_sha1': STAGE2_CONFIG_PROVENANCE['bundle_sha1'],
             'link_enrichment_enabled': STAGE2_ENABLE_LINK_ENRICHMENT,
-            'strategy': 'size+mtime+path+rule_version+link_enrichment_flag',
+            'strategy': 'size+mtime+path+rule_version+config_bundle_sha1+link_enrichment_flag',
         },
+        'config_provenance': STAGE2_CONFIG_PROVENANCE,
         'clean_base': final_clean_base,
         'quarantine_base': final_q_base,
         'writer_policy': {
@@ -1903,6 +1960,10 @@ def run_full_refine(force_rebuild: bool = False):
             'report_only_count': int(len(report_only_issues)),
             'hard_fail_issues': hard_fail_issues,
             'report_only_issues': report_only_issues,
+            'taxonomy': {
+                'warn_report_issue_types': reason_taxonomy['report_issue_filters']['warn'],
+                'fail_report_issue_types': reason_taxonomy['report_issue_filters']['fail'],
+            },
         },
         'results': results,
         'totals': {
@@ -1918,16 +1979,16 @@ def run_full_refine(force_rebuild: bool = False):
             **{k: int(v) for k, v in LINK_RUNTIME_STATS.items()},
             'deduped_url_total': dedup_urls_total,
         },
+        'reason_taxonomy': reason_taxonomy,
         'corpus_dedup': {
             'bootstrap_files': int(corpus_dedup_registry.get('bootstrap_files', 0)),
             'bootstrap_records': int(corpus_dedup_registry.get('bootstrap_records', 0)),
             'registered_items': int(corpus_dedup_registry.get('registered_items', 0)),
             'duplicate_items': int(corpus_dedup_registry.get('duplicate_items', 0)),
-            'rules': [
-                'canonical_url',
-                'normalized_title_plus_date',
-                'content_fingerprint',
-            ],
+            'rules': [rule['name'] for rule in reason_taxonomy['corpus_dedup_rules']],
+            'rule_reason_map': {
+                rule['name']: rule['duplicate_reason'] for rule in reason_taxonomy['corpus_dedup_rules']
+            },
             'scope': sorted(DEDUP_TARGET_FOLDERS),
         },
     }

@@ -117,6 +117,7 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
 - `rss_fast`, `telegram_fast`, `blog_fast`, `kr_ohlcv_intraday`, `kr_supply_intraday`, `us_ohlcv_daily`, `dart_fast`는 cadence 분리를 위한 개별 프로필이다.
 - `news_backfill`은 `selected_articles`를 2016 coverage까지 끌어내리기 위한 전용 프로필이며, 완료 전까지 짧은 interval(권장 30분~60분)로 유지한다.
 - `news_backfill`은 `NEWS_SELECTED_SKIP_EXISTING=1`을 기본으로 사용해 이미 수집 성공한 URL은 건너뛰고 미수집 URL에 집중한다.
+- `news_backfill`의 무료 보강 경로는 Guardian Open Platform(search api + Guardian business RSS)와 공식기관 RSS(Fed/ECB/SEC)다. 기본 backfill 범위는 `NEWS_INDEX_TARGET_DATE=2016-01-01`, `GUARDIAN_END_DATE=2019-12-31`이다.
 - `invest/stages/stage1/scripts/launchd/launchd_stage01_profile.sh`가 launchd용 canonical profile wrapper다.
 - `invest/ops/launchd/plists/com.jobiseu.invest.stage1.backfill.news.plist`는 `news_backfill`을 `StartInterval=1800`(30분) cadence로 실행한다.
 - `RUN_US_OHLCV_IN_DAILY=1|true|yes`일 때만 US OHLCV를 `daily_full`에 추가 포함한다.

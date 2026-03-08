@@ -53,9 +53,11 @@ updated_at: 2026-03-07 KST
 - `invest/stages/stage1/scripts/stage01_build_news_url_index.py` *(뉴스 1단계: 전수 URL 인덱스)*
   - `invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/*.jsonl`
   - 입력: `news_sources.json` 피드 도메인 기준 sitemap/rss archive
+  - backfill 보강: Guardian Open Platform(search api, free) + Guardian/official RSS(Fed/ECB/SEC)
 - `invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py` *(뉴스 2단계: 선별 본문 수집)*
   - `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl`
   - 입력: `url_index` + keyword 우선순위
+  - Guardian Open Platform row는 `apiUrl` 기반 bodyText 직접 수집 경로를 우선 사용
 
 ### Text
 - `invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py` *(launchd: com.jobiseu.openclaw.invest.stage01.blog)*

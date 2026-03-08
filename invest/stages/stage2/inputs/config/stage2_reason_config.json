@@ -1,0 +1,194 @@
+{
+  "version": "2026-03-08-stage2-reason-config-r1",
+  "refine": {
+    "quarantine_reason_groups": {
+      "selected_articles_invalid_row": [
+        "selected_articles_missing_url",
+        "selected_articles_missing_title",
+        "selected_articles_missing_published_date",
+        "selected_articles_effective_body_too_short",
+        "jsonl_parse_error:<Exception>",
+        "jsonl_row_not_object",
+        "empty_jsonl"
+      ],
+      "text_invalid_metadata": [
+        "blog_missing_required_metadata",
+        "telegram_missing_required_metadata",
+        "premium_missing_required_metadata"
+      ],
+      "text_body_quality": [
+        "text_too_short",
+        "blog_effective_body_empty",
+        "blog_effective_body_too_short",
+        "telegram_effective_body_empty",
+        "telegram_effective_body_too_short",
+        "premium_effective_body_empty_or_boilerplate",
+        "premium_effective_body_too_short"
+      ],
+      "text_link_body_fetch_failure": [
+        "blog_link_body_fetch_failed",
+        "telegram_link_body_fetch_failed",
+        "premium_link_body_fetch_failed"
+      ],
+      "premium_blocked_or_status": [
+        "premium_bad_status_<STATUS>",
+        "premium_paywall_or_blocked_reason"
+      ],
+      "qualitative_csv_or_json_invalid": [
+        "missing_required_columns:<cols>",
+        "invalid_rcept_dt",
+        "invalid_<date_column>",
+        "missing_report_nm",
+        "missing_rcept_no",
+        "missing_corp_or_stock_code",
+        "missing_title_body_url",
+        "empty_after_strip",
+        "rss_no_entries",
+        "rss_missing_required_fields(title/datetime/url)",
+        "empty_json",
+        "invalid_json"
+      ],
+      "corpus_duplicates": [
+        "duplicate_canonical_url",
+        "duplicate_title_date",
+        "duplicate_content_fingerprint",
+        "duplicate_rcept_no",
+        "duplicate_date_title",
+        "duplicate_<id_column>"
+      ],
+      "unexpected_processing_exception": [
+        "exception:<ExceptionType>:<message>"
+      ]
+    },
+    "reason_filter_taxonomy": {
+      "terminal": {
+        "description": "Stage2 terminal quarantine umbrella. Any invalid, duplicate, fetch_fail, blocked/status, or exception case ends in quarantine.",
+        "includes": [
+          "invalid",
+          "duplicate",
+          "fetch_fail",
+          "premium_blocked_or_status",
+          "unexpected_processing_exception"
+        ],
+        "quarantine": true
+      },
+      "max_available": {
+        "description": "Deterministically normalized record/file is kept in clean when minimum contract is satisfied; no separate max_available reason string is emitted.",
+        "quarantine": false
+      },
+      "duplicate": {
+        "description": "Duplicate detected after minimum contract check; quarantined with duplicate_* reason.",
+        "quarantine": true,
+        "reasons": [
+          "duplicate_canonical_url",
+          "duplicate_title_date",
+          "duplicate_content_fingerprint",
+          "duplicate_rcept_no",
+          "duplicate_date_title",
+          "duplicate_<id_column>"
+        ]
+      },
+      "invalid": {
+        "description": "Minimum contract, parse, metadata, or body-quality failure; quarantined.",
+        "quarantine": true,
+        "reasons": [
+          "selected_articles_missing_url",
+          "selected_articles_missing_title",
+          "selected_articles_missing_published_date",
+          "selected_articles_effective_body_too_short",
+          "jsonl_parse_error:<Exception>",
+          "jsonl_row_not_object",
+          "empty_jsonl",
+          "blog_missing_required_metadata",
+          "telegram_missing_required_metadata",
+          "premium_missing_required_metadata",
+          "text_too_short",
+          "blog_effective_body_empty",
+          "blog_effective_body_too_short",
+          "telegram_effective_body_empty",
+          "telegram_effective_body_too_short",
+          "premium_effective_body_empty_or_boilerplate",
+          "premium_effective_body_too_short",
+          "missing_required_columns:<cols>",
+          "invalid_rcept_dt",
+          "invalid_<date_column>",
+          "missing_report_nm",
+          "missing_rcept_no",
+          "missing_corp_or_stock_code",
+          "missing_title_body_url",
+          "empty_after_strip",
+          "rss_no_entries",
+          "rss_missing_required_fields(title/datetime/url)",
+          "empty_json",
+          "invalid_json"
+        ]
+      },
+      "fetch_fail": {
+        "description": "Link enrichment was attempted for short text but all candidate body fetches failed; quarantined.",
+        "quarantine": true,
+        "reasons": [
+          "blog_link_body_fetch_failed",
+          "telegram_link_body_fetch_failed",
+          "premium_link_body_fetch_failed"
+        ]
+      }
+    },
+    "report_issue_filters": {
+      "warn": [
+        "missing_input_folder(required=false)",
+        "zero_clean_optional_folder"
+      ],
+      "fail": [
+        "missing_input_folder(required=true)",
+        "folder_processing_exception",
+        "zero_clean_required_folder"
+      ]
+    },
+    "normalizable_clean_transforms": [
+      "canonicalize_url",
+      "normalize_title",
+      "normalize_date",
+      "drop_tracking_query_params",
+      "dedup_within_file_urls",
+      "optional_link_enrichment_when_short_and_enabled"
+    ],
+    "corpus_dedup_rules": [
+      {
+        "name": "canonical_url",
+        "duplicate_reason": "duplicate_canonical_url",
+        "description": "canonicalized URL exact match"
+      },
+      {
+        "name": "title_date",
+        "duplicate_reason": "duplicate_title_date",
+        "description": "normalized title + normalized date exact match"
+      },
+      {
+        "name": "content_fingerprint",
+        "duplicate_reason": "duplicate_content_fingerprint",
+        "description": "normalized effective body fingerprint match"
+      }
+    ]
+  },
+  "qc": {
+    "anomaly_taxonomy": {
+      "row_quarantine_reasons": [
+        "basic_invalid_or_low_liquidity",
+        "zero_candle",
+        "return_spike_gt_35pct",
+        "duplicate_date",
+        "invalid_date_or_nonnumeric"
+      ],
+      "warn_types": [
+        "full_quarantine",
+        "high_quarantine_ratio",
+        "empty_input_file"
+      ],
+      "fail_types": [
+        "missing_target_file",
+        "processing_error",
+        "zero_clean_folder"
+      ]
+    }
+  }
+}

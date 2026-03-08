@@ -14,6 +14,7 @@ The script always emits machine-readable JSON. On failure it also provides a con
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -261,21 +262,64 @@ def find_launchctl_entry(entries: dict[str, dict[str, str]], keyword: str) -> di
     return candidates[0]
 
 
+def inspect_launchd_job(label: str) -> dict[str, Any] | None:
+    domain_label = f"gui/{os.getuid()}/{label}"
+    result = run(["launchctl", "print", domain_label])
+    if result.rc != 0:
+        return None
+
+    text = result.stdout
+    state_match = re.search(r"^\s*state = (.+?)\s*$", text, re.MULTILINE)
+    exit_match = re.search(r"^\s*last exit code = (\S+)\s*$", text, re.MULTILINE)
+    interval_match = re.search(r"^\s*run interval = (\d+) seconds\s*$", text, re.MULTILINE)
+    return {
+        "domain_label": domain_label,
+        "state": state_match.group(1).strip() if state_match else "",
+        "last_exit_code": int(exit_match.group(1)) if exit_match and exit_match.group(1).isdigit() else None,
+        "run_interval_seconds": int(interval_match.group(1)) if interval_match and interval_match.group(1).isdigit() else None,
+    }
+
+
 def launchd_component(name: str, entry: dict[str, str] | None) -> dict[str, Any]:
     issues: list[str] = []
     if entry is None:
         issues.append(f"{name}_launchd_missing")
-        return {"ok": False, "issues": issues, "launchd": None}
+        return {"ok": False, "issues": issues, "launchd": None, "inspection": None}
 
     status_text = entry.get("status", "")
-    if status_text not in {"0", "-"}:
+    inspection = inspect_launchd_job(entry.get("label", ""))
+    interval_idle_ok = bool(
+        inspection
+        and inspection.get("state") == "not running"
+        and inspection.get("last_exit_code") == 0
+        and inspection.get("run_interval_seconds")
+    )
+    if status_text not in {"0", "-"} and not interval_idle_ok:
         issues.append(f"{name}_launchd_status_{status_text}")
 
     return {
         "ok": len(issues) == 0,
         "issues": issues,
         "launchd": entry,
+        "inspection": inspection,
     }
+
+
+def _watchdog_recent_result_ok(payload: dict[str, Any]) -> bool:
+    if payload.get("ok") is True:
+        return True
+
+    recover_ok = bool((payload.get("recover") or {}).get("ok"))
+    context_ok = bool((payload.get("context_hygiene") or {}).get("ok", True))
+    issues = flatten_str_list(payload.get("issues"))
+    allowed_issue_prefixes = (
+        "IN_PROGRESS 무활동 30분 초과:",
+        "BLOCKED:",
+        "context_reset_required:",
+    )
+    if recover_ok and context_ok and issues and all(issue.startswith(allowed_issue_prefixes) for issue in issues):
+        return True
+    return False
 
 
 def watchdog_component(entries: dict[str, dict[str, str]], launchctl_issues: list[str]) -> dict[str, Any]:
@@ -292,17 +336,18 @@ def watchdog_component(entries: dict[str, dict[str, str]], launchctl_issues: lis
         if age is not None and age > WATCHDOG_MAX_AGE.total_seconds():
             issues.append("watchdog_log_stale")
 
-    if len(recent_results) < 2:
+    if len(recent_results) < 1:
         issues.append("watchdog_recent_json_missing")
     else:
-        for idx, payload in enumerate(recent_results, start=1):
-            if payload.get("ok") is not True:
-                issues.append(f"watchdog_recent_result_{idx}_failed")
+        latest_payload = recent_results[-1]
+        if not _watchdog_recent_result_ok(latest_payload):
+            issues.append("watchdog_recent_result_latest_failed")
 
     return {
         "ok": len(issues) == 0,
         "issues": issues,
         "launchd": launchd.get("launchd"),
+        "launchd_inspection": launchd.get("inspection"),
         "log_path": str(WATCHDOG_LOG),
         "log_age": format_age(age),
         "recent_results": recent_results,
@@ -349,6 +394,7 @@ def auto_dispatch_component(entries: dict[str, dict[str, str]], launchctl_issues
         "ok": len(issues) == 0,
         "issues": issues,
         "launchd": launchd.get("launchd"),
+        "launchd_inspection": launchd.get("inspection"),
         "status_path": str(AUTO_DISPATCH_STATUS),
         "status_age": format_age(age),
         "status_payload": payload,

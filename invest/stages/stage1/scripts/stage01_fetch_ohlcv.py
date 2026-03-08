@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from datetime import datetime, timedelta
+from typing import Optional
 
 # pipeline_logger가 같은 디렉토리에 있을 때 경로 보정
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -74,6 +75,41 @@ def _sanitize_ohlcv(code: str, df_new: pd.DataFrame, prev_close: float = None):
     return clean, bad_df
 
 
+def _read_local_latest_date(file_path: str) -> Optional[datetime]:
+    if not os.path.exists(file_path):
+        return None
+    try:
+        df_existing = pd.read_csv(file_path)
+        if 'Date' in df_existing.columns:
+            last_date = pd.to_datetime(df_existing['Date'], errors='coerce').max()
+        else:
+            last_date = pd.to_datetime(df_existing.iloc[:, 0], errors='coerce').max()
+        if pd.isna(last_date):
+            return None
+        return last_date.to_pydatetime() if hasattr(last_date, 'to_pydatetime') else last_date
+    except Exception:
+        return None
+
+
+
+def _probe_market_latest_date(code: str, lookback_days: int = 14) -> Optional[datetime]:
+    end_dt = datetime.now()
+    start_dt = end_dt - timedelta(days=max(lookback_days, 3))
+    try:
+        df = fdr.DataReader(code, start_dt.strftime('%Y-%m-%d'), end_dt.strftime('%Y-%m-%d'))
+    except Exception:
+        return None
+    if df is None or df.empty:
+        return None
+    idx = pd.to_datetime(df.index, errors='coerce')
+    idx = idx[~pd.isna(idx)]
+    if len(idx) == 0:
+        return None
+    latest = idx.max()
+    return latest.to_pydatetime() if hasattr(latest, 'to_pydatetime') else latest
+
+
+
 def fetch_all_ohlcv():
     """
     
@@ -103,6 +139,26 @@ def fetch_all_ohlcv():
     # 10년 전부터 오늘까지 (기본 시작일)
     base_start_date = '2016-01-01'
     end_date = datetime.now().strftime('%Y-%m-%d')
+
+    benchmark_code = '005930'
+    benchmark_file = os.path.join(raw_output_dir, f"{benchmark_code}.csv")
+    local_latest_dt = _read_local_latest_date(benchmark_file)
+    live_latest_dt = None if full_collection else _probe_market_latest_date(benchmark_code)
+    if (not full_collection) and local_latest_dt and live_latest_dt and live_latest_dt.date() <= local_latest_dt.date():
+        note = (
+            'KR OHLCV skipped. market_closed_or_no_new_trading_day '
+            f'benchmark={benchmark_code} local_latest={local_latest_dt.date().isoformat()} '
+            f'live_latest={live_latest_dt.date().isoformat()}'
+        )
+        append_pipeline_event(
+            source="fetch_ohlcv",
+            status="OK",
+            count=0,
+            errors=[],
+            note=note,
+        )
+        print(note)
+        return
 
     print(f"Starting OHLCV collection for {len(df_stocks)} stocks up to {end_date} (incremental enabled)...")
 
