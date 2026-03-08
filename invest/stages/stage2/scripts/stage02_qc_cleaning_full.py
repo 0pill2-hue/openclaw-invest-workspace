@@ -23,10 +23,10 @@ RAW_DIRS = {
 }
 MASTER_LIST_PATH = str(UPSTREAM_STAGE1 / 'master/kr_stock_list.csv')
 CLEAN_BASE = str(STAGE2_OUT_BASE / 'clean')
-# Stage2가 유일한 검역(quarantine) 저장 단계다. Stage1은 raw/상태 파일만 저장한다.
 Q_BASE = str(STAGE2_OUT_BASE / 'quarantine')
 REPORT_DIR = str(STAGE2_OUT_BASE / 'reports')
-
+STAGE2_QC_VERSION = '2026-03-08-stage2-qc-r1'
+HARD_FAIL_TYPES = {'missing_target_file', 'processing_error', 'zero_clean_folder'}
 INCLUDED_MARKETS = {"KOSPI", "KOSDAQ", "KOSDAQ GLOBAL"}
 INCLUDED_MARKET_IDS = {"STK", "KSQ"}
 MIN_VALID_VOLUME = 10
@@ -296,9 +296,17 @@ def run_qc():
     total_failed = sum(d['failed_files'] for d in report_data)
     total_skipped = sum(d['skipped_files'] for d in report_data)
 
+    hard_failures = [a for a in anomalies if a.get('type') in HARD_FAIL_TYPES]
+    report_only_anomalies = [a for a in anomalies if a.get('type') not in HARD_FAIL_TYPES]
+
     summary = {
         'executed_at': now.strftime('%Y-%m-%d %H:%M:%S'),
-        'mode': 'full_files_universe_based_for_kr',
+        'qc_version': STAGE2_QC_VERSION,
+        'mode': 'signal_validation_only_universe_based_for_kr',
+        'writer_policy': {
+            'signal_canonical_writer': 'stage02_onepass_refine_full.py',
+            'qc_role': 'validation_only',
+        },
         'universe_policy': {
             'kr_include_markets': sorted(INCLUDED_MARKETS),
             'kr_exclude_markets': 'others (e.g., KONEX)',
@@ -311,16 +319,26 @@ def run_qc():
             'failed_files': total_failed,
             'skipped_files': total_skipped,
             'anomalies': len(anomalies),
+            'hard_failures': len(hard_failures),
+            'report_only_anomalies': len(report_only_anomalies),
+        },
+        'validation': {
+            'pass': len(hard_failures) == 0,
+            'hard_fail_types': sorted(HARD_FAIL_TYPES),
         },
         'anomalies': anomalies,
+        'hard_failures': hard_failures,
+        'report_only_anomalies': report_only_anomalies,
     }
 
     report_path = os.path.join(REPORT_DIR, f"QC_REPORT_{ts}.md")
     report_json_path = os.path.join(REPORT_DIR, f"QC_REPORT_{ts}.json")
 
     with open(report_path, 'w', encoding='utf-8') as f:
-        f.write("# Data Cleaning QC Report (Full Files)\n\n")
-        f.write(f"Executed at: {summary['executed_at']}\n\n")
+        f.write("# Data Cleaning QC Report (Signal Validation Only)\n\n")
+        f.write(f"Executed at: {summary['executed_at']}\n")
+        f.write(f"QC version: {summary['qc_version']}\n")
+        f.write("Writer policy: signal canonical writer=`stage02_onepass_refine_full.py`, qc=`validation_only`\n\n")
         f.write("Universe policy (KR): include KOSPI/KOSDAQ/KOSDAQ GLOBAL, exclude others (e.g., KONEX).\n\n")
 
         f.write("## Coverage Summary\n\n")
@@ -335,8 +353,12 @@ def run_qc():
         f.write("\n## Total\n\n")
         f.write(
             f"- target_files={total_target}, processed_files={total_processed}, success={total_success}, "
-            f"failed={total_failed}, skipped={total_skipped}, anomalies={len(anomalies)}\n"
+            f"failed={total_failed}, skipped={total_skipped}, anomalies={len(anomalies)}, hard_failures={len(hard_failures)}\n"
         )
+
+        f.write("\n## Validation Gate\n\n")
+        f.write(f"- pass={summary['validation']['pass']}\n")
+        f.write(f"- hard_fail_types={', '.join(summary['validation']['hard_fail_types'])}\n")
 
         f.write("\n## Anomalies\n\n")
         if not anomalies:
@@ -364,6 +386,9 @@ def run_qc():
 
     print(f"Report generated: {report_path}")
     print(f"Report JSON: {report_json_path}")
+    if hard_failures:
+        print(f"QC hard failures detected: {len(hard_failures)}")
+        raise SystemExit(1)
     return report_path, report_json_path
 
 

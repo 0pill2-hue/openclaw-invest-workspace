@@ -12,7 +12,7 @@ import subprocess
 import sys
 import time
 from typing import Any
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -26,6 +26,7 @@ ASSIGNEE = "main-orchestrator"
 ORCH_AGENT_ID = os.environ.get("OPENCLAW_ORCH_AGENT_ID", "main").strip() or "main"
 ORCH_TIMEOUT_SEC = 180
 CLOSE_WAIT_SEC = 20
+RECENT_TRANSITION_WINDOW_MINUTES = 15
 
 SUBPROCESS_ENV = dict(os.environ)
 SUBPROCESS_ENV["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
@@ -33,6 +34,21 @@ SUBPROCESS_ENV["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sb
 
 def now_ts() -> str:
     return datetime.now().isoformat(timespec="seconds")
+
+
+def parse_task_dt(value: str) -> datetime | None:
+    text = (value or "").strip()
+    if not text:
+        return None
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return None
 
 
 def append_debug_log(
@@ -237,42 +253,39 @@ def recent_run_transition(run_id: str) -> tuple[bool, str, str, str]:
     if not TASK_DB_PATH.exists():
         return False, "", "", ""
 
+    threshold = datetime.now() - timedelta(minutes=RECENT_TRANSITION_WINDOW_MINUTES)
+
     conn = sqlite3.connect(TASK_DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
         recent_runs = [run_id] if run_id else []
         rows = conn.execute(
             """
-            SELECT DISTINCT assigned_run_id
+            SELECT id, status, review_status, assigned_run_id, assigned_at, updated_at
             FROM tasks
-            WHERE assignee=? AND COALESCE(assigned_run_id, '')!=''
-            ORDER BY datetime(assigned_at) DESC, assigned_run_id DESC
-            LIMIT 8
+            WHERE assignee=?
+              AND COALESCE(assigned_run_id, '')!=''
+            ORDER BY updated_at DESC, assigned_run_id DESC, id DESC
+            LIMIT 64
             """,
             (ASSIGNEE,),
         ).fetchall()
+
+        recent_rows = []
         for row in rows:
             rid = (row["assigned_run_id"] or "").strip()
-            if rid and rid not in recent_runs:
+            updated_at = parse_task_dt(row["updated_at"] or "")
+            assigned_at = parse_task_dt(row["assigned_at"] or "")
+            ref_dt = updated_at or assigned_at
+            if not rid or ref_dt is None or ref_dt < threshold:
+                continue
+            recent_rows.append(row)
+            if rid not in recent_runs:
                 recent_runs.append(rid)
-
-        if not recent_runs:
-            return False, "", "", ""
-
-        placeholders = ",".join("?" for _ in recent_runs)
-        related = conn.execute(
-            f"""
-            SELECT id, status, review_status, assigned_run_id
-            FROM tasks
-            WHERE assignee=? AND assigned_run_id IN ({placeholders})
-            ORDER BY datetime(updated_at) DESC, id DESC
-            """,
-            (ASSIGNEE, *recent_runs),
-        ).fetchall()
     finally:
         conn.close()
 
-    for row in related:
+    for row in recent_rows:
         db_status = (row["status"] or "").upper()
         db_review_status = (row["review_status"] or "").upper()
         if db_status in {"DONE", "BLOCKED"} or db_review_status in {"PASS", "REWORK"}:
@@ -331,8 +344,8 @@ def main() -> int:
     )
 
     if rc == 0:
-        m = re.search(r"assigned\s+(JB-\d{8}-\d{3})", stdout)
-        ticket_id = m.group(1) if m else ""
+        m = re.search(r"assigned\s+(\S+)", stdout)
+        ticket_id = m.group(1).strip() if m else ""
         if not ticket_id:
             error = f"assign-next succeeded but ticket parse failed: stdout={stdout!r}"
             write_status(
@@ -411,17 +424,21 @@ def main() -> int:
             msg = f"orchestrator spawned but ticket not closed within {CLOSE_WAIT_SEC}s ({close_detail})"
             if event_warn:
                 msg = f"{event_warn} | {msg}"
+            waiting_close = db_status == "IN_PROGRESS" and db_review_status in {"", "PENDING"}
             write_status(
                 assigned_ticket=ticket_id,
                 status="assigned",
                 error=msg,
-                orchestrator="spawned_not_closed",
+                orchestrator="spawned_waiting_close" if waiting_close else "spawned_not_closed",
                 run_id=run_id,
                 ticket_id=ticket_id,
-                phase="status_not_closed",
+                phase="status_waiting_close" if waiting_close else "status_not_closed",
                 db_status=db_status,
                 db_review_status=db_review_status,
             )
+            if waiting_close:
+                print(msg)
+                return 0
             print(msg, file=sys.stderr)
             return 1
 

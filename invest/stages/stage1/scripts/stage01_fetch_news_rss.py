@@ -5,14 +5,18 @@ import sys
 import time
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
+from pathlib import Path
 from typing import Optional
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+
+ROOT = Path(__file__).resolve().parents[4]
+WORKSPACE_VENV_PY = ROOT / '.venv/bin/python3'
 
 try:
     import feedparser
 except ModuleNotFoundError:
     # Cron may run with system python; re-exec with workspace venv if available.
-    venv_py = '/Users/jobiseu/.openclaw/workspace/.venv/bin/python3'
+    venv_py = str(WORKSPACE_VENV_PY)
     if os.path.exists(venv_py) and os.path.realpath(sys.executable) != os.path.realpath(venv_py):
         os.execv(venv_py, [venv_py] + sys.argv)
     raise

@@ -7,7 +7,7 @@ import json
 
 INCLUDED_MARKETS = ("KOSPI", "KOSDAQ", "KOSDAQ GLOBAL")
 INCLUDED_MARKET_IDS = ("STK", "KSQ")
-DEFAULT_FALLBACK_CACHE_TTL_HOURS = 6
+DEFAULT_FALLBACK_CACHE_TTL_HOURS = 120
 
 
 def _resolve_fallback_cache_ttl_hours() -> int:

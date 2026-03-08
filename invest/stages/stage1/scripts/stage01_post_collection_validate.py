@@ -30,6 +30,7 @@ SOURCE_SPECS = [
         "min_count_default": 2800,
         "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_KR_SUPPLY",
         "max_age_default": 96 * 3600,
+        "runtime_status_path": STAGE1_DIR / "outputs/runtime/kr_supply_status.json",
     },
     {
         "name": "raw/signal/us/ohlcv",
@@ -251,6 +252,12 @@ def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]
     if runtime_status is not None:
         detail["runtime_status"] = runtime_status
         detail["collector_used"] = runtime_status.get("successful_collector") or runtime_status.get("selected_collector")
+        if spec["name"] == "raw/signal/kr/supply" and runtime_status.get("external_blocked_login_required") and runtime_status.get("source") == "krx_supply":
+            waived_errors = [e for e in errors if not e.startswith("latest_age_sec=")]
+            detail["freshness_waived_reason"] = runtime_status.get("reason") or 'external_blocked_login_required'
+            detail["errors"] = waived_errors
+            ok = len(waived_errors) == 0
+            errors = waived_errors
     failure = None if ok else {"source": spec["name"], "script": spec["script"], "error": "; ".join(errors)}
     return ok, detail, failure
 

@@ -3,6 +3,8 @@ Global Macro Data Fetcher
 - VIX, DXY, 10Y-2Y spread, SOX (semiconductor index)
 - For regime detection and correlation analysis
 """
+from __future__ import annotations
+
 import os
 import pandas as pd
 import yfinance as yf

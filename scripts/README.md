@@ -11,10 +11,13 @@
   - `db.py`: TASKS SQLite CLI
   - `gate.py`: TASK fail-close gate
   - `dispatch_tick.py`: 다음 task 자동 배정/기동 tick
+  - `launchd_dispatch.sh`: task auto-dispatch용 launchd 진입 쉘
+- `scripts/watchdog/`
   - `watchdog_validate.py`: TASK ledger 정합성 검사
   - `watchdog_recover.py`: stale task 자동 BLOCKED 전환
-  - `launchd_dispatch.sh`: task auto-dispatch용 launchd 진입 쉘
-  - `launchd_watchdog.sh`: task watchdog용 launchd 진입 쉘
+  - `context_hygiene.py`: current-task/context-handoff/resume-check/blocked-proof hygiene 검사 + 120k threshold handoff 준비/재개 판단
+  - `watchdog_cycle.py`: watchdog validate/recover + context hygiene + main notify cycle
+  - `launchd_watchdog.sh`: watchdog용 launchd 진입 쉘
 - `scripts/directives/`
   - `db.py`: DIRECTIVES SQLite CLI
   - `gate.py`: DIRECTIVES fail-close gate
@@ -24,13 +27,21 @@
   - `reset_local_brain.sh`: 로컬 브레인 수동 리셋
 
 ## 현재 표준 호출 예시
-- TASKS 요약: `python3 scripts/tasks/db.py summary --top 5 --recent 5`
+- TASKS 요약: `python3 scripts/tasks/db.py summary --top 5 --recent 5` (`task_state=assignee/phase/review/resume_due` 포함)
 - TASK 게이트: `python3 scripts/tasks/gate.py --ticket JB-YYYYMMDD-001`
-- TASK watchdog 검사: `python3 scripts/tasks/watchdog_validate.py`
-- TASK watchdog 복구: `python3 scripts/tasks/watchdog_recover.py`
+- TASK watchdog 검사: `python3 scripts/watchdog/watchdog_validate.py`
+- TASK watchdog 복구: `python3 scripts/watchdog/watchdog_recover.py`
+- TASK/context watchdog cycle: `python3 scripts/watchdog/watchdog_cycle.py`
 - TASK auto-dispatch: `python3 scripts/tasks/dispatch_tick.py`
+- TASK assignee 해제: `python3 scripts/tasks/db.py release --id <ID>`
+- TASK phase 표기(예: subagent_running/awaiting_callback/main_review): `python3 scripts/tasks/db.py mark-phase --id <ID> --phase <phase> --child-session <session> --resume-due "YYYY-MM-DD HH:MM:SS"`
+- TASK 삭제: `python3 scripts/tasks/db.py remove --id <ID>`
 - DIRECTIVES 요약: `python3 scripts/directives/db.py summary --top 5 --recent 5`
 - DIRECTIVE 게이트: `python3 scripts/directives/gate.py --id <ID>`
+- context 복구 상태 점검: `python3 scripts/context_policy.py resume-check --strict`
+- context handoff 검증: `python3 scripts/context_policy.py handoff-validate --strict`
+- current-task + context-handoff 스냅샷: `python3 scripts/context_policy.py snapshot --ticket-id <id> --directive-ids <id[,id]> --goal "..." --last "..." --next-action "..." --touched-paths "..." --proof "..." --paths "..." --notes "..."` (taskdb에 같은 ticket이 있으면 `task_status/task_phase/task_runtime_state` 자동 포함)
+- current-task 기준 handoff 갱신: `python3 scripts/context_policy.py handoff-from-current --handoff-reason <reason> --trigger <trigger> --required-action <action> --observed-total-tokens <n> --threshold <n>`
 - Heartbeat guard: `python3 scripts/heartbeat/local_brain_guard.py`
 
 ## 메모

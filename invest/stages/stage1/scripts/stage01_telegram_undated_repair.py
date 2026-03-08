@@ -12,8 +12,10 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-TG_DIR = Path("/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw/qualitative/text/telegram")
-RUNTIME_PATH = Path("/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/telegram_date_index.json")
+ROOT = Path(__file__).resolve().parents[4]
+STAGE1_DIR = ROOT / "invest/stages/stage1"
+TG_DIR = STAGE1_DIR / "outputs/raw/qualitative/text/telegram"
+RUNTIME_PATH = STAGE1_DIR / "outputs/runtime/telegram_date_index.json"
 
 DATE_RE = re.compile(r"Date:\s*(\d{4}-\d{2}-\d{2})")
 MONTH_DAY_RE = re.compile(

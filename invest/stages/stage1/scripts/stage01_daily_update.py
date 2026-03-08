@@ -1,39 +1,179 @@
-import subprocess
+from __future__ import annotations
+
+import argparse
+import json
 import os
+import socket
+import subprocess
 import sys
 import time
-import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
-ROOT_DIR = str(Path(__file__).resolve().parents[4])
+ROOT_PATH = Path(__file__).resolve().parents[4]
+ROOT_DIR = str(ROOT_PATH)
+RUNTIME_DIR = ROOT_PATH / 'invest/stages/stage1/outputs/runtime'
+TARGET_DATE_2016 = '2016-01-01'
+
+FALLBACK_MAP = {
+    'invest/stages/stage1/scripts/stage01_fetch_ohlcv.py': ['invest/stages/stage1/scripts/stage01_full_fetch_ohlcv.py'],
+    'invest/stages/stage1/scripts/stage01_fetch_supply.py': ['invest/stages/stage1/scripts/stage01_full_fetch_supply.py'],
+    'invest/stages/stage1/scripts/stage01_fetch_us_ohlcv.py': ['invest/stages/stage1/scripts/stage01_full_fetch_us_ohlcv.py'],
+    'invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py': ['invest/stages/stage1/scripts/stage01_full_fetch_dart_disclosures.py'],
+}
+
+PROFILE_CHOICES = [
+    'daily_full',
+    'rss_fast',
+    'telegram_fast',
+    'blog_fast',
+    'kr_ohlcv_intraday',
+    'kr_supply_intraday',
+    'us_ohlcv_daily',
+    'dart_fast',
+    'news_backfill',
+]
 
 
-def run_script(script_path, retries=3):
-    """
-    
-        Role: 지정된 파이썬 스크립트를 하위 프로세스로 실행하고 재시도 로직을 수행한다.
-        Input: script_path (실행할 스크립트 경로), retries (실패 시 최대 재시도 횟수)
-        Output: (success: bool, error_message: str)
-        Author: 조비스 (Flash)
-        Date: 2026-02-18
-        
-    Side effect: 파일 저장/외부 호출/상태 변경 여부
-    Updated: 2026-02-18
-    """
-    print(f"[{datetime.now()}] Running {script_path}...")
+def _env_enabled(name: str, default: str = '0') -> bool:
+    return os.environ.get(name, default).strip().lower() in ('1', 'true', 'yes')
+
+
+def _select_python_bin() -> str:
     env_python = os.environ.get('INVEST_PYTHON_BIN', '').strip()
-    python_bin = env_python if env_python and Path(env_python).is_file() and os.access(env_python, os.X_OK) else sys.executable
+    workspace_python = ROOT_PATH / '.venv/bin/python3'
+    if env_python and Path(env_python).is_file() and os.access(env_python, os.X_OK):
+        return env_python
+    if workspace_python.is_file() and os.access(workspace_python, os.X_OK):
+        return str(workspace_python)
+    return sys.executable
+
+
+def _status_path(profile: str) -> Path:
+    if profile == 'daily_full':
+        return RUNTIME_DIR / 'daily_update_status.json'
+    safe = profile.replace('-', '_')
+    return RUNTIME_DIR / f'daily_update_{safe}_status.json'
+
+
+def _spec(script: str, *, retries: int = 3, env: dict[str, str] | None = None, use_fallbacks: bool = True) -> dict[str, Any]:
+    return {
+        'script': script,
+        'retries': retries,
+        'env': dict(env or {}),
+        'use_fallbacks': use_fallbacks,
+    }
+
+
+def _exists(script: str) -> bool:
+    return (ROOT_PATH / script).exists()
+
+
+def build_profile_specs(profile: str) -> list[dict[str, Any]]:
+    profiles: dict[str, list[dict[str, Any]]] = {
+        'daily_full': [
+            _spec('invest/stages/stage1/scripts/stage01_fetch_stock_list.py'),
+            _spec('invest/stages/stage1/scripts/stage01_fetch_ohlcv.py'),
+            _spec('invest/stages/stage1/scripts/stage01_fetch_supply.py'),
+            _spec('invest/stages/stage1/scripts/stage01_fetch_macro_fred.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_fetch_global_macro.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_fetch_news_rss.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_build_news_url_index.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_image_harvester.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py'),
+            _spec('invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
+        ],
+        'rss_fast': [
+            _spec('invest/stages/stage1/scripts/stage01_fetch_news_rss.py', use_fallbacks=False),
+        ],
+        'telegram_fast': [
+            _spec('invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py', use_fallbacks=False),
+        ],
+        'blog_fast': [
+            _spec('invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py', use_fallbacks=False),
+        ],
+        'kr_ohlcv_intraday': [
+            _spec('invest/stages/stage1/scripts/stage01_fetch_ohlcv.py'),
+        ],
+        'kr_supply_intraday': [
+            _spec('invest/stages/stage1/scripts/stage01_fetch_supply.py'),
+        ],
+        'us_ohlcv_daily': [
+            _spec('invest/stages/stage1/scripts/stage01_fetch_us_ohlcv.py'),
+        ],
+        'dart_fast': [
+            _spec('invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py'),
+        ],
+        'news_backfill': [
+            _spec(
+                'invest/stages/stage1/scripts/stage01_fetch_news_rss.py',
+                use_fallbacks=False,
+                env={
+                    'RSS_ENABLE_PAGED_BACKFILL': '1',
+                    'RSS_BACKFILL_TARGET_DATE': TARGET_DATE_2016,
+                    'RSS_BACKFILL_TARGET_YEARS': '10',
+                    'RSS_BACKFILL_MAX_PAGES': os.environ.get('RSS_BACKFILL_MAX_PAGES', '400'),
+                    'RSS_BACKFILL_MAX_EMPTY_PAGES': os.environ.get('RSS_BACKFILL_MAX_EMPTY_PAGES', '3'),
+                    'RSS_DISABLE_KEYWORD_FILTER': '1',
+                },
+            ),
+            _spec(
+                'invest/stages/stage1/scripts/stage01_build_news_url_index.py',
+                use_fallbacks=False,
+                env={
+                    'NEWS_INDEX_TARGET_DATE': TARGET_DATE_2016,
+                    'NEWS_INDEX_RSS_MAX_PAGES': os.environ.get('NEWS_INDEX_RSS_MAX_PAGES', '120'),
+                    'NEWS_INDEX_MAX_SITEMAPS': os.environ.get('NEWS_INDEX_MAX_SITEMAPS', '300'),
+                },
+            ),
+            _spec(
+                'invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py',
+                use_fallbacks=False,
+                env={
+                    'NEWS_SELECTED_TARGET_DATE': TARGET_DATE_2016,
+                    'NEWS_SELECTED_MIN_KEYWORD_HITS': os.environ.get('NEWS_SELECTED_MIN_KEYWORD_HITS', '0'),
+                    'NEWS_SELECTED_MAX_ARTICLES': os.environ.get('NEWS_SELECTED_MAX_ARTICLES', '600'),
+                    'NEWS_SELECTED_MAX_ATTEMPTS': os.environ.get('NEWS_SELECTED_MAX_ATTEMPTS', '5000'),
+                    'NEWS_SELECTED_YEARLY_QUOTA': os.environ.get('NEWS_SELECTED_YEARLY_QUOTA', '50'),
+                    'NEWS_SELECTED_SKIP_EXISTING': os.environ.get('NEWS_SELECTED_SKIP_EXISTING', '1'),
+                    'NEWS_SELECTED_EXCLUDED_DOMAINS': os.environ.get('NEWS_SELECTED_EXCLUDED_DOMAINS', 'bloomberg.com,wsj.com'),
+                    'NEWS_SELECTED_EXCLUDED_URL_PATTERNS': os.environ.get('NEWS_SELECTED_EXCLUDED_URL_PATTERNS', '/graphics/,/video/'),
+                },
+            ),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
+        ],
+    }
+
+    specs = list(profiles[profile])
+    if profile == 'daily_full' and _env_enabled('RUN_US_OHLCV_IN_DAILY'):
+        specs.append(_spec('invest/stages/stage1/scripts/stage01_fetch_us_ohlcv.py'))
+    return [spec for spec in specs if _exists(str(spec['script']))]
+
+
+def run_script(script_path: str, retries: int = 3, env_overrides: dict[str, str] | None = None):
+    print(f"[{datetime.now()}] Running {script_path}...")
+    python_bin = _select_python_bin()
+    abs_script = ROOT_PATH / script_path
     last_err = None
+    env = os.environ.copy()
+    env.update({k: str(v) for k, v in (env_overrides or {}).items() if v is not None})
 
     for i in range(retries):
         try:
-            abs_script = os.path.join(ROOT_DIR, script_path)
-            result = subprocess.run([python_bin, abs_script], capture_output=True, text=True)
+            result = subprocess.run(
+                [python_bin, str(abs_script)],
+                capture_output=True,
+                text=True,
+                cwd=ROOT_DIR,
+                env=env,
+            )
             if result.returncode == 0:
                 print(f"[{datetime.now()}] Successfully finished {script_path}")
                 return True, ""
-            last_err = (result.stderr or result.stdout or "unknown error").strip()
+            last_err = (result.stderr or result.stdout or 'unknown error').strip()
             print(f"[{datetime.now()}] Retry {i+1}/{retries} failed in {script_path}: {last_err}")
         except Exception as e:
             last_err = str(e)
@@ -41,100 +181,128 @@ def run_script(script_path, retries=3):
 
         time.sleep(1 + i)
 
-    return False, (last_err or "failed")
+    return False, (last_err or 'failed')
 
-def run_with_fallbacks(script_path):
-    """Run primary collector, and if it fails try predefined fallback collectors."""
-    fallback_map = {
-        'invest/stages/stage1/scripts/stage01_fetch_ohlcv.py': ['invest/stages/stage1/scripts/stage01_full_fetch_ohlcv.py'],
-        'invest/stages/stage1/scripts/stage01_fetch_supply.py': ['invest/stages/stage1/scripts/stage01_full_fetch_supply.py'],
-        'invest/stages/stage1/scripts/stage01_fetch_us_ohlcv.py': ['invest/stages/stage1/scripts/stage01_full_fetch_us_ohlcv.py'],
-        'invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py': ['invest/stages/stage1/scripts/stage01_full_fetch_dart_disclosures.py'],
-    }
 
-    ok, err = run_script(script_path)
+def run_with_fallbacks(script_path: str, retries: int = 3, env_overrides: dict[str, str] | None = None):
+    ok, err = run_script(script_path, retries=retries, env_overrides=env_overrides)
     if ok:
-        return True, "", script_path
+        return True, '', script_path
 
-    fallbacks = [p for p in fallback_map.get(script_path, []) if os.path.exists(os.path.join(ROOT_DIR, p))]
+    fallbacks = [p for p in FALLBACK_MAP.get(script_path, []) if _exists(p)]
     last_err = err
     for fb in fallbacks:
         print(f"[{datetime.now()}] Primary failed, trying fallback: {fb}")
-        ok_fb, err_fb = run_script(fb)
+        ok_fb, err_fb = run_script(fb, retries=retries, env_overrides=env_overrides)
         if ok_fb:
-            return True, f"primary_failed_fallback_ok:{script_path}->{fb}", fb
-        last_err = f"primary:{err} | fallback:{fb}:{err_fb}"
+            return True, f'primary_failed_fallback_ok:{script_path}->{fb}', fb
+        last_err = f'primary:{err} | fallback:{fb}:{err_fb}'
 
     return False, (last_err or err), script_path
 
 
-def main():
-    """
-    Role: main 함수 역할 설명
-    Input: 입력 타입/의미 명시
-    Output: 반환 타입/의미 명시
-    Side effect: 파일 저장/외부 호출/상태 변경 여부
-    Author: 조비스
-    Updated: 2026-02-18
-    """
-    print(f"[{datetime.now()}] Starting Daily Data Update Pipeline...")
-    
-    scripts = [
-        'invest/stages/stage1/scripts/stage01_fetch_stock_list.py',
-        'invest/stages/stage1/scripts/stage01_fetch_ohlcv.py',
-        'invest/stages/stage1/scripts/stage01_fetch_supply.py',
-    ]
+def _scheduler_origin() -> str:
+    raw = os.environ.get('SCHEDULER_ORIGIN', '').strip()
+    if raw:
+        return raw
+    if os.environ.get('LAUNCHD_JOB_LABEL'):
+        return 'launchd'
+    return 'manual'
 
-    # Auto-include additional data streams if present
-    optional_scripts = [
-        'invest/stages/stage1/scripts/stage01_fetch_macro_fred.py',
-        'invest/stages/stage1/scripts/stage01_fetch_global_macro.py',  # VIX, SOX, DXY for regime detection
-        'invest/stages/stage1/scripts/stage01_fetch_news_rss.py',
-        'invest/stages/stage1/scripts/stage01_build_news_url_index.py',
-        'invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py',
-        'invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py',
-        'invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py',
-        'invest/stages/stage1/scripts/stage01_image_harvester.py',
-        'invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py',
-        'invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py',
-    ]
-    for s in optional_scripts:
-        if os.path.exists(os.path.join(ROOT_DIR, s)):
-            scripts.append(s)
 
-    # US OHLCV is scheduled separately once per day by cron.
-    # Keep opt-in support for manual integrated runs only.
-    run_us_in_daily = os.environ.get('RUN_US_OHLCV_IN_DAILY', '0').strip().lower() in ('1', 'true', 'yes')
-    us_script = 'invest/stages/stage1/scripts/stage01_fetch_us_ohlcv.py'
-    if run_us_in_daily and os.path.exists(os.path.join(ROOT_DIR, us_script)):
-        scripts.append(us_script)
-    
+def _build_stage1_run_id() -> str:
+    existing = os.environ.get('STAGE1_RUN_ID', '').strip()
+    if existing:
+        return existing
+    return datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+
+
+def run_profile(profile: str) -> dict[str, Any]:
+    specs = build_profile_specs(profile)
     failures = []
     fallbacks_used = []
-    for script in scripts:
-        ok, err, executed = run_with_fallbacks(script)
-        if not ok:
-            failures.append({"script": script, "error": err})
-        elif err:
-            fallbacks_used.append({"script": script, "note": err, "executed": executed})
-        time.sleep(2) # Brief cooling period
-
-    status_dir = 'invest/stages/stage1/outputs/runtime'
-    os.makedirs(status_dir, exist_ok=True)
-    status_path = os.path.join(status_dir, 'daily_update_status.json')
-    status = {
-        "timestamp": datetime.now().isoformat(),
-        "total_scripts": len(scripts),
-        "failed_count": len(failures),
-        "failures": failures,
-        "fallbacks_used": fallbacks_used,
+    executed_scripts = []
+    started_at = datetime.now(timezone.utc)
+    python_bin = _select_python_bin()
+    run_id = _build_stage1_run_id()
+    scheduler_origin = _scheduler_origin()
+    launchd_job_label = os.environ.get('LAUNCHD_JOB_LABEL', '').strip()
+    shared_env = {
+        'STAGE1_RUN_ID': run_id,
+        'STAGE1_PROFILE': profile,
+        'SCHEDULER_ORIGIN': scheduler_origin,
+        'STAGE1_PARENT_SCRIPT': 'invest/stages/stage1/scripts/stage01_daily_update.py',
     }
-    with open(status_path, 'w', encoding='utf-8') as f:
-        json.dump(status, f, ensure_ascii=False, indent=2)
+    if launchd_job_label:
+        shared_env['LAUNCHD_JOB_LABEL'] = launchd_job_label
 
-    print(f"[{datetime.now()}] Daily Data Update Pipeline Completed. status={status_path}")
-    if status["failed_count"] > 0:
+    for spec in specs:
+        script = str(spec['script'])
+        env = dict(shared_env)
+        env.update(dict(spec.get('env') or {}))
+        retries = int(spec.get('retries') or 3)
+        use_fallbacks = bool(spec.get('use_fallbacks', True))
+
+        if use_fallbacks:
+            ok, err, executed = run_with_fallbacks(script, retries=retries, env_overrides=env)
+        else:
+            ok, err = run_script(script, retries=retries, env_overrides=env)
+            executed = script
+
+        executed_scripts.append({
+            'requested': script,
+            'executed': executed,
+            'env_overrides': env,
+            'use_fallbacks': use_fallbacks,
+        })
+
+        if not ok:
+            failures.append({'script': script, 'error': err})
+        elif err:
+            fallbacks_used.append({'script': script, 'note': err, 'executed': executed})
+        time.sleep(2)
+
+    finished_at = datetime.now(timezone.utc)
+    duration_sec = max(0.0, (finished_at - started_at).total_seconds())
+    RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+    status = {
+        'timestamp': finished_at.isoformat(),
+        'started_at': started_at.isoformat(),
+        'finished_at': finished_at.isoformat(),
+        'duration_sec': round(duration_sec, 3),
+        'run_id': run_id,
+        'profile': profile,
+        'scheduler_origin': scheduler_origin,
+        'launchd_job_label': launchd_job_label,
+        'host': socket.gethostname(),
+        'python_bin': python_bin,
+        'repo_root': ROOT_DIR,
+        'status_path': str(_status_path(profile)),
+        'total_scripts': len(specs),
+        'executed_scripts': executed_scripts,
+        'failed_count': len(failures),
+        'failures': failures,
+        'fallbacks_used': fallbacks_used,
+        'run_us_in_daily': _env_enabled('RUN_US_OHLCV_IN_DAILY'),
+    }
+    _status_path(profile).write_text(json.dumps(status, ensure_ascii=False, indent=2), encoding='utf-8')
+    return status
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description='Stage1 profile-based orchestrator')
+    parser.add_argument('--profile', choices=PROFILE_CHOICES, default=os.environ.get('STAGE1_DAILY_PROFILE', 'daily_full'))
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    print(f"[{datetime.now()}] Starting Stage1 orchestrator profile={args.profile}...")
+    status = run_profile(args.profile)
+    print(f"[{datetime.now()}] Stage1 orchestrator completed. status={_status_path(args.profile)}")
+    if status['failed_count'] > 0:
         raise SystemExit(1)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()

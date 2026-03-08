@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.jobiseu.invest.stage1.ocr.rolling</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>source ~/.config/invest/invest_autocollect.env &amp;&amp; cd /Users/jobiseu/.openclaw/workspace &amp;&amp; bash invest/stages/stage1/scripts/launchd/launchd_stage01_images_ocr_rolling.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/jobiseu/.openclaw/workspace</string>
+  <key>StartInterval</key>
+  <integer>1800</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/logs/runtime/launchd_stage01_images_ocr_rolling.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/logs/runtime/launchd_stage01_images_ocr_rolling.stderr.log</string>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>

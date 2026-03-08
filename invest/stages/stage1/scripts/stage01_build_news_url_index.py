@@ -17,17 +17,18 @@ from xml.etree import ElementTree as ET
 
 import requests
 
+ROOT = Path(__file__).resolve().parents[4]
+WORKSPACE_VENV_PY = ROOT / '.venv/bin/python3'
+
 try:
     import feedparser
 except ModuleNotFoundError:
-    venv_py = '/Users/jobiseu/.openclaw/workspace/.venv/bin/python3'
+    venv_py = str(WORKSPACE_VENV_PY)
     if os.path.exists(venv_py) and os.path.realpath(sys.executable) != os.path.realpath(venv_py):
         os.execv(venv_py, [venv_py] + sys.argv)
     raise
 
 from pipeline_logger import append_pipeline_event
-
-ROOT = Path(__file__).resolve().parents[4]
 CONFIG_PATH = ROOT / "invest/stages/stage1/inputs/config/news_sources.json"
 OUT_DIR = ROOT / "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index"
 RUNTIME_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/news_url_index_status.json"

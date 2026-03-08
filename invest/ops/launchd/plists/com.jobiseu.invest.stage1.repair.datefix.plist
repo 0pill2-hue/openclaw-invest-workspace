@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.jobiseu.invest.stage1.repair.datefix</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>source ~/.config/invest/invest_autocollect.env &amp;&amp; cd /Users/jobiseu/.openclaw/workspace &amp;&amp; bash invest/stages/stage1/scripts/launchd/launchd_rss_telegram_date_fix.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/jobiseu/.openclaw/workspace</string>
+  <key>StartInterval</key>
+  <integer>7200</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/logs/runtime/launchd_stage01_datefix.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/logs/runtime/launchd_stage01_datefix.stderr.log</string>
+  <key>RunAtLoad</key><false/>
+</dict>
+</plist>

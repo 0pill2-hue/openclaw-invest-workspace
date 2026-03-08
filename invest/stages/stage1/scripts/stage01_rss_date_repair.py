@@ -13,8 +13,10 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-RSS_DIR = Path("/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw/qualitative/market/rss")
-RUNTIME_PATH = Path("/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/rss_date_repair_status.json")
+ROOT = Path(__file__).resolve().parents[4]
+STAGE1_DIR = ROOT / "invest/stages/stage1"
+RSS_DIR = STAGE1_DIR / "outputs/raw/qualitative/market/rss"
+RUNTIME_PATH = STAGE1_DIR / "outputs/runtime/rss_date_repair_status.json"
 
 RE_YMD = re.compile(r"(20\d{2})[-./]?(\d{1,2})[-./]?(\d{1,2})")
 

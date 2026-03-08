@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.jobiseu.invest.stage1.backfill.news</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/launchd/launchd_stage01_profile.sh</string>
+    <string>news_backfill</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/jobiseu/.openclaw/workspace</string>
+  <key>StartInterval</key>
+  <integer>1800</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/logs/runtime/launchd_stage01_news_backfill.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/logs/runtime/launchd_stage01_news_backfill.stderr.log</string>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>

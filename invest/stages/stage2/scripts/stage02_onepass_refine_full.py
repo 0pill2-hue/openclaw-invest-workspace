@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+import argparse
 import os
 import glob
 import pandas as pd
 import json
 import hashlib
 import re
+import shutil
 import time
 from datetime import datetime
 from html import unescape
@@ -25,13 +29,21 @@ CLEAN_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'clean')
 # Stage2가 유일한 검역(quarantine) 저장 단계다. Stage1은 raw/상태 파일만 저장한다.
 Q_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'quarantine')
 REPORT_DIR = os.path.join(STAGE2_ROOT, 'outputs', 'reports', 'qc')
-
+STAGE2_RULE_VERSION = 'stage2-refine-20260308'
+STAGE2_ENABLE_LINK_ENRICHMENT = os.environ.get('STAGE2_ENABLE_LINK_ENRICHMENT', '0').strip().lower() in ('1', 'true', 'yes')
 FOLDERS = [
-    'kr/ohlcv', 'kr/supply', 'kr/dart',
-    'us/ohlcv',
+    'kr/dart',
     'market/news/rss', 'market/macro', 'market/google_trends',
     'text/blog', 'text/telegram', 'text/image_map', 'text/images_ocr', 'text/premium/startale'
 ]
+REQUIRED_REFINE_FOLDERS = {
+    'kr/dart',
+    'market/news/rss',
+    'text/blog',
+    'text/telegram',
+    'text/image_map',
+    'text/premium/startale',
+}
 
 # Stage2 clean/quarantine canonical output track
 SIGNAL_FOLDERS = {
@@ -121,6 +133,8 @@ LINK_ENRICH_MIN_EFFECTIVE_ADD = 50
 os.makedirs(REPORT_DIR, exist_ok=True)
 
 INDEX_PATH = os.path.join(CLEAN_BASE, 'production', '_processed_index.json')
+INDEX_META_KEY = '__meta__'
+INDEX_ENTRIES_KEY = 'entries'
 
 
 def _new_link_runtime_stats() -> dict:
@@ -176,25 +190,54 @@ def _output_paths(base_dir: str, folder: str, rel_path: str) -> list[str]:
     return [os.path.join(base_dir, normalized, rel_path)]
 
 
-def _load_processed_index():
+def _current_index_meta() -> dict:
+    return {
+        'stage2_rule_version': STAGE2_RULE_VERSION,
+        'link_enrichment_enabled': bool(STAGE2_ENABLE_LINK_ENRICHMENT),
+        'folders': list(FOLDERS),
+    }
+
+
+def _load_processed_index() -> tuple[dict, dict]:
     if os.path.exists(INDEX_PATH):
         try:
             with open(INDEX_PATH, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                payload = json.load(f)
+            if isinstance(payload, dict) and INDEX_ENTRIES_KEY in payload:
+                return payload.get(INDEX_ENTRIES_KEY, {}), payload.get(INDEX_META_KEY, {})
+            if isinstance(payload, dict):
+                return payload, {}
         except Exception:
-            return {}
-    return {}
+            return {}, {}
+    return {}, {}
 
 
 def _save_processed_index(idx: dict):
     os.makedirs(os.path.dirname(INDEX_PATH), exist_ok=True)
+    payload = {
+        INDEX_META_KEY: _current_index_meta(),
+        INDEX_ENTRIES_KEY: idx,
+    }
     with open(INDEX_PATH, 'w', encoding='utf-8') as f:
-        json.dump(idx, f, ensure_ascii=False, indent=2)
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+
+
+def _reset_output_tree(base_dir: str):
+    seen = set()
+    for folder in FOLDERS:
+        normalized = _normalize_folder(folder)
+        bucket = _folder_bucket(folder)
+        target = os.path.join(base_dir, bucket, normalized) if bucket else os.path.join(base_dir, normalized)
+        if target in seen:
+            continue
+        seen.add(target)
+        if os.path.exists(target):
+            shutil.rmtree(target)
 
 
 def _file_sig(path: str) -> str:
     st = os.stat(path)
-    key = f"{st.st_size}:{int(st.st_mtime)}:{path}".encode('utf-8')
+    key = f"{STAGE2_RULE_VERSION}:{int(STAGE2_ENABLE_LINK_ENRICHMENT)}:{st.st_size}:{int(st.st_mtime)}:{path}".encode('utf-8')
     return hashlib.sha1(key).hexdigest()
 
 
@@ -213,6 +256,27 @@ def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     if low_map:
         x = x.rename(columns=low_map)
     return x
+
+
+def _strip_object_columns(df: pd.DataFrame) -> pd.DataFrame:
+    x = df.copy()
+    for col in x.columns:
+        if pd.api.types.is_object_dtype(x[col]) or str(x[col].dtype).startswith('string'):
+            x[col] = x[col].map(lambda v: pd.NA if pd.isna(v) else str(v).strip())
+            x[col] = x[col].replace({'': pd.NA, 'nan': pd.NA, 'None': pd.NA, 'null': pd.NA})
+    return x
+
+
+def _first_present_column(df: pd.DataFrame, candidates: list[str]) -> str:
+    for c in candidates:
+        if c in df.columns:
+            return c
+    return ''
+
+
+def _set_reason(reason: pd.Series, mask: pd.Series, value: str) -> None:
+    if mask.any():
+        reason.loc[mask & reason.eq('')] = value
 
 
 def sanitize_ohlcv(df: pd.DataFrame):
@@ -278,9 +342,104 @@ def sanitize_supply(df: pd.DataFrame):
     return clean_df, bad_df
 
 
+def _sanitize_dart_csv(df: pd.DataFrame):
+    x = _strip_object_columns(_normalize_columns(df))
+    required = ['corp_code', 'corp_name', 'report_nm', 'rcept_no', 'rcept_dt']
+    missing = [c for c in required if c not in x.columns]
+    if missing:
+        q = x.copy()
+        q['reason'] = f"missing_required_columns:{','.join(missing)}"
+        return pd.DataFrame(), q
+
+    parsed_dt = pd.to_datetime(x['rcept_dt'], format='%Y%m%d', errors='coerce')
+    bad = pd.Series(False, index=x.index)
+    reason = pd.Series('', index=x.index, dtype='object')
+
+    mask = parsed_dt.isna()
+    bad |= mask
+    _set_reason(reason, mask, 'invalid_rcept_dt')
+
+    mask = x['report_nm'].isna()
+    bad |= mask
+    _set_reason(reason, mask, 'missing_report_nm')
+
+    mask = x['rcept_no'].isna()
+    bad |= mask
+    _set_reason(reason, mask, 'missing_rcept_no')
+
+    stock_col = 'stock_code' if 'stock_code' in x.columns else ''
+    identity_missing = x['corp_code'].isna()
+    if stock_col:
+        identity_missing &= x[stock_col].isna()
+    bad |= identity_missing
+    _set_reason(reason, identity_missing, 'missing_corp_or_stock_code')
+
+    dup = x['rcept_no'].duplicated(keep='last') & x['rcept_no'].notna()
+    bad |= dup
+    _set_reason(reason, dup, 'duplicate_rcept_no')
+
+    if 'rcept_dt' in x.columns:
+        x['rcept_dt'] = parsed_dt.dt.strftime('%Y-%m-%d')
+
+    bad_df = x[bad].copy()
+    if not bad_df.empty:
+        bad_df['reason'] = reason.loc[bad_df.index].values
+    clean_df = x[~bad].copy().sort_values(['rcept_dt', 'rcept_no'])
+    return clean_df, bad_df
+
+
+def _sanitize_min_qualitative_csv(df: pd.DataFrame):
+    x = _strip_object_columns(_normalize_columns(df)).dropna(how='all')
+    if x.empty:
+        return pd.DataFrame(), pd.DataFrame([{'reason': 'empty_after_strip'}])
+
+    bad = pd.Series(False, index=x.index)
+    reason = pd.Series('', index=x.index, dtype='object')
+
+    date_col = _first_present_column(x, ['published_at', 'published', 'datetime', 'timestamp', 'Date', 'date'])
+    if date_col:
+        parsed_dt = pd.to_datetime(x[date_col], errors='coerce')
+        mask = parsed_dt.isna()
+        bad |= mask
+        _set_reason(reason, mask, f'invalid_{date_col.lower()}')
+
+    title_col = _first_present_column(x, ['title', 'headline', 'subject'])
+    body_col = _first_present_column(x, ['body', 'content', 'text', 'summary', 'description'])
+    url_col = _first_present_column(x, ['url', 'link', 'href'])
+
+    if title_col or body_col or url_col:
+        title_ok = x[title_col].notna() if title_col else pd.Series(False, index=x.index)
+        body_ok = x[body_col].notna() if body_col else pd.Series(False, index=x.index)
+        url_ok = x[url_col].notna() if url_col else pd.Series(False, index=x.index)
+        mask = ~(title_ok | body_ok | url_ok)
+        bad |= mask
+        _set_reason(reason, mask, 'missing_title_body_url')
+
+    id_col = _first_present_column(x, ['id', 'post_id', 'message_id', 'url', 'link'])
+    if id_col:
+        dup = x[id_col].duplicated(keep='last') & x[id_col].notna()
+        bad |= dup
+        _set_reason(reason, dup, f'duplicate_{id_col.lower()}')
+    elif date_col and title_col:
+        dup = x[[date_col, title_col]].astype(str).duplicated(keep='last')
+        bad |= dup
+        _set_reason(reason, dup, 'duplicate_date_title')
+
+    bad_df = x[bad].copy()
+    if not bad_df.empty:
+        bad_df['reason'] = reason.loc[bad_df.index].values
+    clean_df = x[~bad].copy()
+    return clean_df, bad_df
+
+
 def sanitize_generic_csv(df: pd.DataFrame, folder: str = ''):
     x = _normalize_columns(df)
-    return x, pd.DataFrame()
+    if _folder_bucket(folder) != 'qualitative':
+        return x, pd.DataFrame()
+    normalized_folder = _normalize_folder(folder)
+    if normalized_folder == 'kr/dart':
+        return _sanitize_dart_csv(x)
+    return _sanitize_min_qualitative_csv(x)
 
 
 def _text_without_urls(content: str) -> str:
@@ -784,6 +943,9 @@ def sanitize_text(path: str, folder: str = ''):
         if ok:
             return content, None, {'link_enriched': False, 'canonical_urls': 0}
 
+        if not STAGE2_ENABLE_LINK_ENRICHMENT:
+            return None, reason, {'link_enriched': False, 'link_enrichment_enabled': False}
+
         if normalized_folder not in TARGET_LINK_ENRICH_FOLDERS or not _is_short_reason(reason):
             return None, reason, {}
 
@@ -1009,7 +1171,8 @@ def _build_text_quarantine_payload(folder: str, source_file: str, reason: str, r
     buf.append(f'reason: {reason}')
     buf.append(f'folder: {folder}')
     buf.append(f'source_file: {source_file}')
-    buf.append(f'captured_at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+    buf.append(f'sanitized_at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+    buf.append(f'stage2_rule_version: {STAGE2_RULE_VERSION}')
     buf.append('')
     buf.append('meta_lines:')
     if meta_lines:
@@ -1024,7 +1187,7 @@ def _build_text_quarantine_payload(folder: str, source_file: str, reason: str, r
     return '\n'.join(buf)
 
 
-def run_full_refine():
+def run_full_refine(force_rebuild: bool = False):
     global LINK_FETCH_CACHE, LINK_RUNTIME_STATS
 
     LINK_FETCH_CACHE = {}
@@ -1034,13 +1197,34 @@ def run_full_refine():
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     final_clean_base = os.path.join(CLEAN_BASE, 'production')
     final_q_base = os.path.join(Q_BASE, 'production')
-    processed_index = _load_processed_index()
+    run_mode = 'force_rebuild' if force_rebuild else 'incremental'
+    if force_rebuild:
+        processed_index = {}
+        _reset_output_tree(final_clean_base)
+        _reset_output_tree(final_q_base)
+        processed_index_meta = _current_index_meta()
+    else:
+        processed_index, processed_index_meta = _load_processed_index()
+        if processed_index_meta != _current_index_meta():
+            processed_index = {}
+            processed_index_meta = _current_index_meta()
 
     total_exceptions = 0
+    hard_fail_issues = []
+    report_only_issues = []
 
     for folder in FOLDERS:
         raw_dir = _resolve_raw_dir(folder)
         if not os.path.exists(raw_dir):
+            issue = {
+                'type': 'missing_input_folder',
+                'folder': folder,
+                'path': raw_dir,
+            }
+            if folder in REQUIRED_REFINE_FOLDERS:
+                hard_fail_issues.append(issue)
+            else:
+                report_only_issues.append(issue)
             continue
 
         all_files = []
@@ -1062,7 +1246,7 @@ def run_full_refine():
             idx_key = f"{folder}/{rel_path}".replace('\\', '/')
             sig = _file_sig(f)
             prev_sig = processed_index.get(idx_key)
-            if prev_sig == sig and any(os.path.exists(p) for p in (clean_paths + q_paths)):
+            if (not force_rebuild) and prev_sig == sig and any(os.path.exists(p) for p in (clean_paths + q_paths)):
                 skipped_count += 1
                 continue
 
@@ -1099,7 +1283,8 @@ def run_full_refine():
                                 'reason': err or 'invalid_json',
                                 'folder': folder,
                                 'source_file': f,
-                                'captured_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                'sanitized_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                'stage2_rule_version': STAGE2_RULE_VERSION,
                                 'raw_preview': raw_preview,
                             },
                             q_paths,
@@ -1136,6 +1321,27 @@ def run_full_refine():
                 _write_text(payload, q_paths)
                 q_count += 1
 
+        if exception_count > 0:
+            hard_fail_issues.append({
+                'type': 'folder_processing_exception',
+                'folder': folder,
+                'count': int(exception_count),
+            })
+        if folder in REQUIRED_REFINE_FOLDERS and num_files > 0 and clean_count == 0:
+            hard_fail_issues.append({
+                'type': 'zero_clean_required_folder',
+                'folder': folder,
+                'input_files': int(num_files),
+                'quarantine_files': int(q_count),
+            })
+        elif num_files > 0 and clean_count == 0:
+            report_only_issues.append({
+                'type': 'zero_clean_optional_folder',
+                'folder': folder,
+                'input_files': int(num_files),
+                'quarantine_files': int(q_count),
+            })
+
         total_exceptions += exception_count
         results.append({
             'folder': folder,
@@ -1154,9 +1360,15 @@ def run_full_refine():
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write("# Full Refinement Report\n\n")
         f.write(f"- Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"- Rule Version: {STAGE2_RULE_VERSION}\n")
+        f.write(f"- Run Mode: {run_mode}\n")
+        f.write(f"- Processed Index: {'reset' if force_rebuild else 'reuse_if_signature_matches'}\n")
+        f.write(f"- Incremental Signature Salt: {STAGE2_RULE_VERSION}\n")
         f.write(f"- Clean Base: {final_clean_base}\n")
         f.write(f"- Quarantine Base: {final_q_base}\n")
-        f.write("- Output policy: canonical=`production/(signal|qualitative)/*` only\n\n")
+        f.write("- Writer policy: signal/qualitative canonical writer=`stage02_onepass_refine_full.py`, `stage02_qc_cleaning_full.py`=`validation_only`\n")
+        f.write("- Output policy: canonical=`production/(signal|qualitative)/*` only\n")
+        f.write(f"- Link enrichment enabled: {STAGE2_ENABLE_LINK_ENRICHMENT}\n\n")
         f.write("| Folder | Bucket | Canonical | Total | Clean | Quarantine | Skipped(incremental) | Exceptions |\n")
         f.write("| :--- | :--- | :--- | ---: | ---: | ---: | ---: | ---: |\n")
         for r in results:
@@ -1172,6 +1384,19 @@ def run_full_refine():
         f.write(f"- total_quarantine_files={sum(r['quarantine'] for r in results)}\n")
         f.write(f"- total_skipped_files={sum(r['skipped'] for r in results)}\n")
         f.write(f"- total_exceptions={total_exceptions}\n")
+
+        f.write("\n## Quality Gate\n\n")
+        f.write(f"- hard_fail_count={len(hard_fail_issues)}\n")
+        f.write(f"- report_only_count={len(report_only_issues)}\n")
+        f.write(f"- verdict={'FAIL' if hard_fail_issues else 'PASS'}\n")
+        if hard_fail_issues:
+            f.write("- hard_fail_issues:\n")
+            for issue in hard_fail_issues:
+                f.write(f"  - {json.dumps(issue, ensure_ascii=False)}\n")
+        if report_only_issues:
+            f.write("- report_only_issues:\n")
+            for issue in report_only_issues:
+                f.write(f"  - {json.dumps(issue, ensure_ascii=False)}\n")
 
         dedup_urls_total = int(LINK_RUNTIME_STATS.get('url_deduped_within_file', 0) + LINK_RUNTIME_STATS.get('url_cache_hits', 0))
         f.write("\n## Link Enrichment / Dedup Stats\n\n")
@@ -1193,11 +1418,31 @@ def run_full_refine():
 
     payload = {
         'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'stage2_rule_version': STAGE2_RULE_VERSION,
+        'run_mode': run_mode,
+        'processed_index_policy': 'reset' if force_rebuild else 'reuse_if_signature_matches',
+        'incremental_signature': {
+            'salt': STAGE2_RULE_VERSION,
+            'link_enrichment_enabled': STAGE2_ENABLE_LINK_ENRICHMENT,
+            'strategy': 'size+mtime+path+rule_version+link_enrichment_flag',
+        },
         'clean_base': final_clean_base,
         'quarantine_base': final_q_base,
+        'writer_policy': {
+            'signal_canonical_writer': 'stage02_onepass_refine_full.py',
+            'qualitative_canonical_writer': 'stage02_onepass_refine_full.py',
+            'stage02_qc_cleaning_full.py': 'validation_only',
+        },
         'output_policy': {
             'canonical': 'production/(signal|qualitative)/*',
             'aliases_in_canonical': FOLDER_ALIAS,
+        },
+        'quality_gate': {
+            'verdict': 'FAIL' if hard_fail_issues else 'PASS',
+            'hard_fail_count': int(len(hard_fail_issues)),
+            'report_only_count': int(len(report_only_issues)),
+            'hard_fail_issues': hard_fail_issues,
+            'report_only_issues': report_only_issues,
         },
         'results': results,
         'totals': {
@@ -1209,6 +1454,7 @@ def run_full_refine():
             'total_exceptions': int(total_exceptions),
         },
         'link_enrichment': {
+            'enabled': STAGE2_ENABLE_LINK_ENRICHMENT,
             **{k: int(v) for k, v in LINK_RUNTIME_STATS.items()},
             'deduped_url_total': dedup_urls_total,
         },
@@ -1220,8 +1466,22 @@ def run_full_refine():
     _save_processed_index(processed_index)
     print(f"Full refinement report: {report_path}")
     print(f"Full refinement report json: {report_json_path}")
+    if hard_fail_issues:
+        raise SystemExit(1)
     return report_path, report_json_path
 
 
+def _parse_args():
+    parser = argparse.ArgumentParser(description='Stage2 full refine runner')
+    parser.add_argument(
+        '--force-rebuild', '--full-rerun',
+        dest='force_rebuild',
+        action='store_true',
+        help='Ignore incremental processed_index, reset canonical clean/quarantine outputs, and rebuild from upstream Stage1 inputs.',
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    run_full_refine()
+    args = _parse_args()
+    run_full_refine(force_rebuild=args.force_rebuild)

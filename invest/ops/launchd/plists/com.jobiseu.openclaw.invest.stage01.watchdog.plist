@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.jobiseu.openclaw.invest.stage01.watchdog</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/zsh</string>
+		<string>/Users/jobiseu/.openclaw/workspace/scripts/watchdog/launchd_watchdog.sh</string>
+	</array>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>StandardErrorPath</key>
+	<string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/logs/runtime/launchd_stage01_watchdog.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/logs/runtime/launchd_stage01_watchdog.log</string>
+	<key>StartInterval</key>
+	<integer>600</integer>
+	<key>WorkingDirectory</key>
+	<string>/Users/jobiseu/.openclaw/workspace</string>
+</dict>
+</plist>

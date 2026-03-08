@@ -1,7 +1,12 @@
 # stage01_data_collection
 
-status: CANONICAL  
-updated_at: 2026-03-05 KST
+status: REFERENCE_APPENDIX  
+updated_at: 2026-03-07 KST
+
+## 문서 역할
+- Stage1 collector ↔ output path/source map 보조 카탈로그다.
+- Stage1 운영 명령/환경변수/폴백 SSOT는 `RUNBOOK.md`를 따른다.
+- Stage1 범위/입출력/검증 계약 요약은 `STAGE1_RULEBOOK_AND_REPRO.md`를 따른다.
 
 ## 목적
 - 외부 원천 데이터를 Stage1 raw에 수집/보존한다.
@@ -63,6 +68,7 @@ updated_at: 2026-03-05 KST
 - `invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py`
   - `invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/*.md`
   - `invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/_index.json`
+  - `invest/stages/stage1/outputs/raw/qualitative/text/premium/startale_channel_direct/_discovery.json`
   - 로그인 세션 기반 직접열람 수집(`isLogin=true` 경로)
 - `invest/stages/stage1/scripts/stage01_image_harvester.py`
   - `invest/stages/stage1/outputs/raw/qualitative/text/image_map/*.json`

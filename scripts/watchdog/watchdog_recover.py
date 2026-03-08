@@ -26,6 +26,14 @@ def parse_dt(v: str | None):
         return None
 
 
+def extract_phase(note: str | None) -> str:
+    text = (note or '').strip()
+    for line in text.splitlines():
+        if line.startswith('phase:'):
+            return line.split(':', 1)[1].strip() or '-'
+    return '-'
+
+
 def main():
     if not TASKS_DB.exists():
         print(json.dumps({"ok": False, "changed": False, "reason": f"tasks db not found: {TASKS_DB}"}, ensure_ascii=False))
@@ -45,8 +53,11 @@ def main():
         started = parse_dt(row['started_at'])
         last_act = parse_dt(row['last_activity_at']) or started
         resume_due = parse_dt(row['resume_due'])
+        phase = extract_phase(row['note'])
         reason = ''
-        if status == 'IN_PROGRESS' and last_act and now - last_act > timedelta(minutes=STALE_MINUTES):
+        if status == 'IN_PROGRESS' and phase in {'subagent_running', 'awaiting_callback'} and resume_due and now > resume_due:
+            reason = f'watchdog_{phase}_deadline_expired'
+        elif status == 'IN_PROGRESS' and last_act and now - last_act > timedelta(minutes=STALE_MINUTES):
             reason = f'watchdog_stale_in_progress>{STALE_MINUTES}m'
         elif status == 'BLOCKED' and resume_due and now > resume_due:
             reason = 'watchdog_resume_due_expired'
@@ -54,11 +65,13 @@ def main():
             continue
         note = (row['note'] or '').strip()
         note = (note + '\n' if note else '') + f'auto_recover: {reason} @ {now:%Y-%m-%d %H:%M:%S}'
+        if status == 'BLOCKED' and (row['blocked_reason'] or '').strip() == reason:
+            continue
         with conn:
             conn.execute(
                 """
                 UPDATE tasks
-                SET status='BLOCKED', bucket='backlog', blocked_reason=?, note=?, updated_at=?
+                SET status='BLOCKED', bucket='backlog', blocked_reason=?, note=?, resume_due='', updated_at=?
                 WHERE id=?
                 """,
                 (reason, note, now.strftime('%Y-%m-%d %H:%M:%S'), tid),

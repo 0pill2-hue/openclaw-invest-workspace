@@ -2,7 +2,14 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../../../../.." && pwd)"
 cd "$ROOT"
-PYTHON_BIN="${INVEST_PYTHON_BIN:-python3}"
+PYTHON_BIN="${INVEST_PYTHON_BIN:-}"
+if [[ -z "$PYTHON_BIN" || ! -x "$PYTHON_BIN" ]]; then
+  if [[ -x "$ROOT/.venv/bin/python3" ]]; then
+    PYTHON_BIN="$ROOT/.venv/bin/python3"
+  else
+    PYTHON_BIN="python3"
+  fi
+fi
 export REPO_ROOT="$ROOT"
 
 mkdir -p \
@@ -318,7 +325,7 @@ log "stage1234 chain start run_key=${RUN_KEY}"
 
 # Stage1
 run_with_retry "stage01_daily_update" 5400 2 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \
-  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_daily_update.py
+  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_daily_update.py --profile daily_full
 
 set +e
 run_with_retry "stage01_checkpoint_gate" 900 1 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \

@@ -62,6 +62,7 @@
 - RSS/Telegram 날짜 복구: `invest/stages/stage1/scripts/launchd/launchd_rss_telegram_date_fix.sh`
 - 수급 autorepair: `invest/stages/stage1/scripts/launchd/launchd_supply_autorepair.sh`
 - DART backfill autopilot: `invest/stages/stage1/scripts/launchd/launchd_dart_backfill_autopilot.sh`
+- selected articles 백필: `invest/stages/stage1/scripts/launchd/launchd_stage01_profile.sh news_backfill`
 
 ---
 
@@ -76,7 +77,8 @@
 | `invest.stage1.repair.datefix` | RSS/Telegram 날짜 보정 | 2시간 | 소규모 보정, 메인 체인과 분리 |
 | `invest.stage1.repair.supply` | 수급 누락 자동 보정 | 평일 20:40 KST | 일일 수집 후 누락 보정 |
 | `invest.stage1.backfill.dart` | DART 장기 누락 자동 메움 | 1일 1회 03:40 KST | 장중 부담 없이 저빈도 점검 |
-| `invest.stage1.backfill.10y` | 10년 backfill 초기 적재 | 수동/임시 등록 | 평시 상시 등록 금지 |
+| `invest.stage1.backfill.news` | selected_articles 2016 coverage 백필 | 30분 | 미수집 backlog를 점진 소진하고 이미 수집 성공한 URL은 건너뜀 |
+| `invest.stage1.backfill.10y.manual` | 10년 backfill 초기 적재 | 수동/임시 등록 | 평시 상시 등록 금지 |
 
 ### 주기 분리 근거
 - KR OHLCV/수급/일일 DART/뉴스는 하루 1회 main chain이면 충분하다.
@@ -156,6 +158,7 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.jobiseu.invest.stage
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.jobiseu.invest.stage1.repair.datefix.plist
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.jobiseu.invest.stage1.repair.supply.plist
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.jobiseu.invest.stage1.backfill.dart.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.jobiseu.invest.stage1.backfill.news.plist
 ```
 
 ### 재적용

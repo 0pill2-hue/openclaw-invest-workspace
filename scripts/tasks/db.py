@@ -170,11 +170,81 @@ def init_schema(conn: sqlite3.Connection) -> None:
     if "resume_due" in cols:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_resume_due ON tasks(resume_due)")
 
+    normalize_closed_runtime_metadata(conn)
     conn.commit()
 
 
 def normalize_priority(raw_priority: str) -> str:
     return (raw_priority or "").strip().upper()
+
+
+def extract_phase(note: str | None) -> str:
+    text = (note or "").strip()
+    for line in text.splitlines():
+        if line.startswith("phase:"):
+            return line.split(":", 1)[1].strip() or "-"
+    return "-"
+
+
+def extract_note_value(note: str | None, key: str) -> str:
+    prefix = f"{key}:"
+    text = (note or "").strip()
+    for line in text.splitlines():
+        if line.startswith(prefix):
+            return line.split(":", 1)[1].strip()
+    return ""
+
+
+def format_task_runtime_state(row: sqlite3.Row) -> str:
+    parts: List[str] = []
+    assignee = (row["assignee"] or "").strip() if "assignee" in row.keys() else ""
+    phase = extract_phase(row["note"] if "note" in row.keys() else "")
+    review_status = (row["review_status"] or "").strip() if "review_status" in row.keys() else ""
+    resume_due = (row["resume_due"] or "").strip() if "resume_due" in row.keys() else ""
+    child_session = extract_note_value(row["note"] if "note" in row.keys() else "", "child_session")
+
+    if assignee:
+        parts.append(f"assignee={assignee}")
+    if phase != "-":
+        parts.append(f"phase={phase}")
+    if review_status:
+        parts.append(f"review={review_status}")
+    if child_session:
+        parts.append(f"child={child_session}")
+    if resume_due:
+        parts.append(f"resume_due={resume_due}")
+    return " | ".join(parts) if parts else "-"
+
+
+def normalize_closed_runtime_metadata(conn: sqlite3.Connection) -> None:
+    with conn:
+        conn.execute(
+            """
+            UPDATE tasks
+            SET blocked_reason='',
+                resume_due='',
+                proof_pending='',
+                review_status=CASE
+                    WHEN UPPER(COALESCE(review_status, ''))='PENDING' AND (COALESCE(assignee, '')!='' OR COALESCE(assigned_run_id, '')!='') THEN 'PASS'
+                    WHEN UPPER(COALESCE(review_status, ''))='PENDING' THEN ''
+                    ELSE review_status
+                END,
+                review_note=CASE
+                    WHEN UPPER(COALESCE(review_status, ''))='PENDING' THEN ''
+                    ELSE review_note
+                END
+            WHERE status='DONE'
+            """
+        )
+        conn.execute(
+            """
+            UPDATE tasks
+            SET resume_due='',
+                review_status=CASE WHEN UPPER(COALESCE(review_status, ''))='PENDING' THEN '' ELSE review_status END,
+                review_note=CASE WHEN UPPER(COALESCE(review_status, ''))='PENDING' THEN '' ELSE review_note END
+            WHERE status='BLOCKED'
+            """
+        )
 
 
 def extract_ticket_ids(text: str) -> List[str]:
@@ -456,14 +526,30 @@ def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, buck
     new_started_at = row["started_at"]
     new_last_activity = now
     new_resume_due = row["resume_due"]
+    new_review_status = row["review_status"]
+    new_review_note = row["review_note"]
 
     if blocked_reason is not None:
         new_blocked = blocked_reason
     if proof is not None:
         new_proof = proof
         new_proof_pending = ""
-    if status == "IN_PROGRESS" and not new_started_at:
-        new_started_at = now
+    if status == "IN_PROGRESS":
+        if not new_started_at:
+            new_started_at = now
+        if blocked_reason is None:
+            new_blocked = ""
+    elif status == "BLOCKED":
+        if (new_review_status or "").upper() == "PENDING":
+            new_review_status = ""
+            new_review_note = ""
+    elif status == "DONE":
+        new_blocked = ""
+        new_proof_pending = ""
+        if (new_review_status or "").upper() == "PENDING":
+            new_review_status = "PASS"
+            new_review_note = ""
+
     if status != "BLOCKED":
         new_resume_due = ""
     if resume_due is not None:
@@ -473,10 +559,10 @@ def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, buck
         conn.execute(
             """
             UPDATE tasks
-            SET status=?, bucket=?, blocked_reason=?, proof=?, proof_pending=?, started_at=?, last_activity_at=?, resume_due=?, updated_at=?
+            SET status=?, bucket=?, blocked_reason=?, proof=?, proof_pending=?, review_status=?, review_note=?, started_at=?, last_activity_at=?, resume_due=?, updated_at=?
             WHERE id=?
             """,
-            (status, bucket, new_blocked, new_proof, new_proof_pending, new_started_at, new_last_activity, new_resume_due, now, ticket_id),
+            (status, bucket, new_blocked, new_proof, new_proof_pending, new_review_status, new_review_note, new_started_at, new_last_activity, new_resume_due, now, ticket_id),
         )
     return True
 
@@ -658,6 +744,66 @@ def cmd_touch(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_release(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    now = now_ts()
+    with conn:
+        cur = conn.execute(
+            """
+            UPDATE tasks
+            SET assignee='', assigned_run_id='', assigned_at='', review_status='', review_note='', updated_at=?
+            WHERE id=?
+            """,
+            (now, args.id),
+        )
+    if cur.rowcount != 1:
+        print(f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
+    print(f"released: {args.id}")
+    return 0
+
+
+def cmd_mark_phase(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    row = conn.execute("SELECT note FROM tasks WHERE id=?", (args.id,)).fetchone()
+    if not row:
+        print(f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
+
+    existing_lines = [line for line in (row["note"] or "").splitlines() if not line.startswith("phase:") and not line.startswith("child_session:")]
+    new_lines = [f"phase: {args.phase}"]
+    if args.child_session:
+        new_lines.append(f"child_session: {args.child_session}")
+    if args.note:
+        new_lines.append(args.note)
+    if existing_lines:
+        new_lines.extend(existing_lines)
+    note = "\n".join(line for line in new_lines if line.strip())
+    now = now_ts()
+    resume_due = args.resume_due or ""
+    with conn:
+        conn.execute(
+            "UPDATE tasks SET note=?, last_activity_at=?, resume_due=?, updated_at=? WHERE id=?",
+            (note, now, resume_due, now, args.id),
+        )
+    print(f"phase-updated: {args.id} -> {args.phase}")
+    return 0
+
+
+def cmd_remove(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    with conn:
+        cur = conn.execute("DELETE FROM tasks WHERE id=?", (args.id,))
+    if cur.rowcount != 1:
+        print(f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
+    print(f"removed: {args.id}")
+    return 0
+
+
 def cmd_list(args: argparse.Namespace) -> int:
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
@@ -671,7 +817,7 @@ def cmd_list(args: argparse.Namespace) -> int:
         if b not in ALLOWED_BUCKET:
             print(f"invalid bucket filter: {b}", file=sys.stderr)
             return 1
-    sql = "SELECT id, status, bucket, priority, title FROM tasks"
+    sql = "SELECT id, status, bucket, priority, title, note FROM tasks"
     conds: List[str] = []
     params: List[str] = []
     if statuses:
@@ -686,7 +832,8 @@ def cmd_list(args: argparse.Namespace) -> int:
     rows = conn.execute(sql, params).fetchall()
     for r in rows:
         p = r["priority"] if r["priority"] else "-"
-        print(f"{r['id']}\t{r['status']}\t{r['bucket']}\t{p}\t{r['title']}")
+        phase = extract_phase(r["note"])
+        print(f"{r['id']}\t{r['status']}\t{phase}\t{r['bucket']}\t{p}\t{r['title']}")
     print(f"count={len(rows)}")
     return 0
 
@@ -698,9 +845,20 @@ def cmd_summary(args: argparse.Namespace) -> int:
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
     counts = conn.execute("SELECT COUNT(*) AS total, SUM(CASE WHEN status='IN_PROGRESS' THEN 1 ELSE 0 END) AS in_progress, SUM(CASE WHEN status='TODO' THEN 1 ELSE 0 END) AS todo, SUM(CASE WHEN status='BLOCKED' THEN 1 ELSE 0 END) AS blocked, SUM(CASE WHEN status='DONE' THEN 1 ELSE 0 END) AS done FROM tasks").fetchone()
-    assignment_counts = conn.execute("SELECT SUM(CASE WHEN assignee != '' AND review_status='PENDING' THEN 1 ELSE 0 END) AS assigned, SUM(CASE WHEN review_status='REWORK' THEN 1 ELSE 0 END) AS rework FROM tasks").fetchone()
-    active_rows = conn.execute("SELECT id, priority, status, title FROM tasks WHERE bucket='active' ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 ELSE 3 END, sort_order, id LIMIT ?", (args.top,)).fetchall()
+    assignment_counts = conn.execute("SELECT SUM(CASE WHEN status='IN_PROGRESS' AND assignee != '' AND review_status='PENDING' THEN 1 ELSE 0 END) AS assigned, SUM(CASE WHEN status='IN_PROGRESS' AND review_status='REWORK' THEN 1 ELSE 0 END) AS rework FROM tasks").fetchone()
+    active_rows = conn.execute("SELECT id, priority, status, title, note, assignee, assigned_run_id, review_status, resume_due FROM tasks WHERE bucket='active' ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 ELSE 3 END, sort_order, id LIMIT ?", (args.top,)).fetchall()
     recent_rows = conn.execute("SELECT id, status, updated_at, title FROM tasks ORDER BY datetime(updated_at) DESC, id DESC LIMIT ?", (args.recent,)).fetchall()
+    hygiene_rows = conn.execute(
+        """
+        SELECT id, updated_at, title
+        FROM tasks
+        WHERE status='BLOCKED'
+          AND TRIM(COALESCE(proof, '')) != ''
+          AND TRIM(COALESCE(blocked_reason, '')) = ''
+        ORDER BY datetime(updated_at) DESC, id DESC
+        LIMIT 10
+        """
+    ).fetchall()
     print("== TASK SUMMARY ==")
     print("total={total} | IN_PROGRESS={in_progress} | TODO={todo} | BLOCKED={blocked} | DONE={done}".format(total=counts["total"] or 0, in_progress=counts["in_progress"] or 0, todo=counts["todo"] or 0, blocked=counts["blocked"] or 0, done=counts["done"] or 0))
     print("assigned_pending={assigned} | rework={rework}".format(assigned=assignment_counts["assigned"] or 0, rework=assignment_counts["rework"] or 0))
@@ -709,7 +867,11 @@ def cmd_summary(args: argparse.Namespace) -> int:
     if active_rows:
         for row in active_rows:
             priority = row["priority"] if row["priority"] else "-"
-            print(f"- {row['id']} | {priority} | {row['status']} | {row['title']}")
+            runtime_state = format_task_runtime_state(row)
+            line = f"- {row['id']} | {priority} | {row['status']} | {row['title']}"
+            if runtime_state != "-":
+                line += f" | {runtime_state}"
+            print(line)
     else:
         print("- (empty)")
     print("")
@@ -719,6 +881,14 @@ def cmd_summary(args: argparse.Namespace) -> int:
             print(f"- {row['id']} | {row['status']} | {row['updated_at']} | {row['title']}")
     else:
         print("- (empty)")
+    print("")
+    print("[hygiene alerts]")
+    if hygiene_rows:
+        print("- blocked_with_proof_no_reason: reconcile to DONE/remove or add explicit blocker")
+        for row in hygiene_rows:
+            print(f"  - {row['id']} | {row['updated_at']} | {row['title']}")
+    else:
+        print("- (clean)")
     return 0
 
 
@@ -736,6 +906,9 @@ def render_task_lines(row: sqlite3.Row) -> List[str]:
     if row["note"]:
         for note_line in row["note"].splitlines():
             lines.append(f"  - note: {note_line}")
+    runtime_state = format_task_runtime_state(row)
+    if runtime_state != "-":
+        lines.append(f"  - task_state: {runtime_state}")
     if row["blocked_reason"]:
         lines.append(f"  - blocked: {row['blocked_reason']}")
     if row["status"] == "DONE":
@@ -837,6 +1010,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_review_rework.add_argument("--note", required=True)
     p_touch = sub.add_parser("touch", help="Update last_activity_at for active ticket")
     p_touch.add_argument("--id", required=True)
+    p_phase = sub.add_parser("mark-phase", help="Mark orchestration phase on a ticket")
+    p_phase.add_argument("--id", required=True)
+    p_phase.add_argument("--phase", required=True)
+    p_phase.add_argument("--child-session", default="")
+    p_phase.add_argument("--resume-due", default="")
+    p_phase.add_argument("--note", default="")
+    p_release = sub.add_parser("release", help="Clear task assignee/run metadata")
+    p_release.add_argument("--id", required=True)
+    p_remove = sub.add_parser("remove", help="Delete task from ledger")
+    p_remove.add_argument("--id", required=True)
     p_list = sub.add_parser("list", help="List tasks")
     p_list.add_argument("--status", nargs="*", help="Status filter(s)")
     p_list.add_argument("--bucket", nargs="*", help="Bucket filter(s)")
@@ -873,6 +1056,12 @@ def main() -> int:
         return cmd_review_rework(args)
     if args.command == "touch":
         return cmd_touch(args)
+    if args.command == "mark-phase":
+        return cmd_mark_phase(args)
+    if args.command == "release":
+        return cmd_release(args)
+    if args.command == "remove":
+        return cmd_remove(args)
     if args.command == "list":
         return cmd_list(args)
     if args.command == "summary":

@@ -11,11 +11,15 @@ import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
+ROOT = Path(__file__).resolve().parents[4]
+STAGE1_DIR = ROOT / 'invest/stages/stage1'
+WORKSPACE_VENV_PY = ROOT / '.venv/bin/python3'
+
 try:
     from telethon import TelegramClient
 except ModuleNotFoundError:
     # Cron may run with system python; re-exec with workspace venv if available.
-    venv_py = '/Users/jobiseu/.openclaw/workspace/.venv/bin/python3'
+    venv_py = str(WORKSPACE_VENV_PY)
     if os.path.exists(venv_py) and os.path.realpath(sys.executable) != os.path.realpath(venv_py):
         os.execv(venv_py, [venv_py] + sys.argv)
     raise
@@ -59,7 +63,7 @@ if not api_id or not api_hash:
     sys.exit(1)
 
 # Save directory
-save_dir = '/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw/qualitative/text/telegram'
+save_dir = str(STAGE1_DIR / 'outputs/raw/qualitative/text/telegram')
 os.makedirs(save_dir, exist_ok=True)
 
 # Time windows
@@ -68,10 +72,10 @@ target_date = datetime.now(timezone.utc) - timedelta(days=365 * _target_years)
 bootstrap_lookback_days = int(os.environ.get('TELEGRAM_BOOTSTRAP_LOOKBACK_DAYS', str(365 * _target_years)))
 bootstrap_date = datetime.now(timezone.utc) - timedelta(days=max(1, bootstrap_lookback_days))
 
-LOCK_FILE = '/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/telegram_scrape.lock'
-CHECKPOINT_FILE = '/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/telegram_scrape_checkpoint.json'
-ALLOWLIST_FILE = '/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt'
-RUN_STATUS_FILE = '/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/telegram_last_run_status.json'
+LOCK_FILE = str(STAGE1_DIR / 'outputs/runtime/telegram_scrape.lock')
+CHECKPOINT_FILE = str(STAGE1_DIR / 'outputs/runtime/telegram_scrape_checkpoint.json')
+ALLOWLIST_FILE = str(STAGE1_DIR / 'inputs/config/telegram_channel_allowlist.txt')
+RUN_STATUS_FILE = str(STAGE1_DIR / 'outputs/runtime/telegram_last_run_status.json')
 INVEST_KEYWORDS = (
     '투자', '주식', '리서치', '뉴스', '증시', '마켓', 'stock', 'invest', 'research', 'market',
     'trading', 'finance', 'alpha', 'macro'
@@ -94,8 +98,8 @@ ATTACH_MAX_FILE_BYTES = int(os.environ.get('TELEGRAM_ATTACH_MAX_FILE_BYTES', str
 ATTACH_MAX_TEXT_CHARS = int(os.environ.get('TELEGRAM_ATTACH_MAX_TEXT_CHARS', '6000'))
 ATTACH_PDF_MAX_PAGES = int(os.environ.get('TELEGRAM_ATTACH_PDF_MAX_PAGES', '25'))
 ATTACH_OCR_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_ATTACH_OCR_TIMEOUT_SEC', '18'))
-ATTACH_TMP_ROOT = '/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/telegram_attach_tmp'
-ATTACH_STATS_FILE = '/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/telegram_attachment_extract_stats_latest.json'
+ATTACH_TMP_ROOT = str(STAGE1_DIR / 'outputs/runtime/telegram_attach_tmp')
+ATTACH_STATS_FILE = str(STAGE1_DIR / 'outputs/runtime/telegram_attachment_extract_stats_latest.json')
 
 IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.tif', '.tiff'}
 TEXT_DOC_EXTS = {'.txt', '.md', '.csv', '.json', '.xml', '.html', '.htm', '.log', '.rtf'}
@@ -110,7 +114,7 @@ def acquire_lock():
     Author: 조비스
     Updated: 2026-02-18
     """
-    os.makedirs('/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime', exist_ok=True)
+    os.makedirs(str(STAGE1_DIR / 'outputs/runtime'), exist_ok=True)
     fp = open(LOCK_FILE, 'w')
     try:
         fcntl.flock(fp.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -749,7 +753,7 @@ async def main():
         channel_outcomes[username_key] = payload
 
     try:
-        session_name = '/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/jobis_mtproto_session'
+        session_name = str(STAGE1_DIR / 'scripts/jobis_mtproto_session')
         client = TelegramClient(session_name, api_id, api_hash)
         await client.connect()
 

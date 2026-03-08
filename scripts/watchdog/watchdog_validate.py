@@ -27,6 +27,14 @@ def parse_dt(v: str | None):
         return None
 
 
+def extract_phase(note: str | None) -> str:
+    text = (note or '').strip()
+    for line in text.splitlines():
+        if line.startswith('phase:'):
+            return line.split(':', 1)[1].strip() or '-'
+    return '-'
+
+
 issues: list[str] = []
 if not TASKS_DB.exists():
     issues.append(f'tasks db not found: {TASKS_DB}')
@@ -34,7 +42,7 @@ else:
     conn = sqlite3.connect(str(TASKS_DB))
     conn.row_factory = sqlite3.Row
     rows = conn.execute(
-        "SELECT id, status, started_at, last_activity_at, resume_due, review_status FROM tasks"
+        "SELECT id, status, started_at, last_activity_at, resume_due, review_status, note FROM tasks"
     ).fetchall()
     for row in rows:
         tid = row['id']
@@ -43,12 +51,16 @@ else:
         if status == 'IN_PROGRESS':
             started = parse_dt(row['started_at'])
             last_act = parse_dt(row['last_activity_at']) or started
+            resume_due = parse_dt(row['resume_due'])
+            phase = extract_phase(row['note'])
             if started is None:
                 issues.append(f'IN_PROGRESS started_at 누락: {tid}')
             if last_act is None:
                 issues.append(f'IN_PROGRESS last_activity_at 누락: {tid}')
             elif NOW - last_act > timedelta(minutes=STALE_MINUTES):
                 issues.append(f'IN_PROGRESS 무활동 {STALE_MINUTES}분 초과: {tid}')
+            if phase in {'subagent_running', 'awaiting_callback'} and resume_due and NOW > resume_due:
+                issues.append(f'{phase} callback deadline 초과: {tid}')
         if status == 'BLOCKED':
             resume_due = parse_dt(row['resume_due'])
             if resume_due and NOW > resume_due:

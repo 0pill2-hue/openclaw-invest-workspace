@@ -4,9 +4,11 @@ import json
 import os
 import re
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import urlparse
+from fnmatch import fnmatch
 
 import requests
 from bs4 import BeautifulSoup
@@ -60,6 +62,13 @@ def _load_json(path: Path, default: Any) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return default
+
+
+def _truthy(raw: Optional[str], default: bool = False) -> bool:
+    text = (raw or "").strip().lower()
+    if not text:
+        return default
+    return text in {"1", "true", "yes", "on"}
 
 
 def _load_keywords() -> list[str]:
@@ -141,8 +150,8 @@ def _dedupe_url_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             by_url[url] = row
             continue
 
-        prev_dt = _parse_date(str(prev.get("published_at") or prev.get("published_date") or ""))
-        curr_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
+        prev_dt = _row_published_dt(prev)
+        curr_dt = _row_published_dt(row)
         prev_key = (
             1 if prev_dt else 0,
             prev_dt.isoformat() if prev_dt else "",
@@ -161,6 +170,29 @@ def _dedupe_url_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     merged = list(by_url.values())
     merged.sort(key=lambda x: (str(x.get("published_date") or ""), str(x.get("published_at") or ""), str(x.get("url") or "")), reverse=True)
     return merged
+
+
+def _load_existing_selected_urls() -> set[str]:
+    urls: set[str] = set()
+    if not OUT_DIR.exists():
+        return urls
+    for path in sorted(OUT_DIR.glob('*.jsonl')):
+        try:
+            with path.open('r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        row = json.loads(line)
+                    except Exception:
+                        continue
+                    url = str(row.get('url') or '').strip()
+                    if url:
+                        urls.add(url)
+        except Exception:
+            continue
+    return urls
 
 
 
@@ -190,6 +222,12 @@ def _parse_date(raw: str) -> Optional[datetime]:
     s = (raw or "").strip()
     if not s:
         return None
+    try:
+        dt = parsedate_to_datetime(s)
+        if dt is not None:
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    except Exception:
+        pass
     for cand in (s, s.replace("Z", "+00:00")):
         try:
             dt = datetime.fromisoformat(cand)
@@ -203,6 +241,14 @@ def _parse_date(raw: str) -> Optional[datetime]:
             return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=timezone.utc)
         except Exception:
             return None
+    return None
+
+
+def _row_published_dt(row: dict[str, Any]) -> Optional[datetime]:
+    for key in ("published_dt", "published_at", "published_date", "published", "published_raw", "date", "created_at"):
+        dt = _parse_date(str(row.get(key) or ""))
+        if dt is not None:
+            return dt
     return None
 
 
@@ -282,7 +328,7 @@ def _priority(row: dict[str, Any], keywords: list[str], now_dt: datetime, recenc
         ]
     )
     hits = _match_keywords(text, keywords)
-    published_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
+    published_dt = _row_published_dt(row)
     rscore = _recency_score(published_dt, now_dt)
     source_bonus = 2 if any((x.get("source_kind") in {"sitemap", "sitemap_feed", "sitemap_rss"}) for x in row.get("discovered_by", [])) else 0
     host = _canonical_domain(str(row.get("source_domain") or urlparse(str(row.get("url") or "")).netloc))
@@ -447,6 +493,23 @@ def _limit_paywall_domain_candidates(rows: list[dict[str, Any]]) -> list[dict[st
     return kept
 
 
+def _parse_csv_env(name: str) -> list[str]:
+    raw = os.environ.get(name, "")
+    return [part.strip().lower() for part in raw.split(',') if part.strip()]
+
+
+def _should_exclude_candidate(row: dict[str, Any], excluded_domains: list[str], excluded_url_patterns: list[str]) -> bool:
+    url = str(row.get("url") or "").strip()
+    host = _canonical_domain(str(row.get("source_domain") or urlparse(url).netloc))
+    if host and any(host == dom or host.endswith(f'.{dom}') for dom in excluded_domains):
+        return True
+    lower_url = url.lower()
+    for pattern in excluded_url_patterns:
+        if fnmatch(lower_url, pattern) or pattern in lower_url:
+            return True
+    return False
+
+
 
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -470,7 +533,7 @@ def _select_year_spread_candidates(rows: list[dict[str, Any]], target_dt: Option
     eligible = []
     overflow = []
     for row in rows:
-        published_dt = _parse_date(str(row.get("published_dt") or row.get("published_at") or row.get("published_date") or ""))
+        published_dt = _row_published_dt(row)
         if published_dt is not None and published_dt >= target_dt:
             eligible.append(row)
         else:
@@ -478,7 +541,7 @@ def _select_year_spread_candidates(rows: list[dict[str, Any]], target_dt: Option
 
     by_year: dict[int, list[dict[str, Any]]] = {}
     for row in eligible:
-        published_dt = _parse_date(str(row.get("published_dt") or row.get("published_at") or row.get("published_date") or ""))
+        published_dt = _row_published_dt(row)
         if published_dt is None:
             overflow.append(row)
             continue
@@ -516,6 +579,10 @@ def _select_year_spread_candidates(rows: list[dict[str, Any]], target_dt: Option
 def run(args: argparse.Namespace) -> dict[str, Any]:
     index_files, rows = _read_url_index_rows(args.input_index, args.merge_all_indexes)
     keywords = _load_keywords()
+    existing_urls = _load_existing_selected_urls() if args.skip_existing else set()
+
+    if existing_urls:
+        rows = [row for row in rows if str(row.get('url') or '').strip() not in existing_urls]
 
     if not rows:
         summary = {
@@ -539,12 +606,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     scored.sort(key=lambda x: (float(x.get("priority_score", 0)), str(x.get("published_dt", ""))), reverse=True)
     scored = _limit_paywall_domain_candidates(scored)
 
+    excluded_domains = _parse_csv_env('NEWS_SELECTED_EXCLUDED_DOMAINS')
+    excluded_url_patterns = _parse_csv_env('NEWS_SELECTED_EXCLUDED_URL_PATTERNS')
+    if excluded_domains or excluded_url_patterns:
+        scored = [row for row in scored if not _should_exclude_candidate(row, excluded_domains, excluded_url_patterns)]
+
     target_dt = _parse_date(args.target_date) if args.target_date else None
+    attempt_limit = args.max_attempts if args.max_attempts > 0 else args.max_candidates
     scored, yearly_counts = _select_year_spread_candidates(
         scored,
         target_dt=target_dt,
         yearly_quota=args.yearly_quota,
-        max_candidates=args.max_candidates,
+        max_candidates=attempt_limit,
     )
 
     session = requests.Session()
@@ -556,6 +629,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         item = _collect_article(session, row, args.timeout)
         if item.get("ok"):
             successes.append(item)
+            if args.max_candidates > 0 and len(successes) >= args.max_candidates:
+                break
         else:
             failures.append(
                 {
@@ -590,8 +665,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "merge_all_indexes": bool(args.merge_all_indexes and not args.input_index),
         "output_file": str(out_file.relative_to(ROOT)),
         "url_index_count": len(rows),
+        "existing_url_count": len(existing_urls),
+        "skip_existing": bool(args.skip_existing),
         "keyword_pool_size": len(keywords),
         "candidate_count": len(scored),
+        "max_attempts": args.max_attempts,
         "selected_count": len(successes),
         "failed_count": len(failures),
         "date_min": dmin,
@@ -627,12 +705,14 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--merge-all-indexes", action="store_true", default=os.environ.get("NEWS_SELECTED_MERGE_ALL_INDEXES", "1").strip().lower() in {"1", "true", "yes", "on"}, help="merge all url_index jsonl files in news folder before selection")
     ap.add_argument("--min-keyword-hits", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MIN_KEYWORD_HITS"), 1, min_v=0))
     ap.add_argument("--max-candidates", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MAX_ARTICLES"), 0, min_v=0))
+    ap.add_argument("--max-attempts", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MAX_ATTEMPTS"), 0, min_v=0))
     ap.add_argument("--recency-weight", type=float, default=_safe_float(os.environ.get("NEWS_SELECTED_RECENCY_WEIGHT"), 0.0, min_v=0.0))
     ap.add_argument("--target-date", default=os.environ.get("NEWS_SELECTED_TARGET_DATE", ""))
     ap.add_argument("--yearly-quota", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_YEARLY_QUOTA"), 3, min_v=0))
     ap.add_argument("--min-selected", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MIN_SELECTED"), 1, min_v=0))
     ap.add_argument("--timeout", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_TIMEOUT_SEC"), 18, min_v=3))
     ap.add_argument("--sleep", type=float, default=float(os.environ.get("NEWS_SELECTED_SLEEP_SEC", "0.15")))
+    ap.add_argument("--skip-existing", action="store_true", default=_truthy(os.environ.get("NEWS_SELECTED_SKIP_EXISTING", "1"), default=True), help="skip URLs already collected in prior selected_articles jsonl outputs")
     return ap.parse_args()
 
 

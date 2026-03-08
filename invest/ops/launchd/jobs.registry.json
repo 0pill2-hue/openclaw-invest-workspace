@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "timezone": "Asia/Seoul",
+  "env_file": "~/.config/invest/invest_autocollect.env",
+  "jobs": [
+    {
+      "job_id": "invest.stage12345.daily",
+      "label": "com.jobiseu.invest.stage12345.daily",
+      "script": "invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh",
+      "schedule": { "type": "calendar", "weekday": [1, 2, 3, 4, 5], "hour": 19, "minute": 10 },
+      "purpose": "Stage1 수집 이후 Stage2~5까지 fail-close 체인 실행",
+      "outputs": [
+        "invest/stages/stage1/outputs/runtime/daily_update_status.json",
+        "invest/stages/stage1/outputs/runtime/post_collection_validate.json",
+        "invest/stages/stage1/outputs/runtime/stage01_ocr_postprocess_validate.json",
+        "invest/stages/stage1/outputs/runtime/stage1234_chain_state.json"
+      ]
+    },
+    {
+      "job_id": "invest.stage1.ocr.rolling",
+      "label": "com.jobiseu.invest.stage1.ocr.rolling",
+      "script": "invest/stages/stage1/scripts/launchd/launchd_stage01_images_ocr_rolling.sh",
+      "schedule": { "type": "interval", "seconds": 1800 },
+      "purpose": "이미지 OCR 큐 점진 소진",
+      "outputs": [
+        "invest/stages/stage1/outputs/runtime/stage01_images_ocr_rolling_checkpoint.json",
+        "invest/stages/stage1/outputs/runtime/stage01_images_ocr_rolling_latest.json"
+      ]
+    },
+    {
+      "job_id": "invest.stage1.repair.datefix",
+      "label": "com.jobiseu.invest.stage1.repair.datefix",
+      "script": "invest/stages/stage1/scripts/launchd/launchd_rss_telegram_date_fix.sh",
+      "schedule": { "type": "interval", "seconds": 7200 },
+      "purpose": "RSS/Telegram 날짜 누락 복구"
+    },
+    {
+      "job_id": "invest.stage1.repair.supply",
+      "label": "com.jobiseu.invest.stage1.repair.supply",
+      "script": "invest/stages/stage1/scripts/launchd/launchd_supply_autorepair.sh",
+      "schedule": { "type": "calendar", "weekday": [1, 2, 3, 4, 5], "hour": 20, "minute": 40 },
+      "purpose": "KR 수급 누락 보정"
+    },
+    {
+      "job_id": "invest.stage1.backfill.dart",
+      "label": "com.jobiseu.invest.stage1.backfill.dart",
+      "script": "invest/stages/stage1/scripts/launchd/launchd_dart_backfill_autopilot.sh",
+      "schedule": { "type": "calendar", "hour": 3, "minute": 40 },
+      "purpose": "DART 장기 누락 자동 점검 및 메움"
+    },
+    {
+      "job_id": "invest.stage1.backfill.10y.manual",
+      "label": "com.jobiseu.invest.stage1.backfill.10y.manual",
+      "script": "python3 invest/stages/stage1/scripts/stage01_backfill_10y.py --years 10",
+      "schedule": { "type": "manual" },
+      "purpose": "초기 bootstrap 또는 대규모 결손 시 임시 실행"
+    }
+  ]
+}

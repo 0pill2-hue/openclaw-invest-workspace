@@ -4,6 +4,7 @@
 - 목적: Stage3에서 4축 정성신호를 산출해 Stage4 `QUALITATIVE_SIGNAL`에 반영
 - 4축: `upside`, `downside_risk`, `bm_sector_fit`, `persistence`
 - 비범위: 감성/주목도(attention/sentiment) 직접 점수축 사용
+- 역할 경계: 편입/교체/비중조절 같은 운영 규칙은 Stage6 범위이며, Stage3는 정성 신호 압축 구조만 유지한다.
 
 ---
 
@@ -67,8 +68,9 @@
 
 ## 6) Stage4 연계
 - Stage4 조인키: `date + symbol`
-- Stage4 수식:
-  - `COMPOSITE = 0.80 * VALUE_SCORE + 0.20 * QUALITATIVE_SIGNAL`
+- Stage4 결합 구조:
+  - `VALUE_SCORE`와 `QUALITATIVE_SIGNAL`의 결합 구조를 유지한다.
+  - 세부 가중치는 영구 고정 규칙이 아니라 baseline/candidate/tuning 대상이다.
 - Stage4 입력 경로:
   - `upstream_stage3_outputs/features/stage3_qualitative_axes_features.csv`
 

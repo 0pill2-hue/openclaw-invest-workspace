@@ -43,6 +43,38 @@ STAGE6_RUNTIME_AUDIT_DIR = env_path(
 )
 
 
+def soul_path() -> Path:
+    return env_path("OPENCLAW_SOUL_PATH", ROOT / "SOUL.md")
+
+
+def user_path() -> Path:
+    return env_path("OPENCLAW_USER_PATH", ROOT / "USER.md")
+
+
+def agents_path() -> Path:
+    return env_path("OPENCLAW_AGENTS_PATH", ROOT / "AGENTS.md")
+
+
+def memory_path() -> Path:
+    return env_path("OPENCLAW_MEMORY_PATH", ROOT / "MEMORY.md")
+
+
+def tasks_md_path() -> Path:
+    return env_path("OPENCLAW_TASKS_MD_PATH", ROOT / "TASKS.md")
+
+
+def directives_md_path() -> Path:
+    return env_path("OPENCLAW_DIRECTIVES_MD_PATH", ROOT / "DIRECTIVES.md")
+
+
+def current_task_path() -> Path:
+    return env_path("OPENCLAW_CURRENT_TASK_PATH", RUNTIME_DIR / "current-task.md")
+
+
+def context_handoff_path() -> Path:
+    return env_path("OPENCLAW_CONTEXT_HANDOFF_PATH", RUNTIME_DIR / "context-handoff.md")
+
+
 def openclaw_home() -> Path:
     raw = os.environ.get("OPENCLAW_HOME", "").strip()
     if raw:

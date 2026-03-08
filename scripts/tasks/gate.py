@@ -33,9 +33,28 @@ def main() -> int:
 
     try:
         row = conn.execute("SELECT * FROM tasks WHERE id=?", (args.ticket,)).fetchone()
+        maintenance_rows = conn.execute(
+            """
+            SELECT id, status, title
+            FROM tasks
+            WHERE id LIKE 'WD-%'
+              AND bucket='active'
+              AND status IN ('TODO', 'IN_PROGRESS')
+            ORDER BY id
+            """
+        ).fetchall()
     except sqlite3.Error as exc:
         print(f"gate fail: db error ({exc})", file=sys.stderr)
         return 2
+
+    if maintenance_rows:
+        active_ids = [str(r['id']) for r in maintenance_rows]
+        if args.ticket not in active_ids:
+            print(
+                f"gate fail: maintenance task active (active={','.join(active_ids)}; requested={args.ticket})",
+                file=sys.stderr,
+            )
+            return 2
 
     if row is None:
         print(f"gate fail: ticket not found ({args.ticket})", file=sys.stderr)
