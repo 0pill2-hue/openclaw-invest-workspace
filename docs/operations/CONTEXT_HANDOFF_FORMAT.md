@@ -9,7 +9,7 @@
 문서 자체는 규격서이고, 실제 값은 런타임 파일에 채운다.
 
 ## 핵심 원칙
-- 목적은 세션 내 장문 유지가 아니라 **짧은 외부 인계 + 필요 시 clean reset/cutover 대비**다.
+- 목적은 세션 내 장문 유지가 아니라 **짧은 외부 인계 + clean reset/cutover 수행 준비**다.
 - `runtime/context-handoff.md`는 **평소 프롬프트에 상시 적재하지 않는다**. reset/cutover 직후에만 읽는다.
 - handoff는 **business context 보존용**이다. 운영 이벤트가 본작업 goal/next_action을 덮어쓰면 안 된다.
 - clean reset/cutover는 **valid handoff가 있을 때만** 허용한다.
@@ -48,7 +48,7 @@
 - `business_goal`: 원래 업무 목표. 예) Stage1 canonical 완료
 - `last_completed_step`: 방금 끝낸 실제 업무 단계
 - `next_action`: reset 직후 바로 이어갈 1개 액션
-- `required_action`: 기본 `read_then_resume`, 임계치 대응 시 기본값은 `finish_current_step_then_prepare_handoff`이며 실제 reset이 꼭 필요할 때만 `clean_reset`
+- `required_action`: 기본 `read_then_resume`, 임계치 대응 시 `finish_current_step_then_reset`
 - `reset_guard`: 기본 `valid_handoff_required_before_clean_reset`
 - `trigger`: `work_update` | `context_tokens_high` 등
 

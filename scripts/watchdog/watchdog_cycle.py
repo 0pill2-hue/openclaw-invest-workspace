@@ -249,7 +249,7 @@ def build_notify_text(validate_payload: dict[str, Any], recover_payload: dict[st
     parts.append(f"issues={len(issues)}")
     if issue_preview:
         parts.append(issue_preview)
-    parts.append("현재 step 완료 후 handoff 준비·필요 시 reset·proof·보고·후속정리")
+    parts.append("현재 step 완료 후 reset·proof·보고·후속정리")
     return " / ".join(parts)
 
 
