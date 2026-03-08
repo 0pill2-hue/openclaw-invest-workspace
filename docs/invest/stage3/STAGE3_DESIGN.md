@@ -12,16 +12,20 @@
 입력 JSONL: `invest/stages/stage3/inputs/stage2_text_meta_records.jsonl`
 
 빌더(`stage03_build_input_jsonl.py`) 인입원:
-1. DART: `upstream_stage1/raw/qualitative/kr/dart/*.csv`
-2. RSS: `upstream_stage1/raw/qualitative/market/rss/*.json`
-3. macro summary: `upstream_stage1/raw/signal/market/macro/macro_summary.json`
+1. Stage2 clean DART: `upstream_stage2_clean/production/qualitative/kr/dart/*.json`
+2. Stage2 clean RSS: `upstream_stage2_clean/production/qualitative/market/rss/*.json`
+3. Stage2 clean macro summary: `upstream_stage2_clean/production/signal/market/macro/macro_summary.json`
 4. Stage2 clean qualitative text 전체:
    - `telegram`, `blog`, `premium`
    - `qualitative/text/*` 우선, 구(flat) `text/*` fallback
+   - Telegram PDF는 Stage2에서 `[ATTACHED_PDF] ...` 형태로 inline 승격된 clean telegram 본문을 그대로 인입
 5. Stage2 clean market qualitative corpus:
    - `market/news/selected_articles/*.jsonl`
+6. Stage3 reference:
+   - `inputs/reference/kr_stock_list.csv` (symbol/name mapping)
 
 링크메타 전용 premium 문서(`STARTALE PREMIUM LINK`)는 제외.
+원칙: Stage3 본입력은 Stage1 raw를 직접 읽지 않고, Stage2 clean/Stage3 reference만 사용한다.
 
 ---
 

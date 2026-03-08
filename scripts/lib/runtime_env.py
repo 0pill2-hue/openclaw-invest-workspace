@@ -75,6 +75,10 @@ def context_handoff_path() -> Path:
     return env_path("OPENCLAW_CONTEXT_HANDOFF_PATH", RUNTIME_DIR / "context-handoff.md")
 
 
+def context_lock_path() -> Path:
+    return env_path("OPENCLAW_CONTEXT_LOCK_PATH", RUNTIME_DIR / "context-lock.json")
+
+
 def openclaw_home() -> Path:
     raw = os.environ.get("OPENCLAW_HOME", "").strip()
     if raw:

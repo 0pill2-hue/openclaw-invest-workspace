@@ -31,7 +31,7 @@ CLEAN_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'clean')
 # Stage2가 유일한 검역(quarantine) 저장 단계다. Stage1은 raw/상태 파일만 저장한다.
 Q_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'quarantine')
 REPORT_DIR = os.path.join(STAGE2_ROOT, 'outputs', 'reports', 'qc')
-STAGE2_RULE_VERSION = 'stage2-refine-20260308-r3'
+STAGE2_RULE_VERSION = 'stage2-refine-20260308-r4'
 STAGE2_ENABLE_LINK_ENRICHMENT = os.environ.get('STAGE2_ENABLE_LINK_ENRICHMENT', '0').strip().lower() in ('1', 'true', 'yes')
 FOLDERS = [
     'kr/dart',
@@ -94,6 +94,7 @@ TARGET_LINK_ENRICH_FOLDERS = set(LINK_ENRICHMENT_CONFIG['target_folders'])
 
 URL_PATTERN = re.compile(r'https?://[^\s<>()\[\]{}"\']+', flags=re.IGNORECASE)
 ATTACH_TEXT_BLOCK_RE = re.compile(r'(?is)\[ATTACH_TEXT\]\s*(.*?)\s*\[/ATTACH_TEXT\]')
+TELEGRAM_ATTACH_ROOT = os.path.join(RAW_BASE, 'qualitative', 'attachments', 'telegram')
 TRACKING_QUERY_PREFIXES = tuple(FILTER_CONFIG['tracking_query_prefixes'])
 ALLOWED_LINK_DOMAIN_SUFFIXES = tuple(FILTER_CONFIG['allowed_link_domain_suffixes'])
 # allowlist 확장 모드(기본 ON): 뉴스/리포트 링크 누락 최소화
@@ -135,6 +136,15 @@ def _new_link_runtime_stats() -> dict:
         'enrichment_still_quarantined_files': 0,
         'attachment_blocks_seen': 0,
         'attachment_text_chars_total': 0,
+        'telegram_pdf_total': 0,
+        'telegram_pdf_stage1_extract_reused': 0,
+        'telegram_pdf_stage2_extract_ok': 0,
+        'telegram_pdf_extract_failed': 0,
+        'telegram_pdf_messages_promoted_by_pdf': 0,
+        'telegram_pdf_chars_added_total': 0,
+        'telegram_pdf_path_resolution_marker': 0,
+        'telegram_pdf_path_resolution_fallback': 0,
+        'telegram_pdf_orphan_artifacts': 0,
         'corpus_dedup_registered_items': 0,
         'corpus_dedup_duplicate_items': 0,
         'corpus_dedup_bootstrap_files': 0,
@@ -222,9 +232,47 @@ def _reset_output_tree(base_dir: str):
             shutil.rmtree(target)
 
 
+def _telegram_channel_slug_from_log_path(path: str) -> str:
+    base = os.path.basename(path or '')
+    if base.lower().endswith('.md'):
+        base = base[:-3]
+    if base.endswith('_full'):
+        base = base[:-5]
+    return base.strip()
+
+
+def _telegram_attachment_dir_for_log(path: str) -> str:
+    slug = _telegram_channel_slug_from_log_path(path)
+    return os.path.join(TELEGRAM_ATTACH_ROOT, slug) if slug else ''
+
+
+def _telegram_attachment_subtree_sig(path: str) -> str:
+    attach_dir = _telegram_attachment_dir_for_log(path)
+    if not attach_dir or not os.path.isdir(attach_dir):
+        return 'no-attachments'
+
+    parts = []
+    for root, _, files in os.walk(attach_dir):
+        for name in sorted(files):
+            fp = os.path.join(root, name)
+            try:
+                st = os.stat(fp)
+            except FileNotFoundError:
+                continue
+            rel = os.path.relpath(fp, attach_dir).replace('\\', '/')
+            parts.append(f"{rel}:{st.st_size}:{int(st.st_mtime)}")
+    digest_src = '\n'.join(parts) if parts else 'empty-attachments'
+    return hashlib.sha1(digest_src.encode('utf-8')).hexdigest()
+
+
 def _file_sig(path: str) -> str:
     st = os.stat(path)
-    key = f"{STAGE2_RULE_VERSION}:{STAGE2_CONFIG_SHA1}:{int(STAGE2_ENABLE_LINK_ENRICHMENT)}:{st.st_size}:{int(st.st_mtime)}:{path}".encode('utf-8')
+    extra = ''
+    normalized = os.path.normpath(path)
+    telegram_root = os.path.normpath(os.path.join(RAW_BASE, 'qualitative', 'text', 'telegram'))
+    if normalized.startswith(telegram_root + os.sep) and normalized.lower().endswith('.md'):
+        extra = ':' + _telegram_attachment_subtree_sig(path)
+    key = f"{STAGE2_RULE_VERSION}:{STAGE2_CONFIG_SHA1}:{int(STAGE2_ENABLE_LINK_ENRICHMENT)}:{st.st_size}:{int(st.st_mtime)}:{path}{extra}".encode('utf-8')
     return hashlib.sha1(key).hexdigest()
 
 
@@ -500,6 +548,8 @@ def _strip_attachment_residue(content: str) -> str:
         s = raw.strip()
         if s and any(re.match(pat, s) for pat in ATTACHMENT_DROP_LINE_PATTERNS):
             continue
+        if re.match(r'(?i)^\[FILE_NAME\].*$', s):
+            continue
         kept_lines.append(raw.rstrip())
 
     text = '\n'.join(kept_lines)
@@ -513,6 +563,341 @@ def _build_link_source_text(content: str, attach_text: str = '') -> str:
     if not attach:
         return src
     return f"{src}\n{attach}"
+
+
+def _telegram_block_marker_value(block: str, marker: str) -> str:
+    m = re.search(rf'(?mi)^\[{re.escape(marker)}\]\s*(.+)$', block or '')
+    return str(m.group(1) or '').strip() if m else ''
+
+
+def _telegram_rewrite_stage1_path(raw_path: str) -> str:
+    candidate = str(raw_path or '').strip()
+    if not candidate:
+        return ''
+    candidate = candidate.replace('\\', '/')
+    if os.path.isabs(candidate):
+        return candidate if os.path.exists(candidate) else ''
+    if candidate.startswith('outputs/raw/qualitative/'):
+        candidate = 'raw/qualitative/' + candidate[len('outputs/raw/qualitative/'):]
+    elif 'outputs/raw/qualitative/' in candidate:
+        candidate = 'raw/qualitative/' + candidate.split('outputs/raw/qualitative/', 1)[1]
+    elif candidate.startswith('./'):
+        candidate = candidate[2:]
+    resolved = os.path.join(UPSTREAM_STAGE1, candidate)
+    return resolved if os.path.exists(resolved) else ''
+
+
+def _telegram_pdf_original_candidates(artifact_dir: str, meta: dict) -> list[str]:
+    candidates = []
+    for raw in [
+        str(meta.get('original_path') or ''),
+        os.path.join(artifact_dir, str(meta.get('original_name') or '')) if artifact_dir and meta.get('original_name') else '',
+    ]:
+        resolved = _telegram_rewrite_stage1_path(raw) if raw else ''
+        if resolved and resolved not in candidates:
+            candidates.append(resolved)
+    if artifact_dir and os.path.isdir(artifact_dir):
+        for name in sorted(os.listdir(artifact_dir)):
+            if name.lower().endswith('.pdf'):
+                fp = os.path.join(artifact_dir, name)
+                if fp not in candidates:
+                    candidates.append(fp)
+    return candidates
+
+
+def _telegram_extract_pdf_text_from_original(original_path: str) -> tuple[str, str]:
+    if not original_path or not os.path.exists(original_path):
+        return '', 'original_missing'
+
+    try:
+        from pypdf import PdfReader  # type: ignore
+
+        pages = []
+        reader = PdfReader(original_path)
+        for page in reader.pages:
+            try:
+                pages.append(page.extract_text() or '')
+            except Exception:
+                continue
+        merged = '\n'.join(pages).strip()
+        if merged:
+            return merged, 'pypdf'
+    except Exception:
+        pass
+
+    try:
+        from pdfminer.high_level import extract_text as pdfminer_extract_text  # type: ignore
+
+        merged = (pdfminer_extract_text(original_path) or '').strip()
+        if merged:
+            return merged, 'pdfminer'
+    except Exception:
+        pass
+
+    return '', 'extractor_unavailable_or_failed'
+
+
+def _normalize_pdf_title(raw: str, fallback_path: str = '') -> str:
+    title = str(raw or '').strip()
+    if not title and fallback_path:
+        title = os.path.basename(fallback_path)
+    title = re.sub(r'\.pdf$', '', title, flags=re.IGNORECASE).strip()
+    title = re.sub(r'[_\-]+', ' ', title)
+    title = re.sub(r'\s+', ' ', title).strip()
+    return title or 'attached pdf'
+
+
+def _cleanup_pdf_text(raw_text: str) -> str:
+    text = (raw_text or '').replace('\x00', ' ').replace('\r\n', '\n').replace('\r', '\n')
+    raw_lines = [line.strip() for line in text.split('\n')]
+    line_counts = {}
+    for line in raw_lines:
+        normalized = re.sub(r'\s+', ' ', line).strip().lower()
+        if normalized:
+            line_counts[normalized] = line_counts.get(normalized, 0) + 1
+
+    boilerplate_patterns = [
+        r'(?i)all rights reserved',
+        r'(?i)copyright',
+        r'(?i)disclaimer',
+        r'(?i)무단전재',
+        r'(?i)배포\s*금지',
+        r'(?i)저작권',
+        r'(?i)법적 책임소재',
+        r'(?i)사용될 수 없습니다',
+    ]
+
+    cleaned = []
+    i = 0
+    while i < len(raw_lines):
+        line = raw_lines[i]
+        normalized = re.sub(r'\s+', ' ', line).strip()
+        low = normalized.lower()
+        if not normalized:
+            cleaned.append('')
+            i += 1
+            continue
+        if re.fullmatch(r'(?:page\s*)?\d{1,4}(?:\s*/\s*\d{1,4})?', low):
+            i += 1
+            continue
+        if re.fullmatch(r'\d{1,4}©.*', normalized):
+            i += 1
+            continue
+        if any(re.search(pat, normalized) for pat in boilerplate_patterns):
+            i += 1
+            continue
+        if line_counts.get(low, 0) >= 3 and len(normalized) <= 120 and any(tok in low for tok in ['all rights reserved', 'copyright', 'disclaimer', 'investor relations', 'ir', 'confidential']):
+            i += 1
+            continue
+
+        if normalized.endswith('-') and i + 1 < len(raw_lines):
+            nxt = raw_lines[i + 1].strip()
+            if nxt and re.match(r'^[A-Za-z0-9가-힣]', nxt):
+                cleaned.append((normalized[:-1] + nxt).strip())
+                i += 2
+                continue
+
+        cleaned.append(normalized)
+        i += 1
+
+    text = '\n'.join(cleaned)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    text = re.sub(r'[ \t]{2,}', ' ', text)
+    return text.strip()
+
+
+def _parse_telegram_message_id(block: str) -> str:
+    m = re.search(r'(?mi)^MessageID\s*:\s*(\d+)', block or '')
+    return str(m.group(1)) if m else ''
+
+
+def _resolve_telegram_pdf_artifact(block: str, log_path: str) -> tuple[dict | None, dict]:
+    message_id = _parse_telegram_message_id(block)
+    channel_slug = _telegram_channel_slug_from_log_path(log_path)
+    if not message_id or '[ATTACH_KIND] pdf' not in (block or ''):
+        return None, {}
+
+    LINK_RUNTIME_STATS['telegram_pdf_total'] += 1
+
+    marker_meta = _telegram_rewrite_stage1_path(_telegram_block_marker_value(block, 'ATTACH_META_PATH'))
+    marker_original = _telegram_rewrite_stage1_path(_telegram_block_marker_value(block, 'ATTACH_ORIGINAL_PATH'))
+    marker_extract = _telegram_rewrite_stage1_path(_telegram_block_marker_value(block, 'ATTACH_TEXT_PATH'))
+    marker_dir = _telegram_rewrite_stage1_path(_telegram_block_marker_value(block, 'ATTACH_ARTIFACT_DIR'))
+
+    meta_path = ''
+    resolution_mode = ''
+    if marker_meta and os.path.exists(marker_meta):
+        meta_path = marker_meta
+        resolution_mode = 'marker'
+    else:
+        fallback_dir = os.path.join(TELEGRAM_ATTACH_ROOT, channel_slug, f'msg_{message_id}') if channel_slug else ''
+        fallback_meta = os.path.join(fallback_dir, 'meta.json') if fallback_dir else ''
+        if fallback_meta and os.path.exists(fallback_meta):
+            meta_path = fallback_meta
+            resolution_mode = 'fallback'
+
+    if not meta_path:
+        LINK_RUNTIME_STATS['telegram_pdf_orphan_artifacts'] += 1
+        return None, {
+            'pdf_promoted': False,
+            'pdf_extract_failure_reason': 'telegram_pdf_meta_missing',
+            'pdf_message_id': message_id,
+            'pdf_channel_slug': channel_slug,
+        }
+
+    if resolution_mode == 'marker':
+        LINK_RUNTIME_STATS['telegram_pdf_path_resolution_marker'] += 1
+    elif resolution_mode == 'fallback':
+        LINK_RUNTIME_STATS['telegram_pdf_path_resolution_fallback'] += 1
+
+    try:
+        with open(meta_path, 'r', encoding='utf-8') as f:
+            meta = json.load(f)
+    except Exception as e:
+        LINK_RUNTIME_STATS['telegram_pdf_extract_failed'] += 1
+        return None, {
+            'pdf_promoted': False,
+            'pdf_extract_failure_reason': f'telegram_pdf_meta_invalid:{type(e).__name__}',
+            'pdf_message_id': message_id,
+            'pdf_channel_slug': channel_slug,
+            'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
+        }
+
+    if str(meta.get('kind') or '').strip().lower() != 'pdf':
+        LINK_RUNTIME_STATS['telegram_pdf_extract_failed'] += 1
+        return None, {
+            'pdf_promoted': False,
+            'pdf_extract_failure_reason': 'telegram_pdf_kind_not_pdf',
+            'pdf_message_id': message_id,
+            'pdf_channel_slug': channel_slug,
+            'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
+        }
+
+    if str(meta.get('message_id') or '') != str(message_id):
+        LINK_RUNTIME_STATS['telegram_pdf_extract_failed'] += 1
+        return None, {
+            'pdf_promoted': False,
+            'pdf_extract_failure_reason': 'telegram_pdf_meta_message_mismatch',
+            'pdf_message_id': message_id,
+            'pdf_channel_slug': channel_slug,
+            'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
+        }
+
+    artifact_dir = marker_dir if marker_dir and os.path.isdir(marker_dir) else os.path.dirname(meta_path)
+    extract_path = marker_extract if marker_extract and os.path.exists(marker_extract) else _telegram_rewrite_stage1_path(str(meta.get('extract_path') or ''))
+    if not extract_path and artifact_dir:
+        probe = os.path.join(artifact_dir, 'extracted.txt')
+        if os.path.exists(probe):
+            extract_path = probe
+
+    original_path = marker_original if marker_original and os.path.exists(marker_original) else ''
+    if not original_path:
+        original_candidates = _telegram_pdf_original_candidates(artifact_dir, meta)
+        original_path = original_candidates[0] if original_candidates else ''
+
+    text_source = ''
+    pdf_text = ''
+    extract_failure_reason = ''
+    if str(meta.get('extraction_status') or '').strip().lower() == 'ok' and extract_path and os.path.exists(extract_path):
+        pdf_text = _safe_read_text(extract_path, max_chars=1000000)
+        if pdf_text.strip():
+            text_source = 'stage1_extracted'
+            LINK_RUNTIME_STATS['telegram_pdf_stage1_extract_reused'] += 1
+
+    if not pdf_text.strip():
+        pdf_text, extract_origin = _telegram_extract_pdf_text_from_original(original_path)
+        if pdf_text.strip():
+            text_source = 'stage2_pdf_extract'
+            LINK_RUNTIME_STATS['telegram_pdf_stage2_extract_ok'] += 1
+        else:
+            extract_failure_reason = f'telegram_pdf_extract_failed:{extract_origin}'
+            LINK_RUNTIME_STATS['telegram_pdf_extract_failed'] += 1
+
+    cleaned_pdf = _cleanup_pdf_text(pdf_text) if pdf_text else ''
+    if not cleaned_pdf:
+        return None, {
+            'pdf_promoted': False,
+            'pdf_extract_failure_reason': extract_failure_reason or 'telegram_pdf_body_empty_after_normalize',
+            'pdf_source': text_source,
+            'pdf_message_id': message_id,
+            'pdf_channel_slug': channel_slug,
+            'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
+            'attachment_original_rel_path': os.path.relpath(original_path, UPSTREAM_STAGE1).replace('\\', '/') if original_path and original_path.startswith(UPSTREAM_STAGE1) else original_path,
+        }
+
+    title = _normalize_pdf_title(str(meta.get('original_name') or ''), original_path)
+    promoted_block = f'[ATTACHED_PDF] {title}\n{cleaned_pdf}'.strip()
+    chars_added = len(cleaned_pdf)
+    LINK_RUNTIME_STATS['telegram_pdf_messages_promoted_by_pdf'] += 1
+    LINK_RUNTIME_STATS['telegram_pdf_chars_added_total'] += chars_added
+    return {
+        'promoted_block': promoted_block,
+        'text_source': text_source,
+        'title': title,
+        'chars_added': chars_added,
+        'message_id': message_id,
+        'channel_slug': channel_slug,
+        'meta_path': meta_path,
+        'original_path': original_path,
+    }, {
+        'pdf_promoted': True,
+        'pdf_source': text_source,
+        'pdf_title_normalized': title,
+        'pdf_chars_added': chars_added,
+        'pdf_nonempty_lines_added': len([line for line in cleaned_pdf.splitlines() if line.strip()]),
+        'pdf_message_id': message_id,
+        'pdf_channel_slug': channel_slug,
+        'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
+        'attachment_original_rel_path': os.path.relpath(original_path, UPSTREAM_STAGE1).replace('\\', '/') if original_path and original_path.startswith(UPSTREAM_STAGE1) else original_path,
+    }
+
+
+def _promote_telegram_pdf_content(raw_content: str, path: str) -> tuple[str, dict]:
+    content = raw_content or ''
+    if '[ATTACH_KIND] pdf' not in content:
+        return content, {
+            'pdf_promoted': False,
+            'pdf_source': '',
+            'pdf_chars_added': 0,
+            'pdf_nonempty_lines_added': 0,
+        }
+
+    parts = re.split(r'(?mi)^---\s*$', content)
+    merged_parts = []
+    promoted_any = False
+    aggregate_meta = {
+        'pdf_promoted': False,
+        'pdf_source': '',
+        'pdf_chars_added': 0,
+        'pdf_nonempty_lines_added': 0,
+    }
+
+    for part in parts:
+        segment = part.strip('\n')
+        if not segment:
+            merged_parts.append(segment)
+            continue
+        promoted, meta = _resolve_telegram_pdf_artifact(segment, path)
+        if promoted and promoted.get('promoted_block'):
+            promoted_any = True
+            aggregate_meta.update(meta)
+            aggregate_meta['pdf_promoted'] = True
+            aggregate_meta['pdf_source'] = meta.get('pdf_source', aggregate_meta.get('pdf_source', ''))
+            aggregate_meta['pdf_chars_added'] = int(aggregate_meta.get('pdf_chars_added', 0)) + int(meta.get('pdf_chars_added', 0))
+            aggregate_meta['pdf_nonempty_lines_added'] = int(aggregate_meta.get('pdf_nonempty_lines_added', 0)) + int(meta.get('pdf_nonempty_lines_added', 0))
+            aggregate_meta.pop('pdf_extract_failure_reason', None)
+            if not segment.rstrip().endswith(promoted['promoted_block']):
+                segment = segment.rstrip() + '\n\n' + promoted['promoted_block'] + '\n'
+        elif meta:
+            for k, v in meta.items():
+                if k not in aggregate_meta or not aggregate_meta.get(k):
+                    aggregate_meta[k] = v
+        merged_parts.append(segment)
+
+    if not promoted_any:
+        aggregate_meta['pdf_promoted'] = False
+    merged = '\n---\n'.join(part for part in merged_parts if part is not None)
+    return merged.strip() + ('\n' if merged.strip() else ''), aggregate_meta
 
 
 def _canonicalize_url(url: str) -> str:
@@ -948,18 +1333,37 @@ def sanitize_text(path: str, folder: str = ''):
             LINK_RUNTIME_STATS['attachment_text_chars_total'] += len(attach_text)
 
         normalized_folder = _normalize_folder(folder)
-        cleaned_content = _strip_attachment_residue(raw_content)
+        text_for_clean = raw_content
+        pdf_meta = {
+            'pdf_promoted': False,
+            'pdf_source': '',
+            'pdf_chars_added': 0,
+            'pdf_nonempty_lines_added': 0,
+        }
+        if normalized_folder == 'text/telegram':
+            text_for_clean, pdf_meta = _promote_telegram_pdf_content(raw_content, path)
+
+        cleaned_content = _strip_attachment_residue(text_for_clean)
         ok, reason, ctx = _validate_text_by_folder(cleaned_content, normalized_folder)
         if ok:
-            return cleaned_content, None, {'link_enriched': False, 'canonical_urls': 0, 'attachment_residue_removed': cleaned_content != raw_content}
+            return cleaned_content, None, {
+                'link_enriched': False,
+                'canonical_urls': 0,
+                'attachment_residue_removed': cleaned_content != raw_content,
+                **pdf_meta,
+            }
 
         if not STAGE2_ENABLE_LINK_ENRICHMENT:
-            return None, reason, {'link_enriched': False, 'link_enrichment_enabled': False}
+            return None, reason, {
+                'link_enriched': False,
+                'link_enrichment_enabled': False,
+                **pdf_meta,
+            }
 
         if normalized_folder not in TARGET_LINK_ENRICH_FOLDERS or not _is_short_reason(reason):
-            return None, reason, {}
+            return None, reason, pdf_meta
 
-        link_source_text = _build_link_source_text(raw_content, attach_text)
+        link_source_text = _build_link_source_text(text_for_clean, attach_text)
         raw_urls = _extract_urls(link_source_text)
         LINK_RUNTIME_STATS['url_raw_extracted_total'] += len(raw_urls)
         canonical_urls, deduped = _canonical_dedup_urls(raw_urls)
@@ -967,7 +1371,7 @@ def sanitize_text(path: str, folder: str = ''):
         LINK_RUNTIME_STATS['url_deduped_within_file'] += deduped
 
         if not _needs_link_enrichment(cleaned_content, ctx.get('effective', ''), int(ctx.get('min_len', 0)), len(canonical_urls)):
-            return None, reason, {}
+            return None, reason, pdf_meta
 
         LINK_RUNTIME_STATS['enrichment_attempt_files'] += 1
         blocks, content_dup_count, fetch_meta = _collect_unique_enrichment_blocks(canonical_urls, ctx.get('effective', ''))
@@ -975,8 +1379,8 @@ def sanitize_text(path: str, folder: str = ''):
         if not blocks:
             LINK_RUNTIME_STATS['enrichment_still_quarantined_files'] += 1
             if fetch_meta.get('attempted_urls', 0) > 0 and fetch_meta.get('successful_urls', 0) == 0 and fetch_meta.get('fetch_failed_urls', 0) > 0:
-                return None, _link_fetch_failure_reason(normalized_folder), {'link_enriched': False, **fetch_meta}
-            return None, reason, {'link_enriched': False, **fetch_meta}
+                return None, _link_fetch_failure_reason(normalized_folder), {'link_enriched': False, **fetch_meta, **pdf_meta}
+            return None, reason, {'link_enriched': False, **fetch_meta, **pdf_meta}
 
         enriched_content = _inject_enriched_content(cleaned_content, normalized_folder, blocks, canonical_urls)
         ok2, reason2, _ = _validate_text_by_folder(enriched_content, normalized_folder)
@@ -988,10 +1392,11 @@ def sanitize_text(path: str, folder: str = ''):
                 'canonical_urls': len(canonical_urls),
                 'enriched_blocks': len(blocks),
                 'attachment_residue_removed': cleaned_content != raw_content,
+                **pdf_meta,
             }
 
         LINK_RUNTIME_STATS['enrichment_still_quarantined_files'] += 1
-        return None, reason2, {}
+        return None, reason2, pdf_meta
     except Exception as e:
         return None, f'exception:{type(e).__name__}:{e}', {}
 
@@ -1748,7 +2153,7 @@ def run_full_refine(force_rebuild: bool = False):
                         for p in q_paths:
                             _remove_if_exists(p)
                 else:
-                    content, err, _meta = sanitize_text(f, folder=folder)
+                    content, err, meta = sanitize_text(f, folder=folder)
                     if content is not None:
                         duplicate = None
                         normalized_folder = _normalize_folder(folder)
@@ -1779,7 +2184,7 @@ def run_full_refine(force_rebuild: bool = False):
                                 source_file=f,
                                 reason=f"duplicate_{duplicate['kind']}",
                                 raw_text=content,
-                                extra_meta=_duplicate_meta(duplicate),
+                                extra_meta={**_duplicate_meta(duplicate), **(meta or {})},
                             )
                             _write_text(payload, q_paths)
                             q_count += 1
@@ -1792,6 +2197,7 @@ def run_full_refine(force_rebuild: bool = False):
                             source_file=f,
                             reason=err or 'invalid_text',
                             raw_text=raw_text,
+                            extra_meta=meta or {},
                         )
                         _write_text(payload, q_paths)
                         q_count += 1
@@ -1907,6 +2313,16 @@ def run_full_refine(force_rebuild: bool = False):
         f.write(f"- url_fetch_failure={int(LINK_RUNTIME_STATS.get('url_fetch_failure', 0))}\n")
         f.write(f"- url_disallowed={int(LINK_RUNTIME_STATS.get('url_disallowed', 0))}\n")
         f.write(f"- content_fingerprint_dedup={int(LINK_RUNTIME_STATS.get('content_fingerprint_dedup', 0))}\n")
+        f.write("\n## Telegram PDF Promotion\n\n")
+        f.write(f"- telegram_pdf_total={int(LINK_RUNTIME_STATS.get('telegram_pdf_total', 0))}\n")
+        f.write(f"- telegram_pdf_stage1_extract_reused={int(LINK_RUNTIME_STATS.get('telegram_pdf_stage1_extract_reused', 0))}\n")
+        f.write(f"- telegram_pdf_stage2_extract_ok={int(LINK_RUNTIME_STATS.get('telegram_pdf_stage2_extract_ok', 0))}\n")
+        f.write(f"- telegram_pdf_extract_failed={int(LINK_RUNTIME_STATS.get('telegram_pdf_extract_failed', 0))}\n")
+        f.write(f"- telegram_pdf_messages_promoted_by_pdf={int(LINK_RUNTIME_STATS.get('telegram_pdf_messages_promoted_by_pdf', 0))}\n")
+        f.write(f"- telegram_pdf_chars_added_total={int(LINK_RUNTIME_STATS.get('telegram_pdf_chars_added_total', 0))}\n")
+        f.write(f"- telegram_pdf_path_resolution_marker={int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_marker', 0))}\n")
+        f.write(f"- telegram_pdf_path_resolution_fallback={int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_fallback', 0))}\n")
+        f.write(f"- telegram_pdf_orphan_artifacts={int(LINK_RUNTIME_STATS.get('telegram_pdf_orphan_artifacts', 0))}\n")
         f.write("\n## Reason / Filter / Quarantine Taxonomy\n\n")
         f.write("- reason_filter_taxonomy:\n")
         for name, meta in reason_taxonomy['reason_filter_taxonomy'].items():
@@ -1940,7 +2356,7 @@ def run_full_refine(force_rebuild: bool = False):
             'salt': STAGE2_RULE_VERSION,
             'config_bundle_sha1': STAGE2_CONFIG_PROVENANCE['bundle_sha1'],
             'link_enrichment_enabled': STAGE2_ENABLE_LINK_ENRICHMENT,
-            'strategy': 'size+mtime+path+rule_version+config_bundle_sha1+link_enrichment_flag',
+            'strategy': 'size+mtime+path+rule_version+config_bundle_sha1+link_enrichment_flag+telegram_attachment_subtree_for_text_telegram',
         },
         'config_provenance': STAGE2_CONFIG_PROVENANCE,
         'clean_base': final_clean_base,
@@ -1978,6 +2394,17 @@ def run_full_refine(force_rebuild: bool = False):
             'enabled': STAGE2_ENABLE_LINK_ENRICHMENT,
             **{k: int(v) for k, v in LINK_RUNTIME_STATS.items()},
             'deduped_url_total': dedup_urls_total,
+        },
+        'telegram_pdf': {
+            'telegram_pdf_total': int(LINK_RUNTIME_STATS.get('telegram_pdf_total', 0)),
+            'telegram_pdf_stage1_extract_reused': int(LINK_RUNTIME_STATS.get('telegram_pdf_stage1_extract_reused', 0)),
+            'telegram_pdf_stage2_extract_ok': int(LINK_RUNTIME_STATS.get('telegram_pdf_stage2_extract_ok', 0)),
+            'telegram_pdf_extract_failed': int(LINK_RUNTIME_STATS.get('telegram_pdf_extract_failed', 0)),
+            'telegram_pdf_messages_promoted_by_pdf': int(LINK_RUNTIME_STATS.get('telegram_pdf_messages_promoted_by_pdf', 0)),
+            'telegram_pdf_chars_added_total': int(LINK_RUNTIME_STATS.get('telegram_pdf_chars_added_total', 0)),
+            'telegram_pdf_path_resolution_marker': int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_marker', 0)),
+            'telegram_pdf_path_resolution_fallback': int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_fallback', 0)),
+            'telegram_pdf_orphan_artifacts': int(LINK_RUNTIME_STATS.get('telegram_pdf_orphan_artifacts', 0)),
         },
         'reason_taxonomy': reason_taxonomy,
         'corpus_dedup': {

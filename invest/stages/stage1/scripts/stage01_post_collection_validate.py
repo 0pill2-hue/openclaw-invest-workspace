@@ -16,8 +16,10 @@ TELEGRAM_COLLECTOR_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_collecto
 TELEGRAM_ALLOWLIST_PATH = STAGE1_DIR / "inputs/config/telegram_channel_allowlist.txt"
 TELEGRAM_LAST_RUN_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_last_run_status.json"
 TELEGRAM_PUBLIC_FALLBACK_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_public_fallback_status.json"
+TELEGRAM_ATTACHMENT_STATS_PATH = STAGE1_DIR / "outputs/runtime/telegram_attachment_extract_stats_latest.json"
 BLOG_LAST_RUN_STATUS_PATH = STAGE1_DIR / "outputs/runtime/blog_last_run_status.json"
 BLOG_BUDDIES_PATH = STAGE1_DIR / "outputs/master/naver_buddies_full.json"
+BLOG_TERMINAL_STATUS_PATH = STAGE1_DIR / "inputs/config/blog_terminal_status.json"
 TELEGRAM_TERMINAL_STATUS_PATH = STAGE1_DIR / "inputs/config/telegram_terminal_status.json"
 BLOG_TARGET_DATE = os.environ.get("BLOG_DEFAULT_TARGET_DATE", "2016-01-01").strip() or "2016-01-01"
 BLOG_DATE_RE = re.compile(r"(?m)^PublishedDate:\s*(\d{4}-\d{2}-\d{2})")
@@ -286,29 +288,53 @@ def _load_telegram_terminal_status_map(path: Path) -> dict[str, dict]:
     return normalized
 
 
-def _terminal_blog_statuses(runtime_status: dict | None, buddy_ids: list[str]) -> list[dict]:
-    if not isinstance(runtime_status, dict):
-        return []
-    wanted = {str(item).strip() for item in buddy_ids if str(item).strip()}
-    if not wanted:
-        return []
-    matched: list[dict] = []
-    for row in runtime_status.get("buddy_results", []):
-        if not isinstance(row, dict):
-            continue
-        bid = str(row.get("id", "")).strip()
-        cause = str(row.get("cause", "")).strip().lower()
-        if bid in wanted and cause in BLOG_TERMINAL_CAUSES:
-            matched.append(
-                {
-                    "id": bid,
+def _load_blog_terminal_status_map(runtime_status: dict | None) -> dict[str, dict]:
+    terminal: dict[str, dict] = {}
+    if isinstance(runtime_status, dict):
+        for row in runtime_status.get("buddy_results", []):
+            if not isinstance(row, dict):
+                continue
+            bid = str(row.get("id", "")).strip()
+            cause = str(row.get("cause", "")).strip().lower()
+            if bid and cause in BLOG_TERMINAL_CAUSES:
+                terminal[bid] = {
                     "cause": cause,
                     "status": row.get("status"),
                     "normal_completion_class": "MAX_AVAILABLE_OK",
                     "picked_count": row.get("picked_count"),
                     "saved_count": row.get("saved_count"),
                 }
-            )
+
+    registry_payload = _load_runtime_status(BLOG_TERMINAL_STATUS_PATH)
+    registry_entries = registry_payload.get("entries", {}) if isinstance(registry_payload, dict) else {}
+    if isinstance(registry_entries, dict):
+        for key, value in registry_entries.items():
+            bid = str(key).strip()
+            cause = str((value or {}).get("cause", "")).strip().lower()
+            if not bid or not isinstance(value, dict) or cause not in BLOG_TERMINAL_CAUSES:
+                continue
+            terminal[bid] = {
+                "cause": cause,
+                "status": value.get("status") or "terminal-registry",
+                "classification": value.get("classification"),
+                "evidence": value.get("evidence"),
+                "direct_status": value.get("direct_status"),
+                "frame_postview_link_count": value.get("frame_postview_link_count"),
+                "frame_logno_query_count": value.get("frame_logno_query_count"),
+                "rss_item_count": value.get("rss_item_count"),
+                "normal_completion_class": "MAX_AVAILABLE_OK",
+                "picked_count": value.get("picked_count"),
+                "saved_count": value.get("saved_count"),
+            }
+    return terminal
+
+
+def _terminal_blog_statuses(runtime_status: dict | None, buddy_ids: list[str]) -> list[dict]:
+    wanted = {str(item).strip() for item in buddy_ids if str(item).strip()}
+    if not wanted:
+        return []
+    terminal_map = _load_blog_terminal_status_map(runtime_status)
+    matched = [{"id": bid, **terminal_map[bid]} for bid in wanted if bid in terminal_map]
     matched.sort(key=lambda item: item["id"])
     return matched
 
@@ -515,6 +541,7 @@ def validate_blog_full_coverage() -> tuple[dict, dict | None]:
         "buddies_with_files": buddies_with_files,
         "raw_missing_buddy_count": len(raw_missing_buddy_ids),
         "raw_missing_buddy_ids": raw_missing_buddy_ids,
+        "terminal_registry_path": str(BLOG_TERMINAL_STATUS_PATH.relative_to(STAGE1_DIR)),
         "terminal_missing_buddy_count": len(terminal_buddies),
         "terminal_missing_buddies": terminal_buddies,
         "missing_buddy_count": len(unresolved_missing_buddy_ids),
@@ -580,6 +607,26 @@ def validate_telegram_full_coverage() -> tuple[dict, dict | None]:
         else:
             unresolved_missing_channels.append(item)
 
+    attachment_stats = _load_runtime_status(TELEGRAM_ATTACHMENT_STATS_PATH)
+    attachment_contract = None
+    if attachment_stats and attachment_stats.get("exists"):
+        attachment_contract = {
+            "artifact_schema_version": int(attachment_stats.get("artifact_schema_version", 0) or 0),
+            "messages_with_attach_text": int(attachment_stats.get("messages_with_attach_text", 0) or 0),
+            "messages_with_attach_paths": int(attachment_stats.get("messages_with_attach_paths", 0) or 0),
+            "attachments_total": int(attachment_stats.get("attachments_total", 0) or 0),
+            "attachments_supported": int(attachment_stats.get("attachments_supported", 0) or 0),
+            "attachments_text_extracted": int(attachment_stats.get("attachments_text_extracted", 0) or 0),
+            "attachments_failed": int(attachment_stats.get("attachments_failed", 0) or 0),
+            "attachments_unsupported": int(attachment_stats.get("attachments_unsupported", 0) or 0),
+            "attachments_meta_written": int(attachment_stats.get("attachments_meta_written", 0) or 0),
+            "attachments_original_saved": int(attachment_stats.get("attachments_original_saved", 0) or 0),
+            "attachments_original_failed": int(attachment_stats.get("attachments_original_failed", 0) or 0),
+            "attachments_text_files_written": int(attachment_stats.get("attachments_text_files_written", 0) or 0),
+            "reason_counts": attachment_stats.get("reason_counts") or {},
+            "contract_note": "telegram document attachments should leave a stable artifact dir/meta path, and supported docs should record extracted text path or a failure reason on the next collector run",
+        }
+
     errors = []
     if not collector_status or not collector_status.get("exists"):
         errors.append("telegram_collector_status_missing")
@@ -610,6 +657,9 @@ def validate_telegram_full_coverage() -> tuple[dict, dict | None]:
         "all_channels_satisfied": allowlist_total > 0 and len(unresolved_missing_channels) == 0,
         "collector_status": collector_status,
         "run_status": run_status,
+        "attachment_stats_path": str(TELEGRAM_ATTACHMENT_STATS_PATH.relative_to(STAGE1_DIR)),
+        "attachment_stats": attachment_stats,
+        "attachment_artifact_contract": attachment_contract,
         "errors": errors,
     }
     failure = None if ok else {

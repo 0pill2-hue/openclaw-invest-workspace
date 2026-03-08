@@ -40,6 +40,7 @@ TELEGRAM_TERMINAL_STATUS_PATH = ROOT / "invest/stages/stage1/inputs/config/teleg
 NEWS_SOURCES_CONFIG_PATH = ROOT / "invest/stages/stage1/inputs/config/news_sources.json"
 PREMIUM_DISCOVERY_PATH = PREMIUM_DIR / "startale_channel_direct/_discovery.json"
 BUDDIES_PATH = ROOT / "invest/stages/stage1/outputs/master/naver_buddies_full.json"
+BLOG_TERMINAL_STATUS_PATH = ROOT / "invest/stages/stage1/inputs/config/blog_terminal_status.json"
 BLOG_FIXED_START_DATE = "20160101"
 BLOG_TERMINAL_CAUSES = {"empty-posts", "404", "page1-links-0"}
 TELEGRAM_TERMINAL_CLASSIFICATIONS = {"bot", "contact", "join-only", "non-channel"}
@@ -355,21 +356,43 @@ def _load_telegram_terminal_status_map() -> dict[str, dict[str, Any]]:
 
 
 def _load_blog_terminal_statuses() -> dict[str, dict[str, Any]]:
-    payload = _load_json(RUNTIME_ROOT / "blog_last_run_status.json") or {}
-    if not isinstance(payload, dict):
-        return {}
     terminal: dict[str, dict[str, Any]] = {}
-    for row in payload.get("buddy_results", []):
-        if not isinstance(row, dict):
-            continue
-        bid = str(row.get("id", "")).strip()
-        cause = str(row.get("cause", "")).strip().lower()
-        if bid and cause in BLOG_TERMINAL_CAUSES:
+
+    runtime_payload = _load_json(RUNTIME_ROOT / "blog_last_run_status.json") or {}
+    if isinstance(runtime_payload, dict):
+        for row in runtime_payload.get("buddy_results", []):
+            if not isinstance(row, dict):
+                continue
+            bid = str(row.get("id", "")).strip()
+            cause = str(row.get("cause", "")).strip().lower()
+            if bid and cause in BLOG_TERMINAL_CAUSES:
+                terminal[bid] = {
+                    "cause": cause,
+                    "status": row.get("status"),
+                    "picked_count": row.get("picked_count"),
+                    "saved_count": row.get("saved_count"),
+                    "normal_completion_class": "MAX_AVAILABLE_OK",
+                }
+
+    registry_payload = _load_json(BLOG_TERMINAL_STATUS_PATH) or {}
+    registry_entries = registry_payload.get("entries", {}) if isinstance(registry_payload, dict) else {}
+    if isinstance(registry_entries, dict):
+        for key, value in registry_entries.items():
+            bid = str(key).strip()
+            cause = str((value or {}).get("cause", "")).strip().lower()
+            if not bid or not isinstance(value, dict) or cause not in BLOG_TERMINAL_CAUSES:
+                continue
             terminal[bid] = {
                 "cause": cause,
-                "status": row.get("status"),
-                "picked_count": row.get("picked_count"),
-                "saved_count": row.get("saved_count"),
+                "status": value.get("status") or "terminal-registry",
+                "picked_count": value.get("picked_count"),
+                "saved_count": value.get("saved_count"),
+                "classification": value.get("classification"),
+                "evidence": value.get("evidence"),
+                "direct_status": value.get("direct_status"),
+                "frame_postview_link_count": value.get("frame_postview_link_count"),
+                "frame_logno_query_count": value.get("frame_logno_query_count"),
+                "rss_item_count": value.get("rss_item_count"),
                 "normal_completion_class": "MAX_AVAILABLE_OK",
             }
     return terminal
@@ -458,13 +481,14 @@ def _blog_scope() -> dict[str, Any]:
     ]
     unresolved_missing_buddy_ids = [bid for bid in raw_missing_buddy_ids if bid not in terminal_statuses]
     return {
-        "coverage_basis": "naver buddies registry + observed blogId subdirectories + terminal max-available causes",
+        "coverage_basis": "naver buddies registry + observed blogId subdirectories + runtime/direct-verified terminal max-available registry",
         "buddy_registry_path": _rel(BUDDIES_PATH),
         "buddy_registry_count": len(buddy_ids),
         "blog_ids_count": len(subdirs),
         "buddies_with_files_count": len(covered_buddy_ids),
         "raw_missing_buddy_count": len(raw_missing_buddy_ids),
         "raw_missing_buddy_ids": raw_missing_buddy_ids,
+        "terminal_registry_path": _rel(BLOG_TERMINAL_STATUS_PATH),
         "terminal_missing_buddy_count": len(terminal_missing_buddies),
         "terminal_missing_buddies": terminal_missing_buddies,
         "missing_buddy_count": len(unresolved_missing_buddy_ids),
@@ -474,7 +498,7 @@ def _blog_scope() -> dict[str, Any]:
         "dynamic_registry": True,
         "auto_expands_on_registry_update": True,
         "current_registry_ssot": _rel(BUDDIES_PATH),
-        "note": "blog coverage는 registry 전체를 기준으로 보되 empty-posts/404/page1-links-0처럼 더 가져올 원문이 없는 케이스는 MAX_AVAILABLE_OK 정상종결로 처리한다.",
+        "note": "blog coverage는 registry 전체를 기준으로 보되 runtime cause(empty-posts/404/page1-links-0)와 direct-verified terminal registry가 가리키는 더 가져올 원문이 없는 케이스를 MAX_AVAILABLE_OK 정상종결로 처리한다.",
     }
 
 

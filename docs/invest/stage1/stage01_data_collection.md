@@ -63,10 +63,11 @@ updated_at: 2026-03-07 KST
 - `invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py` *(launchd: com.jobiseu.openclaw.invest.stage01.blog)*
   - `invest/stages/stage1/outputs/raw/qualitative/text/blog/**.md`
 - `invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py` *(launchd 엔트리 / canonical wrapper)*
-  - secret env 존재 시: `stage01_scrape_telegram_highspeed.py` 실행
+  - secret env 존재 시: `stage01_scrape_telegram_highspeed.py` 실행 후 `stage01_telegram_attachment_extract_backfill.py` 후처리 실행
   - secret env 미존재/실패 시: `stage01_scrape_telegram_public_fallback.py` 실행
   - 출력: `invest/stages/stage1/outputs/raw/qualitative/text/telegram/*.md`
-  - runtime status: `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`
+  - attachment artifact: `invest/stages/stage1/outputs/raw/qualitative/attachments/telegram/**`
+  - runtime status: `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`, `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`
 - `invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py`
   - `invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/*.md`
   - `invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/_index.json`

@@ -2,6 +2,7 @@
 
 ## Canonical 문서
 - `docs/invest/stage2/STAGE2_RULEBOOK_AND_REPRO.md`
+- `docs/invest/stage2/STAGE2_PDF_REFINEMENT_DESIGN.md` (Telegram PDF artifact promotion design)
 - reason/filter/quarantine taxonomy canonical source도 위 문서의 `Reason / Filter / Quarantine Taxonomy (canonical)` 섹션을 따른다.
 - runtime/filter/dedup/link 설정은 `invest/stages/stage2/inputs/config/stage2_runtime_config.json`을 canonical source로 사용한다.
 - reason/taxonomy 설정은 `invest/stages/stage2/inputs/config/stage2_reason_config.json`을 canonical source로 사용한다.
@@ -17,6 +18,7 @@
   - Stage2 qualitative 확장 입력: `raw/qualitative/market/news/selected_articles/*.jsonl`
 - qualitative canonical contract:
   - 포함: `kr/dart`, `market/rss`(raw alias: `market/news/rss`), `market/news/selected_articles`, `text/blog`, `text/telegram`, `text/premium/startale`
+  - Telegram PDF auxiliary design input: `raw/qualitative/attachments/telegram/**/{meta.json,*.pdf,extracted.txt}`
   - 제외: `market/news/url_index` (Stage1 내부 선택/수집 보조 산출, Stage2 본입력 아님)
 - 책임 경계:
   - Stage2는 signal/qualitative를 **입력 계층 기준으로만 분리**해 clean/quarantine에 적재한다.
@@ -26,6 +28,7 @@
 
 ## 출력 (Outputs)
 - canonical only: `invest/stages/stage2/outputs/{clean,quarantine}/production/{signal,qualitative}/...`
+- Telegram PDF design output track(미구현): `invest/stages/stage2/outputs/{clean,quarantine}/production/qualitative/text/telegram_pdf/...`
 - folder ownership:
   - `kr/us ohlcv + supply` → `stage02_qc_cleaning_full.py`
   - `market signal + qualitative` → `stage02_onepass_refine_full.py`
@@ -59,6 +62,7 @@ STAGE2_ENABLE_LINK_ENRICHMENT=1 python3 invest/stages/stage2/scripts/stage02_one
 - refine 추가 규칙:
   - blog/telegram/premium은 본문이 너무 짧을 때만 opt-in link enrichment를 시도한다.
   - enrichment 시 본문/첨부에서 추출한 링크를 canonicalize하고, 외부 본문을 가져와 정제 본문에 주입한 뒤 재검증한다.
+  - Telegram PDF artifact 승격은 별도 design track이며, parent Telegram message + attachment `meta/original/extracted(optional)` 계약/경로 rewrite/출력 스키마는 `STAGE2_PDF_REFINEMENT_DESIGN.md`를 따른다.
   - qualitative dedup은 corpus-level registry로 수행하며, `canonical_url → title_date(= normalized title + normalized date) → content_fingerprint` 순으로 교차 중복을 잡는다.
 - taxonomy quick map:
   - `terminal_quarantine`: 예) `*_missing_required_metadata`, `*_effective_body_empty`, `*_effective_body_too_short`, `*_link_body_fetch_failed`, `duplicate_canonical_url`, `duplicate_title_date`, `duplicate_content_fingerprint`

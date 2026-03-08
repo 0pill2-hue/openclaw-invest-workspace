@@ -9,6 +9,12 @@ import sqlite3
 import sys
 from pathlib import Path
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from lib.context_lock import format_lock_reason, is_context_locked
+
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = ROOT / "runtime/tasks/tasks.db"
 
@@ -22,6 +28,11 @@ def main() -> int:
     db_path = Path(args.db).expanduser().resolve()
     if not db_path.exists():
         print(f"gate fail: db not found ({db_path})", file=sys.stderr)
+        return 2
+
+    locked, lock_payload = is_context_locked()
+    if locked and not args.ticket.upper().startswith("WD-"):
+        print(f"gate fail: {format_lock_reason(lock_payload)}", file=sys.stderr)
         return 2
 
     conn = sqlite3.connect(str(db_path))

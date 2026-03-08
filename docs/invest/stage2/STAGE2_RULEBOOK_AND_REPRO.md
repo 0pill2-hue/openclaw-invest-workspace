@@ -5,6 +5,7 @@
 - 정제 대상: **ohlcv/supply + dart/news/text 전체**
 - 원칙: Stage2는 `stage2/inputs/upstream_stage1` 경유 입력만 사용
 - Change type: **Rule**
+- Telegram PDF artifact 승격 canonical contract/implementation: `docs/invest/stage2/STAGE2_PDF_REFINEMENT_DESIGN.md`
 - signal/qualitative 원칙:
   - `raw/signal/*`는 수치/시계열 신호 원천이다.
   - `raw/qualitative/*`는 비정형 원천이다.
@@ -25,6 +26,8 @@
 - `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/market/news/selected_articles/*.jsonl`
 - `invest/stages/stage2/inputs/upstream_stage1/raw/signal/market/macro/*`
 - `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/text/{blog,telegram,premium/startale}/**/*`
+- Telegram PDF auxiliary artifact: `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/attachments/telegram/**/{meta.json,*.pdf,extracted.txt}`
+  - 주의: attachment tree는 standalone corpus/FOLDER가 아니라 telegram raw markdown과 message-sidecar join으로 소비한다. 승격 계약/경로 rewrite/출력 스키마는 `docs/invest/stage2/STAGE2_PDF_REFINEMENT_DESIGN.md`를 따른다.
 - 제외 입력:
   - `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/market/news/url_index/*`
   - reason: Stage1 `selected_articles` 생성용 보조 인덱스이며 Stage2 canonical qualitative corpus 입력이 아니다.
@@ -41,6 +44,7 @@
   - row-level invalid/duplicate는 quarantine JSONL로 분리한다.
 - Text(blog): `Date/PublishedDate + Source` 메타 필수 + 유효 본문 길이(boilerplate/UI 라인 제거 후) 검증
 - Text(telegram): `Date + Source + Post*` 메타 필수 + 유효 본문 길이 검증
+- Telegram PDF auxiliary promotion: parent Telegram message + attachment `meta/original/extracted(optional)` pair를 입력 계약으로 삼고, Stage1 marker path(`outputs/raw/...`)는 Stage2 upstream root(`raw/...`)로 rewrite 해석한다. image/legacy OCR text는 계속 제외한다. canonical 출력은 별도 `telegram_pdf` corpus가 아니라 기존 `qualitative/text/telegram` clean 본문에 메시지 단위 inline 승격하는 방식이다. clean 본문에는 `[ATTACHED_PDF] <normalized_title>` 최소 표식만 허용하고, provenance/debug 정보는 report/diagnostics sidecar로 보낸다.
 - Text(premium/startale): `URL + PublishedAt + Status` 메타 필수, `Status=SUCCESS|OK`만 통과, paywall/session reason 차단, boilerplate-only 본문 차단
 - Link enrichment:
   - Stage2 기본 동작이 아니라 **명시적 opt-in(`STAGE2_ENABLE_LINK_ENRICHMENT=1`)**일 때만 수행한다.
@@ -84,6 +88,7 @@
   - `stage02_onepass_refine_full.py` → `invest/stages/stage2/outputs/{clean,quarantine}/production/signal/market/{macro,google_trends}/...`
 - qualitative canonical writer
   - `stage02_onepass_refine_full.py` → `invest/stages/stage2/outputs/{clean,quarantine}/production/qualitative/...`
+  - Telegram PDF inline track(implemented): 별도 `telegram_pdf` corpus를 canonical output으로 만들지 않는다. 기존 `invest/stages/stage2/outputs/clean/production/qualitative/text/telegram/*.md`에 메시지 단위 inline 승격하고, attachment-specific 실패/통계는 report 또는 diagnostics sidecar로 추적한다.
   - alias policy (canonical 내부): `market/news/rss -> market/rss`
 - 리포트/상태
   - `invest/stages/stage2/outputs/reports/QC_REPORT_*.{md,json}`
@@ -113,6 +118,7 @@ STAGE2_ENABLE_LINK_ENRICHMENT=1 python3 invest/stages/stage2/scripts/stage02_one
   - 동작: processed index를 재사용하지 않고, Stage2 canonical clean/quarantine 트리를 비운 뒤 현재 `upstream_stage1/raw` 기준으로 다시 적재한다.
   - 목적: incremental skip 때문에 동일 입력 재실행이 부분 생략되는 갭을 없애고, 현재 입력 기준 전체 산출물을 다시 만든다.
 - rule version / input contract / dedup 규칙이 바뀌면 signature salt가 달라져 동일 입력도 재정제 대상이 된다.
+- Telegram PDF inline 승격 규칙처럼 qualitative 본문 자체가 바뀌는 변경은 `stage02_onepass_refine_full.py --force-rebuild`를 canonical rerun으로 본다. PDF-only 변경 검증에는 signal QC full rerun이 필수는 아니지만, Stage2 authoritative PASS 패키지를 새로 만들 때는 refine + QC를 함께 다시 도는 것을 권장한다.
 
 ## 검증 (Validation)
 - QC 보고: `invest/stages/stage2/outputs/reports/QC_REPORT_*.{md,json}`

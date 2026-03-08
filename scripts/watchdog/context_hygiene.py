@@ -13,7 +13,7 @@ SCRIPTS_DIR = ROOT / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-from context_policy import PLACEHOLDER_VALUES, load_task_state, parse_current_task
+from context_policy import PLACEHOLDER_VALUES, extract_phase, load_task_state, parse_current_task
 from lib.runtime_env import TASKS_DB, context_handoff_path, current_task_path
 
 CONTEXT_POLICY = ROOT / "scripts/context_policy.py"
@@ -27,6 +27,46 @@ def is_waiting_callback_state(db_task: dict[str, str]) -> bool:
     status = (db_task.get('task_status') or '').strip().upper()
     phase = (db_task.get('task_phase') or '').strip().lower()
     return status == 'BLOCKED' and phase in NONTERMINAL_BLOCKED_PHASES
+
+
+def load_active_execution_rows() -> list[dict[str, str]]:
+    if not TASKS_DB.exists():
+        return []
+    conn = sqlite3.connect(str(TASKS_DB))
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            """
+            SELECT id, status, note, assignee
+            FROM tasks
+            WHERE id NOT LIKE 'WD-%'
+              AND status IN ('IN_PROGRESS', 'BLOCKED')
+            ORDER BY datetime(updated_at) DESC, id DESC
+            """
+        ).fetchall()
+    finally:
+        conn.close()
+
+    active_rows: list[dict[str, str]] = []
+    for row in rows:
+        status = str(row['status'] or '').strip().upper()
+        phase = extract_phase(row['note'])
+        db_task = {
+            'task_status': status,
+            'task_phase': phase,
+        }
+        waiting_callback = is_waiting_callback_state(db_task)
+        if status != 'IN_PROGRESS' and not waiting_callback:
+            continue
+        active_rows.append(
+            {
+                'id': str(row['id'] or '').strip(),
+                'status': status,
+                'phase': phase or '-',
+                'assignee': str(row['assignee'] or '').strip() or '-',
+            }
+        )
+    return active_rows
 
 
 def run_json_command(command: list[str]) -> tuple[int, dict]:
@@ -183,8 +223,15 @@ def main() -> int:
                 issues.append(f"blocked_with_proof_no_reason:{len(blocked_with_proof)}")
         finally:
             conn.close()
+        active_execution_rows = load_active_execution_rows()
+        detail['active_execution_remaining'] = bool(active_execution_rows)
+        detail['active_execution_count'] = len(active_execution_rows)
+        detail['active_execution_tickets'] = active_execution_rows[:10]
     else:
         issues.append('tasks_db_missing')
+        detail['active_execution_remaining'] = False
+        detail['active_execution_count'] = 0
+        detail['active_execution_tickets'] = []
 
     if ticket_id and ticket_id not in PLACEHOLDER_VALUES:
         db_task = load_task_state(ticket_id)

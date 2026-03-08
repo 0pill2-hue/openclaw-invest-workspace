@@ -39,7 +39,15 @@
           "(?i)^\\[/?MEDIA\\].*$",
           "(?i)^\\[ATTACH_KIND\\].*$",
           "(?i)^\\[ATTACH_TEXT_STATUS\\].*$",
-          "(?i)^\\[ATTACH_[A-Z0-9_]+\\].*$"
+          "(?i)^\\[ATTACH_[A-Z0-9_]+\\].*$",
+          "(?i)^\\[ENTITY_URL\\].*$",
+          "(?i)^\\[MIME\\].*$",
+          "(?i)^\\[FILE_SIZE\\].*$",
+          "(?i)^\\[NO_TEXT_OR_MEDIA_METADATA\\].*$",
+          "(?i)^Forwarded from\\s*:.*$",
+          "(?i)^Views\\s*:\\s*\\d+.*$",
+          "(?i)^Forwards\\s*:\\s*\\d+.*$",
+          "(?i)^GroupedID\\s*:\\s*\\d+.*$"
         ],
         "drop_block_patterns": [
           "(?is)\\[ATTACH_TEXT\\]\\s*.*?\\s*\\[/ATTACH_TEXT\\]"

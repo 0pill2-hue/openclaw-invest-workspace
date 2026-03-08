@@ -7,13 +7,17 @@
 - 역할 경계: 운영 철학, 편입/교체, 비중조절 규칙은 Stage6에서만 관리하며 Stage3에는 새 운영 축을 추가하지 않는다.
 
 ## 입력 (Inputs)
-- `invest/stages/stage3/inputs/upstream_stage1/raw/qualitative/kr/dart/*.csv`
-- `invest/stages/stage3/inputs/upstream_stage1/raw/qualitative/market/rss/*.json`
-- `invest/stages/stage3/inputs/upstream_stage1/raw/signal/market/macro/macro_summary.json`
-- `invest/stages/stage3/inputs/upstream_stage2_clean/qualitative/text/{telegram,blog,premium}`
+- `invest/stages/stage3/inputs/upstream_stage2_clean/production/qualitative/kr/dart/*.json`
+- `invest/stages/stage3/inputs/upstream_stage2_clean/production/qualitative/market/rss/*.json`
+- `invest/stages/stage3/inputs/upstream_stage2_clean/production/signal/market/macro/macro_summary.json`
+- `invest/stages/stage3/inputs/upstream_stage2_clean/production/qualitative/text/{telegram,blog,premium}`
   - 구(flat) 경로 `.../text/*`도 fallback 지원
-- `invest/stages/stage3/inputs/upstream_stage2_clean/qualitative/market/news/selected_articles/*.jsonl`
+  - Telegram PDF는 Stage2 clean telegram 본문에 inline 승격된 `[ATTACHED_PDF] ...` 블록까지 함께 인입한다
+- `invest/stages/stage3/inputs/upstream_stage2_clean/production/qualitative/market/news/selected_articles/*.jsonl`
+- `invest/stages/stage3/inputs/reference/kr_stock_list.csv`
 - `invest/stages/stage3/inputs/stage2_text_meta_records.jsonl`
+
+원칙: Stage3는 Stage1 raw를 직접 입력으로 사용하지 않는다.
 
 ## 출력 (Outputs)
 - 주 출력(4축):
@@ -50,9 +54,12 @@ python3 invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py \
 
 ## 검증 (Validation)
 - `STAGE3_INPUT_BUILD_latest.json`에서 확인:
-  - `rows_from_market_selected_articles >= 0`
+  - `rows_from_dart`, `rows_from_rss`, `rows_from_macro_summary`가 Stage2 clean 기준으로 채워지는지 확인
+  - `rows_from_text_telegram`, `rows_from_text_blog`, `rows_from_text_premium`, `rows_from_market_selected_articles` 존재
   - `selected_articles_stats` 존재
   - `dropped_duplicate_fingerprint`가 존재해 Stage2/Stage3 중복 차단이 유지되는지 확인
+- Telegram PDF 반영 확인:
+  - Stage2 clean telegram 본문에서 `[ATTACHED_PDF]`가 있는 메시지가 `stage2_text_meta_records.jsonl`에도 `source=text/telegram:*`로 유지되는지 샘플 확인
 - `STAGE3_LOCAL_BRAIN_RUN_latest.json`에서 확인:
   - `rows_output > 0` (부트스트랩 제외)
   - `axes` 정의 존재

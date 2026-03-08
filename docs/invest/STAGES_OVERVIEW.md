@@ -15,13 +15,13 @@
 게이트: 보존법칙·논리 invariant·신선도 기준을 만족해야 Stage3/4 입력으로 승격된다.
 
 ### Stage3 — ACTIVE
-목적: 정성/비정형 입력을 4축 정성신호로 압축해 Stage4 결합 입력으로 전달한다.
+목적: 정성/비정형 입력을 attention gate로 요약해 구조화 가능한 특징으로 바꾼다.
 입력: Stage1 정성 원천과 Stage2 clean 메타 입력.
-출력: 4축 정성 feature, `qualitative_signal`, 실행 요약.
+출력: JSONL 중간 입력, attention/sentiment feature, 실행 요약.
 게이트: 로컬 브레인 처리와 최소 입력 조건이 충족되어야 Stage4로 전달된다.
 
 ### Stage4 — ACTIVE
-목적: 상위 입력을 결합해 value/composite 산출물과 핵심 검증 결과를 생성한다.
+목적: 상위 입력을 결합해 가치 계산과 핵심 검증 산출물을 생성한다.
 입력: Stage1 master, Stage2 clean, Stage3 출력.
 출력: value 산출물, 검증 리포트, 다음 feature engineering 입력.
 게이트: 계산 완료와 품질 검증 기준 충족 시에만 Stage5로 승격된다.
@@ -33,30 +33,45 @@
 게이트: NaN/정규화/유동성 등 품질 기준을 통과해야 Stage6 후보로 사용된다.
 
 ### Stage6 — ACTIVE
-목적: 베이스라인 비교를 바탕으로 실제 선발·교체·비중조절·운영 판단을 수행한다.
+목적: 베이스라인 비교와 선발 판단을 수행해 운영 채택 직전 결과를 정리한다.
 입력: Stage1~5에서 검증된 누적 산출물.
-출력: 비교 결과, 선발 결과, 운영 판단 리포트, 결과 등급별 보고 자산.
+출력: 비교 결과, 선발 결과, 결과 등급별 보고 자산.
 게이트: 검증·승인·증빙이 충족된 결과만 VALIDATED 또는 PRODUCTION으로 승격된다.
 
-### Stage7 — ACTIVE
-목적: Stage4 출력에서 튜닝 입력 인터페이스를 생성한다.
-입력: `invest/stages/stage7/inputs/upstream_stage4_outputs/`
-출력: `invest/stages/stage7/inputs/stage7_tuning_input_from_stage4_latest.json`, `invest/stages/stage7/outputs/results/stage7_interface_build_latest.json`
-게이트: stage7 입력 계약과 source.stage4_* 경로 검증을 통과해야 한다.
+## Reserved stages
 
-## Reserved / historical / governance stages
+### Stage7 — RESERVED
+목적: 향후 튜닝 입력 인터페이스 또는 고급 실험 orchestration을 수용하기 위한 예약 단계다.
+입력: 미확인. 상위 stage에서 정규화된 입력을 받는 확장 슬롯으로 본다.
+출력: 미확인. 실운영 채택 전까지는 예약 영역으로 유지한다.
+게이트: 설계 확정과 문서화 완료 전에는 ACTIVE 전환 금지.
 
-### Stage8 — RESERVED / HISTORICAL_ONLY
-현재 stage8 전용 실행 스크립트는 없다. 상세 문서는 historical reference다.
+### Stage8 — RESERVED
+목적: 향후 컷오프/분기 관리 또는 중간 승인 절차를 담당할 수 있는 예약 단계다.
+입력: 미확인. 기존 validated 입력을 이어받는 위치로만 정의한다.
+출력: 미확인. 현시점에서는 생성 책임이 없다.
+게이트: 운영 목적과 승격 규칙이 확정되기 전까지 RESERVED 유지.
 
-### Stage9 — RESERVED / HISTORICAL_ONLY
-현재 stage9 전용 실행 스크립트는 없다. 상세 문서는 historical reference다.
+### Stage9 — RESERVED
+목적: 향후 추가 가치평가 또는 심화 scoring 로직을 배치할 수 있는 예약 단계다.
+입력: 미확인. 기존 핵심 산출물의 후속 평가 입력을 받을 가능성만 정의한다.
+출력: 미확인. 현재는 산출 의무가 없다.
+게이트: 평가 의미와 KPI가 확정되기 전까지 사용 금지.
 
-### Stage10 — RESERVED / HISTORICAL_ONLY
-현재 stage10 전용 실행 스크립트는 없다. 상세 문서는 historical reference다.
+### Stage10 — RESERVED
+목적: 향후 교차검토나 독립 검증 체계를 배치할 수 있는 예약 단계다.
+입력: 미확인. 이전 단계 결과를 재검증하는 확장 슬롯으로 본다.
+출력: 미확인. 현행 파이프라인에서는 비활성이다.
+게이트: 검증 주체와 판정 규칙이 고정되기 전까지 RESERVED 유지.
 
-### Stage11 — RESERVED / DRAFT_PLACEHOLDER
-구조 슬롯만 존재하며 실행 기준은 아직 없다.
+### Stage11 — RESERVED
+목적: 향후 최종 승인 준비, 배포 전 점검, 보고 집계를 맡을 수 있는 예약 단계다.
+입력: 미확인. 승인 직전 결과 묶음을 받는 용도로만 가정한다.
+출력: 미확인. 현재는 활성 산출물이 없다.
+게이트: 승인 프로세스와 책임 경계가 문서화되기 전까지 사용하지 않는다.
 
-### Stage12 — RESERVED / GOVERNANCE_STAGE
-채택/보류/승격 거버넌스 문서 중심 단계이며 실행 기준은 아직 없다.
+### Stage12 — RESERVED
+목적: 향후 채택/보류/승격 최종 결정을 기록하는 종착 단계로 예약한다.
+입력: 미확인. 직전 승인 준비 산출물을 이어받는 구조만 상정한다.
+출력: 미확인. 현시점 운영 결과는 Stage6까지를 기준으로 본다.
+게이트: 공식 채택 모델이 확정되기 전까지 RESERVED 상태를 유지한다.

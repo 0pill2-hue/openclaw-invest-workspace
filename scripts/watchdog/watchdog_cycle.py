@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import subprocess
 import sys
@@ -9,12 +10,19 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from lib.context_lock import clear_context_lock, load_context_lock, save_context_lock
+
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATE_SCRIPT = ROOT / "scripts/watchdog/watchdog_validate.py"
 RECOVER_SCRIPT = ROOT / "scripts/watchdog/watchdog_recover.py"
 CONTEXT_HYGIENE_SCRIPT = ROOT / "scripts/watchdog/context_hygiene.py"
 STATE_PATH = ROOT / "runtime/tasks/watchdog_notify_state.json"
 TASKS_DB = ROOT / "runtime/tasks/tasks.db"
+NONTERMINAL_BLOCKED_PHASES = {'subagent_running', 'awaiting_callback'}
 MAINTENANCE_TASK_SPECS = {
     'task': {
         'id': 'WD-TASK-HYGIENE',
@@ -31,6 +39,18 @@ MAINTENANCE_TASK_SPECS = {
 
 def now_ts() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def parse_ts(value: Any) -> datetime | None:
+    text = str(value or '').strip()
+    if not text:
+        return None
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
+        try:
+            return datetime.strptime(text[:19], fmt)
+        except ValueError:
+            continue
+    return None
 
 
 def load_state() -> dict[str, Any]:
@@ -241,7 +261,104 @@ def reconcile_maintenance_tasks(issues: list[str], notify_text: str, context_pay
     return grouped
 
 
-def build_notify_text(validate_payload: dict[str, Any], recover_payload: dict[str, Any], context_payload: dict[str, Any], issues: list[str]) -> str:
+def normalize_context_issue(issue: str) -> str:
+    text = str(issue or '').strip()
+    if text.startswith('context_reset_required:'):
+        parts = text.split(':', 2)
+        ticket_id = parts[1] if len(parts) > 1 else '-'
+        return f'context_reset_required:{ticket_id}'
+    return text
+
+
+def context_requires_reset(context_payload: dict[str, Any]) -> bool:
+    detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
+    required_action = str(detail.get('required_action') or detail.get('context_handoff_required_action') or '').strip()
+    return required_action == 'finish_current_step_then_reset'
+
+
+def has_active_non_maintenance_work(context_payload: dict[str, Any] | None = None) -> bool:
+    detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
+    if 'active_execution_remaining' in detail:
+        return bool(detail.get('active_execution_remaining'))
+
+    if not TASKS_DB.exists():
+        return False
+    conn = sqlite3.connect(str(TASKS_DB))
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            """
+            SELECT id, status, note
+            FROM tasks
+            WHERE id NOT LIKE 'WD-%'
+              AND status IN ('IN_PROGRESS', 'BLOCKED')
+            ORDER BY datetime(updated_at) DESC, id DESC
+            LIMIT 64
+            """
+        ).fetchall()
+    finally:
+        conn.close()
+
+    for row in rows:
+        status = str(row['status'] or '').strip().upper()
+        if status == 'IN_PROGRESS':
+            return True
+        note = str(row['note'] or '')
+        phase = ''
+        for line in note.splitlines():
+            if line.startswith('phase:'):
+                phase = line.split(':', 1)[1].strip().lower()
+                break
+        if status == 'BLOCKED' and phase in NONTERMINAL_BLOCKED_PHASES:
+            return True
+    return False
+
+
+def build_context_lock_state(
+    context_payload: dict[str, Any],
+    grouped_context_issues: list[str],
+    existing_lock: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
+    existing = existing_lock if isinstance(existing_lock, dict) else {}
+    locked_at = str(existing.get('locked_at') or '').strip() or now_ts()
+    return {
+        'active': True,
+        'locked_at': locked_at,
+        'updated_at': now_ts(),
+        'ticket_id': str(detail.get('current_task_ticket_id') or '-').strip() or '-',
+        'trigger': str(detail.get('context_handoff_trigger') or detail.get('trigger') or 'context_threshold').strip() or 'context_threshold',
+        'required_action': str(detail.get('required_action') or detail.get('context_handoff_required_action') or 'finish_current_step_then_reset').strip() or 'finish_current_step_then_reset',
+        'handoff_file': str(detail.get('context_handoff_path') or '-').strip() or '-',
+        'active_execution_remaining': bool(detail.get('active_execution_remaining')),
+        'issues': sorted({normalize_context_issue(issue) for issue in grouped_context_issues if str(issue).strip()}),
+    }
+
+
+def sync_context_lock(context_payload: dict[str, Any], grouped_context_issues: list[str]) -> dict[str, Any]:
+    existing_lock = load_context_lock()
+    reset_required = context_requires_reset(context_payload)
+    should_activate = bool(grouped_context_issues) and reset_required and not has_active_non_maintenance_work(context_payload)
+
+    if should_activate:
+        context_lock = build_context_lock_state(context_payload, grouped_context_issues, existing_lock)
+        save_context_lock(context_lock)
+        return context_lock
+
+    if bool(existing_lock.get('active')) and reset_required:
+        return existing_lock
+
+    clear_context_lock()
+    return {'active': False}
+
+
+def build_notify_text(
+    validate_payload: dict[str, Any],
+    recover_payload: dict[str, Any],
+    context_payload: dict[str, Any],
+    issues: list[str],
+    context_lock: dict[str, Any] | None = None,
+) -> str:
     moved = recover_payload.get("moved", []) or []
     moved_preview = ", ".join(
         f"{m.get('id')}:{m.get('reason')}" for m in moved[:5] if m.get("id") and m.get("reason")
@@ -249,9 +366,13 @@ def build_notify_text(validate_payload: dict[str, Any], recover_payload: dict[st
     issue_preview = " | ".join(issues[:3])
     context_detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
     ticket_id = str(context_detail.get('current_task_ticket_id') or '').strip()
-    parts = ["watchdog alert"]
+    lock_active = bool((context_lock or {}).get('active'))
+    severity = 'CONTEXT LOCK' if lock_active else 'watchdog alert'
+    parts = [severity]
     if ticket_id and ticket_id != '-':
         parts.append(f"ticket={ticket_id}")
+    if lock_active:
+        parts.append('new_work_blocked')
     if moved_preview:
         parts.append(f"blocked={moved_preview}")
     parts.append(f"issues={len(issues)}")
@@ -259,9 +380,15 @@ def build_notify_text(validate_payload: dict[str, Any], recover_payload: dict[st
         parts.append(issue_preview)
     required_action = str(context_detail.get('required_action') or context_detail.get('context_handoff_required_action') or '').strip()
     if required_action == 'finish_current_step_then_reset':
-        parts.append("메인실행: 현재 step 완료 후 reset → 새 세션에서 runtime/context-handoff.md 읽고 next_action 재개 → WD-CONTEXT-HYGIENE 완료")
+        if lock_active:
+            parts.append("reset 전까지 신규 task/spawn/dispatch 잠금. 지금 current step 정리 후 reset → 새 세션에서 runtime/context-handoff.md 읽고 next_action 재개 → WD-CONTEXT-HYGIENE 완료")
+        else:
+            parts.append("메인실행: 현재 step 완료 후 reset → 새 세션에서 runtime/context-handoff.md 읽고 next_action 재개 → WD-CONTEXT-HYGIENE 완료")
     else:
-        parts.append("현재 step 완료 후 reset·proof·보고·후속정리")
+        if lock_active:
+            parts.append("lock active: current-task·context-handoff·proof 정리와 reset/unlock만 허용")
+        else:
+            parts.append("현재 step 완료 후 reset·proof·보고·후속정리")
     return " / ".join(parts)
 
 
@@ -287,14 +414,25 @@ def main() -> int:
     issues = normalize_issues(validate_payload, recover_payload, context_payload)
     last_state = load_state()
 
-    notify = {"sent": False, "deduped": False, "text": "", "event": None}
+    notify = {"sent": False, "deduped": False, "text": "", "event": None, "severity": "info", "context_lock": None}
     grouped_tasks = {'task': [], 'context': []}
     if issues:
-        text = build_notify_text(validate_payload, recover_payload, context_payload, issues)
+        grouped_tasks = classify_issue_groups(issues)
+        context_lock = sync_context_lock(context_payload, grouped_tasks['context'])
+        text = build_notify_text(validate_payload, recover_payload, context_payload, issues, context_lock)
         grouped_tasks = reconcile_maintenance_tasks(issues, text, context_payload)
-        signature = json.dumps({"issues": issues}, ensure_ascii=False, sort_keys=True)
+        signature = json.dumps(
+            {
+                "issues": issues,
+                "context_lock_active": bool(context_lock.get('active')),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
         last_signature = str(last_state.get("signature") or "")
         notify["text"] = text
+        notify["severity"] = "critical" if bool(context_lock.get('active')) else "warning"
+        notify["context_lock"] = context_lock
         if signature != last_signature:
             event_result = emit_main_event(text)
             notify["event"] = event_result
@@ -305,11 +443,13 @@ def main() -> int:
                 "text": text,
                 "issues": issues,
                 "sent": notify["sent"],
+                "context_lock": context_lock,
             })
         else:
             notify["deduped"] = True
     else:
         clear_state()
+        clear_context_lock()
         grouped_tasks = reconcile_maintenance_tasks([], '', context_payload)
 
     result = {

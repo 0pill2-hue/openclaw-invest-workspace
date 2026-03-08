@@ -17,6 +17,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from lib.runtime_env import TASKS_DB
+from lib.context_lock import format_lock_reason, is_context_locked
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = TASKS_DB
@@ -451,7 +452,17 @@ def next_sort_order(conn: sqlite3.Connection, bucket: str) -> int:
     return int(row["max_order"]) + 1
 
 
+def _context_lock_blocks_new_id(raw_id: str) -> bool:
+    ticket_id = (raw_id or '').strip().upper()
+    return not ticket_id.startswith('WD-')
+
+
 def cmd_add(args: argparse.Namespace) -> int:
+    locked, lock_payload = is_context_locked()
+    if locked and _context_lock_blocks_new_id(args.id):
+        print(format_lock_reason(lock_payload), file=sys.stderr)
+        return 2
+
     status = args.status.upper()
     bucket = args.bucket.lower()
     priority = normalize_priority(args.priority)
@@ -685,6 +696,11 @@ def cmd_pick_next(args: argparse.Namespace) -> int:
 
 
 def cmd_assign_next(args: argparse.Namespace) -> int:
+    locked, lock_payload = is_context_locked()
+    if locked:
+        print(format_lock_reason(lock_payload), file=sys.stderr)
+        return 2
+
     assignee = (args.assignee or "").strip()
     run_id = (args.run_id or "").strip()
     if not assignee:

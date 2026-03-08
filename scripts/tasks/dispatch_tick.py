@@ -15,6 +15,12 @@ from typing import Any
 from datetime import datetime, timedelta
 from pathlib import Path
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from lib.context_lock import format_lock_reason, is_context_locked
+
 ROOT = Path(__file__).resolve().parents[2]
 TASKDB_SCRIPT = ROOT / "scripts/tasks/db.py"
 STATUS_PATH = ROOT / "runtime/tasks/auto_dispatch_status.json"
@@ -356,6 +362,19 @@ def run_orchestrator(ticket_id: str, run_id: str) -> tuple[bool, str]:
 
 
 def main() -> int:
+    locked, lock_payload = is_context_locked()
+    if locked:
+        reason = format_lock_reason(lock_payload)
+        write_status(
+            assigned_ticket="",
+            status="idle",
+            error=reason,
+            orchestrator="",
+            phase="status_locked",
+        )
+        print(reason)
+        return 0
+
     rc, run_id, stdout, stderr = run_task_assignment()
     append_debug_log(
         run_id=run_id,

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 Stage3 입력(JSONL) 생성기
-- Stage1 raw의 qualitative 원천(DART/RSS) + Stage2 clean의 qualitative text/selected_articles
-  (telegram/blog/premium/selected_articles)을 읽어 Stage3 입력 포맷으로 정규화한다.
+- Stage2 clean의 qualitative/signal 입력(DART/RSS/macro + telegram/blog/premium/selected_articles)을 읽어
+  Stage3 입력 포맷으로 정규화한다.
+- Telegram PDF는 Stage2 clean `text/telegram` 본문에 inline 승격된 상태를 그대로 Stage3에 인입한다.
 - 중복/재전파(동일 본문 fingerprint) 문서는 제거한다.
 - 출력이 0건이어도 입력 파일은 생성한다(체인 경로 고정 목적).
 """
@@ -29,45 +30,51 @@ except ModuleNotFoundError:
 WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
 STAGE_ROOT = Path(__file__).resolve().parents[1]
 INPUTS_ROOT = STAGE_ROOT / "inputs"
-UPSTREAM_STAGE1 = INPUTS_ROOT / "upstream_stage1"
+REFERENCE_ROOT = INPUTS_ROOT / "reference"
 UPSTREAM_STAGE2_CLEAN = INPUTS_ROOT / "upstream_stage2_clean"
-
-def _resolve_stage1_raw(rel_path: str, bucket: str) -> Path:
-    return UPSTREAM_STAGE1 / "raw" / bucket / rel_path
-
-
-DART_DIR = _resolve_stage1_raw("kr/dart", "qualitative")
-RSS_DIR = _resolve_stage1_raw("market/rss", "qualitative")
-MACRO_SUMMARY = _resolve_stage1_raw("market/macro/macro_summary.json", "signal")
-MASTER_LIST = UPSTREAM_STAGE1 / "master/kr_stock_list.csv"
+STAGE2_CLEAN_ROOTS = [
+    UPSTREAM_STAGE2_CLEAN / "production",
+    UPSTREAM_STAGE2_CLEAN,
+    WORKSPACE_ROOT / "invest/stages/stage2/outputs/clean/production",
+]
 
 
-def _resolve_stage2_qual_text(rel_path: str) -> Path:
-    """Stage2 clean text 경로 호환: upstream 우선, 미존재 시 stage2 outputs 직접 fallback."""
-    candidates = [
-        UPSTREAM_STAGE2_CLEAN / "qualitative" / "text" / rel_path,
-        UPSTREAM_STAGE2_CLEAN / "text" / rel_path,
-        WORKSPACE_ROOT / "invest/stages/stage2/outputs/clean/production/qualitative/text" / rel_path,
-        WORKSPACE_ROOT / "invest/stages/stage2/outputs/clean/production/text" / rel_path,
-    ]
+def _first_existing(candidates: list[Path]) -> Path:
     for p in candidates:
         if p.exists():
             return p
     return candidates[0]
+
+
+def _resolve_stage2_qual_kr(rel_path: str) -> Path:
+    return _first_existing([root / "qualitative" / "kr" / rel_path for root in STAGE2_CLEAN_ROOTS])
+
+
+def _resolve_stage2_qual_text(rel_path: str) -> Path:
+    """Stage2 clean text 경로 호환: stage3 입력 symlink 우선, legacy flat fallback 지원."""
+    candidates = [
+        *[root / "qualitative" / "text" / rel_path for root in STAGE2_CLEAN_ROOTS],
+        *[root / "text" / rel_path for root in STAGE2_CLEAN_ROOTS],
+    ]
+    return _first_existing(candidates)
 
 
 def _resolve_stage2_qual_market(rel_path: str) -> Path:
     candidates = [
-        UPSTREAM_STAGE2_CLEAN / "qualitative" / "market" / rel_path,
-        UPSTREAM_STAGE2_CLEAN / "market" / rel_path,
-        WORKSPACE_ROOT / "invest/stages/stage2/outputs/clean/production/qualitative/market" / rel_path,
-        WORKSPACE_ROOT / "invest/stages/stage2/outputs/clean/production/market" / rel_path,
+        *[root / "qualitative" / "market" / rel_path for root in STAGE2_CLEAN_ROOTS],
+        *[root / "market" / rel_path for root in STAGE2_CLEAN_ROOTS],
     ]
-    for p in candidates:
-        if p.exists():
-            return p
-    return candidates[0]
+    return _first_existing(candidates)
 
+
+def _resolve_stage2_signal_market(rel_path: str) -> Path:
+    return _first_existing([root / "signal" / "market" / rel_path for root in STAGE2_CLEAN_ROOTS])
+
+
+DART_DIR = _resolve_stage2_qual_kr("dart")
+RSS_DIR = _resolve_stage2_qual_market("rss")
+MACRO_SUMMARY = _resolve_stage2_signal_market("macro/macro_summary.json")
+MASTER_LIST = REFERENCE_ROOT / "kr_stock_list.csv"
 
 TEXT_TELEGRAM_DIR = _resolve_stage2_qual_text("telegram")
 TEXT_BLOG_DIR = _resolve_stage2_qual_text("blog")
@@ -319,12 +326,20 @@ def _selected_articles_text(row: dict) -> str:
 
 
 def _build_from_dart() -> tuple[list[dict], str]:
-    fp = _latest_csv(DART_DIR)
+    fp = _latest_json(DART_DIR)
     if fp is None:
         return [], ""
 
     try:
-        rows = pd.read_csv(fp, dtype=str).fillna("").to_dict("records")
+        obj = json.loads(fp.read_text(encoding="utf-8"))
+        if isinstance(obj, dict):
+            rows = obj.get("rows", [])
+        elif isinstance(obj, list):
+            rows = obj
+        else:
+            rows = []
+        if not isinstance(rows, list):
+            rows = []
     except Exception:
         return [], str(fp)
 
@@ -824,7 +839,7 @@ def _build_from_market_selected_articles(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Build Stage3 input JSONL from Stage1/raw text artifacts")
+    p = argparse.ArgumentParser(description="Build Stage3 input JSONL from Stage2 clean artifacts")
     p.add_argument("--out-jsonl", default=str(OUT_JSONL_DEFAULT))
     p.add_argument("--summary-json", default=str(OUT_SUMMARY_DEFAULT))
     p.add_argument("--text-lookback-days", type=int, default=0)

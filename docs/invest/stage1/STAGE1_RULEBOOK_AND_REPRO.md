@@ -19,6 +19,7 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
 - `invest/stages/stage1/inputs/config/news_sources.json`
 - `invest/stages/stage1/inputs/config/dart_api_key.txt`
 - `invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt`
+- terminal registry: `invest/stages/stage1/inputs/config/telegram_terminal_status.json`, `invest/stages/stage1/inputs/config/blog_terminal_status.json`
 - 외부 원천 API/피드(FDR/pykrx/yfinance/FRED/RSS/DART/Telethon)
 
 ## 3) 실행 진입점(Scripts/Runtime)
@@ -38,6 +39,7 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
   - `invest/stages/stage1/scripts/stage01_update_coverage_manifest.py`
   - `invest/stages/stage1/scripts/stage01_rss_date_repair.py`
   - `invest/stages/stage1/scripts/stage01_telegram_undated_repair.py`
+  - `invest/stages/stage1/scripts/stage01_telegram_attachment_extract_backfill.py`
 - 보조 잡:
   - `invest/stages/stage1/scripts/launchd/launchd_stage01_profile.sh` (profile-based launchd wrapper)
   - `invest/ops/launchd/plists/com.jobiseu.invest.stage1.backfill.news.plist` (`news_backfill`, `StartInterval=1800`)
@@ -59,6 +61,7 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
   - `invest/stages/stage1/outputs/runtime/daily_update_status.json`
   - `invest/stages/stage1/outputs/runtime/post_collection_validate.json`
   - `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`
+  - `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`
   - `invest/stages/stage1/outputs/runtime/pipeline_events.jsonl`
 - Coverage / reports
   - `invest/stages/stage1/outputs/raw/source_coverage_index.json`

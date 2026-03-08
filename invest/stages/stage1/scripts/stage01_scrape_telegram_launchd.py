@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import json
 import os
 import subprocess
@@ -9,10 +11,53 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 HIGH = ROOT / "invest/stages/stage1/scripts/stage01_scrape_telegram_highspeed.py"
 FALLBACK = ROOT / "invest/stages/stage1/scripts/stage01_scrape_telegram_public_fallback.py"
+ATTACH_BACKFILL = ROOT / "invest/stages/stage1/scripts/stage01_telegram_attachment_extract_backfill.py"
 STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_collector_status.json"
 HIGH_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_last_run_status.json"
 FALLBACK_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_public_fallback_status.json"
+ATTACH_BACKFILL_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json"
 ALLOWLIST_PATH = ROOT / "invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt"
+MIN_PER_CHANNEL_TIMEOUT_SEC = 900
+MIN_TIMEOUT_RETRY_COUNT = 2
+MIN_TIMEOUT_RETRY_SEC = 2700
+
+
+def _python_bin() -> str:
+    env_python = os.environ.get("INVEST_PYTHON_BIN", "").strip()
+    workspace_python = ROOT / ".venv/bin/python3"
+    if env_python and Path(env_python).is_file() and os.access(env_python, os.X_OK):
+        return env_python
+    if workspace_python.is_file() and os.access(workspace_python, os.X_OK):
+        return str(workspace_python)
+    return sys.executable
+
+
+def _coerce_int(value: str | None, default: int) -> int:
+    try:
+        return int(str(value or '').strip())
+    except Exception:
+        return int(default)
+
+
+def _highspeed_env() -> dict[str, str]:
+    env = os.environ.copy()
+    per_channel_timeout = max(
+        MIN_PER_CHANNEL_TIMEOUT_SEC,
+        _coerce_int(env.get("TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC"), MIN_PER_CHANNEL_TIMEOUT_SEC),
+    )
+    retry_count = max(
+        MIN_TIMEOUT_RETRY_COUNT,
+        _coerce_int(env.get("TELEGRAM_TIMEOUT_RETRY_COUNT"), MIN_TIMEOUT_RETRY_COUNT),
+    )
+    retry_timeout = max(
+        MIN_TIMEOUT_RETRY_SEC,
+        per_channel_timeout,
+        _coerce_int(env.get("TELEGRAM_TIMEOUT_RETRY_SEC"), MIN_TIMEOUT_RETRY_SEC),
+    )
+    env["TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC"] = str(per_channel_timeout)
+    env["TELEGRAM_TIMEOUT_RETRY_COUNT"] = str(retry_count)
+    env["TELEGRAM_TIMEOUT_RETRY_SEC"] = str(retry_timeout)
+    return env
 
 
 def _has_secret_env() -> bool:
@@ -24,11 +69,12 @@ def _save_status(payload: dict) -> None:
     STATUS_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _run(label: str, path: Path) -> tuple[int, dict]:
-    proc = subprocess.run([sys.executable, str(path)], cwd=str(ROOT))
+def _run(label: str, path: Path, env: dict[str, str] | None = None) -> tuple[int, dict]:
+    proc = subprocess.run([_python_bin(), str(path)], cwd=str(ROOT), env=(env or os.environ.copy()))
     attempt = {
         "collector": label,
         "script": str(path.relative_to(ROOT)),
+        "python_bin": _python_bin(),
         "returncode": int(proc.returncode),
         "ok": proc.returncode == 0,
     }
@@ -77,6 +123,7 @@ def main() -> int:
     has_secret_env = _has_secret_env()
     selected = "highspeed" if has_secret_env else "public_fallback"
     attempts: list[dict] = []
+    postprocess_attempts: list[dict] = []
 
     payload = {
         "saved_at": datetime.now(timezone.utc).isoformat(),
@@ -88,15 +135,29 @@ def main() -> int:
         "ok": False,
         "final_returncode": 1,
         "attempts": attempts,
+        "postprocess_attempts": postprocess_attempts,
         "highspeed_status_path": str(HIGH_STATUS_PATH.relative_to(ROOT)),
         "public_fallback_status_path": str(FALLBACK_STATUS_PATH.relative_to(ROOT)),
+        "attachment_backfill_status_path": str(ATTACH_BACKFILL_STATUS_PATH.relative_to(ROOT)),
     }
 
     if has_secret_env:
-        rc, attempt = _run("highspeed", HIGH)
+        high_env = _highspeed_env()
+        payload["highspeed_effective_env"] = {
+            "TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC": high_env["TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC"],
+            "TELEGRAM_TIMEOUT_RETRY_COUNT": high_env["TELEGRAM_TIMEOUT_RETRY_COUNT"],
+            "TELEGRAM_TIMEOUT_RETRY_SEC": high_env["TELEGRAM_TIMEOUT_RETRY_SEC"],
+        }
+
+        rc, attempt = _run("highspeed", HIGH, env=high_env)
         attempts.append(attempt)
         high_status = _load_json(HIGH_STATUS_PATH)
         incomplete, reason = _coverage_incomplete(high_status)
+
+        if rc == 0 and ATTACH_BACKFILL.exists():
+            backfill_rc, backfill_attempt = _run("attachment_backfill", ATTACH_BACKFILL, env=high_env)
+            postprocess_attempts.append(backfill_attempt)
+            payload["attachment_backfill_ok"] = backfill_rc == 0
 
         if rc == 0 and not incomplete:
             payload.update({

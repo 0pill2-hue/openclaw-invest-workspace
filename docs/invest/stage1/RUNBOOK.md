@@ -16,6 +16,7 @@ Stage1은 외부 원천 데이터를 수집해 Stage2 이후가 사용할 raw/ma
 - 설정 파일: `invest/stages/stage1/inputs/config/news_sources.json`
 - 키 파일: `invest/stages/stage1/inputs/config/dart_api_key.txt`
 - 허용 목록: `invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt`
+- terminal registry: `invest/stages/stage1/inputs/config/telegram_terminal_status.json`, `invest/stages/stage1/inputs/config/blog_terminal_status.json`
 - 외부 원천: FDR, pykrx, yfinance, FRED, RSS, DART, Telegram, 웹 수집 대상
 
 ## 필수 환경변수 / 키
@@ -89,7 +90,7 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - latest_date
   - missing_months_between_range
   - needs_incremental_update
-  - blog: `active_from=20160101`, `all_buddies_satisfied`
+  - blog: `active_from=20160101`, `all_buddies_satisfied`, `terminal_registry_path`
   - telegram: `all_channels_satisfied`, `missing_allowlist_entries`
 - blog raw/backfill 기준 시작일은 rolling 10y가 아니라 `2016-01-01` 고정이다.
 
@@ -104,8 +105,10 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - `stage01_fetch_dart_disclosures.py` → `stage01_full_fetch_dart_disclosures.py`
 - Telegram collector 진입 스크립트: `invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py`
   - 인증 환경변수가 있으면 `stage01_scrape_telegram_highspeed.py` 우선 실행
+  - canonical launchd 경로는 highspeed 실행 시 `TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC>=600`, `TELEGRAM_TIMEOUT_RETRY_COUNT>=1`, `TELEGRAM_TIMEOUT_RETRY_SEC>=1800`을 강제해 과도한 timeout 축소를 막는다.
+  - highspeed 성공 실행 뒤에는 `stage01_telegram_attachment_extract_backfill.py`를 이어서 실행해 기존 attachment artifact의 `extracted.txt`/`meta.json`을 후처리로 보강한다.
   - 실패하거나 인증 정보가 없으면 `stage01_scrape_telegram_public_fallback.py`로 전환
-  - 실행 결과/실사용 collector는 `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`에 기록
+  - 실행 결과/실사용 collector는 `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`에 기록하고, attachment 후처리 상태는 `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`에 기록한다.
 - 체인 fail-close 위치: `invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh`
   - 체인은 `stage01_daily_update.py --profile daily_full` 뒤에 `stage01_checkpoint_gate.py`, `stage01_post_collection_validate.py`를 실행한다.
   - 둘 중 하나라도 실패하면 Stage2 이후를 막고 종료한다.

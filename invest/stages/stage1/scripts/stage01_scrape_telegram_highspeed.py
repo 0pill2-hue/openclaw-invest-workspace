@@ -6,6 +6,7 @@ import json
 import re
 import fcntl
 import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
@@ -80,27 +81,66 @@ INVEST_KEYWORDS = (
     'trading', 'finance', 'alpha', 'macro'
 )
 
+DEFAULT_PER_CHANNEL_TIMEOUT_SEC = 900
+DEFAULT_TIMEOUT_RETRY_SEC = 2700
+DEFAULT_TIMEOUT_RETRY_COUNT = 2
+MACOS_SWIFT_BIN = '/usr/bin/swift'
+
 # Reliability guards (seconds)
 GLOBAL_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_GLOBAL_TIMEOUT_SEC', '7200'))
-PER_CHANNEL_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC', '600'))
+PER_CHANNEL_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC', str(DEFAULT_PER_CHANNEL_TIMEOUT_SEC)))
 DASHBOARD_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_SCRAPE_DASHBOARD_TIMEOUT_SEC', '45'))
 MAX_MESSAGES_PER_CHANNEL = int(os.environ.get('TELEGRAM_MAX_MESSAGES_PER_CHANNEL', '0'))
 INCREMENTAL_ONLY = os.environ.get('TELEGRAM_INCREMENTAL_ONLY', '1').strip().lower() not in ('0', 'false', 'no')
 FORCE_FULL_BACKFILL = os.environ.get('TELEGRAM_FORCE_FULL_BACKFILL', '0').strip().lower() in ('1', 'true', 'yes')
 COLLECT_ALL_CHANNELS = os.environ.get('TELEGRAM_COLLECT_ALL_CHANNELS', '0').strip().lower() in ('1', 'true', 'yes')
-TIMEOUT_RETRY_SEC = int(os.environ.get('TELEGRAM_TIMEOUT_RETRY_SEC', '1800'))
-TIMEOUT_RETRY_COUNT = max(0, int(os.environ.get('TELEGRAM_TIMEOUT_RETRY_COUNT', '1')))
+TIMEOUT_RETRY_SEC = int(os.environ.get('TELEGRAM_TIMEOUT_RETRY_SEC', str(DEFAULT_TIMEOUT_RETRY_SEC)))
+TIMEOUT_RETRY_COUNT = max(0, int(os.environ.get('TELEGRAM_TIMEOUT_RETRY_COUNT', str(DEFAULT_TIMEOUT_RETRY_COUNT))))
 
 URL_REGEX = re.compile(r"https?://[^\s<>()\[\]{}\"']+", flags=re.IGNORECASE)
 ATTACH_EXTRACT_ENABLED = os.environ.get('TELEGRAM_ATTACH_EXTRACT_ENABLED', '1').strip().lower() not in ('0', 'false', 'no')
 ATTACH_MAX_FILE_BYTES = int(os.environ.get('TELEGRAM_ATTACH_MAX_FILE_BYTES', str(15 * 1024 * 1024)))
 ATTACH_MAX_TEXT_CHARS = int(os.environ.get('TELEGRAM_ATTACH_MAX_TEXT_CHARS', '6000'))
 ATTACH_PDF_MAX_PAGES = int(os.environ.get('TELEGRAM_ATTACH_PDF_MAX_PAGES', '25'))
-ATTACH_TMP_ROOT = str(STAGE1_DIR / 'outputs/runtime/telegram_attach_tmp')
+ATTACH_STORE_MAX_FILE_BYTES = int(os.environ.get('TELEGRAM_ATTACH_STORE_MAX_FILE_BYTES', str(50 * 1024 * 1024)))
+ATTACH_ARTIFACT_ROOT = STAGE1_DIR / 'outputs/raw/qualitative/attachments/telegram'
 ATTACH_STATS_FILE = str(STAGE1_DIR / 'outputs/runtime/telegram_attachment_extract_stats_latest.json')
 
 IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.tif', '.tiff'}
 TEXT_DOC_EXTS = {'.txt', '.md', '.csv', '.json', '.xml', '.html', '.htm', '.log', '.rtf'}
+SWIFT_PDFKIT_EXTRACT_SCRIPT = r'''
+import Foundation
+import PDFKit
+
+let args = CommandLine.arguments
+
+guard args.count >= 3 else {
+    fputs("usage: pdf_extract.swift <pdf_path> <max_pages>\n", stderr)
+    exit(64)
+}
+
+let pdfPath = args[1]
+let maxPages = max(1, Int(args[2]) ?? 1)
+guard let doc = PDFDocument(url: URL(fileURLWithPath: pdfPath)) else {
+    fputs("open_failed\n", stderr)
+    exit(65)
+}
+
+var chunks: [String] = []
+let upper = min(doc.pageCount, maxPages)
+if upper > 0 {
+    for idx in 0..<upper {
+        if let page = doc.page(at: idx) {
+            let text = (page.string ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty {
+                chunks.append(text)
+            }
+        }
+    }
+}
+
+FileHandle.standardOutput.write((chunks.joined(separator: "\n\n")).data(using: .utf8) ?? Data())
+'''
 
 
 def acquire_lock():
@@ -244,12 +284,18 @@ def _load_seen_message_ids(path: str, max_scan_ids: int = 200000) -> set[int]:
 
 def _new_attachment_stats() -> dict:
     return {
+        'artifact_schema_version': 1,
         'messages_with_attach_text': 0,
+        'messages_with_attach_paths': 0,
         'attachments_total': 0,
         'attachments_supported': 0,
         'attachments_text_extracted': 0,
         'attachments_failed': 0,
         'attachments_unsupported': 0,
+        'attachments_meta_written': 0,
+        'attachments_original_saved': 0,
+        'attachments_original_failed': 0,
+        'attachments_text_files_written': 0,
         'reason_counts': {},
     }
 
@@ -265,6 +311,72 @@ def _clip_text(text: str, max_chars: int = ATTACH_MAX_TEXT_CHARS) -> str:
     if len(t) <= max_chars:
         return t
     return t[:max_chars].rstrip() + f"\n[TRUNCATED] max_chars={max_chars}"
+
+
+def _safe_component(value: str, fallback: str = 'item') -> str:
+    raw = str(value or '').strip()
+    cleaned = ''.join(ch if (ch.isalnum() or ch in ('-', '_', '.', ' ')) else '_' for ch in raw)
+    cleaned = re.sub(r'\s+', '_', cleaned)
+    cleaned = re.sub(r'_+', '_', cleaned).strip('._')
+    return cleaned[:160] or fallback
+
+
+def _extract_pdf_text_swift(path: str) -> tuple[str, str]:
+    if sys.platform != 'darwin':
+        return '', 'swift_pdfkit_non_darwin'
+    if not os.path.exists(MACOS_SWIFT_BIN):
+        return '', 'swift_unavailable'
+
+    script_path = ''
+    try:
+        with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.swift', delete=False) as tf:
+            tf.write(SWIFT_PDFKIT_EXTRACT_SCRIPT)
+            script_path = tf.name
+        proc = subprocess.run(
+            [MACOS_SWIFT_BIN, script_path, path, str(max(1, ATTACH_PDF_MAX_PAGES))],
+            capture_output=True,
+            text=True,
+            timeout=max(30, min(300, ATTACH_PDF_MAX_PAGES * 12)),
+        )
+    except FileNotFoundError:
+        return '', 'swift_unavailable'
+    except subprocess.TimeoutExpired:
+        return '', 'swift_timeout'
+    except Exception as e:
+        return '', f'swift_run_error:{type(e).__name__}'
+    finally:
+        if script_path:
+            try:
+                os.unlink(script_path)
+            except Exception:
+                pass
+
+    if proc.returncode != 0:
+        stderr = (proc.stderr or '').lower()
+        if 'no such module' in stderr and 'pdfkit' in stderr:
+            return '', 'swift_pdfkit_unavailable'
+        if 'open_failed' in stderr:
+            return '', 'swift_pdf_open_failed'
+        return '', f'swift_pdfkit_error:{proc.returncode}'
+
+    txt = _clip_text(proc.stdout or '')
+    if txt:
+        return txt, 'ok'
+    return '', 'pdf_text_empty'
+
+
+def _rel_stage1_path(path_value) -> str:
+    path = Path(path_value)
+    try:
+        return str(path.resolve().relative_to(STAGE1_DIR))
+    except Exception:
+        return str(path)
+
+
+def _write_json_file(path_value, payload: dict):
+    path = Path(path_value)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
 def _normalize_url(url: str) -> str:
@@ -405,6 +517,8 @@ def _describe_media(message) -> tuple[list[str], dict]:
 
 
 def _extract_pdf_text(path: str) -> tuple[str, str]:
+    last_reason = ''
+
     # 1) pypdf 우선
     try:
         from pypdf import PdfReader  # type: ignore
@@ -423,10 +537,11 @@ def _extract_pdf_text(path: str) -> tuple[str, str]:
         merged = _clip_text('\n\n'.join(chunks))
         if merged:
             return merged, 'ok'
+        last_reason = 'pdf_text_empty'
     except ModuleNotFoundError:
-        pass
+        last_reason = 'pypdf_unavailable'
     except Exception as e:
-        return '', f'pypdf_error:{type(e).__name__}'
+        last_reason = f'pypdf_error:{type(e).__name__}'
 
     # 2) pdfminer fallback
     try:
@@ -436,11 +551,24 @@ def _extract_pdf_text(path: str) -> tuple[str, str]:
         txt = _clip_text(txt)
         if txt:
             return txt, 'ok'
-        return '', 'pdf_text_empty'
+        last_reason = 'pdf_text_empty'
     except ModuleNotFoundError:
-        return '', 'pdf_extractor_unavailable'
+        if not last_reason:
+            last_reason = 'pdfminer_unavailable'
     except Exception as e:
-        return '', f'pdfminer_error:{type(e).__name__}'
+        last_reason = f'pdfminer_error:{type(e).__name__}'
+
+    # 3) macOS Swift/PDFKit fallback
+    txt, reason = _extract_pdf_text_swift(path)
+    if txt:
+        return txt, 'ok'
+
+    if reason not in ('swift_unavailable', 'swift_pdfkit_unavailable', 'swift_pdfkit_non_darwin'):
+        return '', reason or last_reason or 'pdf_extractor_unavailable'
+
+    if last_reason in ('pypdf_unavailable', 'pdfminer_unavailable', ''):
+        return '', 'pdf_extractor_unavailable'
+    return '', last_reason
 
 
 def _extract_docx_text(path: str) -> tuple[str, str]:
@@ -484,79 +612,155 @@ def _extract_plain_text_doc(path: str) -> tuple[str, str]:
     return '', 'text_decode_failed'
 
 
-async def _extract_attachment_text(client, message, meta: dict, stats: dict) -> tuple[str, str]:
-    if not ATTACH_EXTRACT_ENABLED:
-        return '', 'attach_extract_disabled'
-
+async def _persist_attachment_artifact(client, message, meta: dict, channel_meta: dict, stats: dict) -> dict:
     kind = str(meta.get('kind') or '')
+    msg_id = int(getattr(message, 'id', 0) or 0)
+    channel_slug = _safe_component(str(channel_meta.get('slug') or channel_meta.get('username') or 'unknown_channel'), 'unknown_channel')
+    artifact_dir = ATTACH_ARTIFACT_ROOT / channel_slug / f'msg_{msg_id}'
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+
+    raw_name = str(meta.get('name') or '')
+    ext = Path(raw_name).suffix
+    fallback_name = f'msg_{msg_id}{ext}' if ext else f'msg_{msg_id}'
+    original_name = _safe_component(os.path.basename(raw_name) or fallback_name, fallback_name)
+    original_path = artifact_dir / original_name
+    extract_path = artifact_dir / 'extracted.txt'
+    meta_path = artifact_dir / 'meta.json'
+
+    result = {
+        'artifact_dir': _rel_stage1_path(artifact_dir),
+        'original_path': '',
+        'extract_path': '',
+        'meta_path': _rel_stage1_path(meta_path),
+        'text': '',
+        'reason': '',
+        'kind': kind,
+    }
+    payload = {
+        'saved_at': datetime.now(timezone.utc).isoformat(),
+        'channel_title': str(channel_meta.get('title') or ''),
+        'channel_username': str(channel_meta.get('username') or ''),
+        'channel_slug': channel_slug,
+        'message_id': msg_id,
+        'message_date': getattr(message, 'date', None).isoformat() if getattr(message, 'date', None) else '',
+        'kind': kind,
+        'mime': str(meta.get('mime') or ''),
+        'declared_size': int(meta.get('size') or 0),
+        'original_name': original_name,
+        'artifact_dir': result['artifact_dir'],
+        'original_path': '',
+        'extract_path': '',
+        'meta_path': result['meta_path'],
+        'original_store_status': '',
+        'original_store_reason': '',
+        'extraction_status': '',
+        'extraction_reason': '',
+    }
+
     if not kind or kind == 'image':
-        return '', 'no_supported_media'
+        result['reason'] = 'no_supported_media'
+        payload['extraction_status'] = 'skip'
+        payload['extraction_reason'] = result['reason']
+        _write_json_file(meta_path, payload)
+        stats['attachments_meta_written'] = int(stats.get('attachments_meta_written', 0)) + 1
+        return result
 
     stats['attachments_total'] = int(stats.get('attachments_total', 0)) + 1
 
-    if kind not in {'pdf', 'text_doc', 'docx'}:
+    original_saved = False
+    store_reason = ''
+    declared_size = int(meta.get('size') or 0)
+    if declared_size > ATTACH_STORE_MAX_FILE_BYTES:
+        store_reason = f'file_too_large_to_store:{kind or "unknown"}'
+    else:
+        try:
+            dl_path = await client.download_media(message, file=str(original_path))
+            actual_path = Path(dl_path) if dl_path else original_path
+            if actual_path.exists():
+                if actual_path.resolve() != original_path.resolve():
+                    original_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(actual_path, original_path)
+                payload['original_path'] = _rel_stage1_path(original_path)
+                payload['original_size'] = int(original_path.stat().st_size)
+                result['original_path'] = payload['original_path']
+                original_saved = True
+                stats['attachments_original_saved'] = int(stats.get('attachments_original_saved', 0)) + 1
+            else:
+                store_reason = f'download_failed:{kind or "unknown"}'
+        except Exception as e:
+            store_reason = f'attachment_store_exception:{type(e).__name__}'
+
+    if original_saved:
+        payload['original_store_status'] = 'ok'
+        payload['original_store_reason'] = 'ok'
+    else:
+        payload['original_store_status'] = 'failed'
+        payload['original_store_reason'] = store_reason or 'original_store_failed'
+        stats['attachments_original_failed'] = int(stats.get('attachments_original_failed', 0)) + 1
+        if store_reason:
+            _bump_reason(stats, store_reason)
+
+    supported = kind in {'pdf', 'text_doc', 'docx'}
+    if supported:
+        stats['attachments_supported'] = int(stats.get('attachments_supported', 0)) + 1
+    else:
         stats['attachments_unsupported'] = int(stats.get('attachments_unsupported', 0)) + 1
-        _bump_reason(stats, f'unsupported_kind:{kind or "unknown"}')
-        return '', f'unsupported_kind:{kind or "unknown"}'
 
-    stats['attachments_supported'] = int(stats.get('attachments_supported', 0)) + 1
-
-    size = int(meta.get('size') or 0)
-    if size > ATTACH_MAX_FILE_BYTES:
+    if not supported:
+        result['reason'] = f'unsupported_kind:{kind or "unknown"}'
+        _bump_reason(stats, result['reason'])
+        payload['extraction_status'] = 'unsupported'
+        payload['extraction_reason'] = result['reason']
+    elif not ATTACH_EXTRACT_ENABLED:
+        result['reason'] = 'attach_extract_disabled'
+        payload['extraction_status'] = 'skipped'
+        payload['extraction_reason'] = result['reason']
+    elif not original_saved:
+        result['reason'] = store_reason or 'no_original_for_extract'
         stats['attachments_failed'] = int(stats.get('attachments_failed', 0)) + 1
-        _bump_reason(stats, f'file_too_large:{kind}')
-        return '', f'file_too_large:{kind}'
-
-    os.makedirs(ATTACH_TMP_ROOT, exist_ok=True)
-    tmp_dir = tempfile.mkdtemp(prefix='tg_attach_', dir=ATTACH_TMP_ROOT)
-    fallback_name = f'msg_{int(getattr(message, "id", 0) or 0)}'
-    fname = str(meta.get('name') or fallback_name)
-    target = os.path.join(tmp_dir, os.path.basename(fname))
-
-    try:
-        dl_path = await client.download_media(message, file=target)
-        if not dl_path or not os.path.exists(dl_path):
-            stats['attachments_failed'] = int(stats.get('attachments_failed', 0)) + 1
-            _bump_reason(stats, f'download_failed:{kind}')
-            return '', f'download_failed:{kind}'
-
-        try:
-            actual_size = int(os.path.getsize(dl_path))
-        except Exception:
-            actual_size = 0
+        _bump_reason(stats, result['reason'])
+        payload['extraction_status'] = 'failed'
+        payload['extraction_reason'] = result['reason']
+    else:
+        actual_size = int(payload.get('original_size') or 0)
         if actual_size > ATTACH_MAX_FILE_BYTES:
+            result['reason'] = f'file_too_large:{kind}'
             stats['attachments_failed'] = int(stats.get('attachments_failed', 0)) + 1
-            _bump_reason(stats, f'file_too_large_downloaded:{kind}')
-            return '', f'file_too_large_downloaded:{kind}'
-
-        if kind == 'pdf':
-            txt, reason = _extract_pdf_text(dl_path)
-        elif kind == 'docx':
-            txt, reason = _extract_docx_text(dl_path)
+            _bump_reason(stats, result['reason'])
+            payload['extraction_status'] = 'failed'
+            payload['extraction_reason'] = result['reason']
         else:
-            txt, reason = _extract_plain_text_doc(dl_path)
+            if kind == 'pdf':
+                attach_text, reason = _extract_pdf_text(str(original_path))
+            elif kind == 'docx':
+                attach_text, reason = _extract_docx_text(str(original_path))
+            else:
+                attach_text, reason = _extract_plain_text_doc(str(original_path))
 
-        txt = _clip_text(txt)
-        if txt:
-            stats['attachments_text_extracted'] = int(stats.get('attachments_text_extracted', 0)) + 1
-            return txt, 'ok'
+            attach_text = _clip_text(attach_text)
+            if attach_text:
+                extract_path.write_text(attach_text, encoding='utf-8')
+                result['text'] = attach_text
+                result['reason'] = 'ok'
+                result['extract_path'] = _rel_stage1_path(extract_path)
+                payload['extract_path'] = result['extract_path']
+                payload['extraction_status'] = 'ok'
+                payload['extraction_reason'] = 'ok'
+                stats['attachments_text_extracted'] = int(stats.get('attachments_text_extracted', 0)) + 1
+                stats['attachments_text_files_written'] = int(stats.get('attachments_text_files_written', 0)) + 1
+            else:
+                result['reason'] = reason or f'empty_text:{kind}'
+                payload['extraction_status'] = 'failed'
+                payload['extraction_reason'] = result['reason']
+                stats['attachments_failed'] = int(stats.get('attachments_failed', 0)) + 1
+                _bump_reason(stats, result['reason'])
 
-        stats['attachments_failed'] = int(stats.get('attachments_failed', 0)) + 1
-        _bump_reason(stats, reason or f'empty_text:{kind}')
-        return '', reason or f'empty_text:{kind}'
-    except Exception as e:
-        stats['attachments_failed'] = int(stats.get('attachments_failed', 0)) + 1
-        err_reason = f'attach_extract_exception:{type(e).__name__}'
-        _bump_reason(stats, err_reason)
-        return '', err_reason
-    finally:
-        try:
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-        except Exception:
-            pass
+    _write_json_file(meta_path, payload)
+    stats['attachments_meta_written'] = int(stats.get('attachments_meta_written', 0)) + 1
+    return result
 
 
-async def _render_message_body(client, message, attach_stats: dict) -> str:
+async def _render_message_body(client, message, attach_stats: dict, channel_meta: dict) -> str:
     parts = []
     txt = (message.text or '').strip()
     if txt:
@@ -569,13 +773,26 @@ async def _render_message_body(client, message, attach_stats: dict) -> str:
     parts.extend(media_lines)
 
     if media_meta:
-        attach_text, reason = await _extract_attachment_text(client, message, media_meta, attach_stats)
+        attach_result = await _persist_attachment_artifact(client, message, media_meta, channel_meta, attach_stats)
+        if attach_result.get('artifact_dir') and attach_result.get('kind') not in ('', 'image'):
+            parts.append(f"[ATTACH_ARTIFACT_DIR] {attach_result['artifact_dir']}")
+        if attach_result.get('original_path'):
+            parts.append(f"[ATTACH_ORIGINAL_PATH] {attach_result['original_path']}")
+        if attach_result.get('meta_path') and attach_result.get('kind') not in ('', 'image'):
+            parts.append(f"[ATTACH_META_PATH] {attach_result['meta_path']}")
+        if attach_result.get('extract_path'):
+            parts.append(f"[ATTACH_TEXT_PATH] {attach_result['extract_path']}")
+        if attach_result.get('original_path') or (attach_result.get('meta_path') and attach_result.get('kind') not in ('', 'image')):
+            attach_stats['messages_with_attach_paths'] = int(attach_stats.get('messages_with_attach_paths', 0)) + 1
+
+        attach_text = attach_result.get('text') or ''
+        reason = attach_result.get('reason') or ''
         if attach_text:
             parts.append('[ATTACH_TEXT]')
             parts.append(attach_text)
             parts.append('[/ATTACH_TEXT]')
             attach_stats['messages_with_attach_text'] = int(attach_stats.get('messages_with_attach_text', 0)) + 1
-        elif reason and reason not in ('no_supported_media', 'attach_extract_disabled'):
+        elif reason and reason not in ('no_supported_media',):
             parts.append(f"[ATTACH_TEXT_STATUS] {reason}")
 
     if not parts:
@@ -617,6 +834,12 @@ async def scrape_single_channel(client, entity, title, username, fname, checkpoi
     max_seen_id = last_id
     created = os.path.exists(fname)
 
+    channel_meta = {
+        'title': title,
+        'username': str(username),
+        'slug': f"{_safe_component(title, 'channel')}_{_safe_component(str(username), 'id')}",
+    }
+
     with open(fname, 'a', encoding='utf-8') as f:
         if not created:
             f.write(f"# Telegram Log: {title} ({username})\n\n")
@@ -635,7 +858,7 @@ async def scrape_single_channel(client, entity, title, username, fname, checkpoi
 
             date_str = message.date.strftime('%Y-%m-%d %H:%M:%S')
             try:
-                text = await _render_message_body(client, message, attach_stats)
+                text = await _render_message_body(client, message, attach_stats, channel_meta)
             except Exception as e:
                 _bump_reason(attach_stats, f'render_message_exception:{type(e).__name__}')
                 text = (message.text or '').strip() or '[NO_TEXT_OR_MEDIA_METADATA]'
@@ -743,7 +966,7 @@ async def main():
         )
 
     def _safe_title(name: str) -> str:
-        return "".join([c for c in (name or '') if c.isalnum() or c in (' ', '_')]).strip().replace(' ', '_') or 'channel'
+        return _safe_component(name, 'channel')
 
     try:
         async for dialog in client.iter_dialogs():
@@ -908,6 +1131,7 @@ async def main():
             'all_channels_satisfied': bool(COLLECT_ALL_CHANNELS or (len(allowed) > 0 and channels_collected == len(allowed) and channels_targeted == len(allowed) and len(failed_items) == 0)),
             'failed_count': len(failed_items),
             'message_saved_count': int(message_saved_count),
+            'per_channel_timeout_sec': PER_CHANNEL_TIMEOUT_SEC,
             'timeout_retry_count': TIMEOUT_RETRY_COUNT,
             'timeout_retry_sec': TIMEOUT_RETRY_SEC,
             'failure_causes': failure_causes,

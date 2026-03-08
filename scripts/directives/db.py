@@ -16,6 +16,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from lib.runtime_env import DIRECTIVES_DB
+from lib.context_lock import format_lock_reason, is_context_locked
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = DIRECTIVES_DB
@@ -180,7 +181,17 @@ def cmd_init(args: argparse.Namespace) -> int:
     return 0
 
 
+def _context_lock_blocks_new_id(raw_id: str) -> bool:
+    directive_id = (raw_id or '').strip().upper()
+    return not directive_id.startswith('WD-')
+
+
 def cmd_add(args: argparse.Namespace) -> int:
+    locked, lock_payload = is_context_locked()
+    if locked and _context_lock_blocks_new_id(args.id):
+        print(format_lock_reason(lock_payload), file=sys.stderr)
+        return 2
+
     status = args.status.upper()
     if status not in ALLOWED_STATUS:
         print(f"invalid status: {status}", file=sys.stderr)
