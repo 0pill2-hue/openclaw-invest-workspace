@@ -1,6 +1,5 @@
 import asyncio
 import os
-import subprocess
 import sys
 import time
 import json
@@ -97,7 +96,6 @@ ATTACH_EXTRACT_ENABLED = os.environ.get('TELEGRAM_ATTACH_EXTRACT_ENABLED', '1').
 ATTACH_MAX_FILE_BYTES = int(os.environ.get('TELEGRAM_ATTACH_MAX_FILE_BYTES', str(15 * 1024 * 1024)))
 ATTACH_MAX_TEXT_CHARS = int(os.environ.get('TELEGRAM_ATTACH_MAX_TEXT_CHARS', '6000'))
 ATTACH_PDF_MAX_PAGES = int(os.environ.get('TELEGRAM_ATTACH_PDF_MAX_PAGES', '25'))
-ATTACH_OCR_TIMEOUT_SEC = int(os.environ.get('TELEGRAM_ATTACH_OCR_TIMEOUT_SEC', '18'))
 ATTACH_TMP_ROOT = str(STAGE1_DIR / 'outputs/runtime/telegram_attach_tmp')
 ATTACH_STATS_FILE = str(STAGE1_DIR / 'outputs/runtime/telegram_attachment_extract_stats_latest.json')
 
@@ -486,66 +484,17 @@ def _extract_plain_text_doc(path: str) -> tuple[str, str]:
     return '', 'text_decode_failed'
 
 
-def _extract_image_ocr(path: str) -> tuple[str, str]:
-    # 1) pytesseract + Pillow
-    try:
-        import pytesseract  # type: ignore
-        from PIL import Image  # type: ignore
-
-        txt = pytesseract.image_to_string(Image.open(path)) or ''
-        txt = _clip_text(txt)
-        if txt.strip():
-            return txt, 'ok'
-    except ModuleNotFoundError:
-        pass
-    except Exception as e:
-        return '', f'pytesseract_error:{type(e).__name__}'
-
-    # 2) tesseract CLI fallback
-    if shutil.which('tesseract'):
-        out_base = None
-        try:
-            fd, out_base = tempfile.mkstemp(prefix='tgocr_', dir=ATTACH_TMP_ROOT)
-            os.close(fd)
-            subprocess.run(
-                ['tesseract', path, out_base, '-l', 'eng'],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                timeout=max(1, ATTACH_OCR_TIMEOUT_SEC),
-            )
-            txt_path = out_base + '.txt'
-            if os.path.exists(txt_path):
-                with open(txt_path, 'r', encoding='utf-8', errors='ignore') as f:
-                    txt = _clip_text(f.read())
-                if txt.strip():
-                    return txt, 'ok'
-            return '', 'ocr_text_empty'
-        except subprocess.TimeoutExpired:
-            return '', 'ocr_timeout'
-        except Exception as e:
-            return '', f'tesseract_error:{type(e).__name__}'
-        finally:
-            for p in [f'{out_base}.txt' if out_base else '']:
-                if p and os.path.exists(p):
-                    try:
-                        os.remove(p)
-                    except Exception:
-                        pass
-    return '', 'ocr_unavailable'
-
-
 async def _extract_attachment_text(client, message, meta: dict, stats: dict) -> tuple[str, str]:
     if not ATTACH_EXTRACT_ENABLED:
         return '', 'attach_extract_disabled'
 
-    if not meta or not meta.get('kind'):
+    kind = str(meta.get('kind') or '')
+    if not kind or kind == 'image':
         return '', 'no_supported_media'
 
     stats['attachments_total'] = int(stats.get('attachments_total', 0)) + 1
 
-    kind = str(meta.get('kind') or '')
-    if kind not in {'pdf', 'image', 'text_doc', 'docx'}:
+    if kind not in {'pdf', 'text_doc', 'docx'}:
         stats['attachments_unsupported'] = int(stats.get('attachments_unsupported', 0)) + 1
         _bump_reason(stats, f'unsupported_kind:{kind or "unknown"}')
         return '', f'unsupported_kind:{kind or "unknown"}'
@@ -582,8 +531,6 @@ async def _extract_attachment_text(client, message, meta: dict, stats: dict) -> 
 
         if kind == 'pdf':
             txt, reason = _extract_pdf_text(dl_path)
-        elif kind == 'image':
-            txt, reason = _extract_image_ocr(dl_path)
         elif kind == 'docx':
             txt, reason = _extract_docx_text(dl_path)
         else:
@@ -957,6 +904,8 @@ async def main():
             'dialogs_total': dialogs_total,
             'channels_targeted': channels_targeted,
             'channels_collected': channels_collected,
+            'missing_allowlist_count': max(0, len(allowed) - channels_collected) if not COLLECT_ALL_CHANNELS else 0,
+            'all_channels_satisfied': bool(COLLECT_ALL_CHANNELS or (len(allowed) > 0 and channels_collected == len(allowed) and channels_targeted == len(allowed) and len(failed_items) == 0)),
             'failed_count': len(failed_items),
             'message_saved_count': int(message_saved_count),
             'timeout_retry_count': TIMEOUT_RETRY_COUNT,

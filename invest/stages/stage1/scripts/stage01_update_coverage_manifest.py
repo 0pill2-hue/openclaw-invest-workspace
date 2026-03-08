@@ -31,12 +31,15 @@ MACRO_DIR = RAW_ROOT / "signal/market/macro"
 DAILY_UPDATE_STATUS_PATH = RUNTIME_ROOT / "daily_update_status.json"
 POST_COLLECTION_VALIDATE_PATH = RUNTIME_ROOT / "post_collection_validate.json"
 TELEGRAM_COLLECTOR_STATUS_PATH = RUNTIME_ROOT / "telegram_collector_status.json"
+US_OHLCV_STATUS_PATH = RUNTIME_ROOT / "us_ohlcv_status.json"
 NEWS_URL_INDEX_STATUS_PATH = RUNTIME_ROOT / "news_url_index_status.json"
 NEWS_SELECTED_STATUS_PATH = RUNTIME_ROOT / "news_selected_articles_status.json"
 
 TELEGRAM_ALLOWLIST_PATH = ROOT / "invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt"
 NEWS_SOURCES_CONFIG_PATH = ROOT / "invest/stages/stage1/inputs/config/news_sources.json"
 PREMIUM_DISCOVERY_PATH = PREMIUM_DIR / "startale_channel_direct/_discovery.json"
+BUDDIES_PATH = ROOT / "invest/stages/stage1/outputs/master/naver_buddies_full.json"
+BLOG_FIXED_START_DATE = "20160101"
 
 
 def _load_json(path: Path) -> dict[str, Any] | list[Any] | None:
@@ -319,34 +322,103 @@ def _rss_summary() -> dict[str, Any]:
     )
 
 
+def _telegram_observed_keys(files: list[Path]) -> set[str]:
+    observed: set[str] = set()
+    for path in files:
+        name = path.name
+        if name.endswith("_public_fallback.md"):
+            observed.add(name[:-len("_public_fallback.md")].strip().lower())
+            continue
+        for suffix in ("_full.md", "_recovered.md"):
+            if name.endswith(suffix):
+                stem = name[:-len(suffix)]
+                observed.add(stem.rsplit("_", 1)[-1].strip().lower())
+                break
+    return observed
+
+
 def _telegram_scope() -> dict[str, Any]:
     allowlist = _read_noncomment_lines(TELEGRAM_ALLOWLIST_PATH)
     files = sorted(TELEGRAM_DIR.glob("*.md")) if TELEGRAM_DIR.exists() else []
     public_files = sorted(TELEGRAM_DIR.glob("*_public_fallback.md")) if TELEGRAM_DIR.exists() else []
     full_files = [p for p in files if p.name.endswith("_full.md")]
     recovered_files = [p for p in files if p.name.endswith("_recovered.md")]
-    public_keys = {p.name[:-len("_public_fallback.md")] for p in public_files}
-    missing_allowlist_public = [x for x in allowlist if x not in public_keys]
+    observed_keys = _telegram_observed_keys(files)
+    missing_allowlist_entries = [x for x in allowlist if x not in observed_keys]
+    collector_status = _load_json(TELEGRAM_COLLECTOR_STATUS_PATH) or {}
     return {
-        "coverage_basis": "telegram_allowlist + observed md artifacts",
+        "coverage_basis": "telegram allowlist registry + observed markdown artifacts",
         "allowlist_path": _rel(TELEGRAM_ALLOWLIST_PATH),
         "allowlist_count": len(allowlist),
+        "observed_channel_keys": len(observed_keys),
         "public_fallback_files": len(public_files),
         "full_files": len(full_files),
         "recovered_files": len(recovered_files),
-        "missing_public_fallback_entries": missing_allowlist_public,
+        "missing_allowlist_entries": missing_allowlist_entries,
+        "all_channels_satisfied": len(allowlist) > 0 and len(missing_allowlist_entries) == 0,
+        "dynamic_registry": True,
+        "auto_expands_on_allowlist_update": True,
+        "current_registry_ssot": _rel(TELEGRAM_ALLOWLIST_PATH),
+        "collector_status": collector_status if isinstance(collector_status, dict) else None,
+        "note": "telegram coverage는 allowlist 전체를 기준으로 판단하며, 새 채널이 allowlist에 추가되면 다음 수집/검증/카탈로그 갱신에서 자동 포함된다.",
     }
+
+
+def _load_blog_buddy_ids() -> list[str]:
+    data = _load_json(BUDDIES_PATH) or []
+    if not isinstance(data, list):
+        return []
+    ids: list[str] = []
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        bid = str(row.get("id", "")).strip()
+        if bid:
+            ids.append(bid)
+    return ids
 
 
 def _blog_scope() -> dict[str, Any]:
     subdirs = sorted([p for p in BLOG_DIR.iterdir() if p.is_dir()]) if BLOG_DIR.exists() else []
-    years = int(__import__('os').environ.get('BLOG_TARGET_YEARS', '10'))
+    buddy_ids = _load_blog_buddy_ids()
+    covered_buddy_ids: list[str] = []
+    missing_buddy_ids: list[str] = []
+    for bid in buddy_ids:
+        blog_dir = BLOG_DIR / bid
+        has_md = blog_dir.exists() and any(p.is_file() for p in blog_dir.glob("*.md"))
+        if has_md:
+            covered_buddy_ids.append(bid)
+        else:
+            missing_buddy_ids.append(bid)
     return {
-        "coverage_basis": "discovered_subdirectories",
+        "coverage_basis": "naver buddies registry + observed blogId subdirectories",
+        "buddy_registry_path": _rel(BUDDIES_PATH),
+        "buddy_registry_count": len(buddy_ids),
         "blog_ids_count": len(subdirs),
-        "target_years": years,
-        "active_from": _years_ago_yyyymmdd(years),
-        "note": "blog는 고정 allowlist가 아니라 현재 raw 디렉터리의 blogId/subdir 집합 기준으로 coverage를 본다. earliest/latest 집계는 기본 10년 창 기준이다.",
+        "buddies_with_files_count": len(covered_buddy_ids),
+        "missing_buddy_count": len(missing_buddy_ids),
+        "missing_buddy_ids": missing_buddy_ids,
+        "active_from": BLOG_FIXED_START_DATE,
+        "all_buddies_satisfied": len(buddy_ids) > 0 and len(missing_buddy_ids) == 0,
+        "dynamic_registry": True,
+        "auto_expands_on_registry_update": True,
+        "current_registry_ssot": _rel(BUDDIES_PATH),
+        "note": "blog coverage는 raw 하위 디렉터리 수가 아니라 naver_buddies_full registry 전체가 최소 1개 markdown을 가지는지와 2016-01-01 이후 데이터만을 기준으로 본다. 새 이웃이 registry에 추가되면 다음 수집/검증/카탈로그 갱신에서 자동 포함된다.",
+    }
+
+
+def _us_scope() -> dict[str, Any]:
+    status = _load_json(US_OHLCV_STATUS_PATH) or {}
+    return {
+        "coverage_basis": "current S&P500 universe fetch with local csv fallback + observed per-ticker csv files",
+        "status_path": _rel(US_OHLCV_STATUS_PATH),
+        "status_exists": US_OHLCV_STATUS_PATH.exists(),
+        "ticker_source": status.get("ticker_source") if isinstance(status, dict) else None,
+        "universe_total": status.get("universe_total") if isinstance(status, dict) else None,
+        "stale_ticker_count_before": status.get("stale_ticker_count_before") if isinstance(status, dict) else None,
+        "stale_ticker_count_after": status.get("stale_ticker_count_after") if isinstance(status, dict) else None,
+        "auto_expands_on_universe_update": True,
+        "note": "US OHLCV는 매 run마다 현재 S&P500 universe를 다시 계산하고, 신규 편입 종목도 자동 포함한다. 원격 universe fetch 실패 시에는 로컬 csv 캐시로 계속 수집한다.",
     }
 
 
@@ -436,6 +508,11 @@ def _runtime_health() -> dict[str, Any]:
             "exists": TELEGRAM_COLLECTOR_STATUS_PATH.exists(),
             "payload": telegram if isinstance(telegram, dict) else None,
         },
+        "us_ohlcv_status": {
+            "expected_path": _rel(US_OHLCV_STATUS_PATH),
+            "exists": US_OHLCV_STATUS_PATH.exists(),
+            "payload": _load_json(US_OHLCV_STATUS_PATH) if US_OHLCV_STATUS_PATH.exists() else None,
+        },
         "news_url_index_status": {
             "expected_path": _rel(NEWS_URL_INDEX_STATUS_PATH),
             "exists": NEWS_URL_INDEX_STATUS_PATH.exists(),
@@ -467,7 +544,7 @@ def update_index() -> dict[str, Any]:
     dart = _dart_summary()
     _write_json(DART_MANIFEST_PATH, dart)
 
-    blog_min_date = _years_ago_yyyymmdd(int(__import__('os').environ.get('BLOG_TARGET_YEARS', '10')))
+    blog_min_date = BLOG_FIXED_START_DATE
 
     db_summaries = {
         "dart": dart,
@@ -496,6 +573,7 @@ def update_index() -> dict[str, Any]:
     for key, summary in source_summaries.items():
         sources[key] = _strip_summary(summary)
 
+    dbs["us_ohlcv"]["scope"] = _us_scope()
     sources["telegram"]["scope"] = _telegram_scope()
     sources["blog"]["scope"] = _blog_scope()
     sources["news_url_index"]["scope"] = _news_scope()
@@ -514,13 +592,11 @@ def update_index() -> dict[str, Any]:
             {"name": "rss", "kind": "qualitative.market", "path": _rel(RSS_DIR), "description": "RSS item snapshots", "catalog_mode": "date_coverage"},
             {"name": "news_url_index", "kind": "qualitative.market.news", "path": _rel(NEWS_URL_INDEX_DIR), "description": "News URL index jsonl", "catalog_mode": "date_coverage"},
             {"name": "news_selected_articles", "kind": "qualitative.market.news", "path": _rel(NEWS_SELECTED_DIR), "description": "Selected article bodies jsonl", "catalog_mode": "date_coverage"},
-            {"name": "telegram", "kind": "qualitative.text", "path": _rel(TELEGRAM_DIR), "description": "Telegram channel markdown captures", "catalog_mode": "date_coverage"},
-            {"name": "blog", "kind": "qualitative.text", "path": _rel(BLOG_DIR), "description": "Blog markdown captures by blog id", "catalog_mode": "date_coverage"},
+            {"name": "telegram", "kind": "qualitative.text", "path": _rel(TELEGRAM_DIR), "description": "Telegram channel markdown captures (allowlist full coverage)", "catalog_mode": "date_coverage"},
+            {"name": "blog", "kind": "qualitative.text", "path": _rel(BLOG_DIR), "description": "Blog markdown captures by blog id (buddy registry full coverage)", "catalog_mode": "date_coverage"},
             {"name": "premium", "kind": "qualitative.text", "path": _rel(PREMIUM_DIR), "description": "Premium/startale markdown captures", "catalog_mode": "date_coverage"},
-            {"name": "image_map", "kind": "qualitative.text", "path": _rel(RAW_ROOT / 'qualitative/text/image_map'), "description": "Image-to-text mapping artifacts", "catalog_mode": "tree_only"},
-            {"name": "images_ocr", "kind": "qualitative.text", "path": _rel(RAW_ROOT / 'qualitative/text/images_ocr'), "description": "OCR text artifacts", "catalog_mode": "tree_only"},
         ],
-        "note": "Stage1 source taxonomy. date_coverage sources track earliest/latest; tree_only sources are tracked via raw_tree until date semantics are defined.",
+        "note": "Stage1 source taxonomy. blog/telegram coverage is judged against the current full registry/allowlist, and newly added targets are auto-included on the next collection/catalog update.",
     }
 
     index = {

@@ -89,6 +89,9 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - latest_date
   - missing_months_between_range
   - needs_incremental_update
+  - blog: `active_from=20160101`, `all_buddies_satisfied`
+  - telegram: `all_channels_satisfied`, `missing_allowlist_entries`
+- blog raw/backfill 기준 시작일은 rolling 10y가 아니라 `2016-01-01` 고정이다.
 
 ## 실패 / 폴백 규칙
 - 메인 오케스트레이터 위치: `invest/stages/stage1/scripts/stage01_daily_update.py`

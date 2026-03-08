@@ -26,12 +26,12 @@
 - 작업 착수 첫 보고에는 canonical `ticket_id`를 함께 알린다. 여러 task가 걸려 있어도 현재 주 실행 ticket 1개를 먼저 명시한다.
 - watchdog은 `scripts/watchdog/watchdog_cycle.py`가 canonical 진입점이다.
 - context hygiene는 기본적으로 `openclaw status --json` 기준 session `totalTokens >= 120000`이면 이상으로 본다(`WATCHDOG_CONTEXT_TOKEN_THRESHOLD`로 조정 가능).
-- watchdog은 **120k 도달/초과 시점에만** `runtime/context-handoff.md` 검증 후 clean reset/cutover를 요구한다. 그 이전 구간에는 별도 선제 경고를 두지 않는다.
+- watchdog은 **120k 도달/초과 시점에만** `runtime/context-handoff.md`를 갱신·검증하며, 기본 동작은 `prepare_handoff`다. 실제 clean reset/cutover는 필요한 경우에만 요구한다. 그 이전 구간에는 별도 선제 경고를 두지 않는다.
 - `python3 scripts/context_policy.py snapshot ...`은 `runtime/current-task.md`와 `runtime/context-handoff.md`를 같이 갱신한다.
 - watchdog이 context threshold/current-task mismatch/handoff invalid를 감지하면 `openclaw system event --mode now`로 메인 에이전트를 즉시 깨운다.
 - background watchdog은 maintenance task를 자동 등록/갱신한다: task 계열은 `WD-TASK-HYGIENE`, context 계열은 `WD-CONTEXT-HYGIENE`.
 - `WD-CONTEXT-HYGIENE` note에는 최소한 `active_ticket_id`, `business_goal`, `business_next_action`, `handoff_file`, `handoff_valid`, `required_action`이 구조화돼야 한다.
-- `scripts/tasks/gate.py`는 `WD-*` maintenance task가 active일 때 다른 ticket 실행을 거부한다. maintenance 선점이 기본이다.
+- `scripts/tasks/gate.py`는 `WD-*` maintenance task를 기본적으로 우선 처리하되, `WD-CONTEXT-HYGIENE`가 `required_action: prepare_handoff`/`read_then_resume` 상태인 경우에는 다른 ticket 실행을 무조건 막지 않는다. 실제 `clean_reset`이 필요할 때만 context maintenance가 gate를 잠근다.
 - `scripts/heartbeat/*` guard는 즉시 경고/자동복구가 본역할이므로, 기본은 task 발행보다 alert/recovery 우선으로 둔다.
 - 메인은 watchdog alert를 받으면 같은 턴에서 handoff/current-task/proof 확인, 사용자 보고, 후속 task 정리까지 처리한다.
 

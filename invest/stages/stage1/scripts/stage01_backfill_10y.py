@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[4]
 PY = sys.executable
 RUNTIME_DIR = ROOT / "invest/stages/stage1/outputs/runtime"
 STATUS_PATH = RUNTIME_DIR / "stage01_backfill_10y_status.json"
+BLOG_FIXED_START_DATE = "2016-01-01"
 
 
 def _target_date(years: int) -> str:
@@ -101,6 +102,7 @@ def main() -> int:
 
     years = max(1, int(args.years))
     target_date = _target_date(years)
+    blog_target_date = BLOG_FIXED_START_DATE
 
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     steps: list[dict] = []
@@ -199,11 +201,12 @@ def main() -> int:
                     "--target-years",
                     str(years),
                     "--target-date",
-                    target_date,
+                    blog_target_date,
                 ],
                 {
                     "BLOG_TARGET_YEARS": str(years),
-                    "BLOG_TARGET_DATE": target_date,
+                    "BLOG_TARGET_DATE": blog_target_date,
+                    "BLOG_DEFAULT_TARGET_DATE": blog_target_date,
                 },
             )
         )
@@ -212,6 +215,7 @@ def main() -> int:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "years": years,
         "target_date": target_date,
+        "blog_target_date": blog_target_date,
         "smoke": bool(args.smoke),
         "steps": steps,
     }

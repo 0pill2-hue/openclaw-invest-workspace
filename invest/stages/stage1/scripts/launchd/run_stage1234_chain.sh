@@ -346,20 +346,6 @@ if [[ $S1_POST_COLLECTION_RC -ne 0 ]]; then
 fi
 log "stage01 gates passed (checkpoint+post_collection, run_key=${RUN_KEY})"
 
-# Stage1 OCR rolling (attach tmp/image_map 미처리 큐 점진 소진)
-run_with_retry "stage01_images_ocr_rolling" 1200 1 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \
-  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_run_images_ocr_rolling.py --batch-size "${STAGE01_OCR_ROLLING_BATCH:-80}" --max-scan "${STAGE01_OCR_ROLLING_SCAN:-5000}"
-
-set +e
-run_with_retry "stage01_ocr_postprocess_validate" 600 1 "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log" \
-  "$PYTHON_BIN" invest/stages/stage1/scripts/stage01_ocr_postprocess_validate.py
-S1_OCR_VALIDATE_RC=$?
-set -e
-if [[ $S1_OCR_VALIDATE_RC -ne 0 ]]; then
-  fail_close_exit 13 "stage01_ocr_postprocess_validate failed rc=${S1_OCR_VALIDATE_RC}"
-fi
-log "stage01 OCR postprocess validate passed (run_key=${RUN_KEY})"
-
 # Stage2 (run_key/cooldown/cutoff 게이트 포함)
 set +e
 run_stage2_gate_with_retry

@@ -76,12 +76,12 @@ def build_profile_specs(profile: str) -> list[dict[str, Any]]:
             _spec('invest/stages/stage1/scripts/stage01_fetch_stock_list.py'),
             _spec('invest/stages/stage1/scripts/stage01_fetch_ohlcv.py'),
             _spec('invest/stages/stage1/scripts/stage01_fetch_supply.py'),
+            _spec('invest/stages/stage1/scripts/stage01_fetch_us_ohlcv.py'),
             _spec('invest/stages/stage1/scripts/stage01_fetch_macro_fred.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_fetch_global_macro.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_fetch_news_rss.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_build_news_url_index.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py', use_fallbacks=False),
-            _spec('invest/stages/stage1/scripts/stage01_image_harvester.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py'),
             _spec('invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
@@ -148,8 +148,6 @@ def build_profile_specs(profile: str) -> list[dict[str, Any]]:
     }
 
     specs = list(profiles[profile])
-    if profile == 'daily_full' and _env_enabled('RUN_US_OHLCV_IN_DAILY'):
-        specs.append(_spec('invest/stages/stage1/scripts/stage01_fetch_us_ohlcv.py'))
     return [spec for spec in specs if _exists(str(spec['script']))]
 
 

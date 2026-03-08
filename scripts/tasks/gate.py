@@ -35,7 +35,7 @@ def main() -> int:
         row = conn.execute("SELECT * FROM tasks WHERE id=?", (args.ticket,)).fetchone()
         maintenance_rows = conn.execute(
             """
-            SELECT id, status, title
+            SELECT id, status, title, note
             FROM tasks
             WHERE id LIKE 'WD-%'
               AND bucket='active'
@@ -47,11 +47,19 @@ def main() -> int:
         print(f"gate fail: db error ({exc})", file=sys.stderr)
         return 2
 
-    if maintenance_rows:
-        active_ids = [str(r['id']) for r in maintenance_rows]
-        if args.ticket not in active_ids:
+    blocking_maintenance_ids: list[str] = []
+    for maintenance_row in maintenance_rows:
+        maintenance_id = str(maintenance_row['id'])
+        note = str(maintenance_row['note'] or '')
+        if maintenance_id == 'WD-CONTEXT-HYGIENE':
+            if 'required_action: clean_reset' not in note:
+                continue
+        blocking_maintenance_ids.append(maintenance_id)
+
+    if blocking_maintenance_ids:
+        if args.ticket not in blocking_maintenance_ids:
             print(
-                f"gate fail: maintenance task active (active={','.join(active_ids)}; requested={args.ticket})",
+                f"gate fail: maintenance task active (active={','.join(blocking_maintenance_ids)}; requested={args.ticket})",
                 file=sys.stderr,
             )
             return 2

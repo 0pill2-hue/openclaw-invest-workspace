@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Stage3 입력(JSONL) 생성기
-- Stage1 raw의 qualitative 원천(DART/RSS) + Stage2 clean의 qualitative text 전원천
-  (telegram/blog/premium/image_map/images_ocr)을 읽어 Stage3 입력 포맷으로 정규화한다.
+- Stage1 raw의 qualitative 원천(DART/RSS) + Stage2 clean의 qualitative text/selected_articles
+  (telegram/blog/premium/selected_articles)을 읽어 Stage3 입력 포맷으로 정규화한다.
 - 중복/재전파(동일 본문 fingerprint) 문서는 제거한다.
 - 출력이 0건이어도 입력 파일은 생성한다(체인 경로 고정 목적).
 """
@@ -43,7 +43,7 @@ MASTER_LIST = UPSTREAM_STAGE1 / "master/kr_stock_list.csv"
 
 
 def _resolve_stage2_qual_text(rel_path: str) -> Path:
-    """Stage2 clean 경로 호환: upstream 우선, 미존재 시 stage2 outputs 직접 fallback."""
+    """Stage2 clean text 경로 호환: upstream 우선, 미존재 시 stage2 outputs 직접 fallback."""
     candidates = [
         UPSTREAM_STAGE2_CLEAN / "qualitative" / "text" / rel_path,
         UPSTREAM_STAGE2_CLEAN / "text" / rel_path,
@@ -56,11 +56,23 @@ def _resolve_stage2_qual_text(rel_path: str) -> Path:
     return candidates[0]
 
 
+def _resolve_stage2_qual_market(rel_path: str) -> Path:
+    candidates = [
+        UPSTREAM_STAGE2_CLEAN / "qualitative" / "market" / rel_path,
+        UPSTREAM_STAGE2_CLEAN / "market" / rel_path,
+        WORKSPACE_ROOT / "invest/stages/stage2/outputs/clean/production/qualitative/market" / rel_path,
+        WORKSPACE_ROOT / "invest/stages/stage2/outputs/clean/production/market" / rel_path,
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return candidates[0]
+
+
 TEXT_TELEGRAM_DIR = _resolve_stage2_qual_text("telegram")
 TEXT_BLOG_DIR = _resolve_stage2_qual_text("blog")
 TEXT_PREMIUM_DIR = _resolve_stage2_qual_text("premium")
-TEXT_IMAGE_MAP_DIR = _resolve_stage2_qual_text("image_map")
-TEXT_IMAGES_OCR_DIR = _resolve_stage2_qual_text("images_ocr")
+SELECTED_ARTICLES_DIR = _resolve_stage2_qual_market("news/selected_articles")
 
 OUT_JSONL_DEFAULT = STAGE_ROOT / "inputs/stage2_text_meta_records.jsonl"
 OUT_SUMMARY_DEFAULT = STAGE_ROOT / "outputs/STAGE3_INPUT_BUILD_latest.json"
@@ -86,6 +98,11 @@ def _norm_code(v: object) -> str:
 
 def _latest_csv(path: Path) -> Path | None:
     files = sorted(path.glob("*.csv"), key=lambda p: p.stat().st_mtime, reverse=True)
+    return files[0] if files else None
+
+
+def _latest_json(path: Path) -> Path | None:
+    files = sorted(path.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     return files[0] if files else None
 
 
@@ -204,12 +221,32 @@ def _is_macro_news_text(text: str) -> bool:
     return has_on or has_off
 
 
+def _extract_markdown_title(txt: str, fallback: str = "") -> str:
+    patterns = [
+        r"^#\s*(.+)$",
+        r"^Title:\s*(.+)$",
+        r"^-\s*Title:\s*(.+)$",
+    ]
+    for pattern in patterns:
+        m = re.search(pattern, txt or "", flags=re.M)
+        if m:
+            return m.group(1).strip()
+    return fallback
+
+
+def _extract_first_meta_value(txt: str, keys: list[str]) -> str:
+    for key in keys:
+        m = re.search(rf"^(?:-\s*)?{re.escape(key)}\s*:\s*(.+)$", txt or "", flags=re.M)
+        if m:
+            return m.group(1).strip()
+    return ""
+
+
 def _clean_web_md_body(txt: str) -> str:
     lines = txt.splitlines()
     if not lines:
         return ""
 
-    # 헤더 구간(Title/Date/Source) 이후를 본문 후보로 사용
     start = 0
     for i, line in enumerate(lines):
         if line.startswith("Source:"):
@@ -220,13 +257,19 @@ def _clean_web_md_body(txt: str) -> str:
         r"본문 바로가기|블로그 검색|공감|댓글|공유하기|로그인|네이버|레이어 닫기|고객센터|운영정책|전체서비스",
         re.I,
     )
+    meta_re = re.compile(
+        r"^(LinkEnriched|CanonicalURLs|CanonicalURL|PublishedDate|PublishedAt|Date|Source)\s*:",
+        re.I,
+    )
 
     out: list[str] = []
     for raw in lines[start:]:
         s = raw.strip()
         if not s:
             continue
-        if noisy_re.search(s):
+        if s == "[LinkEnrichment]":
+            continue
+        if noisy_re.search(s) or meta_re.match(s):
             continue
         if len(s) <= 1:
             continue
@@ -235,30 +278,42 @@ def _clean_web_md_body(txt: str) -> str:
     return "\n".join(out[:180])
 
 
-def _extract_text_from_image_map_obj(obj: object) -> str:
-    chunks: list[str] = []
-    if isinstance(obj, dict):
-        for k, v in obj.items():
-            kl = str(k).lower()
-            if isinstance(v, str) and kl in {"text", "ocr_text", "caption", "title", "summary", "content"}:
-                chunks.append(v.strip())
-            elif isinstance(v, list):
-                for item in v:
-                    if isinstance(item, str):
-                        chunks.append(item.strip())
-                    elif isinstance(item, dict):
-                        for kk in ["text", "ocr_text", "caption", "title", "summary", "content"]:
-                            vv = item.get(kk)
-                            if isinstance(vv, str):
-                                chunks.append(vv.strip())
-    elif isinstance(obj, list):
-        for item in obj:
-            if isinstance(item, str):
-                chunks.append(item.strip())
-            elif isinstance(item, dict):
-                chunks.append(_extract_text_from_image_map_obj(item))
+def _clean_premium_body(txt: str) -> str:
+    parts = re.split(r"(?mi)^##\s*본문\s*$", txt or "", maxsplit=1)
+    body = parts[1] if len(parts) > 1 else txt
+    if not body:
+        return ""
 
-    text = "\n".join(x for x in chunks if x)
+    boilerplate_re = re.compile(
+        r"disclaimer|투자 결과에 대한 법적 책임소재|매수.?매도 추천|별도의 투자 상담|구독자 여러분 스스로 공부",
+        re.I,
+    )
+    meta_re = re.compile(
+        r"^(?:-\s*)?(URL|PublishedAt|CollectedAt|Status|Reason|isLogin|LinkEnriched|CanonicalURLs|CanonicalURL)\s*:",
+        re.I,
+    )
+
+    out: list[str] = []
+    for raw in body.splitlines():
+        s = raw.strip()
+        if not s:
+            continue
+        if s == "[LinkEnrichment]":
+            continue
+        if meta_re.match(s) or boilerplate_re.search(s):
+            continue
+        out.append(s)
+
+    return "\n".join(out[:220])
+
+
+def _selected_articles_text(row: dict) -> str:
+    parts = []
+    for key in ("title", "summary", "body"):
+        value = str(row.get(key, "") or "").strip()
+        if value:
+            parts.append(value)
+    text = "\n".join(parts)
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
     return text
 
@@ -565,10 +620,8 @@ def _build_from_text_blog(
         stats["blog_files_scanned"] += 1
         txt = fp.read_text(encoding="utf-8", errors="ignore")
 
-        title_m = re.search(r"^Title:\s*(.+)$", txt, flags=re.M)
-        date_m = re.search(r"^Date:\s*(.+)$", txt, flags=re.M)
-        title = title_m.group(1).strip() if title_m else fp.stem
-        date_raw = date_m.group(1).strip() if date_m else ""
+        title = _extract_markdown_title(txt, fallback=fp.stem)
+        date_raw = _extract_first_meta_value(txt, ["Date", "PublishedDate", "PublishedAt"])
 
         published_at = _parse_datetime_any(date_raw)
         if not published_at:
@@ -636,28 +689,25 @@ def _build_from_text_premium(
 
     for fp in files:
         stats["premium_files_scanned"] += 1
-
         txt = fp.read_text(encoding="utf-8", errors="ignore")
-        # 링크메타 전용 문서만 제외. 실제 premium 본문(startale 포함)은 인입.
         if "# STARTALE PREMIUM LINK" in txt:
             stats["premium_docs_skipped_linkmeta"] += 1
             continue
 
-        title_m = re.search(r"^Title:\s*(.+)$", txt, flags=re.M)
-        date_m = re.search(r"^Date:\s*(.+)$", txt, flags=re.M)
-        title = title_m.group(1).strip() if title_m else fp.stem
-        date_raw = date_m.group(1).strip() if date_m else ""
+        title = _extract_markdown_title(txt, fallback=fp.stem)
+        date_raw = _extract_first_meta_value(txt, ["PublishedAt", "Date", "PublishedDate"])
 
         published_at = _parse_datetime_any(date_raw)
         if not published_at:
             published_at = _extract_inline_datetime(txt)
         if not published_at:
             continue
+
         ts = pd.to_datetime(published_at, errors="coerce")
         if pd.isna(ts) or (cutoff is not None and ts < cutoff):
             continue
 
-        body = _clean_web_md_body(txt)
+        body = _clean_premium_body(txt)
         text = "\n".join(x for x in [title, body] if x).strip()
         if len(text) < 30:
             continue
@@ -690,7 +740,7 @@ def _build_from_text_premium(
     return out, stats
 
 
-def _build_from_text_image_map(
+def _build_from_market_selected_articles(
     name_pairs: list[tuple[str, str]],
     lookback_days: int,
     max_files: int,
@@ -698,121 +748,77 @@ def _build_from_text_image_map(
 ) -> tuple[list[dict], dict]:
     out: list[dict] = []
     stats = {
-        "image_map_files_scanned": 0,
-        "image_map_docs_with_symbols": 0,
-        "image_map_docs_skipped_no_symbols": 0,
-        "image_map_docs_invalid_json": 0,
-        "image_map_docs_included_nosymbol": 0,
+        "selected_articles_files_scanned": 0,
+        "selected_articles_rows_scanned": 0,
+        "selected_articles_rows_with_symbols": 0,
+        "selected_articles_rows_skipped_no_symbols": 0,
+        "selected_articles_rows_included_nosymbol": 0,
+        "selected_articles_rows_invalid_json": 0,
     }
 
-    if not TEXT_IMAGE_MAP_DIR.exists():
+    if not SELECTED_ARTICLES_DIR.exists():
         return out, stats
 
     cutoff = _resolve_cutoff(lookback_days)
-    files = sorted(TEXT_IMAGE_MAP_DIR.rglob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    files = sorted(SELECTED_ARTICLES_DIR.rglob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)
     files = files[: max(0, max_files)] if max_files > 0 else files
 
     for fp in files:
-        stats["image_map_files_scanned"] += 1
-        try:
-            obj = json.loads(fp.read_text(encoding="utf-8", errors="ignore"))
-        except Exception:
-            stats["image_map_docs_invalid_json"] += 1
-            continue
+        stats["selected_articles_files_scanned"] += 1
+        with fp.open("r", encoding="utf-8", errors="ignore") as f:
+            for line_no, raw in enumerate(f, start=1):
+                line = raw.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except Exception:
+                    stats["selected_articles_rows_invalid_json"] += 1
+                    continue
+                if not isinstance(row, dict):
+                    stats["selected_articles_rows_invalid_json"] += 1
+                    continue
 
-        text = _extract_text_from_image_map_obj(obj)
-        if len(text) < 20:
-            continue
+                stats["selected_articles_rows_scanned"] += 1
+                published_at = _parse_datetime_any(str(row.get("published_at") or row.get("published_date") or ""))
+                if not published_at:
+                    continue
 
-        ts = pd.Timestamp(fp.stat().st_mtime, unit="s", tz="UTC").tz_convert("Asia/Seoul")
-        if cutoff is not None and ts < cutoff:
-            continue
-        published_at = ts.isoformat(timespec="seconds")
+                ts = pd.to_datetime(published_at, errors="coerce")
+                if pd.isna(ts) or (cutoff is not None and ts < cutoff):
+                    continue
 
-        symbols = _extract_symbols_from_text(text, name_pairs)
-        source_family = "text_image_map"
-        if not symbols:
-            stats["image_map_docs_skipped_no_symbols"] += 1
-            if not include_nosymbol:
-                continue
-            symbols = ["__NOSYMBOL__"]
-            source_family = "text_image_map_nosymbol"
-            stats["image_map_docs_included_nosymbol"] += 1
-        else:
-            stats["image_map_docs_with_symbols"] += 1
+                text = _selected_articles_text(row)
+                if len(text) < 30:
+                    continue
 
-        rid = hashlib.sha1(f"{str(fp)}:{source_family}".encode("utf-8", errors="ignore")).hexdigest()[:20]
-        out.append(
-            {
-                "record_id": f"text_image_map:{rid}",
-                "published_at": published_at,
-                "symbols": symbols,
-                "text": text,
-                "source": f"text/image_map:{fp.stem}",
-                "source_family": source_family,
-                "content_fingerprint": _content_fingerprint(text),
-            }
-        )
+                symbols = _extract_symbols_from_text(text, name_pairs)
+                source_family = "market_selected_articles"
+                if not symbols:
+                    stats["selected_articles_rows_skipped_no_symbols"] += 1
+                    if not include_nosymbol:
+                        continue
+                    symbols = ["__NOSYMBOL__"]
+                    source_family = "market_selected_articles_nosymbol"
+                    stats["selected_articles_rows_included_nosymbol"] += 1
+                else:
+                    stats["selected_articles_rows_with_symbols"] += 1
 
-    return out, stats
-
-
-def _build_from_text_images_ocr(
-    name_pairs: list[tuple[str, str]],
-    lookback_days: int,
-    max_files: int,
-    include_nosymbol: bool,
-) -> tuple[list[dict], dict]:
-    out: list[dict] = []
-    stats = {
-        "images_ocr_files_scanned": 0,
-        "images_ocr_docs_with_symbols": 0,
-        "images_ocr_docs_skipped_no_symbols": 0,
-        "images_ocr_docs_included_nosymbol": 0,
-    }
-
-    if not TEXT_IMAGES_OCR_DIR.exists():
-        return out, stats
-
-    cutoff = _resolve_cutoff(lookback_days)
-    files = sorted(TEXT_IMAGES_OCR_DIR.rglob("*.txt"), key=lambda p: p.stat().st_mtime, reverse=True)
-    files = files[: max(0, max_files)] if max_files > 0 else files
-
-    for fp in files:
-        stats["images_ocr_files_scanned"] += 1
-        txt = fp.read_text(encoding="utf-8", errors="ignore").strip()
-        if len(txt) < 20:
-            continue
-
-        ts = pd.Timestamp(fp.stat().st_mtime, unit="s", tz="UTC").tz_convert("Asia/Seoul")
-        if cutoff is not None and ts < cutoff:
-            continue
-        published_at = ts.isoformat(timespec="seconds")
-
-        symbols = _extract_symbols_from_text(txt, name_pairs)
-        source_family = "text_images_ocr"
-        if not symbols:
-            stats["images_ocr_docs_skipped_no_symbols"] += 1
-            if not include_nosymbol:
-                continue
-            symbols = ["__NOSYMBOL__"]
-            source_family = "text_images_ocr_nosymbol"
-            stats["images_ocr_docs_included_nosymbol"] += 1
-        else:
-            stats["images_ocr_docs_with_symbols"] += 1
-
-        rid = hashlib.sha1(f"{str(fp)}:{source_family}".encode("utf-8", errors="ignore")).hexdigest()[:20]
-        out.append(
-            {
-                "record_id": f"text_images_ocr:{rid}",
-                "published_at": published_at,
-                "symbols": symbols,
-                "text": txt,
-                "source": f"text/images_ocr:{fp.stem}",
-                "source_family": source_family,
-                "content_fingerprint": _content_fingerprint(txt),
-            }
-        )
+                row_url = str(row.get("url") or "").strip()
+                rid_seed = f"{fp.name}:{line_no}:{row_url}:{source_family}"
+                rid = hashlib.sha1(rid_seed.encode("utf-8", errors="ignore")).hexdigest()[:20]
+                source_domain = str(row.get("source_domain") or "").strip() or "unknown"
+                out.append(
+                    {
+                        "record_id": f"market_selected_articles:{rid}",
+                        "published_at": published_at,
+                        "symbols": symbols,
+                        "text": text,
+                        "source": f"market/selected_articles:{source_domain}",
+                        "source_family": source_family,
+                        "content_fingerprint": _content_fingerprint(text),
+                    }
+                )
 
     return out, stats
 
@@ -826,8 +832,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--telegram-max-messages-per-file", type=int, default=120)
     p.add_argument("--blog-max-files", type=int, default=0)
     p.add_argument("--premium-max-files", type=int, default=0)
-    p.add_argument("--image-map-max-files", type=int, default=0)
-    p.add_argument("--images-ocr-max-files", type=int, default=0)
+    p.add_argument("--selected-articles-max-files", type=int, default=0)
     p.add_argument("--include-nosymbol", dest="include_nosymbol", action="store_true", default=True)
     p.add_argument("--exclude-nosymbol", dest="include_nosymbol", action="store_false")
     return p.parse_args()
@@ -862,16 +867,10 @@ def main() -> int:
         max_files=args.premium_max_files,
         include_nosymbol=args.include_nosymbol,
     )
-    image_map_rows, image_map_stats = _build_from_text_image_map(
+    selected_article_rows, selected_article_stats = _build_from_market_selected_articles(
         name_pairs,
         lookback_days=args.text_lookback_days,
-        max_files=args.image_map_max_files,
-        include_nosymbol=args.include_nosymbol,
-    )
-    images_ocr_rows, images_ocr_stats = _build_from_text_images_ocr(
-        name_pairs,
-        lookback_days=args.text_lookback_days,
-        max_files=args.images_ocr_max_files,
+        max_files=args.selected_articles_max_files,
         include_nosymbol=args.include_nosymbol,
     )
 
@@ -888,8 +887,7 @@ def main() -> int:
         *tg_rows,
         *blog_rows,
         *premium_rows,
-        *image_map_rows,
-        *images_ocr_rows,
+        *selected_article_rows,
     ]
     for r in all_rows:
         rid = str(r.get("record_id", "")).strip()
@@ -914,16 +912,14 @@ def main() -> int:
         for r in merged:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-
-
-    def _infer_missing_reasons(source_key: str, stats_obj: dict) -> list[str]:
+    def _infer_missing_reasons(stats_obj: dict, *, files_key: str, skipped_key: str, invalid_key: str = "") -> list[str]:
         reasons: list[str] = []
-        files_scanned = int(stats_obj.get(f"{source_key}_files_scanned", 0) or 0)
-        skipped_no_symbols = int(stats_obj.get(f"{source_key}_docs_skipped_no_symbols", 0) or 0)
-        invalid_json = int(stats_obj.get(f"{source_key}_docs_invalid_json", 0) or 0)
+        files_scanned = int(stats_obj.get(files_key, 0) or 0)
+        skipped_no_symbols = int(stats_obj.get(skipped_key, 0) or 0)
+        invalid_rows = int(stats_obj.get(invalid_key, 0) or 0) if invalid_key else 0
         if files_scanned <= 0:
             reasons.append("입력 없음")
-        if invalid_json > 0:
+        if invalid_rows > 0:
             reasons.append("파싱실패")
         if skipped_no_symbols > 0:
             reasons.append("심볼필터")
@@ -932,15 +928,19 @@ def main() -> int:
         return reasons
 
     ingestion_validation = {
-        "rows_from_text_image_map": {
-            "rows": len(image_map_rows),
-            "status": "OK" if len(image_map_rows) > 0 else "WARN",
-            "missing_reasons": _infer_missing_reasons("image_map", image_map_stats) if len(image_map_rows) == 0 else [],
-        },
-        "rows_from_text_images_ocr": {
-            "rows": len(images_ocr_rows),
-            "status": "OK" if len(images_ocr_rows) > 0 else "FAIL",
-            "missing_reasons": _infer_missing_reasons("images_ocr", images_ocr_stats) if len(images_ocr_rows) == 0 else [],
+        "rows_from_market_selected_articles": {
+            "rows": len(selected_article_rows),
+            "status": "OK" if len(selected_article_rows) > 0 else "WARN",
+            "missing_reasons": (
+                _infer_missing_reasons(
+                    selected_article_stats,
+                    files_key="selected_articles_files_scanned",
+                    skipped_key="selected_articles_rows_skipped_no_symbols",
+                    invalid_key="selected_articles_rows_invalid_json",
+                )
+                if len(selected_article_rows) == 0
+                else []
+            ),
         },
     }
 
@@ -955,8 +955,7 @@ def main() -> int:
         "rows_from_text_telegram": len(tg_rows),
         "rows_from_text_blog": len(blog_rows),
         "rows_from_text_premium": len(premium_rows),
-        "rows_from_text_image_map": len(image_map_rows),
-        "rows_from_text_images_ocr": len(images_ocr_rows),
+        "rows_from_market_selected_articles": len(selected_article_rows),
         "rows_before_dedup": len(all_rows),
         "rows_output": len(merged),
         "dropped_duplicate_record_id": dropped_duplicate_record_id,
@@ -971,8 +970,7 @@ def main() -> int:
         "telegram_stats": tg_stats,
         "blog_stats": blog_stats,
         "premium_stats": premium_stats,
-        "image_map_stats": image_map_stats,
-        "images_ocr_stats": images_ocr_stats,
+        "selected_articles_stats": selected_article_stats,
         "text_lookback_days": args.text_lookback_days,
         "caps_effective": {
             "text_lookback_days": args.text_lookback_days,
@@ -980,14 +978,12 @@ def main() -> int:
             "telegram_max_files": args.telegram_max_files,
             "blog_max_files": args.blog_max_files,
             "premium_max_files": args.premium_max_files,
-            "image_map_max_files": args.image_map_max_files,
-            "images_ocr_max_files": args.images_ocr_max_files,
+            "selected_articles_max_files": args.selected_articles_max_files,
             "max_files_unlimited": {
                 "telegram": args.telegram_max_files <= 0,
                 "blog": args.blog_max_files <= 0,
                 "premium": args.premium_max_files <= 0,
-                "image_map": args.image_map_max_files <= 0,
-                "images_ocr": args.images_ocr_max_files <= 0,
+                "selected_articles": args.selected_articles_max_files <= 0,
             },
             "include_nosymbol": bool(args.include_nosymbol),
         },
@@ -1006,8 +1002,7 @@ def main() -> int:
             "telegram_max_messages_per_file": args.telegram_max_messages_per_file,
             "blog_max_files": args.blog_max_files,
             "premium_max_files": args.premium_max_files,
-            "image_map_max_files": args.image_map_max_files,
-            "images_ocr_max_files": args.images_ocr_max_files,
+            "selected_articles_max_files": args.selected_articles_max_files,
             "include_nosymbol": bool(args.include_nosymbol),
         },
         inputs=[
@@ -1018,8 +1013,7 @@ def main() -> int:
             str(TEXT_TELEGRAM_DIR),
             str(TEXT_BLOG_DIR),
             str(TEXT_PREMIUM_DIR),
-            str(TEXT_IMAGE_MAP_DIR),
-            str(TEXT_IMAGES_OCR_DIR),
+            str(SELECTED_ARTICLES_DIR),
         ],
         outputs=[str(out_jsonl), str(summary_json)],
         out_path=str(manifest_path),

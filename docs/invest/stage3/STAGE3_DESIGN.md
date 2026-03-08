@@ -16,8 +16,10 @@
 2. RSS: `upstream_stage1/raw/qualitative/market/rss/*.json`
 3. macro summary: `upstream_stage1/raw/signal/market/macro/macro_summary.json`
 4. Stage2 clean qualitative text 전체:
-   - `telegram`, `blog`, `premium`, `image_map`, `images_ocr`
+   - `telegram`, `blog`, `premium`
    - `qualitative/text/*` 우선, 구(flat) `text/*` fallback
+5. Stage2 clean market qualitative corpus:
+   - `market/news/selected_articles/*.jsonl`
 
 링크메타 전용 premium 문서(`STARTALE PREMIUM LINK`)는 제외.
 

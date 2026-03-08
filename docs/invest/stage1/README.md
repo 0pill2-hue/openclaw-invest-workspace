@@ -41,7 +41,7 @@ Stage1 문서 정책/템플릿은 아래 5개 역할로 고정한다.
 - `qualitative.market.news_url_index` — 뉴스 URL 인덱스
 - `qualitative.market.news_selected_articles` — 선별 뉴스 본문
 - `qualitative.text.telegram` — 텔레그램 채널 수집
-- `qualitative.text.blog` — 블로그 본문 수집 (기본 coverage 창: 최근 10년)
+- `qualitative.text.blog` — 블로그 본문 수집 (기본 coverage 창: 2016-01-01 이후 고정)
 - `qualitative.text.premium` — 프리미엄/유료 채널 수집
 - `qualitative.text.image_map` — 이미지-텍스트 매핑 산출
 - `qualitative.text.images_ocr` — OCR 텍스트 산출

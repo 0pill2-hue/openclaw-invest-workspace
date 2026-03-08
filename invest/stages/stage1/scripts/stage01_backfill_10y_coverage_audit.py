@@ -14,6 +14,8 @@ ROOT = Path('/Users/jobiseu/.openclaw/workspace')
 RAW = ROOT / 'invest/stages/stage1/outputs/raw'
 REPORT_DIR = ROOT / 'invest/stages/stage1/outputs/reports/stage_updates'
 TARGET_START = datetime(2016, 1, 1)
+TELEGRAM_ALLOWLIST_PATH = ROOT / 'invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt'
+BLOG_BUDDIES_PATH = ROOT / 'invest/stages/stage1/outputs/master/naver_buddies_full.json'
 
 
 @dataclass
@@ -49,6 +51,45 @@ def _dt(raw: str) -> datetime | None:
     if pd.isna(ts):
         return None
     return ts.to_pydatetime().replace(tzinfo=None)
+
+
+def _read_noncomment_lines(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    vals: list[str] = []
+    for line in path.read_text(encoding='utf-8').splitlines():
+        value = line.strip()
+        if not value or value.startswith('#'):
+            continue
+        vals.append(value)
+    return vals
+
+
+def _load_blog_buddy_ids(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        return []
+    if not isinstance(payload, list):
+        return []
+    return [str(item.get('id', '')).strip() for item in payload if isinstance(item, dict) and str(item.get('id', '')).strip()]
+
+
+def _telegram_observed_keys(files: list[Path]) -> set[str]:
+    observed: set[str] = set()
+    for file_path in files:
+        name = file_path.name
+        if name.endswith('_public_fallback.md'):
+            observed.add(name[:-len('_public_fallback.md')].strip().lower())
+            continue
+        for suffix in ('_full.md', '_recovered.md'):
+            if name.endswith(suffix):
+                stem = name[:-len(suffix)]
+                observed.add(stem.rsplit('_', 1)[-1].strip().lower())
+                break
+    return observed
 
 
 def _finalize(source: str, path: Path, dates: Iterable[datetime], file_count: int, item_count: int, *, reason: str = '', evidence: dict | None = None, force_status: str | None = None) -> Summary:
@@ -185,7 +226,22 @@ def audit_telegram() -> Summary:
                 dates.append(dt)
                 item_count += 1
 
-    return _finalize('qualitative/text/telegram', p, dates, len(files), item_count)
+    summary = _finalize('qualitative/text/telegram', p, dates, len(files), item_count)
+    allowlist = _read_noncomment_lines(TELEGRAM_ALLOWLIST_PATH)
+    observed_keys = _telegram_observed_keys(files)
+    missing_channels = [item for item in allowlist if item not in observed_keys]
+    summary.evidence = {
+        **summary.evidence,
+        'allowlist_count': len(allowlist),
+        'observed_channel_keys': len(observed_keys),
+        'missing_channel_count': len(missing_channels),
+        'missing_channels': missing_channels,
+        'all_channels_satisfied': len(allowlist) > 0 and len(missing_channels) == 0,
+    }
+    if len(allowlist) > 0 and missing_channels:
+        summary.status = 'FAIL'
+        summary.reason = 'telegram_missing_channels'
+    return summary
 
 
 def audit_blog() -> Summary:
@@ -203,7 +259,26 @@ def audit_blog() -> Summary:
         if dt is not None:
             dates.append(dt)
             item_count += 1
-    return _finalize('qualitative/text/blog', p, dates, len(files), item_count)
+    summary = _finalize('qualitative/text/blog', p, dates, len(files), item_count)
+    buddy_ids = _load_blog_buddy_ids(BLOG_BUDDIES_PATH)
+    missing_buddy_ids: list[str] = []
+    for buddy_id in buddy_ids:
+        buddy_dir = p / buddy_id
+        has_md = buddy_dir.exists() and any(child.is_file() for child in buddy_dir.glob('*.md'))
+        if not has_md:
+            missing_buddy_ids.append(buddy_id)
+    summary.evidence = {
+        **summary.evidence,
+        'buddy_registry_count': len(buddy_ids),
+        'buddies_with_files_count': len(buddy_ids) - len(missing_buddy_ids),
+        'missing_buddy_count': len(missing_buddy_ids),
+        'missing_buddy_ids': missing_buddy_ids,
+        'all_buddies_satisfied': len(buddy_ids) > 0 and len(missing_buddy_ids) == 0,
+    }
+    if len(buddy_ids) > 0 and missing_buddy_ids:
+        summary.status = 'FAIL'
+        summary.reason = 'blog_missing_buddies'
+    return summary
 
 
 def audit_premium() -> Summary:

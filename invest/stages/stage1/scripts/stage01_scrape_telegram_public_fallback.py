@@ -14,6 +14,7 @@ from pipeline_logger import append_pipeline_event
 ROOT = Path(__file__).resolve().parents[4]
 ALLOWLIST = ROOT / "invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt"
 OUT_DIR = ROOT / "invest/stages/stage1/outputs/raw/qualitative/text/telegram"
+STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_public_fallback_status.json"
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
 MSG_RE = re.compile(r'(?is)<div[^>]+class="[^"]*tgme_widget_message_text[^"]*"[^>]*>(.*?)</div>')
 WRAP_SPLIT_RE = re.compile(r'(?i)(?=<div[^>]+class="[^"]*tgme_widget_message_wrap[^"]*")')
@@ -39,6 +40,11 @@ def _resolve_target_date(raw_date: str, target_years: int) -> str:
         return raw_date.strip()
     years = max(1, int(target_years))
     return (datetime.now(timezone.utc) - timedelta(days=365 * years)).date().isoformat()
+
+
+def _save_status(payload: dict) -> None:
+    STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    STATUS_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def _parse_post_dt(raw: str) -> datetime | None:
@@ -198,7 +204,9 @@ def run(
 ) -> dict:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    channels = _load_allowlist()[: max(0, limit_channels)]
+    channels = _load_allowlist()
+    if limit_channels > 0:
+        channels = channels[:limit_channels]
     target_date = _parse_target_date(target_date_raw)
     saved_files = 0
     saved_msgs = 0
@@ -261,20 +269,16 @@ def run(
 
     status = "FAIL" if fail_reasons else ("OK" if saved_files > 0 else "WARN")
     pipeline_errors = errors[:20] + fail_reasons
-    append_pipeline_event(
-        source="scrape_telegram_public_fallback",
-        status=status,
-        count=saved_msgs,
-        errors=pipeline_errors,
-        note=(
-            f"channels={len(channels)} files={saved_files} msgs={saved_msgs} "
-            f"max_msgs={max_msgs_per_channel} max_pages={max_pages_per_channel} target_date={target_date.date().isoformat()} "
-            f"min_files={min_saved_files} min_msgs={min_saved_msgs}"
-        ),
-    )
-    return {
+    allowlist_total = len(channels)
+    ok_channels = sum(1 for item in channel_results if item.get("status") == "OK")
+    result = {
+        "saved_at": datetime.now(timezone.utc).isoformat(),
         "status": status,
+        "allowlist_total": allowlist_total,
         "channels_checked": len(channels),
+        "channels_ok": ok_channels,
+        "channels_uncovered": max(0, allowlist_total - ok_channels),
+        "all_channels_satisfied": allowlist_total > 0 and ok_channels == allowlist_total,
         "saved_files": saved_files,
         "saved_msgs": saved_msgs,
         "max_msgs_per_channel": max_msgs_per_channel,
@@ -286,10 +290,23 @@ def run(
         "errors": errors,
         "channel_results": channel_results,
     }
+    _save_status(result)
+    append_pipeline_event(
+        source="scrape_telegram_public_fallback",
+        status=status,
+        count=saved_msgs,
+        errors=pipeline_errors,
+        note=(
+            f"channels={len(channels)} files={saved_files} msgs={saved_msgs} "
+            f"max_msgs={max_msgs_per_channel} max_pages={max_pages_per_channel} target_date={target_date.date().isoformat()} "
+            f"min_files={min_saved_files} min_msgs={min_saved_msgs} all_channels_satisfied={int(result['all_channels_satisfied'])}"
+        ),
+    )
+    return result
 
 
 def main() -> None:
-    limit_channels = int(os.environ.get("TG_PUBLIC_FALLBACK_LIMIT", "200"))
+    limit_channels = int(os.environ.get("TG_PUBLIC_FALLBACK_LIMIT", "0"))
     max_msgs = int(os.environ.get("TG_PUBLIC_FALLBACK_MAX_MSGS", "5000"))
     max_pages = int(os.environ.get("TG_PUBLIC_FALLBACK_MAX_PAGES", "300"))
     min_saved_files = int(os.environ.get("TG_PUBLIC_FALLBACK_MIN_SAVED_FILES", "1"))

@@ -29,29 +29,30 @@ CLEAN_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'clean')
 # Stage2가 유일한 검역(quarantine) 저장 단계다. Stage1은 raw/상태 파일만 저장한다.
 Q_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'quarantine')
 REPORT_DIR = os.path.join(STAGE2_ROOT, 'outputs', 'reports', 'qc')
-STAGE2_RULE_VERSION = 'stage2-refine-20260308'
+STAGE2_RULE_VERSION = 'stage2-refine-20260308-r2'
 STAGE2_ENABLE_LINK_ENRICHMENT = os.environ.get('STAGE2_ENABLE_LINK_ENRICHMENT', '0').strip().lower() in ('1', 'true', 'yes')
 FOLDERS = [
     'kr/dart',
-    'market/news/rss', 'market/macro', 'market/google_trends',
-    'text/blog', 'text/telegram', 'text/image_map', 'text/images_ocr', 'text/premium/startale'
+    'market/news/rss', 'market/news/selected_articles', 'market/macro', 'market/google_trends',
+    'text/blog', 'text/telegram', 'text/premium/startale'
 ]
 REQUIRED_REFINE_FOLDERS = {
     'kr/dart',
     'market/news/rss',
+    'market/news/selected_articles',
     'text/blog',
     'text/telegram',
-    'text/image_map',
     'text/premium/startale',
 }
+# image 계열은 운영 정책상 Stage1/2 범위에서 제외
 
 # Stage2 clean/quarantine canonical output track
 SIGNAL_FOLDERS = {
     'kr/ohlcv', 'kr/supply', 'us/ohlcv', 'market/macro', 'market/google_trends'
 }
 QUALITATIVE_FOLDERS = {
-    'kr/dart', 'market/news/rss', 'market/rss',
-    'text/blog', 'text/telegram', 'text/image_map', 'text/images_ocr', 'text/premium/startale'
+    'kr/dart', 'market/news/rss', 'market/news/selected_articles', 'market/rss',
+    'text/blog', 'text/telegram', 'text/premium/startale'
 }
 
 # raw/output 경로 alias 정합성
@@ -71,14 +72,21 @@ PREMIUM_BOILERPLATE_MARKERS = {
 BLOG_MIN_EFFECTIVE_LEN = 80
 TELEGRAM_MIN_EFFECTIVE_LEN = 60
 PREMIUM_MIN_EFFECTIVE_LEN = 100
-IMAGES_OCR_MIN_EFFECTIVE_LEN = 50
+SELECTED_ARTICLES_MIN_TEXT_LEN = 80
+DEDUP_MIN_FP_TEXT_LEN = 80
 SHORT_MEANINGFUL_MIN_LEN = 45
+
+DEDUP_TARGET_FOLDERS = {
+    'market/news/selected_articles',
+    'text/blog',
+    'text/telegram',
+    'text/premium/startale',
+}
 
 TARGET_LINK_ENRICH_FOLDERS = {
     'text/blog',
     'text/telegram',
     'text/premium/startale',
-    'text/images_ocr',
 }
 
 URL_PATTERN = re.compile(r'https?://[^\s<>()\[\]{}"\']+', flags=re.IGNORECASE)
@@ -153,6 +161,10 @@ def _new_link_runtime_stats() -> dict:
         'enrichment_still_quarantined_files': 0,
         'attachment_blocks_seen': 0,
         'attachment_text_chars_total': 0,
+        'corpus_dedup_registered_items': 0,
+        'corpus_dedup_duplicate_items': 0,
+        'corpus_dedup_bootstrap_files': 0,
+        'corpus_dedup_bootstrap_records': 0,
     }
 
 
@@ -847,26 +859,6 @@ def _validate_telegram_text(content: str) -> tuple[bool, str, dict]:
     return True, '', context
 
 
-def _validate_images_ocr_text(content: str) -> tuple[bool, str, dict]:
-    body = _extract_effective_lines(
-        content,
-        skip_patterns=[
-            r'^#\s+', r'^(Date|Source|LinkEnriched|CanonicalURLs)\s*:', r'^---$',
-            r'^Post(ID|Date|DateTime)?\s*:', r'^MessageID\s*:\s*\d+',
-            r'^Forwarded from\s*:',
-        ],
-    )
-    effective = _text_without_urls(body)
-    effective = _merge_effective_with_attach(effective, content)
-    context = {
-        'effective': effective,
-        'min_len': IMAGES_OCR_MIN_EFFECTIVE_LEN,
-    }
-    if len(effective) < IMAGES_OCR_MIN_EFFECTIVE_LEN and not _is_meaningful_short_text(effective):
-        return False, 'images_ocr_effective_body_too_short', context
-    return True, '', context
-
-
 def _validate_premium_text(content: str) -> tuple[bool, str, dict]:
     has_url = bool(re.search(r'(?mi)^-\s*URL\s*:\s*https?://\S+', content or ''))
     has_published = bool(re.search(r'(?mi)^-\s*PublishedAt\s*:\s*.+$', content or ''))
@@ -908,8 +900,6 @@ def _validate_text_by_folder(content: str, normalized_folder: str) -> tuple[bool
         return _validate_blog_text(content)
     if normalized_folder == 'text/telegram':
         return _validate_telegram_text(content)
-    if normalized_folder == 'text/images_ocr':
-        return _validate_images_ocr_text(content)
     if normalized_folder == 'text/premium/startale':
         return _validate_premium_text(content)
     return True, '', {}
@@ -919,7 +909,6 @@ def _is_short_reason(reason: str) -> bool:
     return reason in {
         'blog_effective_body_too_short',
         'telegram_effective_body_too_short',
-        'images_ocr_effective_body_too_short',
         'premium_effective_body_too_short_or_boilerplate',
     }
 
@@ -1032,33 +1021,6 @@ def _validate_market_rss_json(data) -> tuple[bool, str]:
     return True, ''
 
 
-def _validate_image_map_json(data) -> tuple[bool, str]:
-    items = []
-    if isinstance(data, list):
-        items = [x for x in data if isinstance(x, dict)]
-    elif isinstance(data, dict):
-        if isinstance(data.get('items'), list):
-            items = [x for x in data.get('items', []) if isinstance(x, dict)]
-        else:
-            items = [data]
-
-    if not items:
-        return False, 'image_map_no_items'
-
-    valid = 0
-    for it in items:
-        lk = {str(k).strip().lower(): v for k, v in it.items()}
-        has_url = any(str(lk.get(k, '')).strip() for k in ('url', 'image_url', 'link'))
-        has_source = any(str(lk.get(k, '')).strip() for k in ('source', 'source_path', 'source_file'))
-        if has_url and has_source:
-            valid += 1
-
-    if valid <= 0:
-        return False, 'image_map_missing_required_fields(url/source)'
-
-    return True, ''
-
-
 def sanitize_json(path: str, folder: str = ''):
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -1070,10 +1032,6 @@ def sanitize_json(path: str, folder: str = ''):
         normalized_folder = _normalize_folder(folder)
         if normalized_folder == 'market/rss':
             ok, reason = _validate_market_rss_json(data)
-            if not ok:
-                return None, reason
-        elif normalized_folder == 'text/image_map':
-            ok, reason = _validate_image_map_json(data)
             if not ok:
                 return None, reason
 
@@ -1162,7 +1120,7 @@ def _extract_quarantine_preview(content: str, max_chars: int = 600) -> str:
     return x[:max_chars]
 
 
-def _build_text_quarantine_payload(folder: str, source_file: str, reason: str, raw_text: str) -> str:
+def _build_text_quarantine_payload(folder: str, source_file: str, reason: str, raw_text: str, extra_meta: dict | None = None) -> str:
     reason = (reason or 'invalid_text').strip()
     meta_lines = _extract_quarantine_meta_lines(raw_text)
     preview = _extract_quarantine_preview(raw_text)
@@ -1173,6 +1131,13 @@ def _build_text_quarantine_payload(folder: str, source_file: str, reason: str, r
     buf.append(f'source_file: {source_file}')
     buf.append(f'sanitized_at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
     buf.append(f'stage2_rule_version: {STAGE2_RULE_VERSION}')
+    if extra_meta:
+        for key, value in extra_meta.items():
+            if isinstance(value, (dict, list)):
+                rendered = json.dumps(value, ensure_ascii=False)
+            else:
+                rendered = str(value)
+            buf.append(f'{key}: {rendered}')
     buf.append('')
     buf.append('meta_lines:')
     if meta_lines:
@@ -1185,6 +1150,437 @@ def _build_text_quarantine_payload(folder: str, source_file: str, reason: str, r
     buf.append(preview if preview else '(empty)')
     buf.append('')
     return '\n'.join(buf)
+
+
+def _normalize_title_text(text: str) -> str:
+    x = _normalize_for_fingerprint(text)
+    return re.sub(r'\s+', ' ', x).strip()
+
+
+def _normalize_date_token(value: str) -> str:
+    raw = str(value or '').strip()
+    if not raw:
+        return ''
+    parsed = pd.to_datetime(raw, errors='coerce')
+    if not pd.isna(parsed):
+        return parsed.strftime('%Y-%m-%d')
+
+    m = re.search(r'(\d{4})[./-](\d{1,2})[./-](\d{1,2})', raw)
+    if not m:
+        return ''
+    try:
+        return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3))).strftime('%Y-%m-%d')
+    except Exception:
+        return ''
+
+
+def _extract_text_title(content: str) -> str:
+    for pat in [
+        r'(?mi)^Title\s*:\s*(.+)$',
+        r'(?mi)^#\s+(.+?)\s*$',
+    ]:
+        m = re.search(pat, content or '')
+        if m:
+            title = str(m.group(1) or '').strip()
+            if title:
+                return title
+    return ''
+
+
+def _extract_text_date(content: str) -> str:
+    for pat in [
+        r'(?mi)^(?:Date|PublishedDate|PostDate|PostDateTime)\s*:\s*(.+)$',
+        r'(?mi)^-\s*(?:PublishedAt|Date)\s*:\s*(.+)$',
+    ]:
+        m = re.search(pat, content or '')
+        if not m:
+            continue
+        normalized = _normalize_date_token(m.group(1))
+        if normalized:
+            return normalized
+    return ''
+
+
+def _extract_text_canonical_urls(content: str) -> list[str]:
+    raw_urls = []
+    for pat in [
+        r'(?mi)^(?:Source|URL|CanonicalURL)\s*:\s*(https?://\S+)\s*$',
+        r'(?mi)^-\s*(?:URL|CanonicalURL)\s*:\s*(https?://\S+)\s*$',
+    ]:
+        raw_urls.extend(m.group(1) for m in re.finditer(pat, content or ''))
+    canonical_urls, _ = _canonical_dedup_urls(raw_urls)
+    return canonical_urls
+
+
+def _extract_text_effective_for_dedup(content: str, folder: str) -> str:
+    normalized_folder = _normalize_folder(folder)
+    _, _, ctx = _validate_text_by_folder(content, normalized_folder)
+    effective = str(ctx.get('effective') or '').strip()
+    if effective:
+        return effective
+
+    if normalized_folder == 'text/premium/startale':
+        parts = re.split(r'(?mi)^##\s*본문\s*$', content or '', maxsplit=1)
+        body = parts[1] if len(parts) > 1 else ''
+        effective_body = _extract_effective_lines(body, skip_patterns=[], marker_filters=PREMIUM_BOILERPLATE_MARKERS)
+        return _text_without_urls(effective_body)
+
+    return _text_without_urls(content or '')
+
+
+def _content_fingerprints(text: str) -> list[str]:
+    base = (text or '').strip()
+    if not base:
+        return []
+
+    candidates = [base]
+    candidates.extend(seg.strip() for seg in re.split(r'\n{2,}', base) if seg.strip())
+    if len(candidates) <= 1:
+        candidates.extend(seg.strip() for seg in base.splitlines() if seg.strip())
+
+    seen = set()
+    fps = []
+    for cand in candidates:
+        norm = _normalize_for_fingerprint(cand)
+        if len(norm) < DEDUP_MIN_FP_TEXT_LEN:
+            continue
+        fp = hashlib.sha1(norm.encode('utf-8')).hexdigest()
+        if fp in seen:
+            continue
+        seen.add(fp)
+        fps.append(fp)
+    return fps
+
+
+def _should_use_title_date_key(folder: str, title: str) -> bool:
+    normalized_folder = _normalize_folder(folder)
+    normalized_title = _normalize_title_text(title)
+    if len(normalized_title) < 12:
+        return False
+    if normalized_folder == 'text/telegram' and normalized_title.startswith('telegram public fallback'):
+        return False
+    if normalized_folder == 'text/telegram' and normalized_title.startswith('telegram log'):
+        return False
+    return True
+
+
+def _build_text_dedup_signals(content: str, folder: str) -> dict:
+    title = _extract_text_title(content)
+    date = _extract_text_date(content)
+    normalized_title = _normalize_title_text(title)
+    title_date_keys = [f'{date}|{normalized_title}'] if date and _should_use_title_date_key(folder, title) else []
+    effective = _extract_text_effective_for_dedup(content, folder)
+    return {
+        'title': title,
+        'date': date,
+        'canonical_urls': _extract_text_canonical_urls(content),
+        'title_date_keys': title_date_keys,
+        'content_fingerprints': _content_fingerprints(effective),
+    }
+
+
+def _selected_article_effective_text(row: dict) -> str:
+    parts = []
+    for key in ('summary', 'body'):
+        value = str(row.get(key) or '').strip()
+        if value:
+            parts.append(value)
+    return _text_without_urls('\n'.join(parts))
+
+
+def _validate_selected_article_row(row: dict) -> tuple[bool, str, dict]:
+    if not isinstance(row, dict):
+        return False, 'selected_articles_row_not_object', {}
+
+    clean_row = dict(row)
+    clean_row['url'] = _canonicalize_url(str(clean_row.get('url') or ''))
+    clean_row['title'] = str(clean_row.get('title') or '').strip()
+
+    normalized_date = _normalize_date_token(str(clean_row.get('published_date') or clean_row.get('published_at') or ''))
+    if normalized_date:
+        clean_row['published_date'] = normalized_date
+
+    effective = _selected_article_effective_text(clean_row)
+    if not clean_row['url']:
+        return False, 'selected_articles_missing_url', clean_row
+    if not clean_row['title']:
+        return False, 'selected_articles_missing_title', clean_row
+    if not normalized_date:
+        return False, 'selected_articles_missing_published_date', clean_row
+    if len(effective) < SELECTED_ARTICLES_MIN_TEXT_LEN and not _is_meaningful_short_text(effective):
+        return False, 'selected_articles_effective_body_too_short', clean_row
+    return True, '', clean_row
+
+
+def _build_selected_article_dedup_signals(row: dict) -> dict:
+    canonical_urls, _ = _canonical_dedup_urls([str(row.get('url') or '')])
+    title = str(row.get('title') or '').strip()
+    date = _normalize_date_token(str(row.get('published_date') or row.get('published_at') or ''))
+    normalized_title = _normalize_title_text(title)
+    title_date_keys = [f'{date}|{normalized_title}'] if date and normalized_title else []
+    return {
+        'title': title,
+        'date': date,
+        'canonical_urls': canonical_urls,
+        'title_date_keys': title_date_keys,
+        'content_fingerprints': _content_fingerprints(_selected_article_effective_text(row)),
+    }
+
+
+def _new_corpus_dedup_registry() -> dict:
+    return {
+        'by_url': {},
+        'by_title_date': {},
+        'by_content_fp': {},
+        'registered_items': 0,
+        'duplicate_items': 0,
+        'bootstrap_files': 0,
+        'bootstrap_records': 0,
+    }
+
+
+def _make_dedup_ref(folder: str, rel_path: str, source_file: str, *, title: str = '', date: str = '', canonical_url: str = '', record_index: int | None = None) -> dict:
+    return {
+        'folder': folder,
+        'rel_path': rel_path.replace('\\', '/'),
+        'source_file': source_file,
+        'record_index': record_index,
+        'title': title,
+        'date': date,
+        'canonical_url': canonical_url,
+    }
+
+
+def _same_logical_item(existing: dict, current: dict) -> bool:
+    return (
+        existing.get('folder') == current.get('folder')
+        and existing.get('rel_path') == current.get('rel_path')
+        and existing.get('record_index') == current.get('record_index')
+    )
+
+
+def _has_dedup_signals(signals: dict) -> bool:
+    return any(signals.get(k) for k in ('canonical_urls', 'title_date_keys', 'content_fingerprints'))
+
+
+def _find_corpus_duplicate(registry: dict, signals: dict, current_ref: dict) -> dict | None:
+    for kind, keys, bucket in [
+        ('canonical_url', signals.get('canonical_urls') or [], 'by_url'),
+        ('title_date', signals.get('title_date_keys') or [], 'by_title_date'),
+        ('content_fingerprint', signals.get('content_fingerprints') or [], 'by_content_fp'),
+    ]:
+        store = registry[bucket]
+        for key in keys:
+            existing = store.get(key)
+            if existing and not _same_logical_item(existing, current_ref):
+                registry['duplicate_items'] += 1
+                return {
+                    'kind': kind,
+                    'key': key,
+                    'matched_ref': existing,
+                }
+    return None
+
+
+def _register_corpus_signals(registry: dict, signals: dict, current_ref: dict):
+    registered = False
+    for key in signals.get('canonical_urls') or []:
+        if key and key not in registry['by_url']:
+            registry['by_url'][key] = dict(current_ref)
+            registered = True
+    for key in signals.get('title_date_keys') or []:
+        if key and key not in registry['by_title_date']:
+            registry['by_title_date'][key] = dict(current_ref)
+            registered = True
+    for key in signals.get('content_fingerprints') or []:
+        if key and key not in registry['by_content_fp']:
+            registry['by_content_fp'][key] = dict(current_ref)
+            registered = True
+    if registered:
+        registry['registered_items'] += 1
+
+
+def _duplicate_meta(duplicate: dict | None) -> dict:
+    if not duplicate:
+        return {}
+    matched = duplicate.get('matched_ref') or {}
+    return {
+        'duplicate_kind': duplicate.get('kind', ''),
+        'duplicate_key': duplicate.get('key', ''),
+        'duplicate_of': {
+            'folder': matched.get('folder', ''),
+            'rel_path': matched.get('rel_path', ''),
+            'source_file': matched.get('source_file', ''),
+            'record_index': matched.get('record_index'),
+        },
+    }
+
+
+def _read_jsonl_records(path: str) -> tuple[list[dict], list[dict]]:
+    rows = []
+    errors = []
+    with open(path, 'r', encoding='utf-8') as f:
+        for line_no, raw in enumerate(f, start=1):
+            line = raw.strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+            except Exception as e:
+                errors.append({
+                    'reason': f'jsonl_parse_error:{type(e).__name__}:{e}',
+                    'line_no': line_no,
+                    'raw_preview': line[:400],
+                })
+                continue
+            if not isinstance(data, dict):
+                errors.append({
+                    'reason': 'jsonl_row_not_object',
+                    'line_no': line_no,
+                    'raw_preview': line[:400],
+                })
+                continue
+            rows.append(data)
+    return rows, errors
+
+
+def sanitize_jsonl(path: str, folder: str = '', dedup_registry: dict | None = None, rel_path: str = ''):
+    normalized_folder = _normalize_folder(folder)
+    if normalized_folder != 'market/news/selected_articles':
+        return None, [{
+            'reason': 'unsupported_jsonl_folder',
+            'folder': folder,
+            'source_file': path,
+            'stage2_rule_version': STAGE2_RULE_VERSION,
+        }], {}
+
+    rows, parse_errors = _read_jsonl_records(path)
+    clean_rows = []
+    quarantine_rows = [
+        {
+            **err,
+            'folder': folder,
+            'source_file': path,
+            'stage2_rule_version': STAGE2_RULE_VERSION,
+        }
+        for err in parse_errors
+    ]
+    deduped_rows = 0
+
+    for line_no, row in enumerate(rows, start=1):
+        ok, reason, clean_row = _validate_selected_article_row(row)
+        if not ok:
+            quarantine_rows.append({
+                'reason': reason,
+                'line_no': line_no,
+                'folder': folder,
+                'source_file': path,
+                'stage2_rule_version': STAGE2_RULE_VERSION,
+                'row': clean_row or row,
+            })
+            continue
+
+        signals = _build_selected_article_dedup_signals(clean_row)
+        current_ref = _make_dedup_ref(
+            folder,
+            rel_path or os.path.basename(path),
+            path,
+            title=signals.get('title', ''),
+            date=signals.get('date', ''),
+            canonical_url=(signals.get('canonical_urls') or [''])[0],
+            record_index=line_no,
+        )
+        duplicate = _find_corpus_duplicate(dedup_registry, signals, current_ref) if dedup_registry and _has_dedup_signals(signals) else None
+        if duplicate is not None:
+            deduped_rows += 1
+            quarantine_rows.append({
+                'reason': f"duplicate_{duplicate['kind']}",
+                'line_no': line_no,
+                'folder': folder,
+                'source_file': path,
+                'stage2_rule_version': STAGE2_RULE_VERSION,
+                **_duplicate_meta(duplicate),
+                'row': clean_row,
+            })
+            continue
+
+        if dedup_registry and _has_dedup_signals(signals):
+            _register_corpus_signals(dedup_registry, signals, current_ref)
+        clean_rows.append(clean_row)
+
+    if not clean_rows and not quarantine_rows:
+        quarantine_rows.append({
+            'reason': 'empty_jsonl',
+            'folder': folder,
+            'source_file': path,
+            'stage2_rule_version': STAGE2_RULE_VERSION,
+        })
+
+    return clean_rows, quarantine_rows, {
+        'rows': len(rows),
+        'parse_errors': len(parse_errors),
+        'clean_rows': len(clean_rows),
+        'quarantine_rows': len(quarantine_rows),
+        'deduped_rows': deduped_rows,
+    }
+
+
+def _write_jsonl(rows: list[dict], paths: list[str]):
+    output_path = paths[0]
+    _ensure_parent(output_path)
+    with open(output_path, 'w', encoding='utf-8') as fout:
+        for row in rows:
+            fout.write(json.dumps(row, ensure_ascii=False) + '\n')
+
+
+def _bootstrap_corpus_dedup_registry(registry: dict, clean_base: str):
+    for folder in sorted(DEDUP_TARGET_FOLDERS):
+        folder_dir = _output_paths(clean_base, folder, '')[0]
+        if not os.path.isdir(folder_dir):
+            continue
+
+        patterns = ['*.md', '*.txt']
+        if _normalize_folder(folder) == 'market/news/selected_articles':
+            patterns.append('*.jsonl')
+
+        for pattern in patterns:
+            for path in glob.glob(os.path.join(folder_dir, '**', pattern), recursive=True):
+                rel_path = os.path.relpath(path, folder_dir)
+                registry['bootstrap_files'] += 1
+                if path.endswith('.jsonl'):
+                    rows, _ = _read_jsonl_records(path)
+                    for line_no, row in enumerate(rows, start=1):
+                        signals = _build_selected_article_dedup_signals(row)
+                        if not _has_dedup_signals(signals):
+                            continue
+                        current_ref = _make_dedup_ref(
+                            folder,
+                            rel_path,
+                            path,
+                            title=signals.get('title', ''),
+                            date=signals.get('date', ''),
+                            canonical_url=(signals.get('canonical_urls') or [''])[0],
+                            record_index=line_no,
+                        )
+                        _register_corpus_signals(registry, signals, current_ref)
+                        registry['bootstrap_records'] += 1
+                else:
+                    content = _safe_read_text(path, max_chars=500000)
+                    if not content:
+                        continue
+                    signals = _build_text_dedup_signals(content, folder)
+                    if not _has_dedup_signals(signals):
+                        continue
+                    current_ref = _make_dedup_ref(
+                        folder,
+                        rel_path,
+                        path,
+                        title=signals.get('title', ''),
+                        date=signals.get('date', ''),
+                        canonical_url=(signals.get('canonical_urls') or [''])[0],
+                    )
+                    _register_corpus_signals(registry, signals, current_ref)
+                    registry['bootstrap_records'] += 1
 
 
 def run_full_refine(force_rebuild: bool = False):
@@ -1212,6 +1608,9 @@ def run_full_refine(force_rebuild: bool = False):
     total_exceptions = 0
     hard_fail_issues = []
     report_only_issues = []
+    corpus_dedup_registry = _new_corpus_dedup_registry()
+    if not force_rebuild:
+        _bootstrap_corpus_dedup_registry(corpus_dedup_registry, final_clean_base)
 
     for folder in FOLDERS:
         raw_dir = _resolve_raw_dir(folder)
@@ -1228,7 +1627,7 @@ def run_full_refine(force_rebuild: bool = False):
             continue
 
         all_files = []
-        for ext in ['*.csv', '*.json', '*.md', '*.txt']:
+        for ext in ['*.csv', '*.json', '*.jsonl', '*.md', '*.txt']:
             all_files.extend(glob.glob(os.path.join(raw_dir, '**', ext), recursive=True))
 
         num_files = len(all_files)
@@ -1267,6 +1666,8 @@ def run_full_refine(force_rebuild: bool = False):
                         _write_csv(q_df, q_paths)
                         q_count += 1
                     elif c_df.empty:
+                        for p in clean_paths:
+                            _remove_if_exists(p)
                         _write_csv(pd.DataFrame([{'reason': 'empty_after_sanitize'}]), q_paths)
                         q_count += 1
                 elif ext == '.json':
@@ -1277,6 +1678,8 @@ def run_full_refine(force_rebuild: bool = False):
                             _remove_if_exists(p)
                         clean_count += 1
                     else:
+                        for p in clean_paths:
+                            _remove_if_exists(p)
                         raw_preview = _safe_read_text(f, max_chars=1200)
                         _write_json(
                             {
@@ -1290,14 +1693,64 @@ def run_full_refine(force_rebuild: bool = False):
                             q_paths,
                         )
                         q_count += 1
+                elif ext == '.jsonl':
+                    clean_rows, quarantine_rows, _stats = sanitize_jsonl(
+                        f,
+                        folder=folder,
+                        dedup_registry=corpus_dedup_registry,
+                        rel_path=rel_path,
+                    )
+                    if clean_rows:
+                        _write_jsonl(clean_rows, clean_paths)
+                        clean_count += 1
+                    else:
+                        for p in clean_paths:
+                            _remove_if_exists(p)
+                    if quarantine_rows:
+                        _write_jsonl(quarantine_rows, q_paths)
+                        q_count += 1
+                    else:
+                        for p in q_paths:
+                            _remove_if_exists(p)
                 else:
                     content, err, _meta = sanitize_text(f, folder=folder)
                     if content is not None:
-                        _write_text(content, clean_paths)
-                        for p in q_paths:
-                            _remove_if_exists(p)
-                        clean_count += 1
+                        duplicate = None
+                        normalized_folder = _normalize_folder(folder)
+                        if normalized_folder in DEDUP_TARGET_FOLDERS:
+                            signals = _build_text_dedup_signals(content, folder)
+                            current_ref = _make_dedup_ref(
+                                folder,
+                                rel_path,
+                                f,
+                                title=signals.get('title', ''),
+                                date=signals.get('date', ''),
+                                canonical_url=(signals.get('canonical_urls') or [''])[0],
+                            )
+                            if _has_dedup_signals(signals):
+                                duplicate = _find_corpus_duplicate(corpus_dedup_registry, signals, current_ref)
+                                if duplicate is None:
+                                    _register_corpus_signals(corpus_dedup_registry, signals, current_ref)
+                        if duplicate is None:
+                            _write_text(content, clean_paths)
+                            for p in q_paths:
+                                _remove_if_exists(p)
+                            clean_count += 1
+                        else:
+                            for p in clean_paths:
+                                _remove_if_exists(p)
+                            payload = _build_text_quarantine_payload(
+                                folder=folder,
+                                source_file=f,
+                                reason=f"duplicate_{duplicate['kind']}",
+                                raw_text=content,
+                                extra_meta=_duplicate_meta(duplicate),
+                            )
+                            _write_text(payload, q_paths)
+                            q_count += 1
                     else:
+                        for p in clean_paths:
+                            _remove_if_exists(p)
                         raw_text = _safe_read_text(f, max_chars=12000)
                         payload = _build_text_quarantine_payload(
                             folder=folder,
@@ -1311,6 +1764,8 @@ def run_full_refine(force_rebuild: bool = False):
                 processed_index[idx_key] = sig
             except Exception as e:
                 exception_count += 1
+                for p in clean_paths:
+                    _remove_if_exists(p)
                 raw_text = _safe_read_text(f, max_chars=12000)
                 payload = _build_text_quarantine_payload(
                     folder=folder,
@@ -1366,7 +1821,7 @@ def run_full_refine(force_rebuild: bool = False):
         f.write(f"- Incremental Signature Salt: {STAGE2_RULE_VERSION}\n")
         f.write(f"- Clean Base: {final_clean_base}\n")
         f.write(f"- Quarantine Base: {final_q_base}\n")
-        f.write("- Writer policy: signal/qualitative canonical writer=`stage02_onepass_refine_full.py`, `stage02_qc_cleaning_full.py`=`validation_only`\n")
+        f.write("- Writer policy: market signal + qualitative canonical writer=`stage02_onepass_refine_full.py`, kr/us signal canonical writer=`stage02_qc_cleaning_full.py`\n")
         f.write("- Output policy: canonical=`production/(signal|qualitative)/*` only\n")
         f.write(f"- Link enrichment enabled: {STAGE2_ENABLE_LINK_ENRICHMENT}\n\n")
         f.write("| Folder | Bucket | Canonical | Total | Clean | Quarantine | Skipped(incremental) | Exceptions |\n")
@@ -1413,6 +1868,11 @@ def run_full_refine(force_rebuild: bool = False):
         f.write(f"- url_fetch_failure={int(LINK_RUNTIME_STATS.get('url_fetch_failure', 0))}\n")
         f.write(f"- url_disallowed={int(LINK_RUNTIME_STATS.get('url_disallowed', 0))}\n")
         f.write(f"- content_fingerprint_dedup={int(LINK_RUNTIME_STATS.get('content_fingerprint_dedup', 0))}\n")
+        f.write("\n## Corpus-level Qualitative Dedup\n\n")
+        f.write(f"- bootstrap_files={int(corpus_dedup_registry.get('bootstrap_files', 0))}\n")
+        f.write(f"- bootstrap_records={int(corpus_dedup_registry.get('bootstrap_records', 0))}\n")
+        f.write(f"- registered_items={int(corpus_dedup_registry.get('registered_items', 0))}\n")
+        f.write(f"- duplicate_items={int(corpus_dedup_registry.get('duplicate_items', 0))}\n")
 
     dedup_urls_total = int(LINK_RUNTIME_STATS.get('url_deduped_within_file', 0) + LINK_RUNTIME_STATS.get('url_cache_hits', 0))
 
@@ -1429,9 +1889,9 @@ def run_full_refine(force_rebuild: bool = False):
         'clean_base': final_clean_base,
         'quarantine_base': final_q_base,
         'writer_policy': {
-            'signal_canonical_writer': 'stage02_onepass_refine_full.py',
+            'market_signal_canonical_writer': 'stage02_onepass_refine_full.py',
             'qualitative_canonical_writer': 'stage02_onepass_refine_full.py',
-            'stage02_qc_cleaning_full.py': 'validation_only',
+            'kr_us_signal_canonical_writer': 'stage02_qc_cleaning_full.py',
         },
         'output_policy': {
             'canonical': 'production/(signal|qualitative)/*',
@@ -1458,7 +1918,24 @@ def run_full_refine(force_rebuild: bool = False):
             **{k: int(v) for k, v in LINK_RUNTIME_STATS.items()},
             'deduped_url_total': dedup_urls_total,
         },
+        'corpus_dedup': {
+            'bootstrap_files': int(corpus_dedup_registry.get('bootstrap_files', 0)),
+            'bootstrap_records': int(corpus_dedup_registry.get('bootstrap_records', 0)),
+            'registered_items': int(corpus_dedup_registry.get('registered_items', 0)),
+            'duplicate_items': int(corpus_dedup_registry.get('duplicate_items', 0)),
+            'rules': [
+                'canonical_url',
+                'normalized_title_plus_date',
+                'content_fingerprint',
+            ],
+            'scope': sorted(DEDUP_TARGET_FOLDERS),
+        },
     }
+
+    LINK_RUNTIME_STATS['corpus_dedup_registered_items'] = int(corpus_dedup_registry.get('registered_items', 0))
+    LINK_RUNTIME_STATS['corpus_dedup_duplicate_items'] = int(corpus_dedup_registry.get('duplicate_items', 0))
+    LINK_RUNTIME_STATS['corpus_dedup_bootstrap_files'] = int(corpus_dedup_registry.get('bootstrap_files', 0))
+    LINK_RUNTIME_STATS['corpus_dedup_bootstrap_records'] = int(corpus_dedup_registry.get('bootstrap_records', 0))
 
     with open(report_json_path, 'w', encoding='utf-8') as jf:
         json.dump(payload, jf, ensure_ascii=False, indent=2)

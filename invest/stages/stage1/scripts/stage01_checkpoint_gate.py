@@ -25,8 +25,6 @@ CHECKS = [
     ("text_blog", "raw/qualitative/text/blog/**/*.md", 1000),
     ("text_telegram", "raw/qualitative/text/telegram/**/*.md", 10),
     ("text_premium", "raw/qualitative/text/premium/**/*.md", 1),
-    ("text_image_map", "raw/qualitative/text/image_map/*.json", 10),
-    ("text_images_ocr", "raw/qualitative/text/images_ocr/*", 1),
 ]
 
 

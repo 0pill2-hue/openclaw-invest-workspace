@@ -6,17 +6,12 @@
 - KR supply latest stale
   - 현상: `2026-02-26` 이후 최신 거래일 공백
   - 영향: `post_collection_validate` 실패
-- US OHLCV latest stale
-  - 현상: `2026-02-26` 이후 최신부 정지, 일부 종목은 `2026-02-13`에서 멈춤
 - RSS coverage 해석 보강 필요
   - 현상: 파일 수 대비 published_date unique date 수가 매우 적음
   - 과제: collected_run_dates vs published_dates 분리 카탈로그 필요
-- Telegram coverage completeness 자동점검 보강
-  - 현상: allowlist 대비 public fallback 파일 기준 미수집 엔트리 존재 가능
-  - 과제: full/fallback/title 기반 매핑을 더 정확히 연결
-- Blog coverage completeness 자동점검 보강
-  - 현상: 현재는 discovered subdirectory 기준만 있음
-  - 과제: blogId registry 또는 seed/source 기준 completeness 필요
+- Blog/Telegram 실제 coverage 미수집 후속 처리
+  - 현상: 검증 기준은 `all_buddies_satisfied` / `all_channels_satisfied`까지 반영됐고, 현재 raw 기준으로 일부 blog buddy 및 telegram channel 누락이 남아 있다.
+  - 과제: source-side 미수집 원인을 개별 확인하고 실제 raw를 채운 뒤 재검증한다.
 
 ## 카탈로그 개선 과제
 - 모든 주요 source별 coverage summary 산출 여부 검토

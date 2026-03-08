@@ -25,7 +25,7 @@ MASTER_LIST_PATH = str(UPSTREAM_STAGE1 / 'master/kr_stock_list.csv')
 CLEAN_BASE = str(STAGE2_OUT_BASE / 'clean')
 Q_BASE = str(STAGE2_OUT_BASE / 'quarantine')
 REPORT_DIR = str(STAGE2_OUT_BASE / 'reports')
-STAGE2_QC_VERSION = '2026-03-08-stage2-qc-r1'
+STAGE2_QC_VERSION = '2026-03-08-stage2-qc-r2'
 HARD_FAIL_TYPES = {'missing_target_file', 'processing_error', 'zero_clean_folder'}
 INCLUDED_MARKETS = {"KOSPI", "KOSDAQ", "KOSDAQ GLOBAL"}
 INCLUDED_MARKET_IDS = {"STK", "KSQ"}
@@ -304,8 +304,9 @@ def run_qc():
         'qc_version': STAGE2_QC_VERSION,
         'mode': 'signal_validation_only_universe_based_for_kr',
         'writer_policy': {
-            'signal_canonical_writer': 'stage02_onepass_refine_full.py',
-            'qc_role': 'validation_only',
+            'signal_canonical_writer': 'stage02_qc_cleaning_full.py',
+            'owned_signal_folders': ['kr/ohlcv', 'kr/supply', 'us/ohlcv'],
+            'stage02_onepass_refine_full.py': 'market signal + qualitative only',
         },
         'universe_policy': {
             'kr_include_markets': sorted(INCLUDED_MARKETS),
@@ -338,7 +339,7 @@ def run_qc():
         f.write("# Data Cleaning QC Report (Signal Validation Only)\n\n")
         f.write(f"Executed at: {summary['executed_at']}\n")
         f.write(f"QC version: {summary['qc_version']}\n")
-        f.write("Writer policy: signal canonical writer=`stage02_onepass_refine_full.py`, qc=`validation_only`\n\n")
+        f.write("Writer policy: kr/us signal canonical writer=`stage02_qc_cleaning_full.py`, stage02_onepass_refine_full.py=`market signal + qualitative only`\n\n")
         f.write("Universe policy (KR): include KOSPI/KOSDAQ/KOSDAQ GLOBAL, exclude others (e.g., KONEX).\n\n")
 
         f.write("## Coverage Summary\n\n")

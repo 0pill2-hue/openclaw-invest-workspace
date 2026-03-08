@@ -8,7 +8,8 @@
   - qualitative: `raw/qualitative/{kr/dart,market/rss}`
   - signal: `raw/signal/market/macro/macro_summary.json`
 - `invest/stages/stage3/inputs/upstream_stage2_clean/`
-  - qualitative text: `qualitative/text/{blog,telegram,premium,image_map,images_ocr}`
+  - qualitative text: `qualitative/text/{blog,telegram,premium}`
+  - qualitative market corpus: `qualitative/market/news/selected_articles/*.jsonl`
   - 구(flat) 경로 `text/*` fallback 지원
 - `invest/stages/stage3/inputs/stage2_text_meta_records.jsonl`
 
@@ -25,6 +26,7 @@ python3 invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py --boo
 ```
 
 ## 검증 (Validation)
+- `STAGE3_INPUT_BUILD_latest.json`의 `rows_from_market_selected_articles`, `selected_articles_stats`, `dropped_duplicate_fingerprint` 확인
 - `STAGE3_LOCAL_BRAIN_RUN_latest.json`의 `rows_output > 0` (부트스트랩 모드 제외)
 - `dart_event_signal.csv` 생성 확인
 

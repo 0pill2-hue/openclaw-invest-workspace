@@ -24,13 +24,13 @@ UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML,
 
 POST_LINK_RE = re.compile(r"https?://blog\.naver\.com/PostView\.naver\?[^\"'\s<]+")
 LOGNO_RE = re.compile(r"logNo=(\d+)")
+DEFAULT_BLOG_TARGET_DATE = "2016-01-01"
 
 
 def _resolve_target_date(raw_target_date: Optional[str], target_years: int) -> str:
     if raw_target_date and str(raw_target_date).strip():
         return str(raw_target_date).strip()
-    years = max(1, int(target_years))
-    return (datetime.now(timezone.utc) - timedelta(days=365 * years)).date().isoformat()
+    return os.environ.get("BLOG_DEFAULT_TARGET_DATE", DEFAULT_BLOG_TARGET_DATE).strip() or DEFAULT_BLOG_TARGET_DATE
 
 
 def _parse_target_date(raw_target_date: str) -> datetime.date:
@@ -205,8 +205,6 @@ def _logno_from_url(url: str) -> str:
 
 
 def _iter_buddies(limit: int) -> list[dict]:
-    if limit <= 0:
-        return []
     if not BUDDIES_PATH.exists():
         return []
     try:
@@ -229,7 +227,7 @@ def _iter_buddies(limit: int) -> list[dict]:
             start_index = 0
 
     start_index = start_index % total
-    pick_count = min(limit, total)
+    pick_count = total if limit <= 0 else min(limit, total)
     picked = [data[(start_index + i) % total] for i in range(pick_count)]
     next_index = (start_index + pick_count) % total
 
@@ -375,7 +373,11 @@ def run(
                             m_prev = re.search(r"(?m)^PublishedDate:\s*(\d{4}-\d{2}-\d{2})", prev)
                             if m_prev:
                                 try:
-                                    if datetime.fromisoformat(m_prev.group(1)).date() <= target_dt:
+                                    prev_dt = datetime.fromisoformat(m_prev.group(1)).date()
+                                    if prev_dt < target_dt:
+                                        reached_target_for_buddy = True
+                                        break
+                                    if prev_dt == target_dt:
                                         reached_target_for_buddy = True
                                         break
                                 except Exception:
@@ -392,6 +394,15 @@ def run(
                     title = _extract_title(post_html) or f"{bid}/{log_no}"
                     body = _extract_body(post_html)
                     post_date = _extract_post_date(post_html)
+
+                    if post_date:
+                        try:
+                            post_dt = datetime.fromisoformat(post_date).date()
+                            if post_dt < target_dt:
+                                reached_target_for_buddy = True
+                                break
+                        except Exception:
+                            pass
 
                     if len(body.strip()) < 40:
                         short_body_count += 1
@@ -415,7 +426,7 @@ def run(
 
                     if post_date:
                         try:
-                            if datetime.fromisoformat(post_date).date() <= target_dt:
+                            if datetime.fromisoformat(post_date).date() == target_dt:
                                 reached_target_for_buddy = True
                                 break
                         except Exception:
@@ -482,8 +493,15 @@ def run(
             cause = str(one.get("cause") or "미확인")
             uncovered_causes[cause] = int(uncovered_causes.get(cause, 0)) + 1
 
+    total_buddies = 0
+    try:
+        total_buddies = len(json.loads(BUDDIES_PATH.read_text(encoding="utf-8"))) if BUDDIES_PATH.exists() else 0
+    except Exception:
+        total_buddies = 0
+
     run_payload = {
         "generated_at": _utc_now().isoformat(),
+        "buddies_total": total_buddies,
         "buddies_target": len(buddies),
         "buddies_done": buddy_done,
         "posts_saved": post_saved,
@@ -493,6 +511,8 @@ def run(
         "backoff_hours": backoff_hours,
         "next_allowed_at": next_allowed_at.isoformat() if next_allowed_at else "",
         "uncovered_causes": uncovered_causes,
+        "all_buddies_targeted": bool(total_buddies and len(buddies) == total_buddies),
+        "all_buddies_covered": buddy_done == total_buddies and not uncovered_causes if total_buddies else False,
         "buddy_results": buddy_results,
         "errors": errors[:2000],
     }
@@ -535,7 +555,7 @@ def run(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Stage1 blog collector v2")
-    ap.add_argument("--limit-buddies", type=int, default=_safe_int("BLOG_LIMIT_BUDDIES", 120, min_v=0))
+    ap.add_argument("--limit-buddies", type=int, default=_safe_int("BLOG_LIMIT_BUDDIES", 0, min_v=0))
     ap.add_argument("--max-posts-per-buddy", type=int, default=_safe_int("BLOG_MAX_POSTS_PER_BUDDY", 80, min_v=1))
     ap.add_argument("--max-pages-per-buddy", type=int, default=_safe_int("BLOG_MAX_PAGES_PER_BUDDY", 40, min_v=1))
     ap.add_argument("--sleep", type=float, default=float(os.environ.get("BLOG_FETCH_SLEEP_SEC", "0.9")))

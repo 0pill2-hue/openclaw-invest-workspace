@@ -10,8 +10,9 @@
 - `invest/stages/stage3/inputs/upstream_stage1/raw/qualitative/kr/dart/*.csv`
 - `invest/stages/stage3/inputs/upstream_stage1/raw/qualitative/market/rss/*.json`
 - `invest/stages/stage3/inputs/upstream_stage1/raw/signal/market/macro/macro_summary.json`
-- `invest/stages/stage3/inputs/upstream_stage2_clean/qualitative/text/{telegram,blog,premium,image_map,images_ocr}`
+- `invest/stages/stage3/inputs/upstream_stage2_clean/qualitative/text/{telegram,blog,premium}`
   - 구(flat) 경로 `.../text/*`도 fallback 지원
+- `invest/stages/stage3/inputs/upstream_stage2_clean/qualitative/market/news/selected_articles/*.jsonl`
 - `invest/stages/stage3/inputs/stage2_text_meta_records.jsonl`
 
 ## 출력 (Outputs)
@@ -48,6 +49,10 @@ python3 invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py \
   - Stage4 결합은 `VALUE_SCORE + QUALITATIVE_SIGNAL` baseline 구조를 유지하되, 세부 가중치는 고정 SSOT가 아니라 Stage4/ALGORITHM_SPEC 기준의 tuning 대상이다.
 
 ## 검증 (Validation)
+- `STAGE3_INPUT_BUILD_latest.json`에서 확인:
+  - `rows_from_market_selected_articles >= 0`
+  - `selected_articles_stats` 존재
+  - `dropped_duplicate_fingerprint`가 존재해 Stage2/Stage3 중복 차단이 유지되는지 확인
 - `STAGE3_LOCAL_BRAIN_RUN_latest.json`에서 확인:
   - `rows_output > 0` (부트스트랩 제외)
   - `axes` 정의 존재

@@ -70,9 +70,7 @@ updated_at: 2026-03-07 KST
   - `invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/_index.json`
   - `invest/stages/stage1/outputs/raw/qualitative/text/premium/startale_channel_direct/_discovery.json`
   - 로그인 세션 기반 직접열람 수집(`isLogin=true` 경로)
-- `invest/stages/stage1/scripts/stage01_image_harvester.py`
-  - `invest/stages/stage1/outputs/raw/qualitative/text/image_map/*.json`
-  - `invest/stages/stage1/outputs/raw/qualitative/text/images_ocr/*`
+- Telegram image attachment는 메시지 메타데이터만 기록하며 별도 `image_map`/`images_ocr` raw는 생성하지 않는다.
 
 ## 실행 프로필
 - 메인(증분):

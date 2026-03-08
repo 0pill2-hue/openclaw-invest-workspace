@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import json
 import os
+import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -9,8 +12,14 @@ INVEST_DIR = Path(__file__).resolve().parents[3]
 COMMON_INPUT_DATA_DIR = INVEST_DIR / "stages/stage1/outputs"
 RAW_ROOT = COMMON_INPUT_DATA_DIR / "raw"
 OUT_PATH = STAGE1_DIR / "outputs/runtime/post_collection_validate.json"
-OCR_POSTPROCESS_VALIDATE_PATH = STAGE1_DIR / "outputs/runtime/stage01_ocr_postprocess_validate.json"
 TELEGRAM_COLLECTOR_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_collector_status.json"
+TELEGRAM_ALLOWLIST_PATH = STAGE1_DIR / "inputs/config/telegram_channel_allowlist.txt"
+TELEGRAM_LAST_RUN_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_last_run_status.json"
+TELEGRAM_PUBLIC_FALLBACK_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_public_fallback_status.json"
+BLOG_LAST_RUN_STATUS_PATH = STAGE1_DIR / "outputs/runtime/blog_last_run_status.json"
+BLOG_BUDDIES_PATH = STAGE1_DIR / "outputs/master/naver_buddies_full.json"
+BLOG_TARGET_DATE = os.environ.get("BLOG_DEFAULT_TARGET_DATE", "2016-01-01").strip() or "2016-01-01"
+BLOG_DATE_RE = re.compile(r"(?m)^PublishedDate:\s*(\d{4}-\d{2}-\d{2})")
 
 SOURCE_SPECS = [
     {
@@ -40,6 +49,7 @@ SOURCE_SPECS = [
         "min_count_default": 500,
         "max_age_env": "US_OHLCV_DAILY_MAX_AGE_SEC",
         "max_age_default": 36 * 3600,
+        "runtime_status_path": STAGE1_DIR / "outputs/runtime/us_ohlcv_status.json",
     },
     {
         "name": "raw/signal/market/macro",
@@ -104,6 +114,7 @@ SOURCE_SPECS = [
         "min_count_default": 1,
         "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_TEXT_BLOG",
         "max_age_default": 168 * 3600,
+        "runtime_status_path": BLOG_LAST_RUN_STATUS_PATH,
     },
     {
         "name": "raw/qualitative/text/premium",
@@ -112,24 +123,6 @@ SOURCE_SPECS = [
         "min_count_env": "STAGE1_VALIDATE_MIN_TEXT_PREMIUM",
         "min_count_default": 1,
         "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_TEXT_PREMIUM",
-        "max_age_default": 168 * 3600,
-    },
-    {
-        "name": "raw/qualitative/text/image_map",
-        "script": "invest/stages/stage1/scripts/stage01_image_harvester.py",
-        "patterns": ["raw/qualitative/text/image_map/*.json"],
-        "min_count_env": "STAGE1_VALIDATE_MIN_TEXT_IMAGE_MAP",
-        "min_count_default": 1,
-        "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_TEXT_IMAGE_MAP",
-        "max_age_default": 168 * 3600,
-    },
-    {
-        "name": "raw/qualitative/text/images_ocr",
-        "script": "invest/stages/stage1/scripts/stage01_image_harvester.py",
-        "patterns": ["raw/qualitative/text/images_ocr/*"],
-        "min_count_env": "STAGE1_VALIDATE_MIN_TEXT_IMAGES_OCR",
-        "min_count_default": 1,
-        "max_age_env": "STAGE1_VALIDATE_MAX_AGE_SEC_TEXT_IMAGES_OCR",
         "max_age_default": 168 * 3600,
     },
 ]
@@ -214,6 +207,88 @@ def _load_runtime_status(path_value) -> dict | None:
     return {"exists": False}
 
 
+def _read_noncomment_lines(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    vals: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        value = line.strip()
+        if not value or value.startswith("#"):
+            continue
+        vals.append(value)
+    return vals
+
+
+def _load_blog_buddy_ids(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    if not isinstance(payload, list):
+        return []
+    return [str(item.get("id", "")).strip() for item in payload if isinstance(item, dict) and str(item.get("id", "")).strip()]
+
+
+def _count_blog_pre_target_files(target_date: str) -> int:
+    blog_root = RAW_ROOT / "qualitative/text/blog"
+    if not blog_root.exists():
+        return 0
+    count = 0
+    for path in blog_root.rglob("*.md"):
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            continue
+        match = BLOG_DATE_RE.search(text)
+        if not match:
+            continue
+        if match.group(1) < target_date:
+            count += 1
+    return count
+
+
+def _count_blogs_with_files(buddy_ids: list[str]) -> tuple[int, list[str]]:
+    blog_root = RAW_ROOT / "qualitative/text/blog"
+    covered = 0
+    missing: list[str] = []
+    for buddy_id in buddy_ids:
+        buddy_dir = blog_root / buddy_id
+        has_md = buddy_dir.exists() and any(p.is_file() for p in buddy_dir.glob("*.md"))
+        if has_md:
+            covered += 1
+        else:
+            missing.append(buddy_id)
+    return covered, missing
+
+
+def _telegram_observed_keys(files: list[Path]) -> set[str]:
+    observed: set[str] = set()
+    for file_path in files:
+        name = file_path.name
+        if name.endswith("_public_fallback.md"):
+            observed.add(name[:-len("_public_fallback.md")].strip().lower())
+            continue
+        for suffix in ("_full.md", "_recovered.md"):
+            if name.endswith(suffix):
+                stem = name[:-len(suffix)]
+                observed.add(stem.rsplit("_", 1)[-1].strip().lower())
+                break
+    return observed
+
+
+def _telegram_uses_public_fallback(collector_status: dict | None) -> bool:
+    if not isinstance(collector_status, dict):
+        return False
+    selected = str(
+        collector_status.get("successful_collector") or collector_status.get("selected_collector") or ""
+    ).strip().lower()
+    if "public_fallback" in selected:
+        return True
+    return bool(collector_status.get("fallback_used"))
+
+
 def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]:
     files = _collect_files(spec["patterns"])
     min_count = _safe_int_env(spec["min_count_env"], spec["min_count_default"])
@@ -254,57 +329,129 @@ def validate_source(spec: dict, now_ts: float) -> tuple[bool, dict, dict | None]
         detail["collector_used"] = runtime_status.get("successful_collector") or runtime_status.get("selected_collector")
         if spec["name"] == "raw/signal/kr/supply" and runtime_status.get("external_blocked_login_required") and runtime_status.get("source") == "krx_supply":
             waived_errors = [e for e in errors if not e.startswith("latest_age_sec=")]
-            detail["freshness_waived_reason"] = runtime_status.get("reason") or 'external_blocked_login_required'
+            detail["freshness_waived_reason"] = runtime_status.get("reason") or "external_blocked_login_required"
             detail["errors"] = waived_errors
             ok = len(waived_errors) == 0
             errors = waived_errors
+            detail["ok"] = ok
+            detail["failed_count"] = 0 if ok else 1
+        if spec["name"] == "raw/signal/us/ohlcv":
+            stale_after = runtime_status.get("stale_ticker_count_after")
+            if stale_after not in (None, ""):
+                try:
+                    stale_after_i = int(stale_after)
+                except Exception:
+                    stale_after_i = None
+                if stale_after_i is not None and stale_after_i != 0:
+                    errors.append(f"stale_ticker_count_after={stale_after_i} != 0")
+                    detail["errors"] = errors
+                    ok = False
+                    detail["ok"] = False
+                    detail["failed_count"] = 1
     failure = None if ok else {"source": spec["name"], "script": spec["script"], "error": "; ".join(errors)}
     return ok, detail, failure
 
 
-def load_ocr_postprocess_detail() -> tuple[dict, dict | None]:
-    if not OCR_POSTPROCESS_VALIDATE_PATH.exists():
-        detail = {
-            "source": "runtime/stage01_ocr_postprocess_validate.json",
-            "ok": False,
-            "error": "ocr_postprocess_validate_missing",
-        }
-        return detail, {
-            "source": "runtime/stage01_ocr_postprocess_validate.json",
-            "script": "invest/stages/stage1/scripts/stage01_ocr_postprocess_validate.py",
-            "error": "ocr_postprocess_validate_missing",
-        }
+def validate_blog_full_coverage() -> tuple[dict, dict | None]:
+    runtime_status = _load_runtime_status(BLOG_LAST_RUN_STATUS_PATH)
+    buddy_ids = _load_blog_buddy_ids(BLOG_BUDDIES_PATH)
+    buddies_total = len(buddy_ids)
+    buddies_with_files, missing_buddy_ids = _count_blogs_with_files(buddy_ids)
+    pre_target_files = _count_blog_pre_target_files(BLOG_TARGET_DATE)
 
-    try:
-        payload = json.loads(OCR_POSTPROCESS_VALIDATE_PATH.read_text(encoding="utf-8"))
-    except Exception as exc:
-        detail = {
-            "source": "runtime/stage01_ocr_postprocess_validate.json",
-            "ok": False,
-            "error": f"ocr_postprocess_validate_parse_error:{type(exc).__name__}",
-        }
-        return detail, {
-            "source": "runtime/stage01_ocr_postprocess_validate.json",
-            "script": "invest/stages/stage1/scripts/stage01_ocr_postprocess_validate.py",
-            "error": detail["error"],
-        }
+    errors = []
+    if not runtime_status or not runtime_status.get("exists"):
+        errors.append("blog_last_run_status_missing")
+    if buddies_total <= 0:
+        errors.append("buddies_total_missing")
+    if buddies_total > 0 and buddies_with_files != buddies_total:
+        errors.append(f"buddies_with_files={buddies_with_files} != buddies_total={buddies_total}")
+    if pre_target_files != 0:
+        errors.append(f"pre_2016_blog_files={pre_target_files} != 0")
 
+    ok = len(errors) == 0
     detail = {
-        "source": "runtime/stage01_ocr_postprocess_validate.json",
-        "ok": bool(payload.get("ok", False)),
-        "message": payload.get("message", ""),
-        "recent_success_count": payload.get("recent_success_count", 0),
-        "recent_failed_count": payload.get("recent_failed_count", 0),
-        "latest_txt_age_sec": payload.get("latest_txt_age_sec"),
-        "errors": payload.get("errors", []),
+        "source": "runtime/blog_full_coverage",
+        "script": "invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py",
+        "ok": ok,
+        "target_date": BLOG_TARGET_DATE,
+        "buddies_total": buddies_total,
+        "buddies_with_files": buddies_with_files,
+        "missing_buddy_count": len(missing_buddy_ids),
+        "missing_buddy_ids": missing_buddy_ids,
+        "all_buddies_satisfied": buddies_total > 0 and buddies_with_files == buddies_total,
+        "pre_2016_blog_files": pre_target_files,
+        "runtime_status": runtime_status,
+        "errors": errors,
     }
-    failure = None
-    if not detail["ok"]:
-        failure = {
-            "source": "runtime/stage01_ocr_postprocess_validate.json",
-            "script": "invest/stages/stage1/scripts/stage01_ocr_postprocess_validate.py",
-            "error": "; ".join(detail.get("errors", [])) or detail.get("message", "ocr_postprocess_validate_failed"),
+    failure = None if ok else {
+        "source": "runtime/blog_full_coverage",
+        "script": "invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py",
+        "error": "; ".join(errors),
+    }
+    return detail, failure
+
+
+def validate_telegram_full_coverage() -> tuple[dict, dict | None]:
+    collector_status = _load_runtime_status(TELEGRAM_COLLECTOR_STATUS_PATH)
+    selected = (collector_status or {}).get("successful_collector") or (collector_status or {}).get("selected_collector") or "미확인"
+    uses_public_fallback = _telegram_uses_public_fallback(collector_status)
+    run_status_path = TELEGRAM_PUBLIC_FALLBACK_STATUS_PATH if uses_public_fallback else TELEGRAM_LAST_RUN_STATUS_PATH
+    run_status = _load_runtime_status(run_status_path)
+    run_status_proxy_used = False
+    if (
+        uses_public_fallback
+        and (not run_status or not run_status.get("exists"))
+        and collector_status
+        and collector_status.get("exists")
+        and int(collector_status.get("final_returncode", 1)) == 0
+    ):
+        run_status = {
+            **collector_status,
+            "status_proxy": "collector_status",
+            "status_proxy_reason": "public_fallback_status_missing",
         }
+        run_status_proxy_used = True
+
+    allowlist = [item.strip().lower() for item in _read_noncomment_lines(TELEGRAM_ALLOWLIST_PATH) if item.strip()]
+    allowlist_total = len(allowlist)
+    telegram_files = _collect_files(["raw/qualitative/text/telegram/**/*.md"])
+    observed_keys = _telegram_observed_keys(telegram_files)
+    missing_channels = [item for item in allowlist if item not in observed_keys]
+
+    errors = []
+    if not collector_status or not collector_status.get("exists"):
+        errors.append("telegram_collector_status_missing")
+    if allowlist_total <= 0:
+        errors.append("telegram_allowlist_total_missing")
+    if not run_status or not run_status.get("exists"):
+        errors.append("telegram_run_status_missing")
+    if allowlist_total > 0 and len(missing_channels) != 0:
+        errors.append(f"missing_channels={len(missing_channels)} != 0")
+
+    ok = len(errors) == 0
+    detail = {
+        "source": "runtime/telegram_full_coverage",
+        "script": "invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py",
+        "ok": ok,
+        "selected_collector": selected,
+        "uses_public_fallback": uses_public_fallback,
+        "run_status_path": str(run_status_path.relative_to(STAGE1_DIR)),
+        "run_status_proxy_used": run_status_proxy_used,
+        "allowlist_total": allowlist_total,
+        "observed_channel_keys": len(observed_keys),
+        "missing_channel_count": len(missing_channels),
+        "missing_channels": missing_channels,
+        "all_channels_satisfied": allowlist_total > 0 and len(missing_channels) == 0,
+        "collector_status": collector_status,
+        "run_status": run_status,
+        "errors": errors,
+    }
+    failure = None if ok else {
+        "source": "runtime/telegram_full_coverage",
+        "script": "invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py",
+        "error": "; ".join(errors),
+    }
     return detail, failure
 
 
@@ -318,10 +465,15 @@ def main():
         if not ok and failure is not None:
             failures.append(failure)
 
-    ocr_detail, ocr_failure = load_ocr_postprocess_detail()
-    details.append(ocr_detail)
-    if ocr_failure is not None:
-        failures.append(ocr_failure)
+    blog_detail, blog_failure = validate_blog_full_coverage()
+    details.append(blog_detail)
+    if blog_failure is not None:
+        failures.append(blog_failure)
+
+    telegram_detail, telegram_failure = validate_telegram_full_coverage()
+    details.append(telegram_detail)
+    if telegram_failure is not None:
+        failures.append(telegram_failure)
 
     raw_tree_coverage = build_raw_tree_coverage(now_ts)
     ok = len(failures) == 0
