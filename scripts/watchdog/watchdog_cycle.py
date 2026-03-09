@@ -126,8 +126,7 @@ def normalize_issues(validate_payload: dict[str, Any], recover_payload: dict[str
             issues.append(text)
 
     detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
-    required_action = str(detail.get('required_action') or detail.get('context_handoff_required_action') or '').strip()
-    if required_action == 'finish_current_step_then_reset':
+    if context_requires_reset(context_payload):
         current_ticket = str(detail.get('current_task_ticket_id') or '-').strip() or '-'
         token_info = str(detail.get('context_tokens_high') or '-').strip() or '-'
         issues.append(f'context_reset_required:{current_ticket}:{token_info}')
@@ -270,8 +269,28 @@ def normalize_context_issue(issue: str) -> str:
     return text
 
 
+def handoff_requests_unlock(context_payload: dict[str, Any]) -> bool:
+    detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
+    candidates: list[str] = []
+    for key in ('unlock_requested', 'context_handoff_notes', 'context_handoff_required_action', 'required_action'):
+        value = detail.get(key)
+        if value is not None:
+            candidates.append(str(value).strip().lower())
+
+    handoff = detail.get('context_handoff')
+    if isinstance(handoff, dict):
+        candidates.append(str(handoff.get('notes') or '').strip().lower())
+        candidates.append(str(handoff.get('required_action') or '').strip().lower())
+
+    return any('unlock' in text or '언락' in text for text in candidates if text)
+
+
 def context_requires_reset(context_payload: dict[str, Any]) -> bool:
     detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
+    if handoff_requests_unlock(context_payload):
+        return False
+    if detail.get('context_tokens_high'):
+        return True
     required_action = str(detail.get('required_action') or detail.get('context_handoff_required_action') or '').strip()
     return required_action == 'finish_current_step_then_reset'
 

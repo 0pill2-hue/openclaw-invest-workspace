@@ -13,7 +13,7 @@ SCRIPTS_DIR = ROOT / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-from context_policy import PLACEHOLDER_VALUES, extract_phase, load_task_state, parse_current_task
+from context_policy import PLACEHOLDER_VALUES, extract_phase, load_task_state, parse_context_handoff, parse_current_task
 from lib.runtime_env import TASKS_DB, context_handoff_path, current_task_path
 
 CONTEXT_POLICY = ROOT / "scripts/context_policy.py"
@@ -67,6 +67,20 @@ def load_active_execution_rows() -> list[dict[str, str]]:
             }
         )
     return active_rows
+
+
+def text_requests_unlock(value: object) -> bool:
+    text = str(value or '').strip().lower()
+    return bool(text) and ('unlock' in text or '언락' in text)
+
+
+
+def current_handoff_requests_unlock() -> bool:
+    if not CONTEXT_HANDOFF.exists():
+        return False
+    handoff = parse_context_handoff(CONTEXT_HANDOFF.read_text(encoding='utf-8'))
+    return any(text_requests_unlock(handoff.get(key)) for key in ('notes', 'required_action'))
+
 
 
 def run_json_command(command: list[str]) -> tuple[int, dict]:
@@ -179,13 +193,18 @@ def main() -> int:
     detail['session_context_tokens'] = primary_session.get('contextTokens')
     detail['session_percent_used'] = primary_session.get('percentUsed')
     detail['context_token_threshold'] = CONTEXT_TOKEN_THRESHOLD
+    unlock_requested = current_handoff_requests_unlock()
+    detail['unlock_requested'] = unlock_requested
     total_tokens = primary_session.get('totalTokens')
     if isinstance(total_tokens, int) and total_tokens >= CONTEXT_TOKEN_THRESHOLD:
         detail['context_tokens_high'] = f'{total_tokens}>={CONTEXT_TOKEN_THRESHOLD}'
-        detail['required_action'] = 'finish_current_step_then_reset'
-        refresh_rc, refresh_payload = refresh_handoff(total_tokens)
-        detail['handoff_refresh_rc'] = refresh_rc
-        detail['handoff_refresh'] = refresh_payload
+        if unlock_requested:
+            detail['handoff_refresh_skipped'] = 'unlock_requested'
+        else:
+            detail['required_action'] = 'finish_current_step_then_reset'
+            refresh_rc, refresh_payload = refresh_handoff(total_tokens)
+            detail['handoff_refresh_rc'] = refresh_rc
+            detail['handoff_refresh'] = refresh_payload
 
     handoff_rc, handoff_payload = run_handoff_validate()
     handoff_status = (handoff_payload or {}).get('context_handoff_status') or {}
@@ -195,6 +214,7 @@ def main() -> int:
     detail['context_handoff_source_ticket_id'] = handoff_status.get('source_ticket_id') or '-'
     detail['context_handoff_required_action'] = handoff_status.get('required_action') or '-'
     detail['context_handoff_trigger'] = handoff_status.get('trigger') or '-'
+    detail['context_handoff_notes'] = handoff_status.get('notes') or '-'
     if handoff_rc != 0:
         issues.append('context_handoff_invalid')
     if handoff_status.get('ticket_mismatch_vs_current_task'):

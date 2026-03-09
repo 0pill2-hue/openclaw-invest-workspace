@@ -51,6 +51,7 @@
 - `required_action`: 기본 `read_then_resume`, 임계치 대응 시 `finish_current_step_then_reset`
 - `reset_guard`: 기본 `valid_handoff_required_before_clean_reset`
 - `trigger`: `work_update` | `context_tokens_high` 등
+- `notes`: clean reset/new session 이후 stale context lock 해제가 필요하면 `unlock` 또는 `언락` 토큰을 적을 수 있다. watchdog은 이를 **명시적 unlock 요청**으로 우선 해석하며, 이 토큰이 있으면 threshold 경고 때문에 handoff를 다시 덮어쓰지 않는다.
 
 ## 생성 규칙
 - `python3 scripts/context_policy.py snapshot ...`은 `runtime/current-task.md`와 함께 `runtime/context-handoff.md`도 갱신한다.
