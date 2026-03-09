@@ -1,190 +1,437 @@
 # Stage2 Rulebook & Repro
 
-## 범위
-- 역할: Stage1 산출 raw/master를 Stage2 clean/quarantine으로 정제
-- 정제 대상: **ohlcv/supply + dart/news/text 전체**
-- 원칙: Stage2는 `stage2/inputs/upstream_stage1` 경유 입력만 사용
-- Change type: **Rule**
-- Telegram PDF artifact 승격 canonical contract/implementation: `docs/invest/stage2/STAGE2_PDF_REFINEMENT_DESIGN.md`
-- signal/qualitative 원칙:
-  - `raw/signal/*`는 수치/시계열 신호 원천이다.
-  - `raw/qualitative/*`는 비정형 원천이다.
-  - Stage2의 책임은 **정제/격리/중복 제거**까지이며, qualitative에 대해 직접 점수화·라벨링·투자판단을 하지 않는다.
-  - `stage02_qc_cleaning_full.py`는 `kr/ohlcv`, `kr/supply`, `us/ohlcv`의 canonical clean/quarantine writer이자 signal QC 단계다.
-  - `stage02_onepass_refine_full.py`는 `market/* signal` + qualitative 전체 canonical clean/quarantine writer다.
-  - 같은 output path는 한 스크립트만 쓰도록 folder ownership을 고정한다.
+status: CANONICAL (reproducible refine/QC contract)  
+updated_at: 2026-03-09 KST
 
-## 입력 (Inputs)
-- config inputs: `invest/stages/stage2/inputs/config/stage2_runtime_config.json`, `invest/stages/stage2/inputs/config/stage2_reason_config.json`
-- filter/dedup/link/runtime 값은 runtime config JSON을 canonical source로 사용하고, reason/taxonomy 이름은 reason config JSON을 canonical source로 사용한다.
-- `invest/stages/stage2/inputs/upstream_stage1/master/kr_stock_list.csv`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/signal/kr/ohlcv/*.csv`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/signal/kr/supply/*_supply.csv`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/kr/dart/*.csv`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/signal/us/ohlcv/*.csv`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/market/rss/*.json`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/market/news/selected_articles/*.jsonl`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/signal/market/macro/*`
-- `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/text/{blog,telegram,premium/startale}/**/*`
-- Telegram PDF auxiliary artifact: `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/attachments/telegram/**/{meta.json,*.pdf,extracted.txt}`
-  - 주의: attachment tree는 standalone corpus/FOLDER가 아니라 telegram raw markdown과 message-sidecar join으로 소비한다. 승격 계약/경로 rewrite/출력 스키마는 `docs/invest/stage2/STAGE2_PDF_REFINEMENT_DESIGN.md`를 따른다.
-- 제외 입력:
-  - `invest/stages/stage2/inputs/upstream_stage1/raw/qualitative/market/news/url_index/*`
-  - reason: Stage1 `selected_articles` 생성용 보조 인덱스이며 Stage2 canonical qualitative corpus 입력이 아니다.
-  - image 계열(`image_map`, `images_ocr`)은 현행 Stage2 계약에서 제외한다.
+## 문서 역할
+- 이 문서는 **문서만 보고 현재 Stage2를 재구현할 수 있도록** input/output, rule, threshold, dedup, incremental, report schema를 고정한다.
+- Telegram PDF 승격은 `STAGE2_PDF_REFINEMENT_DESIGN.md`의 세부 설계를 따른다.
 
-## 정제 규칙(핵심)
-- OHLCV/Supply: 기존 규칙 유지(행 단위 수치 정합성/결측 검증)
-- DART CSV: 최소 `corp_code/corp_name/report_nm/rcept_no/rcept_dt`를 요구하고, `rcept_dt` 파싱 실패·핵심 키 결측·`rcept_no` 중복은 quarantine한다.
-- Market RSS JSON: 비어있지 않음 + 엔트리 레벨 `title + datetime + url` 최소 1건 필수
-- Selected Articles JSONL:
-  - 각 row는 object여야 한다.
-  - 최소 `url + title + published_date|published_at + 본문(summary/body 기반 유효 텍스트)` 계약을 만족해야 한다.
-  - URL은 canonicalize 후 clean에 적재한다.
-  - row-level invalid/duplicate는 quarantine JSONL로 분리한다.
-- Text(blog): `Date/PublishedDate + Source` 메타 필수 + 유효 본문 길이(boilerplate/UI 라인 제거 후) 검증
-- Text(telegram): `Date + Source + Post*` 메타 필수 + 유효 본문 길이 검증
-- Telegram PDF auxiliary promotion: parent Telegram message + attachment `meta/original/extracted(optional)` pair를 입력 계약으로 삼고, Stage1 marker path(`outputs/raw/...`)는 Stage2 upstream root(`raw/...`)로 rewrite 해석한다. image/legacy OCR text는 계속 제외한다. canonical 출력은 별도 `telegram_pdf` corpus가 아니라 기존 `qualitative/text/telegram` clean 본문에 메시지 단위 inline 승격하는 방식이다. clean 본문에는 `[ATTACHED_PDF] <normalized_title>` 최소 표식만 허용하고, provenance/debug 정보는 report/diagnostics sidecar로 보낸다.
-- Text(premium/startale): `URL + PublishedAt + Status` 메타 필수, `Status=SUCCESS|OK`만 통과, paywall/session reason 차단, boilerplate-only 본문 차단
-- Link enrichment:
-  - Stage2 기본 동작이 아니라 **명시적 opt-in(`STAGE2_ENABLE_LINK_ENRICHMENT=1`)**일 때만 수행한다.
-  - 대상: `text/blog`, `text/telegram`, `text/premium/startale`
-  - 조건: 본문이 너무 짧거나 URL 의존도가 높을 때만 시도한다.
-  - 동작: 본문/`[ATTACH_TEXT]`에서 URL 추출 → canonicalize/dedup → 외부 본문 fetch → 본문 주입 → 재검증
-  - image residue 정책: `ATTACH_*`, `MEDIA`, image attachment marker는 link-source 추출에는 참고할 수 있어도 **clean output에는 남기지 않는다**.
-- Corpus-level qualitative dedup:
-  - scope: `market/news/selected_articles`, `text/blog`, `text/telegram`, `text/premium/startale`
-  - registry: incremental 실행에서도 기존 clean corpus를 bootstrap해 전역 중복 비교를 수행한다.
-  - duplicate 판정 키(우선순위):
-    1. canonical URL 일치
-    2. normalized title + normalized date 일치
-    3. content fingerprint 일치
-  - content fingerprint는 유효 본문/기사 본문 기준으로 계산하며, link-enrichment로 주입된 본문과 selected_articles body 간 중복도 같은 registry에서 잡는다.
+---
 
-## Reason / Filter / Quarantine Taxonomy (canonical)
+## 1) 범위 / 책임 경계
+- 역할: Stage1 raw/master를 Stage2 `clean/quarantine`으로 정제
+- 원칙:
+  - 입력은 **오직** `invest/stages/stage2/inputs/upstream_stage1/**`
+  - Stage2는 정제/정규화/격리/중복 제거까지만 담당
+  - 정성 점수화/해석/투자판단은 하지 않음
+- writer ownership:
+  - `stage02_qc_cleaning_full.py`
+    - 소유 출력: `signal/{kr/ohlcv,kr/supply,us/ohlcv}`
+  - `stage02_onepass_refine_full.py`
+    - 소유 출력: `signal/market/*` + `qualitative/**`
 
-| Scope | Filter class | Canonical reason / pattern | Disposition |
-| --- | --- | --- | --- |
-| `stage02_qc_cleaning_full.py` signal QC | invalid | `basic_invalid_or_low_liquidity`, `zero_candle`, `return_spike_gt_35pct`, `invalid_date_or_nonnumeric` | quarantine row/file |
-| `stage02_qc_cleaning_full.py` signal QC | duplicate | `duplicate_date` | quarantine row/file |
-| `selected_articles/*.jsonl` | invalid | `selected_articles_missing_url`, `selected_articles_missing_title`, `selected_articles_missing_published_date`, `selected_articles_effective_body_too_short`, `jsonl_parse_error:<Exception>`, `jsonl_row_not_object`, `empty_jsonl` | quarantine JSONL row |
-| `text/{blog,telegram,premium/startale}` | invalid | `text_too_short`, `blog_missing_required_metadata`, `telegram_missing_required_metadata`, `premium_missing_required_metadata`, `blog_effective_body_empty`, `blog_effective_body_too_short`, `telegram_effective_body_empty`, `telegram_effective_body_too_short`, `premium_effective_body_empty_or_boilerplate`, `premium_effective_body_too_short` | quarantine text |
-| `text/{blog,telegram,premium/startale}` | fetch-fail | `blog_link_body_fetch_failed`, `telegram_link_body_fetch_failed`, `premium_link_body_fetch_failed` | quarantine text |
-| `text/premium/startale` | terminal | `premium_bad_status_<STATUS>`, `premium_paywall_or_blocked_reason` | quarantine text |
-| qualitative CSV / JSON | invalid | `missing_required_columns:<cols>`, `invalid_rcept_dt`, `invalid_<date_column>`, `missing_report_nm`, `missing_rcept_no`, `missing_corp_or_stock_code`, `missing_title_body_url`, `empty_after_strip`, `rss_no_entries`, `rss_missing_required_fields(title/datetime/url)`, `empty_json`, `invalid_json` | quarantine file/row |
-| corpus-level qualitative dedup | duplicate | `duplicate_canonical_url`, `duplicate_title_date`, `duplicate_content_fingerprint`, `duplicate_rcept_no`, `duplicate_date_title`, `duplicate_<id_column>` | quarantine file/row |
-| refine runtime | terminal | `exception:<ExceptionType>:<message>` | quarantine file |
-| clean normalization | max-available | minimum contract 만족 + deterministic normalization 성공 시 clean 유지. **별도 `max_available` reason string은 emit하지 않는다.** | clean |
-| refine report issue filter | warn/fail | warn=`missing_input_folder(optional)`, `zero_clean_optional_folder`; fail=`missing_input_folder(required)`, `folder_processing_exception`, `zero_clean_required_folder` | report-only / hard-fail |
+---
 
-정렬 원칙:
-- `terminal`은 Stage2 quarantine 종착점(umbrella)이며, 실제 emitted reason은 주로 `invalid` / `duplicate` / `fetch-fail` / `premium status` / `exception` 패턴으로 기록한다.
-- `max-available`는 clean 보존 정책 이름이며 quarantine reason이 아니다.
-- canonical run 기준으로 보고/JSON에 노출되는 reason 명칭만 관리한다. helper 내부의 미도달 fallback wording은 taxonomy에 싣지 않는다.
+## 2) 입력 (Inputs)
+- config
+  - `invest/stages/stage2/inputs/config/stage2_runtime_config.json`
+  - `invest/stages/stage2/inputs/config/stage2_reason_config.json`
+- master
+  - `invest/stages/stage2/inputs/upstream_stage1/master/kr_stock_list.csv`
+- raw signal
+  - `raw/signal/kr/ohlcv/*.csv`
+  - `raw/signal/kr/supply/*_supply.csv`
+  - `raw/signal/us/ohlcv/*.csv`
+  - `raw/signal/market/macro/*`
+- raw qualitative
+  - `raw/qualitative/kr/dart/*.csv`
+  - `raw/qualitative/market/rss/*.json`
+  - `raw/qualitative/market/news/selected_articles/*.jsonl`
+  - `raw/qualitative/text/{blog,telegram,premium/startale}/**/*`
+  - Telegram attachment artifact: `raw/qualitative/attachments/telegram/**/{meta.json,*.pdf,extracted.txt}`
+- 제외 입력
+  - `raw/qualitative/market/news/url_index/*`
+  - image 계열 (`image_map`, `images_ocr`)
 
-## 출력 (Outputs)
-- signal canonical writer (folder-owned)
-  - `stage02_qc_cleaning_full.py` → `invest/stages/stage2/outputs/{clean,quarantine}/production/signal/{kr,us}/{ohlcv,supply}/...`
-  - `stage02_onepass_refine_full.py` → `invest/stages/stage2/outputs/{clean,quarantine}/production/signal/market/{macro,google_trends}/...`
-- qualitative canonical writer
-  - `stage02_onepass_refine_full.py` → `invest/stages/stage2/outputs/{clean,quarantine}/production/qualitative/...`
-  - Telegram PDF inline track(implemented): 별도 `telegram_pdf` corpus를 canonical output으로 만들지 않는다. 기존 `invest/stages/stage2/outputs/clean/production/qualitative/text/telegram/*.md`에 메시지 단위 inline 승격하고, attachment-specific 실패/통계는 report 또는 diagnostics sidecar로 추적한다.
-  - alias policy (canonical 내부): `market/news/rss -> market/rss`
-- 리포트/상태
-  - `invest/stages/stage2/outputs/reports/QC_REPORT_*.{md,json}`
-  - `invest/stages/stage2/outputs/reports/qc/FULL_REFINE_REPORT_*.{md,json}`
-  - 각 report는 `runtime_config_path/reason_config_path`와 SHA1(bundle/runtime/reason)를 함께 남긴다.
-  - refine incremental index: `invest/stages/stage2/outputs/clean/production/_processed_index.json`
-- authoritative replacement policy:
-  - 기존 outputs/reports에 image residue 또는 pre-dedup 설명이 남아 있어도 이번 턴에는 재생성하지 않는다.
-  - 다음 `--force-rebuild` 결과물을 authoritative replacement로 본다.
+---
 
-## 실행 커맨드 (Run, canonical)
-```bash
-python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py
-python3 invest/stages/stage2/scripts/stage02_qc_cleaning_full.py
-# 재현 가능한 full rerun / canonical rebuild
-python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py --force-rebuild
-# alias
-python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py --full-rerun
-# 비결정적 enrichment가 꼭 필요할 때만 opt-in
-STAGE2_ENABLE_LINK_ENRICHMENT=1 python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py
-```
+## 3) 현재 구현 값(Current exact thresholds)
+아래 값은 현재 구현 기준이며, 문서만 보고 재현할 때도 동일 값으로 본다.
 
-## 재현 규칙 (Repro)
-- 기본 refine 실행은 incremental 모드다.
-  - 기준: `_processed_index.json`의 파일 signature 일치 + 기존 clean/quarantine 산출물 존재 시 skip
-- 재현 가능한 전체 재구축이 필요하면 `--force-rebuild`(=`--full-rerun`)를 사용한다.
-  - 동작: processed index를 재사용하지 않고, Stage2 canonical clean/quarantine 트리를 비운 뒤 현재 `upstream_stage1/raw` 기준으로 다시 적재한다.
-  - 목적: incremental skip 때문에 동일 입력 재실행이 부분 생략되는 갭을 없애고, 현재 입력 기준 전체 산출물을 다시 만든다.
-- rule version / input contract / dedup 규칙이 바뀌면 signature salt가 달라져 동일 입력도 재정제 대상이 된다.
-- Telegram PDF inline 승격 규칙처럼 qualitative 본문 자체가 바뀌는 변경은 `stage02_onepass_refine_full.py --force-rebuild`를 canonical rerun으로 본다. PDF-only 변경 검증에는 signal QC full rerun이 필수는 아니지만, Stage2 authoritative PASS 패키지를 새로 만들 때는 refine + QC를 함께 다시 도는 것을 권장한다.
+### 3.1 refine text validation thresholds
+| key | value |
+| --- | ---: |
+| `blog_min_effective_len` | 80 |
+| `telegram_min_effective_len` | 60 |
+| `premium_min_effective_len` | 100 |
+| `selected_articles_min_text_len` | 80 |
+| `short_meaningful_min_len` | 45 |
+| `dedup.min_fingerprint_text_len` | 80 |
 
-## 검증 (Validation)
-- QC 보고: `invest/stages/stage2/outputs/reports/QC_REPORT_*.{md,json}`
-- refine 보고: `invest/stages/stage2/outputs/reports/qc/FULL_REFINE_REPORT_*.{md,json}`
-- PASS 기준(현행 스크립트 기준):
-  - refine 스크립트 rc=0
-  - QC 스크립트 rc=0
-  - 각 스크립트의 timestamped report 파일 생성
-  - refine `quality_gate.verdict=PASS`
-  - QC `validation.pass=true`
-- refine hard fail:
-  - required qualitative input folder 누락
-  - required qualitative folder에서 `input_files>0`인데 `clean=0`
-  - folder processing exception 발생
-- QC hard fail:
-  - `missing_target_file`, `processing_error`, `zero_clean_folder`
-- report-only anomaly:
-  - `full_quarantine`, `high_quarantine_ratio`, `empty_input_file`, optional folder의 `zero_clean_optional_folder`는 기본적으로 경고/리포트 대상이다.
-- 운영 handoff 체크(스크립트 rc와 별도):
-  - Stage3 입력으로 승격할 qualitative/text 배치는 `clean/production/qualitative/text/*`와 `clean/production/qualitative/market/news/selected_articles/*` 존재를 확인한다.
+### 3.2 refine target folders
+- corpus dedup target folders
+  - `market/news/selected_articles`
+  - `text/blog`
+  - `text/telegram`
+  - `text/premium/startale`
+- link enrichment target folders
+  - `text/blog`
+  - `text/telegram`
+  - `text/premium/startale`
 
-## Reason / Filter Taxonomy (authoritative names)
-- 상태 구분:
-  - `terminal_quarantine`: Stage2가 clean으로 승격하지 않고 quarantine에 남기는 최종 reason.
-  - `normalizable_clean_transform`: URL/date/title 정규화, tracking query 제거, file-local URL dedup, opt-in link enrichment 성공처럼 **clean에 남기기 위한 보정**이다. 별도 quarantine reason을 쓰지 않는다.
-  - `max_available`: 결정적 보정 후 최소 계약을 만족하면 clean에 유지한다. 현재 별도 reason string은 없다.
-  - `warn`: report-only anomaly. 예: `full_quarantine`, `high_quarantine_ratio`, `empty_input_file`, `missing_input_folder(required=false)`, `zero_clean_optional_folder`.
-  - `fail`: quality gate를 FAIL로 만드는 issue type. 예: `missing_input_folder(required=true)`, `folder_processing_exception`, `zero_clean_required_folder`, QC의 `missing_target_file|processing_error|zero_clean_folder`.
-- text invalid metadata reason:
-  - `blog_missing_required_metadata`
-  - `telegram_missing_required_metadata`
-  - `premium_missing_required_metadata`
-- text body quality reason (invalid metadata와 분리):
-  - `blog_effective_body_empty`, `blog_effective_body_too_short`
-  - `telegram_effective_body_empty`, `telegram_effective_body_too_short`
-  - `premium_effective_body_empty_or_boilerplate`, `premium_effective_body_too_short`
-- link-body fetch failure reason (short/empty body와 분리):
+### 3.3 link enrichment runtime values
+| key | value |
+| --- | ---: |
+| `allow_all_domains_default` | `true` |
+| `fetch_timeout_sec` | 6 |
+| `fetch_max_retries` | 3 |
+| `fetch_backoff_base_sec` | 0.7 |
+| `fetch_max_bytes` | 350000 |
+| `fetch_max_text_chars` | 3000 |
+| `max_urls_per_file` | 12 |
+| `max_total_chars` | 4000 |
+| `min_effective_add` | 50 |
+
+### 3.4 QC thresholds
+| key | value |
+| --- | ---: |
+| included KR markets | `KOSPI`, `KOSDAQ`, `KOSDAQ GLOBAL` |
+| included MarketId | `STK`, `KSQ` |
+| `min_valid_volume` | 10 |
+| `max_daily_ret_abs` | 0.35 |
+
+---
+
+## 4) 입력 파일 최소 계약
+
+### 4.1 signal
+- KR/US OHLCV CSV
+  - `Date, Open, High, Low, Close, Volume`
+- KR supply CSV
+  - 첫 6개 컬럼이 `Date, Inst, Corp, Indiv, Foreign, Total`로 해석 가능해야 함
+- market macro
+  - 파일 존재 자체가 Stage2 계약
+  - Stage2는 market macro를 canonical signal로 복사/정제하고 Stage3는 `macro_summary.json`을 소비
+
+### 4.2 qualitative
+- DART CSV
+  - `corp_code, corp_name, report_nm, rcept_no, rcept_dt` 필수
+- RSS JSON
+  - flatten 결과에서 최소 한 entry 이상이 `title + datetime/published + url`를 가져야 함
+- selected_articles JSONL row
+  - object row
+  - `url + title + published_date|published_at + summary/body 유효 텍스트`
+- blog markdown
+  - `Date|PublishedDate` + `Source`
+- telegram markdown
+  - `Date` + (`Source`+`Post*` 또는 `# Telegram Log`+`MessageID`)
+- premium markdown
+  - `- URL`, `- PublishedAt`, `- Status` 필수
+  - `Status=SUCCESS|OK`만 통과 가능
+
+---
+
+## 5) canonical 출력 경로
+
+### 5.1 clean
+- `invest/stages/stage2/outputs/clean/production/signal/{kr,us,market}/...`
+- `invest/stages/stage2/outputs/clean/production/qualitative/...`
+
+### 5.2 quarantine
+- `invest/stages/stage2/outputs/quarantine/production/signal/{kr,us,market}/...`
+- `invest/stages/stage2/outputs/quarantine/production/qualitative/...`
+
+### 5.3 canonical alias policy
+- raw/input alias: `market/news/rss`
+- canonical internal/output alias: `market/rss`
+
+### 5.4 output file behavior
+- signal clean: same basename CSV
+- signal quarantine: same basename CSV + row-level `reason`
+- text clean: cleaned markdown/text 그대로 저장
+- text quarantine: markdown-like payload with header fields
+  - `reason`
+  - `folder`
+  - `source_file`
+  - `sanitized_at`
+  - `stage2_rule_version`
+  - optional extra meta
+  - `meta_lines`
+  - `preview`
+- selected_articles clean/quarantine: JSONL row 단위 분리
+- JSON clean: validated canonical JSON 저장
+
+---
+
+## 6) refine exact behavior
+
+### 6.1 text/blog validation
+필수 metadata:
+- `Date` 또는 `PublishedDate`
+- `Source: https://...`
+
+정제 규칙:
+- heading / metadata line / `---` 제거
+- blog UI marker 제거
+- URL 제거 후 effective text 계산
+- effective 길이 `< 80` 이고 meaningful short text가 아니면 quarantine
+
+### 6.2 text/telegram validation
+필수 metadata:
+- `Date`
+- 아래 둘 중 하나
+  - `Source` + `PostID|PostDate|PostDateTime`
+  - `# Telegram Log` + `MessageID`
+
+정제 규칙:
+- metadata line 및 forwarded residue 제거
+- URL 제거 후 effective text 계산
+- effective 길이 `< 60` 이고 meaningful short text가 아니면 quarantine
+- Telegram PDF artifact가 있으면 clean body에 inline 승격 후 validation 수행
+
+### 6.3 text/premium/startale validation
+필수 metadata:
+- `- URL`
+- `- PublishedAt`
+- `- Status`
+
+판정 규칙:
+- `Status`는 `SUCCESS|OK`만 허용
+- `Reason`에 `paywall|subscription|session|blocked` 포함 시 quarantine
+- `## 본문` 이후 텍스트에서 boilerplate 제거
+- effective 길이 `< 100` 이고 meaningful short text가 아니면 quarantine
+
+### 6.4 selected_articles row validation
+- row must be object
+- `url` canonicalize
+- `title` strip
+- `published_date|published_at`를 `YYYY-MM-DD`로 normalize
+- `summary + body`의 effective text 길이 `< 80` 이고 meaningful short text가 아니면 quarantine
+
+### 6.5 RSS validation
+- flatten result가 비어 있으면 `rss_no_entries`
+- item-level로 `title + datetime/published + url`를 만족하는 entry가 1개도 없으면 `rss_missing_required_fields(title/datetime/url)`
+
+### 6.6 DART validation
+- 최소 컬럼 불충족 → `missing_required_columns:<cols>`
+- `rcept_dt` invalid → `invalid_rcept_dt`
+- `report_nm` 결측 → `missing_report_nm`
+- `rcept_no` 결측 → `missing_rcept_no`
+- `corp/stock code` 결측 → `missing_corp_or_stock_code`
+- `rcept_no` 중복 → `duplicate_rcept_no`
+
+---
+
+## 7) link enrichment 계약
+- 기본값: OFF (`STAGE2_ENABLE_LINK_ENRICHMENT` opt-in)
+- 적용 조건
+  - folder가 `text/blog|text/telegram|text/premium/startale`
+  - 기본 validation이 short-body 사유로 실패
+  - URL candidate가 존재
+- 동작 순서
+  1. 본문 + `[ATTACH_TEXT]`에서 URL 추출
+  2. canonicalize / within-file dedup
+  3. 외부 본문 fetch
+  4. dedup / text injection
+  5. 재검증
+- fetch 전용 실패 reason
   - `blog_link_body_fetch_failed`
   - `telegram_link_body_fetch_failed`
   - `premium_link_body_fetch_failed`
-- premium blocked/status reason:
-  - `premium_bad_status_<STATUS>`
-  - `premium_paywall_or_blocked_reason`
-- selected_articles invalid row reason:
-  - `selected_articles_missing_url`
-  - `selected_articles_missing_title`
-  - `selected_articles_missing_published_date`
-  - `selected_articles_effective_body_too_short`
-  - `jsonl_parse_error:<Exception>` / `jsonl_row_not_object` / `empty_jsonl`
-- qualitative csv/json invalid reason:
-  - DART: `missing_required_columns:<cols>`, `invalid_rcept_dt`, `missing_report_nm`, `missing_rcept_no`, `missing_corp_or_stock_code`, `duplicate_rcept_no`
-  - generic qualitative CSV: `missing_title_body_url`, `duplicate_<id_column>`, `duplicate_date_title`, `empty_after_strip`
-  - RSS/JSON: `rss_no_entries`, `rss_missing_required_fields(title/datetime/url)`, `empty_json`, `invalid_json`
-- corpus duplicate reason (실제 quarantine reason과 report 명칭 통일):
-  - `duplicate_canonical_url`
-  - `duplicate_title_date` ← **normalized title + normalized date** 매칭을 의미한다.
-  - `duplicate_content_fingerprint`
-- signal row quarantine reason (QC):
-  - `basic_invalid_or_low_liquidity`, `zero_candle`, `return_spike_gt_35pct`, `duplicate_date`, `invalid_date_or_nonnumeric`
+- clean output에는 attachment residue (`ATTACH_*`, `MEDIA`, `MIME`, `FILE_SIZE`)를 남기지 않는다.
 
-## incremental / 재현성
-- processed index는 입력 파일의 `size + mtime + path`만 보지 않고 **Stage2 rule version + config bundle SHA1 + link enrichment flag**를 포함한 signature를 사용한다.
-- qualitative dedup registry는 incremental 실행 시 기존 clean corpus를 bootstrap한다. 단, pre-change clean/output은 authoritative replacement가 아니며 다음 full rebuild 후 최종 상태를 확정한다.
-- clean/quarantine row-level lineage 표준화는 추후 과제로 두고, 현재는 refine/QC report의 `config_provenance`, refine report JSON의 `stage2_rule_version`, `incremental_signature`, `corpus_dedup`를 기준으로 추적한다.
+---
 
-## 실패 정책
-- QC 또는 refine 중 하나라도 실패하면 downstream 차단
-- 같은 signal output path를 두 스크립트가 중복 작성하지 않는다.
-- QC는 자신이 소유한 signal 폴더의 clean/quarantine writer이며, 동시에 hard-fail validation gate를 제공한다.
+## 8) Telegram PDF inline promotion 계약
+- 입력 단위: **parent telegram message + attachment artifact pair**
+- canonical output: 별도 `telegram_pdf` corpus를 만들지 않고 기존 `text/telegram` clean 본문에 inline 승격
+- clean 본문 표식:
+```text
+[ATTACHED_PDF] <normalized_title>
+<pdf_body_text>
+```
+- path resolution
+  - marker path 우선
+  - 실패 시 `<channel_slug>/msg_<message_id>/` fallback
+- text source precedence
+  - `stage1 extracted.txt` 우선
+  - 실패 시 Stage2 local PDF extraction (`pypdf` → `pdfminer`)
+- attachment-specific 실패는 report/diagnostics에 집계한다.
+- 세부 설계/diagnostics 이름은 `STAGE2_PDF_REFINEMENT_DESIGN.md`를 따른다.
+
+---
+
+## 9) corpus-level qualitative dedup 계약
+대상 folder:
+- `market/news/selected_articles`
+- `text/blog`
+- `text/telegram`
+- `text/premium/startale`
+
+우선순위:
+1. canonical URL exact match → `duplicate_canonical_url`
+2. normalized title + normalized date exact match → `duplicate_title_date`
+3. normalized effective body fingerprint match → `duplicate_content_fingerprint`
+
+세부 규칙:
+- incremental 실행에서도 기존 clean corpus를 bootstrap해 전역 dedup registry를 만든다.
+- content fingerprint는 normalize 후 길이 `>= 80` 텍스트에 대해서만 생성한다.
+- telegram의 generic log title 같은 약한 제목은 title-date key에서 제외할 수 있다.
+
+---
+
+## 10) processed index / incremental signature
+- path: `invest/stages/stage2/outputs/clean/production/_processed_index.json`
+- top-level schema:
+```json
+{
+  "__meta__": {
+    "stage2_rule_version": "stage2-refine-20260308-r4",
+    "stage2_config_sha1": "...",
+    "link_enrichment_enabled": false,
+    "folders": ["..."]
+  },
+  "entries": {
+    "<folder>/<rel_path>": "<sha1-signature>"
+  }
+}
+```
+- entry key: `"<folder>/<rel_path>"`
+- signature 구성:
+  - `stage2_rule_version`
+  - `config_bundle_sha1`
+  - `link_enrichment_enabled`
+  - `size`
+  - `mtime`
+  - `path`
+  - telegram markdown이면 **attachment subtree signature 추가**
+
+telegram attachment subtree signature는 같은 channel slug 아래 file들의
+`relative_path:size:mtime` 목록의 SHA1이다.
+
+---
+
+## 11) refine report schema
+`stage02_onepass_refine_full.py`는 아래를 만든다.
+- markdown: `outputs/reports/qc/FULL_REFINE_REPORT_<ts>.md`
+- json: `outputs/reports/qc/FULL_REFINE_REPORT_<ts>.json`
+
+JSON top-level keys:
+- `generated_at`
+- `stage2_rule_version`
+- `run_mode`
+- `processed_index_policy`
+- `incremental_signature`
+- `config_provenance`
+- `clean_base`
+- `quarantine_base`
+- `writer_policy`
+- `output_policy`
+- `quality_gate`
+- `results`
+- `totals`
+- `link_enrichment`
+- `telegram_pdf`
+- `reason_taxonomy`
+- `corpus_dedup`
+
+PASS 기준:
+- process rc=0
+- report json/md 생성
+- `quality_gate.verdict = PASS`
+
+hard fail:
+- `missing_input_folder(required=true)`
+- `folder_processing_exception`
+- `zero_clean_required_folder`
+
+report-only anomaly:
+- `missing_input_folder(required=false)`
+- `zero_clean_optional_folder`
+
+---
+
+## 12) QC exact behavior (`stage02_qc_cleaning_full.py`)
+
+### 12.1 KR universe
+- `kr_stock_list.csv`의 `Code`를 6자리 zero-pad
+- `Market`가 있으면 `KOSPI|KOSDAQ|KOSDAQ GLOBAL`만 포함
+- 아니면 `MarketId`가 `STK|KSQ`인 것만 포함
+
+### 12.2 OHLCV invalid conditions
+- `Date` parse 실패
+- `Close <= 0`
+- `Open/High/Low` 결측
+- `Volume < 10`
+- all-zero-ish candle (`Open<=0 and High<=0 and Low<=0 and Close>0 and Volume==0`) → `zero_candle`
+- `abs(Close.pct_change()) > 0.35` → `return_spike_gt_35pct`
+- duplicate `Date` → `duplicate_date`
+
+### 12.3 supply invalid conditions
+- `Date` parse 실패
+- `Inst/Corp/Indiv/Foreign/Total` 중 하나라도 numeric 실패
+- duplicate `Date`
+
+### 12.4 QC report schema
+- markdown: `outputs/reports/QC_REPORT_<ts>.md`
+- json: `outputs/reports/QC_REPORT_<ts>.json`
+
+JSON top-level keys:
+- `executed_at`
+- `qc_version`
+- `mode`
+- `writer_policy`
+- `universe_policy`
+- `anomaly_taxonomy`
+- `config_provenance`
+- `groups`
+- `totals`
+- `validation`
+- `anomalies`
+- `hard_failures`
+- `report_only_anomalies`
+
+PASS 기준:
+- rc=0
+- `validation.pass = true`
+
+QC hard fail types:
+- `missing_target_file`
+- `processing_error`
+- `zero_clean_folder`
+
+QC warn types:
+- `full_quarantine`
+- `high_quarantine_ratio`
+- `empty_input_file`
+
+---
+
+## 13) 실행 커맨드
+```bash
+# refine (incremental)
+python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py
+
+# refine authoritative rebuild
+python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py --force-rebuild
+# alias
+python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py --full-rerun
+
+# signal QC
+python3 invest/stages/stage2/scripts/stage02_qc_cleaning_full.py
+
+# opt-in link enrichment
+STAGE2_ENABLE_LINK_ENRICHMENT=1 python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py
+```
+
+---
+
+## 14) rerun policy
+- 기본 실행은 incremental
+- 다음 조건이면 authoritative rebuild를 권장/요구한다.
+  - rule version 변경
+  - config bundle SHA1 변경
+  - link enrichment flag 변경
+  - Telegram attachment subtree 변경
+  - Telegram PDF inline 승격 규칙 변경
+- authoritative rebuild 기준:
+  1. `stage02_onepass_refine_full.py --force-rebuild`
+  2. 이어서 `stage02_qc_cleaning_full.py`
+
+---
+
+## 15) 실패 정책
+- refine 또는 QC 중 하나라도 실패하면 downstream 차단
+- 같은 output path를 두 writer가 동시에 소유하면 안 된다
+- canonical output은 `production/(signal|qualitative)/*` only
