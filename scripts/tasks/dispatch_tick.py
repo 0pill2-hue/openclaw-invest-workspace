@@ -143,6 +143,16 @@ def write_status(
     )
 
 
+def read_existing_status_error() -> str:
+    if not STATUS_PATH.exists():
+        return ""
+    try:
+        payload = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return ""
+    return str(payload.get("error") or "").strip()
+
+
 def run_task_assignment() -> tuple[int, str, str, str]:
     run_id = datetime.now().strftime("%Y%m%d%H%M%S")
     cmd = [
@@ -374,6 +384,16 @@ def main() -> int:
         )
         print(reason)
         return 0
+
+    previous_error = read_existing_status_error()
+    if "context_lock_active" in previous_error:
+        write_status(
+            assigned_ticket="",
+            status="idle",
+            error="",
+            orchestrator="",
+            phase="status_lock_cleared",
+        )
 
     rc, run_id, stdout, stderr = run_task_assignment()
     append_debug_log(

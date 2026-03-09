@@ -265,10 +265,18 @@ def main() -> int:
         if not db_task:
             issues.append(f'current_task_ticket_missing_in_db:{ticket_id}')
         else:
+            closed_maintenance_snapshot_ok = (
+                ticket_id.startswith('WD-')
+                and db_status in {'DONE', 'BLOCKED'}
+                and not waiting_callback
+                and not bool(detail.get('active_execution_remaining'))
+                and str(detail.get('context_handoff_required_action') or '').strip() == 'read_then_resume'
+            )
+            detail['current_task_closed_maintenance_snapshot_ok'] = closed_maintenance_snapshot_ok
             if task_status and task_status not in PLACEHOLDER_VALUES and task_status != db_status:
-                if not (waiting_callback and task_status in {'IN_PROGRESS', 'BLOCKED'}):
+                if not (waiting_callback and task_status in {'IN_PROGRESS', 'BLOCKED'}) and not closed_maintenance_snapshot_ok:
                     issues.append(f'current_task_status_mismatch:{ticket_id}:snapshot={task_status}:db={db_status}')
-            if db_status in {'DONE', 'BLOCKED'} and not waiting_callback:
+            if db_status in {'DONE', 'BLOCKED'} and not waiting_callback and not closed_maintenance_snapshot_ok:
                 issues.append(f'current_task_points_to_closed_db_task:{ticket_id}:{db_status}')
 
     result = {
