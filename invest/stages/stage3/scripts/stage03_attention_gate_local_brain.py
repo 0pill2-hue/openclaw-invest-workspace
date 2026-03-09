@@ -3,16 +3,12 @@
 Stage3 - Qualitative Axes Gate (LOCAL BRAIN ONLY)
 
 목적
-- Stage3 입력(JSONL)로부터 종목별 4축 정성점수
-  (upside / downside_risk / bm_sector_fit / persistence)를 산출한다.
+- Stage2 clean 기반 canonical intermediate corpus(`stage2_text_meta_records.jsonl`)를 읽어
+  로컬모델 친화적인 짧은 chunk + focus_symbol 단위 claim-card를 만든다.
+- Stage3의 실질 평가 단위를 `(record_id, chunk_id, focus_symbol)`로 고정한다.
+- 최종 점수는 claim-card를 `(symbol, date, issue_cluster_id)`로 묶은 뒤 rule engine이 집계한다.
 - 감성/주목도(attention/sentiment) 축은 운영점수에서 제거한다.
 - remote/cloud 모델 사용을 금지하고, 로컬 정책 위반 시 FAIL-CLOSE 한다.
-
-핵심 원칙
-1) 4축 분리: upside/downside_risk/bm_sector_fit/persistence
-2) 이중카운팅 방지: 축간 상관 임계치 + 단일축 가중치 cap
-3) downstream 호환: qualitative_signal([-1,1]) 유지
-4) DART 분석 결과는 별도 signal 출력(`outputs/signal/dart_event_signal.csv`)
 """
 
 from __future__ import annotations
@@ -20,7 +16,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import re
 import socket
 import sys
@@ -40,29 +35,36 @@ WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
 STAGE_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DEFAULT = STAGE_ROOT / "inputs/stage2_text_meta_records.jsonl"
 OUTPUT_DEFAULT = STAGE_ROOT / "outputs/features/stage3_qualitative_axes_features.csv"
+CLAIM_CARD_OUTPUT_DEFAULT = STAGE_ROOT / "outputs/features/stage3_claim_cards.jsonl"
 DART_SIGNAL_OUTPUT_DEFAULT = STAGE_ROOT / "outputs/signal/dart_event_signal.csv"
 SUMMARY_DEFAULT = STAGE_ROOT / "outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json"
 
 UPSIDE_WORDS = {
     "성장", "개선", "확대", "수주", "계약", "흑자", "상향", "반등", "증가", "회복",
+    "신제품", "점유율", "가이던스", "성공", "강세",
     "growth", "improve", "expand", "order", "beat", "upgrade", "strong", "recovery",
+    "guidance", "share gain", "launch",
 }
 DOWNSIDE_WORDS = {
     "감소", "부진", "하락", "적자", "둔화", "악화", "소송", "분쟁", "유상증자", "리스크",
+    "규제", "지연", "차질", "정정", "우려",
     "decline", "weak", "drop", "loss", "lawsuit", "dispute", "dilution", "downgrade", "risk",
+    "regulation", "delay", "concern",
 }
 PERSIST_POS_WORDS = {
     "지속", "장기", "반복", "연속", "누적", "중장기", "pipeline", "recurring", "long-term",
+    "backlog", "구조적", "계속",
 }
 PERSIST_NEG_WORDS = {
     "일회성", "단기", "일시", "변동성", "불확실", "temporary", "one-off", "volatile", "uncertain",
+    "반짝", "소멸",
 }
 
 EVENT_KEYWORDS = {
-    "order": ["수주", "공급계약", "단일판매", "계약체결", "수주계약"],
-    "rights_issue": ["유상증자", "증자", "전환사채", "cb", "bw", "신주발행"],
-    "lawsuit": ["소송", "피소", "판결", "무죄", "항소", "가처분", "분쟁"],
-    "guidance": ["가이던스", "실적전망", "전망치", "컨센서스", "잠정실적"],
+    "order": ["수주", "공급계약", "단일판매", "계약체결", "수주계약", "판매계약"],
+    "rights_issue": ["유상증자", "증자", "전환사채", "cb", "bw", "신주발행", "희석"],
+    "lawsuit": ["소송", "피소", "판결", "항소", "가처분", "분쟁"],
+    "guidance": ["가이던스", "실적전망", "전망치", "컨센서스", "잠정실적", "실적발표"],
 }
 
 RISK_ON_WORDS = {
@@ -74,25 +76,27 @@ RISK_OFF_WORDS = {
 
 SOURCE_RELIABILITY = {
     "dart": 1.00,
-    "news_rss": 1.00,
-    "news_rss_macro": 1.00,
-    "text_telegram": 1.00,
-    "text_blog": 1.00,
-    "text_premium": 1.00,
-    "text_image_map": 1.00,
-    "text_images_ocr": 1.00,
-    "other": 1.00,
+    "news_rss": 0.94,
+    "news_rss_macro": 0.94,
+    "market_selected_articles": 0.91,
+    "text_telegram": 0.68,
+    "text_blog": 0.72,
+    "text_premium": 0.84,
+    "text_image_map": 0.58,
+    "text_images_ocr": 0.55,
+    "other": 0.55,
 }
 
 SOURCE_BM_BASE = {
-    "dart": 0.90,
+    "dart": 0.92,
     "news_rss": 0.76,
-    "news_rss_macro": 0.65,
+    "news_rss_macro": 0.66,
+    "market_selected_articles": 0.80,
     "text_premium": 0.82,
-    "text_blog": 0.66,
-    "text_telegram": 0.60,
+    "text_blog": 0.68,
+    "text_telegram": 0.62,
     "text_image_map": 0.58,
-    "text_images_ocr": 0.58,
+    "text_images_ocr": 0.56,
     "other": 0.55,
 }
 
@@ -113,11 +117,30 @@ DUP_AXIS_PRIORITY = {
     "upside": 1,
 }
 
+CHUNK_POLICY = {
+    "dart": {"target_chars": 220, "max_chunks": 1},
+    "news_rss": {"target_chars": 420, "max_chunks": 2},
+    "news_rss_macro": {"target_chars": 420, "max_chunks": 2},
+    "market_selected_articles": {"target_chars": 650, "max_chunks": 4},
+    "text_telegram": {"target_chars": 700, "max_chunks": 4},
+    "text_blog": {"target_chars": 750, "max_chunks": 5},
+    "text_premium": {"target_chars": 750, "max_chunks": 5},
+    "text_image_map": {"target_chars": 550, "max_chunks": 3},
+    "text_images_ocr": {"target_chars": 500, "max_chunks": 3},
+    "other": {"target_chars": 650, "max_chunks": 4},
+}
+
+STOPWORDS = {
+    "the", "and", "for", "with", "from", "that", "this", "into", "after", "before", "about", "market",
+    "stock", "company", "기업", "시장", "투자", "기사", "뉴스", "증권", "대한", "관련", "에서", "으로", "하는",
+}
+
 
 @dataclass
 class Config:
     input_jsonl: Path
     output_csv: Path
+    claim_card_jsonl: Path
     dart_signal_csv: Path
     summary_json: Path
     backend: str
@@ -213,43 +236,122 @@ def _parse_kst_date(value: str) -> str:
     return ts.date().isoformat()
 
 
-def _source_family(source: str) -> str:
-    s = (source or "").strip().lower()
-    if s == "dart" or s.startswith("dart"):
+def _canonical_source_family(source: str, explicit: str = "") -> str:
+    s = (explicit or "").strip().lower()
+    if s.endswith("_nosymbol"):
+        s = s[: -len("_nosymbol")]
+    if s in SOURCE_RELIABILITY:
+        return s
+
+    src = (source or "").strip().lower()
+    if src == "dart" or src.startswith("dart"):
         return "dart"
-    if s.startswith("rss_macro:"):
+    if src.startswith("rss_macro:"):
         return "news_rss_macro"
-    if s.startswith("rss:"):
+    if src.startswith("rss:"):
         return "news_rss"
-    if s.startswith("text/telegram"):
+    if src.startswith("market/selected_articles"):
+        return "market_selected_articles"
+    if src.startswith("text/telegram"):
         return "text_telegram"
-    if s.startswith("text/blog"):
+    if src.startswith("text/blog"):
         return "text_blog"
-    if s.startswith("text/premium"):
+    if src.startswith("text/premium"):
         return "text_premium"
-    if s.startswith("text/image_map"):
+    if src.startswith("text/image_map"):
         return "text_image_map"
-    if s.startswith("text/images_ocr"):
+    if src.startswith("text/images_ocr"):
         return "text_images_ocr"
     return "other"
 
 
+def _normalize_symbols(symbols: object) -> tuple[list[str], list[str]]:
+    if not isinstance(symbols, list):
+        return [], []
+    actual: list[str] = []
+    placeholders: list[str] = []
+    for raw in symbols:
+        s = str(raw or "").strip().upper()
+        if not s:
+            continue
+        if s.startswith("__") and s.endswith("__"):
+            if s not in placeholders:
+                placeholders.append(s)
+            continue
+        if s not in actual:
+            actual.append(s)
+    return actual, placeholders
+
+
+def _split_sentences(text: str) -> list[str]:
+    text = re.sub(r"\s+", " ", text or "").strip()
+    if not text:
+        return []
+    parts = re.split(r"(?<=[.!?。！？])\s+", text)
+    out = [p.strip() for p in parts if p.strip()]
+    return out or [text]
+
+
+def _chunk_text(text: str, source_family: str) -> list[str]:
+    text = (text or "").strip()
+    if not text:
+        return []
+
+    policy = CHUNK_POLICY.get(source_family, CHUNK_POLICY["other"])
+    target_chars = int(policy["target_chars"])
+    max_chunks = int(policy["max_chunks"])
+
+    if source_family == "dart":
+        return [text[:target_chars]]
+
+    blocks = [re.sub(r"\s+", " ", b).strip() for b in re.split(r"\n\s*\n+", text) if b.strip()]
+    if len(blocks) <= 1:
+        blocks = _split_sentences(text)
+
+    chunks: list[str] = []
+    buf: list[str] = []
+    buf_len = 0
+    for block in blocks:
+        if not block:
+            continue
+        block_len = len(block)
+        if buf and buf_len + block_len + 1 > target_chars:
+            chunks.append("\n".join(buf).strip())
+            buf = [block]
+            buf_len = block_len
+        else:
+            buf.append(block)
+            buf_len += block_len + (1 if buf else 0)
+    if buf:
+        chunks.append("\n".join(buf).strip())
+
+    if not chunks:
+        chunks = [text[:target_chars]]
+
+    trimmed = [c[: max(target_chars + 120, target_chars)] for c in chunks if c.strip()]
+    return trimmed[:max_chunks]
+
+
 def _detect_event_flags(text: str, source_family: str) -> dict[str, bool]:
     flags = {k: False for k in EVENT_KEYWORDS.keys()}
-    if source_family not in {"dart", "news_rss", "news_rss_macro", "text_premium", "text_blog", "text_telegram"}:
+    if source_family not in {"dart", "news_rss", "news_rss_macro", "market_selected_articles", "text_premium", "text_blog", "text_telegram"}:
         return flags
 
     tl = (text or "").lower()
     for ev, kws in EVENT_KEYWORDS.items():
         flags[ev] = any(kw.lower() in tl for kw in kws)
+
+    if source_family == "dart":
+        if "주주총회" in text or "지분" in text:
+            flags["guidance"] = flags["guidance"] or False
     return flags
 
 
-def _infer_macro_risk(text: str, source_family: str) -> tuple[float, int, int, bool]:
-    if source_family not in {"news_rss", "news_rss_macro", "text_premium", "text_blog", "text_telegram"}:
+def _infer_macro_risk(text: str) -> tuple[float, int, int, bool]:
+    tl = (text or "").lower()
+    if not tl:
         return 0.0, 0, 0, False
 
-    tl = (text or "").lower()
     on = sum(1 for k in RISK_ON_WORDS if k in tl)
     off = sum(1 for k in RISK_OFF_WORDS if k in tl)
     if on + off == 0:
@@ -259,7 +361,28 @@ def _infer_macro_risk(text: str, source_family: str) -> tuple[float, int, int, b
     return _clip(score, -1.0, 1.0), int(on), int(off), True
 
 
-def _score_doc_axes(text: str, source_family: str, flags: dict[str, bool], macro_score: float, macro_has_signal: bool) -> dict[str, float]:
+def _evidence_sentences(text: str) -> list[str]:
+    out: list[str] = []
+    for part in re.split(r"\n+", text or ""):
+        out.extend(_split_sentences(part))
+    return [s.strip() for s in out if s.strip()]
+
+
+def _extract_evidence_snippet(text: str, flags: dict[str, bool]) -> str:
+    sentences = _evidence_sentences(text)
+    strong_keywords = set(UPSIDE_WORDS) | set(DOWNSIDE_WORDS) | set(PERSIST_POS_WORDS) | set(PERSIST_NEG_WORDS)
+    for ev, present in flags.items():
+        if present:
+            strong_keywords.update(EVENT_KEYWORDS.get(ev, []))
+
+    for sent in sentences:
+        low = sent.lower()
+        if any(k.lower() in low for k in strong_keywords):
+            return sent[:260]
+    return (sentences[0] if sentences else text)[:260]
+
+
+def _score_claim_card(text: str, source_family: str, flags: dict[str, bool]) -> dict[str, float | str]:
     toks = _tokenize(text)
     n_toks = len(toks)
 
@@ -267,48 +390,75 @@ def _score_doc_axes(text: str, source_family: str, flags: dict[str, bool], macro
     down_hits = sum(1 for t in toks if t in DOWNSIDE_WORDS)
     pers_pos = sum(1 for t in toks if t in PERSIST_POS_WORDS)
     pers_neg = sum(1 for t in toks if t in PERSIST_NEG_WORDS)
+    event_hits = sum(int(v) for v in flags.values())
+    has_number = bool(re.search(r"\d", text or ""))
 
     polarity = (up_hits - down_hits) / max(up_hits + down_hits, 1)
     pers_balance = (pers_pos - pers_neg) / max(pers_pos + pers_neg, 1)
+    evidence_density = min(n_toks, 120) / 120.0
 
-    upside = 50.0 + 24.0 * polarity + 10.0 * min(up_hits, 6) / 6.0
-    downside = 50.0 - 20.0 * polarity + 12.0 * min(down_hits, 6) / 6.0
+    upside = 50.0 + 22.0 * polarity + 8.0 * min(up_hits, 6) / 6.0
+    downside = 50.0 - 20.0 * polarity + 10.0 * min(down_hits, 6) / 6.0
+    bm_sector_fit = 100.0 * SOURCE_BM_BASE.get(source_family, SOURCE_BM_BASE["other"])
+    persistence = 38.0 + 18.0 * pers_balance + 18.0 * evidence_density
 
-    # 이벤트 보정(방향성 분리)
     if flags.get("order", False):
         upside += 8.0
+        persistence += 4.0
+        bm_sector_fit += 4.0
     if flags.get("guidance", False):
         upside += 4.0
+        persistence += 3.0
     if flags.get("rights_issue", False):
-        downside += 11.0
+        downside += 12.0
+        bm_sector_fit -= 5.0
+        persistence -= 4.0
     if flags.get("lawsuit", False):
         downside += 10.0
-
-    # 매크로 보정
-    if macro_has_signal:
-        upside += 8.0 * macro_score
-        downside += 12.0 * (-macro_score)
-
-    source_bm_base = 100.0 * SOURCE_BM_BASE.get(source_family, SOURCE_BM_BASE["other"])
-    bm_sector_fit = source_bm_base
-    if flags.get("order", False):
-        bm_sector_fit += 4.0
-    if flags.get("rights_issue", False) or flags.get("lawsuit", False):
         bm_sector_fit -= 6.0
-    if macro_has_signal:
-        bm_sector_fit += 6.0 * macro_score
+        persistence -= 5.0
 
-    persistence = 45.0 + 18.0 * pers_balance + 12.0 * min(n_toks, 140) / 140.0
-    if flags.get("order", False) or flags.get("guidance", False):
-        persistence += 5.0
-    if flags.get("rights_issue", False) or flags.get("lawsuit", False):
-        persistence -= 4.0
+    if has_number:
+        bm_sector_fit += 3.0
+        persistence += 2.0
+
+    if source_family == "dart":
+        bm_sector_fit += 7.0
+    elif source_family == "market_selected_articles":
+        bm_sector_fit += 2.0
+
+    upside = _clip(upside, 0.0, 100.0)
+    downside = _clip(downside, 0.0, 100.0)
+    bm_sector_fit = _clip(bm_sector_fit, 0.0, 100.0)
+    persistence = _clip(persistence, 0.0, 100.0)
+
+    axis_strength = {
+        "upside": abs(upside - 50.0),
+        "downside": abs(downside - 50.0),
+        "bm": abs(bm_sector_fit - 50.0),
+        "persistence": abs(persistence - 50.0),
+    }
+    dominant_axis = max(axis_strength.items(), key=lambda kv: kv[1])[0]
+
+    confidence = _clip(
+        0.32 + 0.08 * min(up_hits + down_hits + pers_pos + pers_neg, 5) + 0.10 * event_hits + (0.06 if has_number else 0.0),
+        0.15,
+        0.98,
+    )
+    claim_weight = _clip(
+        SOURCE_RELIABILITY.get(source_family, SOURCE_RELIABILITY["other"]) * (0.85 + 0.18 * min(event_hits, 2) + 0.16 * min(evidence_density, 1.0) + 0.08 * (1.0 if has_number else 0.0)),
+        0.20,
+        2.00,
+    )
 
     return {
-        "upside_score_doc": _clip(upside, 0.0, 100.0),
-        "downside_risk_score_doc": _clip(downside, 0.0, 100.0),
-        "bm_sector_fit_score_doc": _clip(bm_sector_fit, 0.0, 100.0),
-        "persistence_score_doc": _clip(persistence, 0.0, 100.0),
+        "upside_score_card": upside,
+        "downside_risk_score_card": downside,
+        "bm_sector_fit_score_card": bm_sector_fit,
+        "persistence_score_card": persistence,
+        "dominant_axis": dominant_axis,
+        "claim_confidence": confidence,
+        "claim_weight": claim_weight,
         "up_hits": float(up_hits),
         "down_hits": float(down_hits),
         "pers_pos_hits": float(pers_pos),
@@ -316,18 +466,39 @@ def _score_doc_axes(text: str, source_family: str, flags: dict[str, bool], macro
     }
 
 
+def _issue_cluster_key(source_family: str, flags: dict[str, bool], text: str) -> str:
+    events = [k for k, v in flags.items() if v]
+    if events:
+        return f"event:{'+'.join(sorted(events))}"
+
+    toks = []
+    for tok in _tokenize(text):
+        if len(tok) < 2:
+            continue
+        if tok.isdigit():
+            continue
+        if tok in STOPWORDS:
+            continue
+        if tok not in toks:
+            toks.append(tok)
+        if len(toks) >= 3:
+            break
+    if toks:
+        return f"topic:{source_family}:{'-'.join(toks)}"
+    return f"topic:{source_family}:generic"
+
+
+def _issue_cluster_id(date_kst: str, symbol: str, source_family: str, flags: dict[str, bool], text: str) -> str:
+    key = _issue_cluster_key(source_family, flags, text)
+    seed = f"{date_kst}:{symbol}:{key}"
+    return hashlib.sha1(seed.encode("utf-8", errors="ignore")).hexdigest()[:16]
+
+
 def _weighted_mean(v: pd.Series, w: pd.Series) -> float:
     ws = float(w.sum())
     if ws <= 0:
         return float(v.mean()) if len(v) else 0.0
     return float((v * w).sum() / ws)
-
-
-def _weighted_ratio(mask: pd.Series, w: pd.Series) -> float:
-    ws = float(w.sum())
-    if ws <= 0:
-        return float(mask.mean()) if len(mask) else 0.0
-    return float((mask.astype(float) * w).sum() / ws)
 
 
 def _axis_corr_pairs(df: pd.DataFrame, cols: list[str], threshold: float) -> tuple[list[dict], pd.DataFrame]:
@@ -346,20 +517,20 @@ def _axis_corr_pairs(df: pd.DataFrame, cols: list[str], threshold: float) -> tup
     return pairs, corr
 
 
-def _load_rows(cfg: Config) -> tuple[list[dict], list[dict], list[str], dict]:
-    rows: list[dict] = []
-    macro_docs: list[dict] = []
-    errors: list[str] = []
-
-    stats = {
-        "docs_scanned": 0,
-        "docs_loaded": 0,
-        "docs_dedup_dropped": 0,
-        "docs_skipped_macro_only": 0,
+def _new_load_stats() -> dict:
+    return {
+        "records_scanned": 0,
+        "records_loaded": 0,
+        "records_dedup_dropped": 0,
+        "records_macro_only": 0,
+        "records_skipped_nosymbol": 0,
+        "claim_cards_generated": 0,
+        "issue_clusters_generated": 0,
         "source_docs": {
             "dart": 0,
             "news_rss": 0,
             "news_rss_macro": 0,
+            "market_selected_articles": 0,
             "text_telegram": 0,
             "text_blog": 0,
             "text_premium": 0,
@@ -369,13 +540,21 @@ def _load_rows(cfg: Config) -> tuple[list[dict], list[dict], list[str], dict]:
         },
     }
 
+
+def _load_claim_cards(cfg: Config) -> tuple[list[dict], list[dict], list[str], dict]:
+    claim_cards: list[dict] = []
+    macro_docs: list[dict] = []
+    errors: list[str] = []
+    stats = _new_load_stats()
+
     if not cfg.input_jsonl.exists():
         if cfg.bootstrap_empty_ok:
-            return rows, macro_docs, errors, stats
+            return claim_cards, macro_docs, errors, stats
         errors.append(f"input_missing:{cfg.input_jsonl}")
-        return rows, macro_docs, errors, stats
+        return claim_cards, macro_docs, errors, stats
 
     seen_fingerprint: set[str] = set()
+    seen_clusters: set[str] = set()
 
     with cfg.input_jsonl.open("r", encoding="utf-8") as f:
         for i, line in enumerate(f, start=1):
@@ -383,7 +562,7 @@ def _load_rows(cfg: Config) -> tuple[list[dict], list[dict], list[str], dict]:
             if not line:
                 continue
 
-            stats["docs_scanned"] += 1
+            stats["records_scanned"] += 1
 
             try:
                 obj = json.loads(line)
@@ -396,7 +575,8 @@ def _load_rows(cfg: Config) -> tuple[list[dict], list[dict], list[str], dict]:
             symbols = obj.get("symbols", [])
             text = str(obj.get("text", "")).strip()
             source = str(obj.get("source", "")).strip()
-            source_family = _source_family(source)
+            explicit_source_family = str(obj.get("source_family", "")).strip()
+            source_family = _canonical_source_family(source, explicit_source_family)
 
             if not record_id:
                 errors.append(f"line={i}:missing_record_id")
@@ -417,78 +597,131 @@ def _load_rows(cfg: Config) -> tuple[list[dict], list[dict], list[str], dict]:
 
             fp = str(obj.get("content_fingerprint", "")).strip() or _text_fingerprint(text)
             if fp in seen_fingerprint:
-                stats["docs_dedup_dropped"] += 1
+                stats["records_dedup_dropped"] += 1
                 continue
             seen_fingerprint.add(fp)
 
-            norm_symbols = []
-            for s in symbols:
-                ss = str(s).strip().upper()
-                if not ss:
-                    continue
-                if ss == "__MACRO__":
-                    continue
-                norm_symbols.append(ss)
-
-            flags = _detect_event_flags(text, source_family)
-            macro_score, macro_on, macro_off, macro_has_signal = _infer_macro_risk(text, source_family)
-            reliability = SOURCE_RELIABILITY.get(source_family, SOURCE_RELIABILITY["other"])
-            doc_axes = _score_doc_axes(text, source_family, flags, macro_score, macro_has_signal)
-
-            if macro_has_signal:
-                macro_docs.append(
-                    {
-                        "date": date_kst,
-                        "record_id": record_id,
-                        "macro_score": macro_score,
-                        "risk_on_cnt": macro_on,
-                        "risk_off_cnt": macro_off,
-                        "source_family": source_family,
-                    }
-                )
-
-            if not norm_symbols:
-                if source_family == "news_rss_macro":
-                    stats["docs_skipped_macro_only"] += 1
-                    stats["source_docs"][source_family] += 1
-                    stats["docs_loaded"] += 1
-                    continue
-                errors.append(f"line={i}:symbols_all_empty")
+            actual_symbols, placeholders = _normalize_symbols(symbols)
+            chunks = _chunk_text(text, source_family)
+            if not chunks:
                 continue
 
-            for sym in norm_symbols:
-                rows.append(
-                    {
-                        "date": date_kst,
-                        "symbol": sym,
-                        "record_id": record_id,
-                        "source": source,
-                        "source_family": source_family,
-                        "source_reliability": reliability,
-                        "upside_score_doc": doc_axes["upside_score_doc"],
-                        "downside_risk_score_doc": doc_axes["downside_risk_score_doc"],
-                        "bm_sector_fit_score_doc": doc_axes["bm_sector_fit_score_doc"],
-                        "persistence_score_doc": doc_axes["persistence_score_doc"],
-                        "event_order": int(flags["order"]),
-                        "event_rights_issue": int(flags["rights_issue"]),
-                        "event_lawsuit": int(flags["lawsuit"]),
-                        "event_guidance": int(flags["guidance"]),
-                        "event_tagged": int(any(flags.values())),
-                    }
-                )
+            if not actual_symbols:
+                if "__MACRO__" in placeholders or source_family == "news_rss_macro":
+                    for chunk_idx, chunk_text in enumerate(chunks, start=1):
+                        macro_score, macro_on, macro_off, macro_has_signal = _infer_macro_risk(chunk_text)
+                        if not macro_has_signal:
+                            continue
+                        macro_docs.append(
+                            {
+                                "date": date_kst,
+                                "record_id": record_id,
+                                "chunk_id": chunk_idx,
+                                "macro_score": macro_score,
+                                "risk_on_cnt": macro_on,
+                                "risk_off_cnt": macro_off,
+                                "source_family": source_family,
+                            }
+                        )
+                    stats["records_macro_only"] += 1
+                    stats["source_docs"][source_family] = stats["source_docs"].get(source_family, 0) + 1
+                    stats["records_loaded"] += 1
+                    continue
+
+                stats["records_skipped_nosymbol"] += 1
+                stats["source_docs"][source_family] = stats["source_docs"].get(source_family, 0) + 1
+                stats["records_loaded"] += 1
+                continue
+
+            source_reliability = SOURCE_RELIABILITY.get(source_family, SOURCE_RELIABILITY["other"])
+            for sym in actual_symbols:
+                for chunk_idx, chunk_text in enumerate(chunks, start=1):
+                    flags = _detect_event_flags(chunk_text, source_family)
+                    score = _score_claim_card(chunk_text, source_family, flags)
+                    issue_cluster_id = _issue_cluster_id(date_kst, sym, source_family, flags, chunk_text)
+                    seen_clusters.add(f"{date_kst}:{sym}:{issue_cluster_id}")
+                    evidence = _extract_evidence_snippet(chunk_text, flags)
+                    claim_card_id = hashlib.sha1(f"{record_id}:{sym}:{chunk_idx}:{issue_cluster_id}".encode("utf-8", errors="ignore")).hexdigest()[:20]
+                    claim_cards.append(
+                        {
+                            "date": date_kst,
+                            "symbol": sym,
+                            "record_id": record_id,
+                            "chunk_id": chunk_idx,
+                            "focus_symbol": sym,
+                            "claim_card_id": claim_card_id,
+                            "issue_cluster_id": issue_cluster_id,
+                            "source": source,
+                            "source_family": source_family,
+                            "source_reliability": source_reliability,
+                            "chunk_text": chunk_text,
+                            "evidence_text": evidence,
+                            "upside_score_card": score["upside_score_card"],
+                            "downside_risk_score_card": score["downside_risk_score_card"],
+                            "bm_sector_fit_score_card": score["bm_sector_fit_score_card"],
+                            "persistence_score_card": score["persistence_score_card"],
+                            "dominant_axis": score["dominant_axis"],
+                            "claim_confidence": score["claim_confidence"],
+                            "claim_weight": score["claim_weight"],
+                            "event_order": int(flags["order"]),
+                            "event_rights_issue": int(flags["rights_issue"]),
+                            "event_lawsuit": int(flags["lawsuit"]),
+                            "event_guidance": int(flags["guidance"]),
+                            "event_tagged": int(any(flags.values())),
+                        }
+                    )
+                    stats["claim_cards_generated"] += 1
 
             stats["source_docs"][source_family] = stats["source_docs"].get(source_family, 0) + 1
-            stats["docs_loaded"] += 1
+            stats["records_loaded"] += 1
 
-    return rows, macro_docs, errors, stats
+    stats["issue_clusters_generated"] = int(len(seen_clusters))
+    return claim_cards, macro_docs, errors, stats
 
 
-def _build_features(rows: list[dict], macro_docs: list[dict], backend: str) -> tuple[pd.DataFrame, dict]:
+def _build_issue_clusters(claim_cards: list[dict]) -> pd.DataFrame:
+    if not claim_cards:
+        return pd.DataFrame(columns=[
+            "date",
+            "symbol",
+            "issue_cluster_id",
+            "cluster_weight",
+            "cluster_claim_count",
+            "cluster_doc_count",
+            "cluster_upside_score",
+            "cluster_downside_risk_score",
+            "cluster_bm_sector_fit_score",
+            "cluster_persistence_score",
+        ])
+
+    df = pd.DataFrame(claim_cards)
+
+    def _agg_cluster(g: pd.DataFrame) -> pd.Series:
+        w = g["claim_weight"].astype(float)
+        return pd.Series(
+            {
+                "cluster_weight": float(max(w.sum(), 1.0)),
+                "cluster_claim_count": int(len(g)),
+                "cluster_doc_count": int(g["record_id"].nunique()),
+                "cluster_upside_score": _weighted_mean(g["upside_score_card"], w),
+                "cluster_downside_risk_score": _weighted_mean(g["downside_risk_score_card"], w),
+                "cluster_bm_sector_fit_score": _weighted_mean(g["bm_sector_fit_score_card"], w),
+                "cluster_persistence_score": _weighted_mean(g["persistence_score_card"], w),
+            }
+        )
+
+    out = df.groupby(["date", "symbol", "issue_cluster_id"]).apply(_agg_cluster, include_groups=False).reset_index()
+    return out.sort_values(["date", "symbol", "issue_cluster_id"]).reset_index(drop=True)
+
+
+def _build_features(claim_cards: list[dict], macro_docs: list[dict], backend: str) -> tuple[pd.DataFrame, dict]:
     cols = [
         "date",
         "symbol",
         "doc_count",
         "mention_count",
+        "claim_card_count",
+        "issue_cluster_count",
         "upside_score",
         "downside_risk_score",
         "risk_score",
@@ -499,6 +732,8 @@ def _build_features(rows: list[dict], macro_docs: list[dict], backend: str) -> t
         "source_reliability_mean",
         "dart_doc_count",
         "news_doc_count",
+        "rss_doc_count",
+        "selected_articles_doc_count",
         "news_mention_count",
         "telegram_doc_count",
         "blog_doc_count",
@@ -543,47 +778,56 @@ def _build_features(rows: list[dict], macro_docs: list[dict], backend: str) -> t
         "post_high_corr_pair_count": 0,
     }
 
-    if not rows:
+    if not claim_cards:
         return pd.DataFrame(columns=cols), empty_diag
 
-    df = pd.DataFrame(rows)
+    cards = pd.DataFrame(claim_cards)
+    clusters = _build_issue_clusters(claim_cards)
 
-    def _agg_group(g: pd.DataFrame) -> pd.Series:
-        w = g["source_reliability"].astype(float)
-        doc_ids = g["record_id"].astype(str)
-
+    def _agg_counts(g: pd.DataFrame) -> pd.Series:
         source_families = set(str(x) for x in g["source_family"].tolist())
-        source_diversity_ratio = len(source_families) / 8.0
+        news_mask = g["source_family"].isin(["news_rss", "market_selected_articles"])
+        return pd.Series(
+            {
+                "doc_count": int(g["record_id"].nunique()),
+                "mention_count": int(len(g)),
+                "claim_card_count": int(g["claim_card_id"].nunique()),
+                "issue_cluster_count": int(g["issue_cluster_id"].nunique()),
+                "source_diversity_ratio": float(_clip(len(source_families) / 7.0, 0.0, 1.0)),
+                "source_reliability_mean": float(g["source_reliability"].astype(float).mean()) if len(g) else 0.0,
+                "dart_doc_count": int(g.loc[g["source_family"] == "dart", "record_id"].nunique()),
+                "news_doc_count": int(g.loc[news_mask, "record_id"].nunique()),
+                "rss_doc_count": int(g.loc[g["source_family"] == "news_rss", "record_id"].nunique()),
+                "selected_articles_doc_count": int(g.loc[g["source_family"] == "market_selected_articles", "record_id"].nunique()),
+                "news_mention_count": int(news_mask.sum()),
+                "telegram_doc_count": int(g.loc[g["source_family"] == "text_telegram", "record_id"].nunique()),
+                "blog_doc_count": int(g.loc[g["source_family"] == "text_blog", "record_id"].nunique()),
+                "premium_doc_count": int(g.loc[g["source_family"] == "text_premium", "record_id"].nunique()),
+                "image_map_doc_count": int(g.loc[g["source_family"] == "text_image_map", "record_id"].nunique()),
+                "images_ocr_doc_count": int(g.loc[g["source_family"] == "text_images_ocr", "record_id"].nunique()),
+                "event_tagged_doc_count": int(g.loc[g["event_tagged"] == 1, "record_id"].nunique()),
+                "event_order_count": int(g.loc[g["event_order"] == 1, "record_id"].nunique()),
+                "event_rights_issue_count": int(g.loc[g["event_rights_issue"] == 1, "record_id"].nunique()),
+                "event_lawsuit_count": int(g.loc[g["event_lawsuit"] == 1, "record_id"].nunique()),
+                "event_guidance_count": int(g.loc[g["event_guidance"] == 1, "record_id"].nunique()),
+            }
+        )
 
-        ns = g[g["source_family"].isin(["news_rss", "news_rss_macro"])]
+    count_df = cards.groupby(["date", "symbol"]).apply(_agg_counts, include_groups=False).reset_index()
 
-        base = {
-            "doc_count": int(doc_ids.nunique()),
-            "mention_count": int(len(g)),
-            "upside_score": _weighted_mean(g["upside_score_doc"], w),
-            "downside_risk_score": _weighted_mean(g["downside_risk_score_doc"], w),
-            "bm_sector_fit_score": _weighted_mean(g["bm_sector_fit_score_doc"], w),
-            "persistence_score_doc_mean": _weighted_mean(g["persistence_score_doc"], w),
-            "source_diversity_ratio": float(_clip(source_diversity_ratio, 0.0, 1.0)),
-            "source_reliability_mean": float(w.mean()) if len(w) else 0.0,
-            "dart_doc_count": int(g.loc[g["source_family"] == "dart", "record_id"].nunique()),
-            "news_doc_count": int(ns["record_id"].nunique()) if not ns.empty else 0,
-            "news_mention_count": int(len(ns)) if not ns.empty else 0,
-            "telegram_doc_count": int(g.loc[g["source_family"] == "text_telegram", "record_id"].nunique()),
-            "blog_doc_count": int(g.loc[g["source_family"] == "text_blog", "record_id"].nunique()),
-            "premium_doc_count": int(g.loc[g["source_family"] == "text_premium", "record_id"].nunique()),
-            "image_map_doc_count": int(g.loc[g["source_family"] == "text_image_map", "record_id"].nunique()),
-            "images_ocr_doc_count": int(g.loc[g["source_family"] == "text_images_ocr", "record_id"].nunique()),
-            "event_tagged_doc_count": int(g.loc[g["event_tagged"] == 1, "record_id"].nunique()),
-            "event_order_count": int(g.loc[g["event_order"] == 1, "record_id"].nunique()),
-            "event_rights_issue_count": int(g.loc[g["event_rights_issue"] == 1, "record_id"].nunique()),
-            "event_lawsuit_count": int(g.loc[g["event_lawsuit"] == 1, "record_id"].nunique()),
-            "event_guidance_count": int(g.loc[g["event_guidance"] == 1, "record_id"].nunique()),
-        }
+    def _agg_scores(g: pd.DataFrame) -> pd.Series:
+        w = g["cluster_weight"].astype(float)
+        return pd.Series(
+            {
+                "upside_score": _weighted_mean(g["cluster_upside_score"], w),
+                "downside_risk_score": _weighted_mean(g["cluster_downside_risk_score"], w),
+                "bm_sector_fit_score": _weighted_mean(g["cluster_bm_sector_fit_score"], w),
+                "persistence_score_cluster_mean": _weighted_mean(g["cluster_persistence_score"], w),
+            }
+        )
 
-        return pd.Series(base)
-
-    g = df.groupby(["date", "symbol"], as_index=False).apply(_agg_group, include_groups=False).reset_index(drop=True)
+    score_df = clusters.groupby(["date", "symbol"]).apply(_agg_scores, include_groups=False).reset_index()
+    g = count_df.merge(score_df, on=["date", "symbol"], how="left")
 
     if macro_docs:
         md = pd.DataFrame(macro_docs)
@@ -603,42 +847,35 @@ def _build_features(rows: list[dict], macro_docs: list[dict], backend: str) -> t
     for c in ["macro_news_doc_count", "macro_risk_signal", "macro_risk_on_ratio", "macro_risk_off_ratio"]:
         g[c] = g[c].fillna(0)
 
-    # 축 점수 보정(중복 아닌 보조 보정만)
     g["upside_score"] = (
-        g["upside_score"]
-        + 8.0 * g["macro_risk_on_ratio"]
-        - 6.0 * g["macro_risk_off_ratio"]
+        g["upside_score"] + 7.0 * g["macro_risk_on_ratio"] - 6.0 * g["macro_risk_off_ratio"]
     ).clip(0.0, 100.0)
-
     g["downside_risk_score"] = (
-        g["downside_risk_score"]
-        + 12.0 * g["macro_risk_off_ratio"]
-        - 6.0 * g["macro_risk_on_ratio"]
+        g["downside_risk_score"] + 11.0 * g["macro_risk_off_ratio"] - 5.0 * g["macro_risk_on_ratio"]
     ).clip(0.0, 100.0)
-
     g["bm_sector_fit_score"] = (
-        0.72 * g["bm_sector_fit_score"]
-        + 28.0 * g["source_diversity_ratio"]
+        0.74 * g["bm_sector_fit_score"]
+        + 22.0 * g["source_diversity_ratio"]
         + 6.0 * (g["dart_doc_count"] > 0).astype(float)
-        + 4.0 * (g["premium_doc_count"] > 0).astype(float)
-        - 8.0 * g["macro_risk_off_ratio"]
+        + 3.0 * (g["premium_doc_count"] > 0).astype(float)
+        + 3.0 * (g["selected_articles_doc_count"] > 0).astype(float)
+        - 7.0 * g["macro_risk_off_ratio"]
     ).clip(0.0, 100.0)
 
     g = g.sort_values(["symbol", "date"], ascending=[True, True]).reset_index(drop=True)
     g["doc_presence"] = (g["doc_count"] > 0).astype(float)
     g["presence_roll_20"] = g.groupby("symbol")["doc_presence"].transform(lambda s: s.rolling(20, min_periods=1).mean())
-    g["mention_roll_20"] = g.groupby("symbol")["mention_count"].transform(lambda s: s.rolling(20, min_periods=1).mean())
+    g["cluster_roll_20"] = g.groupby("symbol")["issue_cluster_count"].transform(lambda s: s.rolling(20, min_periods=1).mean())
 
     g["persistence_score"] = (
-        0.50 * g["persistence_score_doc_mean"]
-        + 35.0 * g["presence_roll_20"]
-        + 15.0 * (g["mention_roll_20"].clip(0, 10) / 10.0)
+        0.55 * g["persistence_score_cluster_mean"]
+        + 25.0 * g["presence_roll_20"]
+        + 20.0 * (g["cluster_roll_20"].clip(0, 6) / 6.0)
     ).clip(0.0, 100.0)
 
     g["risk_score"] = g["downside_risk_score"].clip(0.0, 100.0)
     g["net_edge_score"] = (g["upside_score"] - g["downside_risk_score"]).clip(-100.0, 100.0)
 
-    # 4축 대표값 [-1,1]
     g["dup_axis_upside_rep"] = ((g["upside_score"] - 50.0) / 50.0).clip(-1.0, 1.0)
     g["dup_axis_downside_rep"] = ((g["downside_risk_score"] - 50.0) / 50.0).clip(-1.0, 1.0)
     g["dup_axis_bm_rep"] = ((g["bm_sector_fit_score"] - 50.0) / 50.0).clip(-1.0, 1.0)
@@ -674,11 +911,7 @@ def _build_features(rows: list[dict], macro_docs: list[dict], backend: str) -> t
     if sum(axis_weights.values()) <= 1e-12:
         axis_weights = dict(DUP_AXIS_BASE_WEIGHTS)
 
-    sum_w = float(sum(axis_weights.values()))
-    if sum_w <= 1e-12:
-        sum_w = 1.0
-
-    # downside는 위험축이므로 음(-) 기여
+    sum_w = float(sum(axis_weights.values())) or 1.0
     g["qualitative_signal"] = (
         axis_weights["upside"] * g["dup_axis_upside_rep"]
         - axis_weights["downside"] * g["dup_axis_downside_rep"]
@@ -775,10 +1008,18 @@ def _build_dart_signal(feat: pd.DataFrame) -> pd.DataFrame:
     ].sort_values(["date", "symbol"], ascending=[True, True]).reset_index(drop=True)
 
 
+def _write_claim_cards_jsonl(path: Path, claim_cards: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        for row in claim_cards:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
 def _parse_args() -> Config:
     p = argparse.ArgumentParser(description="Stage3 local-brain qualitative 4-axis gate")
     p.add_argument("--input-jsonl", default=str(INPUT_DEFAULT))
     p.add_argument("--output-csv", default=str(OUTPUT_DEFAULT))
+    p.add_argument("--claim-card-jsonl", default=str(CLAIM_CARD_OUTPUT_DEFAULT))
     p.add_argument("--dart-signal-csv", default=str(DART_SIGNAL_OUTPUT_DEFAULT))
     p.add_argument("--summary-json", default=str(SUMMARY_DEFAULT))
     p.add_argument("--backend", choices=["keyword_local", "llama_local"], default="keyword_local")
@@ -790,6 +1031,7 @@ def _parse_args() -> Config:
     return Config(
         input_jsonl=Path(a.input_jsonl),
         output_csv=Path(a.output_csv),
+        claim_card_jsonl=Path(a.claim_card_jsonl),
         dart_signal_csv=Path(a.dart_signal_csv),
         summary_json=Path(a.summary_json),
         backend=a.backend,
@@ -804,11 +1046,11 @@ def main() -> None:
 
     _assert_local_brain_guard(cfg.backend, cfg.local_endpoint, cfg.local_model)
 
-    rows, macro_docs, errors, load_stats = _load_rows(cfg)
+    claim_cards, macro_docs, errors, load_stats = _load_claim_cards(cfg)
     if errors:
         _fail("; ".join(errors[:20]), 43)
 
-    feat, dup_diag = _build_features(rows, macro_docs, cfg.backend)
+    feat, dup_diag = _build_features(claim_cards, macro_docs, cfg.backend)
     if feat.empty and not cfg.bootstrap_empty_ok:
         _fail("no_valid_records_after_validation", 44)
 
@@ -817,30 +1059,44 @@ def main() -> None:
     cfg.dart_signal_csv.parent.mkdir(parents=True, exist_ok=True)
 
     feat.to_csv(cfg.output_csv, index=False)
+    _write_claim_cards_jsonl(cfg.claim_card_jsonl, claim_cards)
+
     dart_sig = _build_dart_signal(feat)
     dart_sig.to_csv(cfg.dart_signal_csv, index=False)
 
-    rows_df = pd.DataFrame(rows)
+    cards_df = pd.DataFrame(claim_cards)
     summary = {
         "stage": "stage3_qualitative_axes_gate_local_brain",
         "local_brain_enforced": True,
         "backend": cfg.backend,
         "local_endpoint": cfg.local_endpoint,
         "input_jsonl": str(cfg.input_jsonl),
+        "claim_card_jsonl": str(cfg.claim_card_jsonl),
         "output_csv": str(cfg.output_csv),
         "dart_signal_csv": str(cfg.dart_signal_csv),
-        "records_loaded": int(load_stats.get("docs_loaded", 0)),
-        "records_scanned": int(load_stats.get("docs_scanned", 0)),
-        "records_dedup_dropped": int(load_stats.get("docs_dedup_dropped", 0)),
-        "records_macro_only": int(load_stats.get("docs_skipped_macro_only", 0)),
+        "canonical_intermediate_corpus": str(cfg.input_jsonl),
+        "units": {
+            "storage_unit": "stage2_text_meta_records.jsonl row",
+            "model_evaluation_unit": "(record_id, chunk_id, focus_symbol)",
+            "aggregation_unit": "(symbol, date, issue_cluster_id) -> (symbol, date)",
+        },
+        "records_loaded": int(load_stats.get("records_loaded", 0)),
+        "records_scanned": int(load_stats.get("records_scanned", 0)),
+        "records_dedup_dropped": int(load_stats.get("records_dedup_dropped", 0)),
+        "records_macro_only": int(load_stats.get("records_macro_only", 0)),
+        "records_skipped_nosymbol": int(load_stats.get("records_skipped_nosymbol", 0)),
         "source_docs": load_stats.get("source_docs", {}),
-        "mentions_loaded": int(len(rows)),
-        "news_docs_loaded": int(rows_df.loc[rows_df["source_family"].isin(["news_rss", "news_rss_macro"]), "record_id"].nunique()) if not rows_df.empty else 0,
-        "telegram_docs_loaded": int(rows_df.loc[rows_df["source_family"] == "text_telegram", "record_id"].nunique()) if not rows_df.empty else 0,
-        "blog_docs_loaded": int(rows_df.loc[rows_df["source_family"] == "text_blog", "record_id"].nunique()) if not rows_df.empty else 0,
-        "premium_docs_loaded": int(rows_df.loc[rows_df["source_family"] == "text_premium", "record_id"].nunique()) if not rows_df.empty else 0,
-        "image_map_docs_loaded": int(rows_df.loc[rows_df["source_family"] == "text_image_map", "record_id"].nunique()) if not rows_df.empty else 0,
-        "images_ocr_docs_loaded": int(rows_df.loc[rows_df["source_family"] == "text_images_ocr", "record_id"].nunique()) if not rows_df.empty else 0,
+        "claim_cards_generated": int(load_stats.get("claim_cards_generated", 0)),
+        "issue_clusters_generated": int(load_stats.get("issue_clusters_generated", 0)),
+        "mentions_loaded": int(len(claim_cards)),
+        "news_docs_loaded": int(cards_df.loc[cards_df["source_family"].isin(["news_rss", "market_selected_articles"]), "record_id"].nunique()) if not cards_df.empty else 0,
+        "rss_docs_loaded": int(cards_df.loc[cards_df["source_family"] == "news_rss", "record_id"].nunique()) if not cards_df.empty else 0,
+        "selected_articles_docs_loaded": int(cards_df.loc[cards_df["source_family"] == "market_selected_articles", "record_id"].nunique()) if not cards_df.empty else 0,
+        "telegram_docs_loaded": int(cards_df.loc[cards_df["source_family"] == "text_telegram", "record_id"].nunique()) if not cards_df.empty else 0,
+        "blog_docs_loaded": int(cards_df.loc[cards_df["source_family"] == "text_blog", "record_id"].nunique()) if not cards_df.empty else 0,
+        "premium_docs_loaded": int(cards_df.loc[cards_df["source_family"] == "text_premium", "record_id"].nunique()) if not cards_df.empty else 0,
+        "image_map_docs_loaded": int(cards_df.loc[cards_df["source_family"] == "text_image_map", "record_id"].nunique()) if not cards_df.empty else 0,
+        "images_ocr_docs_loaded": int(cards_df.loc[cards_df["source_family"] == "text_images_ocr", "record_id"].nunique()) if not cards_df.empty else 0,
         "macro_news_docs_loaded": int(pd.DataFrame(macro_docs)["record_id"].nunique()) if macro_docs else 0,
         "symbols_output": int(feat["symbol"].nunique()) if not feat.empty else 0,
         "rows_output": int(len(feat)),
@@ -882,12 +1138,13 @@ def main() -> None:
             "bootstrap_empty_ok": cfg.bootstrap_empty_ok,
         },
         inputs=[str(cfg.input_jsonl)],
-        outputs=[str(cfg.output_csv), str(cfg.dart_signal_csv), str(cfg.summary_json)],
+        outputs=[str(cfg.output_csv), str(cfg.claim_card_jsonl), str(cfg.dart_signal_csv), str(cfg.summary_json)],
         out_path=str(manifest_path),
         workdir=str(WORKSPACE_ROOT),
     )
 
     print(f"STAGE3_DONE output={cfg.output_csv}")
+    print(f"STAGE3_CLAIM_CARDS={cfg.claim_card_jsonl}")
     print(f"STAGE3_DART_SIGNAL={cfg.dart_signal_csv}")
     print(f"STAGE3_SUMMARY={cfg.summary_json}")
     print(f"STAGE3_MANIFEST={manifest_path}")

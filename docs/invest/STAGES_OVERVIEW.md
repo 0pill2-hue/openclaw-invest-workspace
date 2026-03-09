@@ -15,10 +15,10 @@
 게이트: 보존법칙·논리 invariant·신선도 기준을 만족해야 Stage3/4 입력으로 승격된다.
 
 ### Stage3 — ACTIVE
-목적: 정성/비정형 입력을 attention gate로 요약해 구조화 가능한 특징으로 바꾼다.
-입력: Stage1 정성 원천과 Stage2 clean 메타 입력.
-출력: JSONL 중간 입력, attention/sentiment feature, 실행 요약.
-게이트: 로컬 브레인 처리와 최소 입력 조건이 충족되어야 Stage4로 전달된다.
+목적: Stage2 clean 기반 정성/비정형 입력을 로컬 브레인 claim-card 추출과 rule-engine 집계로 4축 정성신호로 압축한다.
+입력: Stage2 clean qualitative/signal 입력, `stage2_text_meta_records.jsonl`, Stage3 reference.
+출력: JSONL 중간 입력, 4축 정성 feature, claim-card 증거, DART event signal, 실행 요약.
+게이트: 로컬 브레인 처리, 최소 입력 조건, 중복가드 검증이 충족되어야 Stage4로 전달된다.
 
 ### Stage4 — ACTIVE
 목적: 상위 입력을 결합해 가치 계산과 핵심 검증 산출물을 생성한다.
@@ -38,13 +38,13 @@
 출력: 비교 결과, 선발 결과, 결과 등급별 보고 자산.
 게이트: 검증·승인·증빙이 충족된 결과만 VALIDATED 또는 PRODUCTION으로 승격된다.
 
-## Reserved stages
+### Stage7 — ACTIVE
+목적: Stage4 산출을 튜닝 입력 인터페이스 JSON으로 고정해 후속 실험/조정 입력 계약을 만든다.
+입력: Stage4 value 출력, Stage4 report, Stage4 manifest.
+출력: stage7 tuning input JSON, interface build 결과 JSON.
+게이트: Stage4 source 경로와 required_columns 계약이 확인되어야 유효 산출물로 인정된다.
 
-### Stage7 — RESERVED
-목적: 향후 튜닝 입력 인터페이스 또는 고급 실험 orchestration을 수용하기 위한 예약 단계다.
-입력: 미확인. 상위 stage에서 정규화된 입력을 받는 확장 슬롯으로 본다.
-출력: 미확인. 실운영 채택 전까지는 예약 영역으로 유지한다.
-게이트: 설계 확정과 문서화 완료 전에는 ACTIVE 전환 금지.
+## Reserved stages
 
 ### Stage8 — RESERVED
 목적: 향후 컷오프/분기 관리 또는 중간 승인 절차를 담당할 수 있는 예약 단계다.

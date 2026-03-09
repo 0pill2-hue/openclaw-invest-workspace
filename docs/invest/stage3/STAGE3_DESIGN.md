@@ -29,7 +29,26 @@
 
 ---
 
-## 3) 점수축 설계
+## 3) 평가 단위 / 내부 구조 (Local-model friendly)
+3층 평가 단위:
+1. 저장 단위: `stage2_text_meta_records.jsonl`의 row
+2. 모델 평가 단위: `(record_id, chunk_id, focus_symbol)`
+3. 집계 단위: `(symbol, date, issue_cluster_id)`
+
+구조 분리:
+- LLM(local) = claim-card 추출기(짧은 chunk + evidence)
+- Rule engine = 점수기/집계기(축 점수 + 중복가드 + 최종 signal)
+
+source family 권장 처리:
+- DART: deterministic event extraction 우선(보조 판정만 로컬모델)
+- RSS: item 단위(`title+summary`), 길면 1~2 chunk 제한
+- selected_articles: `market_selected_articles` 정식 family로 symbol-focus chunk 평가
+- macro-only(`__MACRO__`) 문서는 종목축에 직접 넣지 않고 날짜 매크로 보정치로만 사용
+- `__NOSYMBOL__`는 종목 점수 집계에서 제외(통계로만 유지)
+
+---
+
+## 4) 점수축 설계
 모든 축은 0~100 점수.
 
 - `upside_score`: 개선/성장/수주/가이던스 등 상승 근거 축
@@ -43,7 +62,7 @@
 
 ---
 
-## 4) 이중카운팅 방지
+## 5) 이중카운팅 방지
 1. 축 대표값 1개 원칙
 2. 축간 상관 임계치: `|rho| > 0.7`이면 낮은 우선순위 축 제거
 3. 단일축 가중치 cap: `<= 0.25`
@@ -53,7 +72,7 @@
 
 ---
 
-## 5) 출력 스키마
+## 6) 출력 스키마
 ### 5.1 주 출력
 - `invest/stages/stage3/outputs/features/stage3_qualitative_axes_features.csv`
 - 핵심 컬럼:
@@ -62,17 +81,23 @@
   - `qualitative_signal`
   - `dup_guard_axis_weight_{upside,downside,bm,persistence}`
 
-### 5.2 DART 신호 분리 출력
+### 6.2 Claim-card 중간 출력
+- `invest/stages/stage3/outputs/features/stage3_claim_cards.jsonl`
+- 핵심 필드:
+  - `date,symbol,record_id,chunk_id,focus_symbol,issue_cluster_id`
+  - `evidence_text,dominant_axis,claim_confidence,claim_weight`
+
+### 6.3 DART 신호 분리 출력
 - `invest/stages/stage3/outputs/signal/dart_event_signal.csv`
 - 컬럼:
   - `date,symbol,dart_doc_count,event_*_count,dart_event_signal`
 
-### 5.3 요약
+### 6.4 요약
 - `invest/stages/stage3/outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json`
 
 ---
 
-## 6) Stage4 연계
+## 7) Stage4 연계
 - Stage4 조인키: `date + symbol`
 - Stage4 결합 구조:
   - `VALUE_SCORE`와 `QUALITATIVE_SIGNAL`의 결합 구조를 유지한다.
@@ -82,7 +107,7 @@
 
 ---
 
-## 7) 재현 명령
+## 8) 재현 명령
 ```bash
 cd "$(git rev-parse --show-toplevel)"
 
@@ -95,6 +120,7 @@ python3 -m py_compile \
 /usr/bin/python3 invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py \
   --input-jsonl invest/stages/stage3/inputs/stage2_text_meta_records.jsonl \
   --output-csv invest/stages/stage3/outputs/features/stage3_qualitative_axes_features.csv \
+  --claim-card-jsonl invest/stages/stage3/outputs/features/stage3_claim_cards.jsonl \
   --dart-signal-csv invest/stages/stage3/outputs/signal/dart_event_signal.csv \
   --summary-json invest/stages/stage3/outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json
 ```
