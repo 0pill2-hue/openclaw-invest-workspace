@@ -43,7 +43,8 @@ source family 권장 처리:
 - DART: deterministic event extraction 우선(보조 판정만 로컬모델)
 - RSS: item 단위(`title+summary`), 길면 1~2 chunk 제한
 - selected_articles: `market_selected_articles` 정식 family로 symbol-focus chunk 평가
-- macro-only(`__MACRO__`) 문서는 종목축에 직접 넣지 않고 날짜 매크로 보정치로만 사용
+- macro-only(`__MACRO__`) 문서는 standalone `stage3_macro_forecast.csv`의 입력으로 우선 집계
+- stock axis 반영은 선택 플래그(`--apply-macro-to-stock-axes on|off`)로 제어하고, 기본은 `on`으로 두어 backward-compat를 유지
 - `__NOSYMBOL__`는 종목 점수 집계에서 제외(통계로만 유지)
 
 ---
@@ -92,7 +93,14 @@ source family 권장 처리:
 - 컬럼:
   - `date,symbol,dart_doc_count,event_*_count,dart_event_signal`
 
-### 6.4 요약
+### 6.4 Macro forecast 분리 출력
+- `invest/stages/stage3/outputs/signal/stage3_macro_forecast.csv`
+- 핵심 컬럼:
+  - `date,macro_doc_count,macro_risk_signal,macro_risk_on_ratio,macro_risk_off_ratio`
+  - `macro_regime_label,macro_forecast_score,macro_confidence,macro_horizon`
+  - `macro_evidence_summary,macro_source_mix,brain_backend`
+
+### 6.5 요약
 - `invest/stages/stage3/outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json`
 
 ---
@@ -103,7 +111,11 @@ source family 권장 처리:
   - `VALUE_SCORE`와 `QUALITATIVE_SIGNAL`의 결합 구조를 유지한다.
   - 세부 가중치는 영구 고정 규칙이 아니라 baseline/candidate/tuning 대상이다.
 - Stage4 입력 경로:
-  - `upstream_stage3_outputs/features/stage3_qualitative_axes_features.csv`
+  - stock qualitative: `upstream_stage3_outputs/features/stage3_qualitative_axes_features.csv`
+  - macro qualitative: `upstream_stage3_outputs/signal/stage3_macro_forecast.csv`
+- 권장 결합 계약:
+  - stock row는 `date + symbol`로 조인
+  - macro row는 `date` 단위로 별도 조인 후 시장 regime 보정 입력으로 사용
 
 ---
 
@@ -122,5 +134,6 @@ python3 -m py_compile \
   --output-csv invest/stages/stage3/outputs/features/stage3_qualitative_axes_features.csv \
   --claim-card-jsonl invest/stages/stage3/outputs/features/stage3_claim_cards.jsonl \
   --dart-signal-csv invest/stages/stage3/outputs/signal/dart_event_signal.csv \
+  --macro-forecast-csv invest/stages/stage3/outputs/signal/stage3_macro_forecast.csv \
   --summary-json invest/stages/stage3/outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json
 ```

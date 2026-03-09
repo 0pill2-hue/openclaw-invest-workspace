@@ -17,7 +17,7 @@
 ### Stage3 — ACTIVE
 목적: Stage2 clean 기반 정성/비정형 입력을 로컬 브레인 claim-card 추출과 rule-engine 집계로 4축 정성신호로 압축한다.
 입력: Stage2 clean qualitative/signal 입력, `stage2_text_meta_records.jsonl`, Stage3 reference.
-출력: JSONL 중간 입력, 4축 정성 feature, claim-card 증거, DART event signal, 실행 요약.
+출력: JSONL 중간 입력, 4축 정성 feature, claim-card 증거, DART event signal, standalone macro forecast, 실행 요약.
 게이트: 로컬 브레인 처리, 최소 입력 조건, 중복가드 검증이 충족되어야 Stage4로 전달된다.
 
 ### Stage4 — ACTIVE

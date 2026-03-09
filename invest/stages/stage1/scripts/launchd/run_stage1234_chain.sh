@@ -392,7 +392,8 @@ STAGE3_CMD=(
   "$PYTHON_BIN"
   invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py
   --input-jsonl invest/stages/stage3/inputs/stage2_text_meta_records.jsonl
-  --output-csv invest/stages/stage3/outputs/features/attention_sentiment_features.csv
+  --output-csv invest/stages/stage3/outputs/features/stage3_qualitative_axes_features.csv
+  --macro-forecast-csv invest/stages/stage3/outputs/signal/stage3_macro_forecast.csv
   --summary-json invest/stages/stage3/outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json
 )
 if [[ "${STAGE3_BOOTSTRAP_EMPTY_OK:-1}" == "1" ]]; then

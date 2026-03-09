@@ -36,6 +36,7 @@ updated_at: 2026-03-09 KST
   - `(record_id, chunk_id, focus_symbol)` claim-card 생성
   - issue cluster 및 `(symbol,date)` feature 집계
   - `dart_event_signal.csv` 생성
+  - 날짜 단위 standalone `stage3_macro_forecast.csv` 생성
 
 ---
 
@@ -457,14 +458,24 @@ cluster weighted mean:
 - `bm_sector_fit_score`
 - `persistence_score_cluster_mean`
 
-### 14.4 macro adjustment
+### 14.4 macro context + standalone forecast
 macro summary를 날짜별로 합쳐 아래를 만든다.
 - `macro_news_doc_count`
 - `macro_risk_signal = mean(macro_score)`
 - `macro_risk_on_ratio = mean(macro_score > 0)`
 - `macro_risk_off_ratio = mean(macro_score < 0)`
+- `macro_regime_label ∈ {risk_on, risk_off, neutral, mixed}`
+- `macro_forecast_score = clip(50 + 35*macro_risk_signal + 10*(macro_risk_on_ratio - macro_risk_off_ratio), 0, 100)`
+- `macro_confidence = clip(0.35 + 0.12*min(macro_doc_count,4)/4 + 0.20*max(abs(macro_risk_signal), abs(macro_risk_on_ratio-macro_risk_off_ratio)) + 0.08*min(unique_source_family_count,3)/3, 0.20, 0.97)`
+- `macro_horizon = "1-5d"`
+- `macro_evidence_summary = top unique macro evidence snippets joined by " | " (max 3)`
+- `macro_source_mix = "<source_family>:<ratio>" csv string`
 
-보정식:
+stock axis 반영 정책:
+- 기본 실행 플래그: `--apply-macro-to-stock-axes on` (backward-compat)
+- `off`이면 macro context 컬럼만 남기고 stock axis(`upside/downside/bm`)는 직접 mutate하지 않는다.
+
+`--apply-macro-to-stock-axes on`일 때만 아래 보정식을 적용한다.
 - `upside_score = clip(upside_score + 7*macro_risk_on_ratio - 6*macro_risk_off_ratio, 0, 100)`
 - `downside_risk_score = clip(downside_risk_score + 11*macro_risk_off_ratio - 5*macro_risk_on_ratio, 0, 100)`
 - `bm_sector_fit_score = clip(0.74*bm_sector_fit_score + 22*source_diversity_ratio + 6*(dart_doc_count>0) + 3*(premium_doc_count>0) + 3*(selected_articles_doc_count>0) - 7*macro_risk_off_ratio, 0, 100)`
@@ -520,6 +531,7 @@ rolling window는 symbol별 20일
 - `stage4_numeric_weight = 0.80`
 - `stage3_qual_weight = 0.20`
 - `stage4_link_formula = "COMPOSITE = 0.80*VALUE_SCORE + 0.20*QUALITATIVE_SIGNAL"`
+- Stage4 macro contract(권장): `date` 기준으로 `stage3_macro_forecast.csv`를 별도 조인하고, stock row의 `QUALITATIVE_SIGNAL`과 독립적으로 regime overlay를 적용한다.
 
 ---
 
@@ -535,6 +547,7 @@ rolling window는 symbol별 20일
 - `telegram_doc_count`, `blog_doc_count`, `premium_doc_count`, `image_map_doc_count`, `images_ocr_doc_count`
 - `event_tagged_doc_count`, `event_order_count`, `event_rights_issue_count`, `event_lawsuit_count`, `event_guidance_count`
 - `macro_news_doc_count`, `macro_risk_on_ratio`, `macro_risk_off_ratio`, `macro_risk_signal`
+- `macro_to_stock_axes_applied`
 - `qualitative_signal`
 - duplication guard fields
   - `dup_guard_axis_weight_upside`
@@ -556,7 +569,26 @@ rolling window는 symbol별 20일
 
 ---
 
-## 17) DART event signal
+## 17) macro forecast CSV
+출력: `invest/stages/stage3/outputs/signal/stage3_macro_forecast.csv`
+
+컬럼:
+- `date`
+- `macro_doc_count`
+- `macro_risk_signal`
+- `macro_risk_on_ratio`
+- `macro_risk_off_ratio`
+- `macro_regime_label`
+- `macro_forecast_score`
+- `macro_confidence`
+- `macro_horizon`
+- `macro_evidence_summary`
+- `macro_source_mix`
+- `brain_backend`
+
+---
+
+## 18) DART event signal
 출력: `invest/stages/stage3/outputs/signal/dart_event_signal.csv`
 
 생성 대상:
@@ -578,7 +610,7 @@ rolling window는 symbol별 20일
 
 ---
 
-## 18) summary JSON schema
+## 19) summary JSON schema
 출력: `invest/stages/stage3/outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json`
 
 top-level key:
@@ -590,6 +622,7 @@ top-level key:
 - `claim_card_jsonl`
 - `output_csv`
 - `dart_signal_csv`
+- `macro_forecast_csv`
 - `canonical_intermediate_corpus`
 - `units`
 - `records_loaded`
@@ -606,6 +639,8 @@ top-level key:
 - `symbols_output`
 - `rows_output`
 - `dart_signal_rows`
+- `macro_forecast_rows`
+- `apply_macro_to_stock_axes`
 - `axes`
 - `duplication_guard`
 - `bootstrap_empty_ok`
@@ -617,7 +652,7 @@ top-level key:
 
 ---
 
-## 19) 실행 커맨드
+## 20) 실행 커맨드
 ```bash
 # input build
 python3 invest/stages/stage3/scripts/stage03_build_input_jsonl.py
@@ -628,6 +663,7 @@ python3 invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py \
   --output-csv invest/stages/stage3/outputs/features/stage3_qualitative_axes_features.csv \
   --claim-card-jsonl invest/stages/stage3/outputs/features/stage3_claim_cards.jsonl \
   --dart-signal-csv invest/stages/stage3/outputs/signal/dart_event_signal.csv \
+  --macro-forecast-csv invest/stages/stage3/outputs/signal/stage3_macro_forecast.csv \
   --summary-json invest/stages/stage3/outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json
 
 # bootstrap mode
@@ -647,11 +683,13 @@ gate optional args:
 - `--backend keyword_local|llama_local`
 - `--local-endpoint`
 - `--local-model`
+- `--macro-forecast-csv`
+- `--apply-macro-to-stock-axes on|off`
 - `--bootstrap-empty-ok`
 
 ---
 
-## 20) PASS / FAIL 기준
+## 21) PASS / FAIL 기준
 - builder는 출력 0건이어도 JSONL 파일은 만든다.
 - gate는 아래면 실패
   - local-only policy 위반
@@ -665,9 +703,9 @@ gate optional args:
 
 ---
 
-## 21) 재현 구현 요약
+## 22) 재현 구현 요약
 Stage3를 문서만 보고 재현하려면 아래를 동일하게 맞추면 된다.
 1. builder의 source별 record 생성 규칙과 intermediate JSONL schema
 2. chunk policy / keyword table / source prior
 3. claim-card score formula / cluster rule / duplication guard
-4. feature CSV / dart signal / summary JSON schema
+4. feature CSV / macro forecast / dart signal / summary JSON schema

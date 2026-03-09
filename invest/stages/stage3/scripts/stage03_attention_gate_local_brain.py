@@ -37,6 +37,7 @@ INPUT_DEFAULT = STAGE_ROOT / "inputs/stage2_text_meta_records.jsonl"
 OUTPUT_DEFAULT = STAGE_ROOT / "outputs/features/stage3_qualitative_axes_features.csv"
 CLAIM_CARD_OUTPUT_DEFAULT = STAGE_ROOT / "outputs/features/stage3_claim_cards.jsonl"
 DART_SIGNAL_OUTPUT_DEFAULT = STAGE_ROOT / "outputs/signal/dart_event_signal.csv"
+MACRO_FORECAST_OUTPUT_DEFAULT = STAGE_ROOT / "outputs/signal/stage3_macro_forecast.csv"
 SUMMARY_DEFAULT = STAGE_ROOT / "outputs/STAGE3_LOCAL_BRAIN_RUN_latest.json"
 
 UPSIDE_WORDS = {
@@ -142,10 +143,12 @@ class Config:
     output_csv: Path
     claim_card_jsonl: Path
     dart_signal_csv: Path
+    macro_forecast_csv: Path
     summary_json: Path
     backend: str
     local_endpoint: str
     local_model: str
+    apply_macro_to_stock_axes: bool
     bootstrap_empty_ok: bool
 
 
@@ -378,6 +381,16 @@ def _extract_evidence_snippet(text: str, flags: dict[str, bool]) -> str:
     for sent in sentences:
         low = sent.lower()
         if any(k.lower() in low for k in strong_keywords):
+            return sent[:260]
+    return (sentences[0] if sentences else text)[:260]
+
+
+def _extract_macro_evidence_snippet(text: str) -> str:
+    sentences = _evidence_sentences(text)
+    keywords = {str(k).lower() for k in (set(RISK_ON_WORDS) | set(RISK_OFF_WORDS))}
+    for sent in sentences:
+        low = sent.lower()
+        if any(k in low for k in keywords):
             return sent[:260]
     return (sentences[0] if sentences else text)[:260]
 
@@ -620,7 +633,9 @@ def _load_claim_cards(cfg: Config) -> tuple[list[dict], list[dict], list[str], d
                                 "macro_score": macro_score,
                                 "risk_on_cnt": macro_on,
                                 "risk_off_cnt": macro_off,
+                                "source": source,
                                 "source_family": source_family,
+                                "evidence_text": _extract_macro_evidence_snippet(chunk_text),
                             }
                         )
                     stats["records_macro_only"] += 1
@@ -714,7 +729,95 @@ def _build_issue_clusters(claim_cards: list[dict]) -> pd.DataFrame:
     return out.sort_values(["date", "symbol", "issue_cluster_id"]).reset_index(drop=True)
 
 
-def _build_features(claim_cards: list[dict], macro_docs: list[dict], backend: str) -> tuple[pd.DataFrame, dict]:
+def _macro_regime_label(signal: float, risk_on_ratio: float, risk_off_ratio: float) -> str:
+    if risk_on_ratio >= 0.60 and signal > 0.10:
+        return "risk_on"
+    if risk_off_ratio >= 0.60 and signal < -0.10:
+        return "risk_off"
+    if abs(signal) < 0.15 and abs(risk_on_ratio - risk_off_ratio) < 0.20:
+        return "neutral"
+    return "mixed"
+
+
+def _macro_source_mix(values: list[str]) -> str:
+    cleaned = [str(v or "").strip() or "other" for v in values]
+    if not cleaned:
+        return ""
+    total = len(cleaned)
+    counts = pd.Series(cleaned).value_counts()
+    return ", ".join(f"{idx}:{count/total:.2f}" for idx, count in counts.items())
+
+
+def _macro_evidence_summary(values: list[str], limit: int = 3) -> str:
+    seen: list[str] = []
+    for raw in values:
+        text = str(raw or "").strip()
+        if not text or text in seen:
+            continue
+        seen.append(text[:260])
+        if len(seen) >= limit:
+            break
+    return " | ".join(seen)
+
+
+def _build_macro_forecast(macro_docs: list[dict], backend: str) -> pd.DataFrame:
+    cols = [
+        "date",
+        "macro_doc_count",
+        "macro_risk_signal",
+        "macro_risk_on_ratio",
+        "macro_risk_off_ratio",
+        "macro_regime_label",
+        "macro_forecast_score",
+        "macro_confidence",
+        "macro_horizon",
+        "macro_evidence_summary",
+        "macro_source_mix",
+        "brain_backend",
+    ]
+    if not macro_docs:
+        return pd.DataFrame(columns=cols)
+
+    md = pd.DataFrame(macro_docs)
+    rows: list[dict] = []
+    for date, group in md.groupby("date", sort=True):
+        macro_doc_count = int(group["record_id"].nunique())
+        macro_risk_signal = float(group["macro_score"].mean()) if len(group) else 0.0
+        macro_risk_on_ratio = float((group["macro_score"] > 0).mean()) if len(group) else 0.0
+        macro_risk_off_ratio = float((group["macro_score"] < 0).mean()) if len(group) else 0.0
+        macro_regime_label = _macro_regime_label(macro_risk_signal, macro_risk_on_ratio, macro_risk_off_ratio)
+        macro_forecast_score = _clip(50.0 + 35.0 * macro_risk_signal + 10.0 * (macro_risk_on_ratio - macro_risk_off_ratio), 0.0, 100.0)
+        source_mix = _macro_source_mix(group["source_family"].astype(str).tolist())
+        source_diversity = max(int(group["source_family"].astype(str).nunique()), 1)
+        macro_confidence = _clip(
+            0.35
+            + 0.12 * min(macro_doc_count, 4) / 4.0
+            + 0.20 * max(abs(macro_risk_signal), abs(macro_risk_on_ratio - macro_risk_off_ratio))
+            + 0.08 * min(source_diversity, 3) / 3.0,
+            0.20,
+            0.97,
+        )
+        rows.append(
+            {
+                "date": date,
+                "macro_doc_count": macro_doc_count,
+                "macro_risk_signal": macro_risk_signal,
+                "macro_risk_on_ratio": macro_risk_on_ratio,
+                "macro_risk_off_ratio": macro_risk_off_ratio,
+                "macro_regime_label": macro_regime_label,
+                "macro_forecast_score": macro_forecast_score,
+                "macro_confidence": macro_confidence,
+                "macro_horizon": "1-5d",
+                "macro_evidence_summary": _macro_evidence_summary(group["evidence_text"].astype(str).tolist()),
+                "macro_source_mix": source_mix,
+                "brain_backend": backend,
+            }
+        )
+
+    return pd.DataFrame(rows, columns=cols).sort_values(["date"]).reset_index(drop=True)
+
+
+def _build_features(claim_cards: list[dict], macro_docs: list[dict], backend: str, apply_macro_to_stock_axes: bool) -> tuple[pd.DataFrame, dict, pd.DataFrame]:
     cols = [
         "date",
         "symbol",
@@ -749,6 +852,7 @@ def _build_features(claim_cards: list[dict], macro_docs: list[dict], backend: st
         "macro_risk_on_ratio",
         "macro_risk_off_ratio",
         "macro_risk_signal",
+        "macro_to_stock_axes_applied",
         "qualitative_signal",
         "dup_guard_axis_weight_upside",
         "dup_guard_axis_weight_downside",
@@ -778,8 +882,10 @@ def _build_features(claim_cards: list[dict], macro_docs: list[dict], backend: st
         "post_high_corr_pair_count": 0,
     }
 
+    macro_forecast = _build_macro_forecast(macro_docs, backend)
+
     if not claim_cards:
-        return pd.DataFrame(columns=cols), empty_diag
+        return pd.DataFrame(columns=cols), empty_diag, macro_forecast
 
     cards = pd.DataFrame(claim_cards)
     clusters = _build_issue_clusters(claim_cards)
@@ -829,15 +935,15 @@ def _build_features(claim_cards: list[dict], macro_docs: list[dict], backend: st
     score_df = clusters.groupby(["date", "symbol"]).apply(_agg_scores, include_groups=False).reset_index()
     g = count_df.merge(score_df, on=["date", "symbol"], how="left")
 
-    if macro_docs:
-        md = pd.DataFrame(macro_docs)
-        mg = md.groupby("date", as_index=False).agg(
-            macro_news_doc_count=("record_id", "nunique"),
-            macro_risk_signal=("macro_score", "mean"),
-            macro_risk_on_ratio=("macro_score", lambda s: float((s > 0).mean())),
-            macro_risk_off_ratio=("macro_score", lambda s: float((s < 0).mean())),
-        )
-        g = g.merge(mg, on="date", how="left")
+    if not macro_forecast.empty:
+        macro_merge = macro_forecast.rename(columns={"macro_doc_count": "macro_news_doc_count"})[[
+            "date",
+            "macro_news_doc_count",
+            "macro_risk_signal",
+            "macro_risk_on_ratio",
+            "macro_risk_off_ratio",
+        ]]
+        g = g.merge(macro_merge, on="date", how="left")
     else:
         g["macro_news_doc_count"] = 0
         g["macro_risk_signal"] = 0.0
@@ -847,20 +953,23 @@ def _build_features(claim_cards: list[dict], macro_docs: list[dict], backend: st
     for c in ["macro_news_doc_count", "macro_risk_signal", "macro_risk_on_ratio", "macro_risk_off_ratio"]:
         g[c] = g[c].fillna(0)
 
-    g["upside_score"] = (
-        g["upside_score"] + 7.0 * g["macro_risk_on_ratio"] - 6.0 * g["macro_risk_off_ratio"]
-    ).clip(0.0, 100.0)
-    g["downside_risk_score"] = (
-        g["downside_risk_score"] + 11.0 * g["macro_risk_off_ratio"] - 5.0 * g["macro_risk_on_ratio"]
-    ).clip(0.0, 100.0)
-    g["bm_sector_fit_score"] = (
-        0.74 * g["bm_sector_fit_score"]
-        + 22.0 * g["source_diversity_ratio"]
-        + 6.0 * (g["dart_doc_count"] > 0).astype(float)
-        + 3.0 * (g["premium_doc_count"] > 0).astype(float)
-        + 3.0 * (g["selected_articles_doc_count"] > 0).astype(float)
-        - 7.0 * g["macro_risk_off_ratio"]
-    ).clip(0.0, 100.0)
+    if apply_macro_to_stock_axes:
+        g["upside_score"] = (
+            g["upside_score"] + 7.0 * g["macro_risk_on_ratio"] - 6.0 * g["macro_risk_off_ratio"]
+        ).clip(0.0, 100.0)
+        g["downside_risk_score"] = (
+            g["downside_risk_score"] + 11.0 * g["macro_risk_off_ratio"] - 5.0 * g["macro_risk_on_ratio"]
+        ).clip(0.0, 100.0)
+        g["bm_sector_fit_score"] = (
+            0.74 * g["bm_sector_fit_score"]
+            + 22.0 * g["source_diversity_ratio"]
+            + 6.0 * (g["dart_doc_count"] > 0).astype(float)
+            + 3.0 * (g["premium_doc_count"] > 0).astype(float)
+            + 3.0 * (g["selected_articles_doc_count"] > 0).astype(float)
+            - 7.0 * g["macro_risk_off_ratio"]
+        ).clip(0.0, 100.0)
+
+    g["macro_to_stock_axes_applied"] = "on" if apply_macro_to_stock_axes else "off"
 
     g = g.sort_values(["symbol", "date"], ascending=[True, True]).reset_index(drop=True)
     g["doc_presence"] = (g["doc_count"] > 0).astype(float)
@@ -956,7 +1065,7 @@ def _build_features(claim_cards: list[dict], macro_docs: list[dict], backend: st
     }
 
     g = g[cols].sort_values(["date", "symbol"], ascending=[True, True]).reset_index(drop=True)
-    return g, dup_diag
+    return g, dup_diag, macro_forecast
 
 
 def _build_dart_signal(feat: pd.DataFrame) -> pd.DataFrame:
@@ -1021,10 +1130,12 @@ def _parse_args() -> Config:
     p.add_argument("--output-csv", default=str(OUTPUT_DEFAULT))
     p.add_argument("--claim-card-jsonl", default=str(CLAIM_CARD_OUTPUT_DEFAULT))
     p.add_argument("--dart-signal-csv", default=str(DART_SIGNAL_OUTPUT_DEFAULT))
+    p.add_argument("--macro-forecast-csv", default=str(MACRO_FORECAST_OUTPUT_DEFAULT))
     p.add_argument("--summary-json", default=str(SUMMARY_DEFAULT))
     p.add_argument("--backend", choices=["keyword_local", "llama_local"], default="keyword_local")
     p.add_argument("--local-endpoint", default="http://127.0.0.1:11434")
     p.add_argument("--local-model", default="llama_local_v1")
+    p.add_argument("--apply-macro-to-stock-axes", choices=["on", "off"], default="on")
     p.add_argument("--bootstrap-empty-ok", action="store_true")
     a = p.parse_args()
 
@@ -1033,10 +1144,12 @@ def _parse_args() -> Config:
         output_csv=Path(a.output_csv),
         claim_card_jsonl=Path(a.claim_card_jsonl),
         dart_signal_csv=Path(a.dart_signal_csv),
+        macro_forecast_csv=Path(a.macro_forecast_csv),
         summary_json=Path(a.summary_json),
         backend=a.backend,
         local_endpoint=a.local_endpoint,
         local_model=a.local_model,
+        apply_macro_to_stock_axes=(a.apply_macro_to_stock_axes == "on"),
         bootstrap_empty_ok=bool(a.bootstrap_empty_ok),
     )
 
@@ -1050,19 +1163,22 @@ def main() -> None:
     if errors:
         _fail("; ".join(errors[:20]), 43)
 
-    feat, dup_diag = _build_features(claim_cards, macro_docs, cfg.backend)
+    feat, dup_diag, macro_forecast = _build_features(claim_cards, macro_docs, cfg.backend, cfg.apply_macro_to_stock_axes)
     if feat.empty and not cfg.bootstrap_empty_ok:
         _fail("no_valid_records_after_validation", 44)
 
     cfg.output_csv.parent.mkdir(parents=True, exist_ok=True)
     cfg.summary_json.parent.mkdir(parents=True, exist_ok=True)
     cfg.dart_signal_csv.parent.mkdir(parents=True, exist_ok=True)
+    cfg.macro_forecast_csv.parent.mkdir(parents=True, exist_ok=True)
 
     feat.to_csv(cfg.output_csv, index=False)
     _write_claim_cards_jsonl(cfg.claim_card_jsonl, claim_cards)
 
     dart_sig = _build_dart_signal(feat)
     dart_sig.to_csv(cfg.dart_signal_csv, index=False)
+
+    macro_forecast.to_csv(cfg.macro_forecast_csv, index=False)
 
     cards_df = pd.DataFrame(claim_cards)
     summary = {
@@ -1074,6 +1190,7 @@ def main() -> None:
         "claim_card_jsonl": str(cfg.claim_card_jsonl),
         "output_csv": str(cfg.output_csv),
         "dart_signal_csv": str(cfg.dart_signal_csv),
+        "macro_forecast_csv": str(cfg.macro_forecast_csv),
         "canonical_intermediate_corpus": str(cfg.input_jsonl),
         "units": {
             "storage_unit": "stage2_text_meta_records.jsonl row",
@@ -1101,6 +1218,8 @@ def main() -> None:
         "symbols_output": int(feat["symbol"].nunique()) if not feat.empty else 0,
         "rows_output": int(len(feat)),
         "dart_signal_rows": int(len(dart_sig)),
+        "macro_forecast_rows": int(len(macro_forecast)),
+        "apply_macro_to_stock_axes": cfg.apply_macro_to_stock_axes,
         "axes": {
             "upside_score": "0~100 (higher is better)",
             "downside_risk_score": "0~100 (higher is riskier)",
@@ -1136,9 +1255,10 @@ def main() -> None:
             "local_endpoint": cfg.local_endpoint,
             "local_model": cfg.local_model,
             "bootstrap_empty_ok": cfg.bootstrap_empty_ok,
+            "apply_macro_to_stock_axes": cfg.apply_macro_to_stock_axes,
         },
         inputs=[str(cfg.input_jsonl)],
-        outputs=[str(cfg.output_csv), str(cfg.claim_card_jsonl), str(cfg.dart_signal_csv), str(cfg.summary_json)],
+        outputs=[str(cfg.output_csv), str(cfg.claim_card_jsonl), str(cfg.dart_signal_csv), str(cfg.macro_forecast_csv), str(cfg.summary_json)],
         out_path=str(manifest_path),
         workdir=str(WORKSPACE_ROOT),
     )
@@ -1146,6 +1266,7 @@ def main() -> None:
     print(f"STAGE3_DONE output={cfg.output_csv}")
     print(f"STAGE3_CLAIM_CARDS={cfg.claim_card_jsonl}")
     print(f"STAGE3_DART_SIGNAL={cfg.dart_signal_csv}")
+    print(f"STAGE3_MACRO_FORECAST={cfg.macro_forecast_csv}")
     print(f"STAGE3_SUMMARY={cfg.summary_json}")
     print(f"STAGE3_MANIFEST={manifest_path}")
 
