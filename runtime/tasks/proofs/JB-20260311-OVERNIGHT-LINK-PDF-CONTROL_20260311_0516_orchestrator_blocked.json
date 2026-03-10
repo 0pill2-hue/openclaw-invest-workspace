@@ -1,0 +1,27 @@
+{
+  "ticket_id": "JB-20260311-OVERNIGHT-LINK-PDF-CONTROL",
+  "run_id": "20260311051621",
+  "orchestrator_action": "spawn_subagent_and_close_as_blocked",
+  "closed_status": "BLOCKED",
+  "closed_reason": "07:00 KST report checkpoint has not been reached yet, so DONE is not valid now. A read-only observer subagent was spawned to continue execution without duplicate writer/rebuild actions.",
+  "resume_due": "2026-03-11 07:00:00",
+  "child_session_key": "agent:main:subagent:e90b3278-f957-40d4-8dc8-d48e920e7e10",
+  "child_run_id": "776ef15f-6858-4df4-b6f1-a7dd6c5c84f4",
+  "ticket_snapshot": {
+    "status_before_close": "IN_PROGRESS",
+    "priority": "P0",
+    "assignee": "main-orchestrator",
+    "assigned_run_id": "20260311051621",
+    "phase_before_close": "checkpoint_0500_public_fallback_threshold_diagnosed_observe_only",
+    "review_status": "PENDING",
+    "started_at": "2026-03-11 00:26:28",
+    "updated_at": "2026-03-11 05:16:21"
+  },
+  "evidence_summary": [
+    "Taskdb note already recorded that 05:00 KST diagnosis classified telegram public_fallback LinkEnriched gap as threshold/format behavior, not regression.",
+    "Task remains explicitly time-gated to the 07:00 KST reporting checkpoint.",
+    "Subagent was instructed to continue observe-first control, avoid duplicate writer/rebuild, and return DONE-ready/BLOCKED/REWORK with a proof path."
+  ],
+  "next_expected_event": "subagent completion or 07:00 KST checkpoint",
+  "created_by": "main-orchestrator"
+}

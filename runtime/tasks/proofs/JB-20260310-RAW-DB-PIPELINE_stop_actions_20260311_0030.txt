@@ -1,0 +1,8 @@
+[2026-03-11 00:31:13 +0900] before-stop
+ 7409     1  7409 S       01:09 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile telegram_fast
+ 7413  7409  7409 S       01:09 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py
+ 7414  7413  7409 S       01:09 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_scrape_telegram_public_fallback.py
+
+[2026-03-11 00:31:13 +0900] sending SIGTERM to process group: 7409
+
+[2026-03-11 00:31:16 +0900] after-stop-check

@@ -48,6 +48,7 @@
 - 메인뇌 또는 로컬뇌 probe 실패 후 복구 불가
 - Telegram 채널 configured 상태가 아니거나 상태 점검 실패
 - `tasks watchdog`/`auto-dispatch` launchd job 미적재 또는 반복 오류
+- 단, `tasks watchdog`은 **주인님 명시 지시로 pause directive가 활성화되고 실제 launchctl disabled 상태가 current-task 증빙으로 확인되는 경우** 예외로 두며, 이때는 FAIL로 보지 않는다.
 - 남은 assignable task가 있는데도 `auto-dispatch`가 재기동하지 못함
 - `runtime/current-task.md`가 placeholder라 현재 작업 복구 불가
 
@@ -73,6 +74,7 @@
 - `auto-dispatch`는 오케스트레이터 spawn 후 20초 안에 티켓이 안 닫혀도, DB가 `IN_PROGRESS/PENDING`이면 **진행 중**으로 취급하고 launchd hard-fail로 보지 않는다. 실제 실패는 close 상태가 비정상일 때만 본다.
 - 따라서 **"일 안 하고 있는데 일 남음" 문제는 watchdog 단독이 아니라 auto-dispatch까지 포함해 봐야 한다.**
 - 상위 집계 스크립트는 `scripts/heartbeat/main_brain_guard.py`로 구현한다. 이 스크립트는 `local_brain_guard`를 먼저 실행한 뒤, `openclaw status`의 Telegram `ON/OK`, `launchctl list`의 `local-brain-guard/watchdog/auto-dispatch` 라벨 상태, `runtime/tasks/watchdog.launchd.log`, `runtime/tasks/auto_dispatch_status.json`, `python3 scripts/context_policy.py resume-check --strict`를 묶어 단일 JSON/alert를 만든다.
+- 예외적으로 watchdog가 `launchctl disabled` 상태이면서 `runtime/current-task.md`의 directive/notes/proof에서 **주인님 명시 pause 상태**가 확인되면, `main_brain_guard.py`는 watchdog missing/old log를 오탐으로 보지 않고 `checks.watchdog.paused=true`로 기록한다.
 
 ## 6. 설계 원칙
 - 완전 통합보다 **역할 분리 + 상태/경고 통합**을 우선한다.

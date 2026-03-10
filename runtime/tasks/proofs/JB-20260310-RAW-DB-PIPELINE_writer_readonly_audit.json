@@ -1,0 +1,36 @@
+{
+  "generated_at_epoch": 1773155707.323738,
+  "generated_at_local": "2026-03-11 00:15:07 +0900",
+  "db_path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3",
+  "status_path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/raw_db_sync_status.json",
+  "policy_note": "user instructed: no duplicate writer; read-only audit only while existing stage01_sync_raw_to_db.py writer is active",
+  "pgrep_stdout": "846 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile news_backfill\n1417 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile telegram_fast\n4951 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile blog_fast\n4952 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile rss_fast\n5344 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_sync_raw_to_db.py\n5479 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_sync_raw_to_db.py\n5518 /bin/sh -c pgrep -fal 'stage01_sync_raw_to_db.py|stage01_daily_update.py|telegram_attachment_extract_backfill|python3' || true\n",
+  "ps_focus_stdout": "  846     1 Tue Mar 10 23:21:05 2026       54:02 S    /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile news_backfill\n 1417     1 Tue Mar 10 23:30:05 2026       45:02 S    /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile telegram_fast\n 4951     1 Wed Mar 11 00:05:05 2026       10:02 S    /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile blog_fast\n 4952     1 Wed Mar 11 00:05:05 2026       10:02 S    /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile rss_fast\n 5344  4951 Wed Mar 11 00:11:43 2026       03:24 R    /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_sync_raw_to_db.py\n 5479  4952 Wed Mar 11 00:14:58 2026       00:09 S    /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_sync_raw_to_db.py\n 5520  5501 Wed Mar 11 00:15:07 2026       00:00 S    /bin/sh -c ps -axo pid,ppid,lstart,etime,stat,command | egrep 'stage01_sync_raw_to_db.py|stage01_daily_update.py|telegram_attachment_extract_backfill' || true\n 5522  5520 Wed Mar 11 00:15:07 2026       00:00 R    egrep stage01_sync_raw_to_db.py|stage01_daily_update.py|telegram_attachment_extract_backfill\n",
+  "lsof_stdout": "COMMAND  PID    USER   FD   TYPE DEVICE    SIZE/OFF     NODE NAME\nPython  5344 jobiseu  txt    REG   1,17    36667392 11678454 /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3-shm\nPython  5344 jobiseu    3u   REG   1,17 10156802048 10061611 /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3\nPython  5344 jobiseu    4u   REG   1,17 18882083632 11678453 /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3-wal\nPython  5344 jobiseu    5u   REG   1,17    36667392 11678454 /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3-shm\nPython  5479 jobiseu  txt    REG   1,17    36667392 11678454 /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3-shm\nPython  5479 jobiseu    3u   REG   1,17 10156802048 10061611 /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3\nPython  5479 jobiseu    4u   REG   1,17 18882083632 11678453 /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3-wal\nPython  5479 jobiseu    5u   REG   1,17    36667392 11678454 /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3-shm\n",
+  "files": [
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3",
+      "size_bytes": 10156802048,
+      "mtime_epoch": 1773155675.3419425,
+      "mtime_local": "2026-03-11 00:14:35 +0900"
+    },
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3-wal",
+      "size_bytes": 18882083632,
+      "mtime_epoch": 1773155707.2921486,
+      "mtime_local": "2026-03-11 00:15:07 +0900"
+    },
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3-shm",
+      "size_bytes": 36667392,
+      "mtime_epoch": 1773155707.014343,
+      "mtime_local": "2026-03-11 00:15:07 +0900"
+    },
+    {
+      "path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime/raw_db_sync_status.json",
+      "size_bytes": 3066,
+      "mtime_epoch": 1773154558.1979237,
+      "mtime_local": "2026-03-10 23:55:58 +0900"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "ticket_id": "JB-20260311-OVERNIGHT-LINK-PDF-CONTROL",
+  "checkpoint_kst": "2026-03-11 03:00",
+  "recorded_at_kst": "2026-03-11 03:00",
+  "summary": {
+    "overall": "observe_only_blocked_by_active_writer",
+    "link_enrichment_meta": true,
+    "blog_path": "healthy_by_prior_success_evidence",
+    "telegram_path": "evidence_gap_persists",
+    "pdf_collection_decompose": "healthy_counts_stable",
+    "raw_db_lock_holder_present": true
+  },
+  "observations": {
+    "stage2_processed_meta": {
+      "link_enrichment_enabled": true,
+      "input_source": "stage1_raw_db_mirror",
+      "stage2_rule_version": "stage2-refine-20260308-r4",
+      "stage2_config_sha1": "761880cafbacba86de4edf4671bed953b5c51b95"
+    },
+    "telegram_clean_samples": {
+      "haetwo_public_fallback": {
+        "exists": true,
+        "link_enriched_marker": false,
+        "link_enrichment_section": false,
+        "http_count": 1980
+      },
+      "research_public_fallback": {
+        "exists": true,
+        "link_enriched_marker": false,
+        "link_enrichment_section": false,
+        "http_count": 2
+      },
+      "comvestment_public_fallback": {
+        "exists": true,
+        "link_enriched_marker": false,
+        "link_enrichment_section": false,
+        "http_count": 248
+      }
+    },
+    "active_processes": [
+      {
+        "pid": 8443,
+        "command": "stage01_daily_update.py --profile news_backfill"
+      },
+      {
+        "pid": 8753,
+        "command": "stage01_daily_update.py --profile telegram_fast"
+      },
+      {
+        "pid": 14449,
+        "parent_pid": 8443,
+        "command": "stage01_sync_raw_to_db.py"
+      }
+    ],
+    "db_lock_check": {
+      "raw_db_lsof_empty": false,
+      "holder_pid": 14449,
+      "holder_parent_pid": 8443,
+      "holder_parent_command": "stage01_daily_update.py --profile news_backfill"
+    },
+    "runtime_status_files": {
+      "raw_db_sync_status_timestamp": "2026-03-11T02:49:05.151633",
+      "raw_db_sync_status_sync_id": "20260310T174447Z",
+      "raw_db_sync_status_stage1_profile": "dart_fast",
+      "news_backfill_last_status_run_id": "20260310T111230Z",
+      "news_backfill_failed_count": 0,
+      "telegram_fast_last_status_run_id": "20260310T063000Z",
+      "telegram_fast_failed_count": 1
+    },
+    "pdf_artifacts": {
+      "indexed_documents": 127467,
+      "indexed_pages": 18765,
+      "documents_with_text": 1197,
+      "documents_with_renders": 1197,
+      "pdf_manifest_count_reference": 41972,
+      "pdf_page_total_reference": 9469,
+      "note": "03:00 checkpoint reused authoritative raw_db_sync_status counts and prior manifest continuity reference; no rebuild or writer was started."
+    }
+  },
+  "decision": {
+    "action_taken": "observe_only",
+    "why": "Active news_backfill/telegram_fast daily_update processes still exist, news_backfill currently owns the raw DB via stage01_sync_raw_to_db.py PID 14449, and telegram clean output still lacks direct enrichment evidence, so any rebuild or duplicate writer would be unsafe."
+  },
+  "blocked": {
+    "is_blocked": true,
+    "reason": "At 03:00 KST the raw DB is actively held by stage01_sync_raw_to_db.py PID 14449 under news_backfill PID 8443, while telegram Stage2 clean outputs still show no LinkEnriched/LinkEnrichment evidence despite authoritative Stage2 meta remaining link_enrichment_enabled=true.",
+    "next_action": "At the next checkpoint, verify whether PID 8443/8753 and child PID 14449 have exited or advanced their status files; only if the raw DB has no holder should telegram public-fallback formatting be inspected further to distinguish intentional format omission from regression before considering a single rebuild.",
+    "proof_path": "runtime/tasks/proofs/JB-20260311-OVERNIGHT-LINK-PDF-CONTROL_20260311_0300.json"
+  }
+}

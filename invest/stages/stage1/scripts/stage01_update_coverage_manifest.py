@@ -24,6 +24,7 @@ RSS_DIR = RAW_ROOT / "qualitative/market/rss"
 NEWS_URL_INDEX_DIR = RAW_ROOT / "qualitative/market/news/url_index"
 NEWS_SELECTED_DIR = RAW_ROOT / "qualitative/market/news/selected_articles"
 TELEGRAM_DIR = RAW_ROOT / "qualitative/text/telegram"
+TELEGRAM_ATTACHMENT_DIR = RAW_ROOT / "qualitative/attachments/telegram"
 BLOG_DIR = RAW_ROOT / "qualitative/text/blog"
 PREMIUM_DIR = RAW_ROOT / "qualitative/text/premium"
 MACRO_DIR = RAW_ROOT / "signal/market/macro"
@@ -31,6 +32,8 @@ MACRO_DIR = RAW_ROOT / "signal/market/macro"
 DAILY_UPDATE_STATUS_PATH = RUNTIME_ROOT / "daily_update_status.json"
 POST_COLLECTION_VALIDATE_PATH = RUNTIME_ROOT / "post_collection_validate.json"
 TELEGRAM_COLLECTOR_STATUS_PATH = RUNTIME_ROOT / "telegram_collector_status.json"
+TELEGRAM_ATTACHMENT_BACKFILL_STATUS_PATH = RUNTIME_ROOT / "telegram_attachment_extract_backfill_status.json"
+TELEGRAM_ATTACHMENT_STATS_PATH = RUNTIME_ROOT / "telegram_attachment_extract_stats_latest.json"
 US_OHLCV_STATUS_PATH = RUNTIME_ROOT / "us_ohlcv_status.json"
 NEWS_URL_INDEX_STATUS_PATH = RUNTIME_ROOT / "news_url_index_status.json"
 NEWS_SELECTED_STATUS_PATH = RUNTIME_ROOT / "news_selected_articles_status.json"
@@ -355,6 +358,107 @@ def _load_telegram_terminal_status_map() -> dict[str, dict[str, Any]]:
     return normalized
 
 
+def _telegram_attachment_scope() -> dict[str, Any]:
+    channel_dirs = sorted([p for p in TELEGRAM_ATTACHMENT_DIR.iterdir() if p.is_dir()]) if TELEGRAM_ATTACHMENT_DIR.exists() else []
+    bucket_dirs = sorted([p for p in TELEGRAM_ATTACHMENT_DIR.rglob("bucket_*") if p.is_dir()]) if TELEGRAM_ATTACHMENT_DIR.exists() else []
+    pdf_files = sorted(TELEGRAM_ATTACHMENT_DIR.rglob("*.pdf")) if TELEGRAM_ATTACHMENT_DIR.exists() else []
+    page_render_files = sorted(TELEGRAM_ATTACHMENT_DIR.rglob("*__page_*.png")) if TELEGRAM_ATTACHMENT_DIR.exists() else []
+    page_text_files = sorted(TELEGRAM_ATTACHMENT_DIR.rglob("*__page_*.txt")) if TELEGRAM_ATTACHMENT_DIR.exists() else []
+    manifest_files = sorted(TELEGRAM_ATTACHMENT_DIR.rglob("*__pdf_manifest.json")) if TELEGRAM_ATTACHMENT_DIR.exists() else []
+    bundle_files = sorted(TELEGRAM_ATTACHMENT_DIR.rglob("*__bundle.zip")) if TELEGRAM_ATTACHMENT_DIR.exists() else []
+
+    meta_files: list[Path] = []
+    extracted_files: list[Path] = []
+    if TELEGRAM_ATTACHMENT_DIR.exists():
+        seen_meta: set[Path] = set()
+        for pattern in ("meta.json", "*__meta.json"):
+            for p in sorted(TELEGRAM_ATTACHMENT_DIR.rglob(pattern)):
+                if p.is_file() and p not in seen_meta:
+                    seen_meta.add(p)
+                    meta_files.append(p)
+        seen_extract: set[Path] = set()
+        for pattern in ("extracted.txt", "*__extracted.txt"):
+            for p in sorted(TELEGRAM_ATTACHMENT_DIR.rglob(pattern)):
+                if p.is_file() and p not in seen_extract:
+                    seen_extract.add(p)
+                    extracted_files.append(p)
+
+    latest_pdf = max(pdf_files, key=lambda p: p.stat().st_mtime).stat().st_mtime if pdf_files else None
+    by_kind: Counter[str] = Counter()
+    by_channel: Counter[str] = Counter()
+    by_month: Counter[str] = Counter()
+    quality_grades: Counter[str] = Counter()
+    earliest_date = None
+    latest_date = None
+    pdf_total_pages = 0
+    pdf_text_pages = 0
+    pdf_render_pages = 0
+    human_review_window_active = 0
+
+    for meta_path in meta_files:
+        payload = _load_json(meta_path) or {}
+        if not isinstance(payload, dict):
+            continue
+        kind = str(payload.get("kind") or "unknown").strip().lower() or "unknown"
+        by_kind[kind] += 1
+        channel_slug = str(payload.get("channel_slug") or meta_path.parent.parent.name or "unknown").strip() or "unknown"
+        by_channel[channel_slug] += 1
+        raw_date = str(payload.get("message_date") or "").strip()
+        normalized = _normalize_iso_date(raw_date) or _normalize_yyyymmdd(raw_date)
+        if normalized:
+            month = normalized[:6]
+            by_month[month] += 1
+            earliest_date = normalized if earliest_date is None or normalized < earliest_date else earliest_date
+            latest_date = normalized if latest_date is None or normalized > latest_date else latest_date
+        if bool(payload.get("human_review_window_active")):
+            human_review_window_active += 1
+        if kind != "pdf":
+            continue
+        manifest_rel = str(payload.get("pdf_manifest_path") or "").strip()
+        manifest_path = ROOT / manifest_rel if manifest_rel else meta_path.with_name(meta_path.name.replace("__meta.json", "__pdf_manifest.json"))
+        manifest = _load_json(manifest_path) or {}
+        if isinstance(manifest, dict):
+            pdf_total_pages += int(manifest.get("page_count") or payload.get("pdf_page_count") or 0)
+            pdf_text_pages += int(manifest.get("text_pages_written") or payload.get("pdf_text_pages") or 0)
+            pdf_render_pages += int(manifest.get("rendered_pages_written") or payload.get("pdf_render_pages") or 0)
+            grade = str(manifest.get("quality_grade") or payload.get("pdf_quality_grade") or "").strip()
+            if grade:
+                quality_grades[grade] += 1
+
+    return {
+        "artifact_root": _rel(TELEGRAM_ATTACHMENT_DIR),
+        "artifact_root_exists": TELEGRAM_ATTACHMENT_DIR.exists(),
+        "artifact_layout": "bucketed_flat_v3",
+        "channel_dirs": len(channel_dirs),
+        "bucket_dirs": len(bucket_dirs),
+        "message_artifacts": len(meta_files),
+        "meta_files": len(meta_files),
+        "pdf_files": len(pdf_files),
+        "extracted_text_files": len(extracted_files),
+        "pdf_manifest_files": len(manifest_files),
+        "pdf_page_text_files": len(page_text_files),
+        "pdf_page_render_files": len(page_render_files),
+        "compressed_bundle_files": len(bundle_files),
+        "pdf_total_pages": int(pdf_total_pages),
+        "pdf_text_pages": int(pdf_text_pages),
+        "pdf_render_pages": int(pdf_render_pages),
+        "human_review_window_active_docs": int(human_review_window_active),
+        "earliest_message_date": earliest_date,
+        "latest_message_date": latest_date,
+        "counts_by_kind": {k: by_kind[k] for k in sorted(by_kind)},
+        "counts_by_channel": {k: by_channel[k] for k in sorted(by_channel)},
+        "counts_by_month": {k: by_month[k] for k in sorted(by_month)},
+        "pdf_quality_grades": {k: quality_grades[k] for k in sorted(quality_grades)},
+        "latest_pdf_mtime_utc": datetime.fromtimestamp(latest_pdf, tz=timezone.utc).isoformat() if latest_pdf else None,
+        "backfill_status_path": _rel(TELEGRAM_ATTACHMENT_BACKFILL_STATUS_PATH),
+        "backfill_status": _load_json(TELEGRAM_ATTACHMENT_BACKFILL_STATUS_PATH) if TELEGRAM_ATTACHMENT_BACKFILL_STATUS_PATH.exists() else None,
+        "extract_stats_path": _rel(TELEGRAM_ATTACHMENT_STATS_PATH),
+        "extract_stats": _load_json(TELEGRAM_ATTACHMENT_STATS_PATH) if TELEGRAM_ATTACHMENT_STATS_PATH.exists() else None,
+        "auto_backfills_legacy_logs": True,
+        "note": "telegram attachment PDF cache is canonical Stage1 data. PDF는 bucketed flat artifact(meta/original/extracted/page_text/page_render/bundle)로 관리하고 채널/월별 집계를 같은 catalog에 남긴다.",
+    }
+
+
 def _load_blog_terminal_statuses() -> dict[str, dict[str, Any]]:
     terminal: dict[str, dict[str, Any]] = {}
 
@@ -426,8 +530,9 @@ def _telegram_scope() -> dict[str, Any]:
         else:
             unresolved_missing_allowlist_entries.append(item)
     collector_status = _load_json(TELEGRAM_COLLECTOR_STATUS_PATH) or {}
+    attachment_scope = _telegram_attachment_scope()
     return {
-        "coverage_basis": "telegram allowlist registry + observed markdown artifacts + terminal/non-archive registry",
+        "coverage_basis": "telegram allowlist registry + observed markdown artifacts + terminal/non-archive registry + attachment artifact cache",
         "allowlist_path": _rel(TELEGRAM_ALLOWLIST_PATH),
         "allowlist_count": len(allowlist),
         "terminal_registry_path": _rel(TELEGRAM_TERMINAL_STATUS_PATH),
@@ -443,7 +548,8 @@ def _telegram_scope() -> dict[str, Any]:
         "auto_expands_on_allowlist_update": True,
         "current_registry_ssot": _rel(TELEGRAM_ALLOWLIST_PATH),
         "collector_status": collector_status if isinstance(collector_status, dict) else None,
-        "note": "telegram coverage는 allowlist 전체를 기준으로 보되, 직접 확인된 contact/join-only/non-channel/bot 대상은 terminal registry로 MAX_AVAILABLE_OK 정상종결 처리한다.",
+        "attachment_artifacts": attachment_scope,
+        "note": "telegram coverage는 allowlist 전체를 기준으로 보되, 직접 확인된 contact/join-only/non-channel/bot 대상은 terminal registry로 MAX_AVAILABLE_OK 정상종결 처리한다. PDF attachment cache/backfill 현황도 같은 catalog에서 본다.",
     }
 
 
@@ -687,7 +793,7 @@ def update_index() -> dict[str, Any]:
             {"name": "rss", "kind": "qualitative.market", "path": _rel(RSS_DIR), "description": "RSS item snapshots", "catalog_mode": "date_coverage"},
             {"name": "news_url_index", "kind": "qualitative.market.news", "path": _rel(NEWS_URL_INDEX_DIR), "description": "News URL index jsonl", "catalog_mode": "date_coverage"},
             {"name": "news_selected_articles", "kind": "qualitative.market.news", "path": _rel(NEWS_SELECTED_DIR), "description": "Selected article bodies jsonl", "catalog_mode": "date_coverage"},
-            {"name": "telegram", "kind": "qualitative.text", "path": _rel(TELEGRAM_DIR), "description": "Telegram channel markdown captures (allowlist full coverage)", "catalog_mode": "date_coverage"},
+            {"name": "telegram", "kind": "qualitative.text", "path": _rel(TELEGRAM_DIR), "description": "Telegram channel markdown captures (allowlist full coverage; attachment/PDF cache tracked in sources.telegram.scope.attachment_artifacts)", "catalog_mode": "date_coverage"},
             {"name": "blog", "kind": "qualitative.text", "path": _rel(BLOG_DIR), "description": "Blog markdown captures by blog id (buddy registry full coverage)", "catalog_mode": "date_coverage"},
             {"name": "premium", "kind": "qualitative.text", "path": _rel(PREMIUM_DIR), "description": "Premium/startale markdown captures", "catalog_mode": "date_coverage"},
         ],

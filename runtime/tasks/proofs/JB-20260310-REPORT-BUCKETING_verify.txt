@@ -1,0 +1,21 @@
+JB-20260310-REPORT-BUCKETING verification
+
+Summary:
+- Stage1 telegram attachment artifacts no longer write one directory per message.
+- New layout: channel_slug/bucket_NNN/msg_<id>__meta.json, msg_<id>__extracted.txt, msg_<id>__original__<name>
+- Stage1 backfill now reads/writes both legacy msg_<id>/... and new bucketed files.
+- Stage1 coverage manifest counts both legacy and bucketed attachment artifacts.
+- Stage2 attachment resolution now supports new bucketed paths plus legacy fallback paths.
+
+Changed files:
+- invest/stages/stage1/scripts/stage01_scrape_telegram_highspeed.py
+- invest/stages/stage1/scripts/stage01_telegram_attachment_extract_backfill.py
+- invest/stages/stage1/scripts/stage01_update_coverage_manifest.py
+- invest/stages/stage2/scripts/stage02_onepass_refine_full.py
+
+Verification:
+- python3 -m py_compile invest/stages/stage1/scripts/stage01_scrape_telegram_highspeed.py invest/stages/stage1/scripts/stage01_telegram_attachment_extract_backfill.py invest/stages/stage1/scripts/stage01_update_coverage_manifest.py invest/stages/stage2/scripts/stage02_onepass_refine_full.py
+- result: success (exit 0)
+
+Known follow-up:
+- Existing legacy per-message directories remain on disk until a separate migration/cleanup pass is explicitly run.

@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-03-10T07:26:30+0900",
+  "scope": "Stage1 DB/raw/archive non-destructive cleanup only",
+  "inputs": [
+    "runtime/tasks/proofs/JB-20260310-STAGE1-DB-CLEANUP_proof.json",
+    "runtime/tasks/proofs/JB-20260310-STAGE1-DB-CLEANUP_commands.txt"
+  ],
+  "principles": [
+    "delete_forbidden",
+    "move_or_rename_only_after_manual_approval",
+    "index_reinforcement_before_any_path_change",
+    "unverified_root_cause_must_remain_marked_unverified"
+  ],
+  "actions": [
+    {
+      "id": "A1-index-reinforce-manifest-gap",
+      "target": "manifest files on disk but absent from pdf_documents",
+      "verified_count": 1011,
+      "safe_step": "Generate path manifest from proof JSON and rerun Stage1 PDF index/sync in dry-run or audit mode first.",
+      "prohibited": "Do not delete orphan-looking manifests.",
+      "notes": "Concentrated under qualitative/attachments/telegram/선진짱_주식공부방_1378197756 bucket_* paths. Root cause: 미확인"
+    },
+    {
+      "id": "A2-alias-rename-plan-only",
+      "target": "channel slug duplicates normalized to same slug/message_id",
+      "verified_count": 3,
+      "safe_step": "Write alias map for Nihil_s_view_of_data_information_viewofdata <-> Nihils_view_of_data__information_viewofdata and prepare rename/mapping manifest only.",
+      "prohibited": "Do not rename files or rewrite doc_key in-place now.",
+      "notes": "message_id 3008, 3013, 3014 verified"
+    },
+    {
+      "id": "A3-quarantine-candidate-manifest-only",
+      "target": "disk-only artifacts outside DB index",
+      "verified_count": 464,
+      "safe_step": "Split candidate list into .DS_Store / mp4 / no-extension / url_index history / orphan manifest buckets and keep as review manifest only.",
+      "prohibited": "Do not move or delete until owner approval and live-process check.",
+      "notes": "Top buckets: qualitative/attachments=415, qualitative/market=45"
+    },
+    {
+      "id": "A4-meta-resync-first",
+      "target": "size mismatches between disk and raw_artifacts",
+      "verified_count": 268,
+      "safe_step": "Rescan raw_artifacts metadata for affected meta.json files and store delta report before any move/rename.",
+      "prohibited": "Do not overwrite raw files based on DB values.",
+      "notes": "Observed under qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_*/meta.json only in this snapshot"
+    },
+    {
+      "id": "A5-runtime-hygiene-plan-only",
+      "target": "runtime temp and lock outputs",
+      "verified_count": 2,
+      "safe_step": "Document keep/flush policy for outputs/runtime/telegram_attach_tmp and telegram_scrape.lock; verify live holder before any archival move.",
+      "prohibited": "Do not delete temp or lock files in this task.",
+      "notes": "Root cause / liveness at report time: 미확인"
+    }
+  ]
+}

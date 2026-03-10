@@ -1,0 +1,54 @@
+{
+  "ticket_id": "JB-20260311-OVERNIGHT-LINK-PDF-CONTROL",
+  "checkpoint_kst": "2026-03-11 06:00",
+  "recorded_at_kst": "2026-03-11 06:00",
+  "summary": {
+    "overall": "observe_only_healthy_no_duplicate_db_touch",
+    "link_enrichment_meta": "enabled_true_still_authoritative",
+    "blog_path": "stage2_authoritative_meta_remains_link_enrichment_enabled_true",
+    "telegram_path": "active_writer_present_but_no_raw_db_holder_and_no_regression_signal",
+    "pdf_collection_decompose": "pdf_index_continuity_retained",
+    "raw_db_lock_holder_present": false,
+    "active_stage1_processes_present": true
+  },
+  "observations": {
+    "process_state": {
+      "ps_matches": [
+        "16540     1 Wed Mar 11 04:00:05 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile telegram_fast"
+      ],
+      "raw_db_lsof": []
+    },
+    "runtime_status_files": {
+      "raw_db_sync_status_timestamp": "2026-03-11T05:52:16.545282",
+      "raw_db_sync_status_finished_at": "2026-03-10T20:45:42.266332+00:00",
+      "raw_db_sync_status_stage1_profile": "dart_fast",
+      "raw_db_sync_status_sync_id": "20260310T204542Z",
+      "raw_db_sync_status_scanned_files": 232435,
+      "raw_db_sync_status_inserted_files": 1,
+      "raw_db_sync_status_updated_files": 6,
+      "pdf_index": {
+        "indexed_documents": 127467,
+        "indexed_pages": 18765,
+        "documents_with_text": 1197,
+        "documents_with_renders": 1197
+      }
+    },
+    "stage2_processed_meta": {
+      "link_enrichment_enabled": true,
+      "input_source": "stage1_raw_db_mirror",
+      "stage2_rule_version": "stage2-refine-20260308-r4",
+      "stage2_config_sha1": "761880cafbacba86de4edf4671bed953b5c51b95",
+      "entries_len": 43020
+    }
+  },
+  "decision": {
+    "action_taken": "observe_only_no_rebuild_no_duplicate_writer",
+    "why": "At 06:00 KST only telegram_fast remained active, raw DB had no lock holder, and raw_db_sync_status had advanced to 05:52 without any evidence of link-saving or PDF-storage regression. Launching rebuilds or extra writers would add duplicate DB-touch risk without need."
+  },
+  "blocked": {
+    "is_blocked": false,
+    "reason": "",
+    "next_action": "Hold observe-only until the 07:00 handoff/report checkpoint. If the current telegram_fast writer exits before then, confirm raw_db_sync_status advances again and that PDF index counts remain continuous; otherwise leave the active writer untouched and carry forward the same proof path set.",
+    "proof_path": "runtime/tasks/proofs/JB-20260311-OVERNIGHT-LINK-PDF-CONTROL_20260311_0600.json"
+  }
+}

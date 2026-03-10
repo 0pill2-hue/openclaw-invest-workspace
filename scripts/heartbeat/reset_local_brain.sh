@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source "$(cd "$(dirname "$0")/.." && pwd)/common_env.sh"
+source "$(cd "$(dirname "$0")/.." && pwd)/lib/common_env.sh"
 
 MODEL_PATTERN="llama-server.*$(basename "$OPENCLAW_LOCAL_MODEL_PATH")"
 

@@ -1,0 +1,18 @@
+{
+  "updated_at": "2026-03-11 08:16:16",
+  "signature": "{\"context_lock_active\": false, \"issues\": [\"IN_PROGRESS started_at 누락: WD-CONTEXT-HYGIENE\", \"IN_PROGRESS 무활동 30분 초과: JB-20260311-PDF-EXTRACT-COUNT-RECOVERY\", \"BLOCKED:JB-20260311-PDF-EXTRACT-COUNT-RECOVERY:watchdog_stale_in_progress>30m\", \"context_resume_check_strict_failed\", \"context_handoff_invalid\", \"current_task_status_mismatch:JB-20260311-PDF-EXTRACT-COUNT-RECOVERY:snapshot=IN_PROGRESS:db=BLOCKED\", \"current_task_points_to_closed_db_task:JB-20260311-PDF-EXTRACT-COUNT-RECOVERY:BLOCKED\"]}",
+  "text": "watchdog alert / ticket=JB-20260311-PDF-EXTRACT-COUNT-RECOVERY / blocked=JB-20260311-PDF-EXTRACT-COUNT-RECOVERY:watchdog_stale_in_progress>30m / issues=7 / IN_PROGRESS started_at 누락: WD-CONTEXT-HYGIENE | IN_PROGRESS 무활동 30분 초과: JB-20260311-PDF-EXTRACT-COUNT-RECOVERY | BLOCKED:JB-20260311-PDF-EXTRACT-COUNT-RECOVERY:watchdog_stale_in_progress>30m / 현재 step 완료 후 reset·proof·보고·후속정리",
+  "issues": [
+    "IN_PROGRESS started_at 누락: WD-CONTEXT-HYGIENE",
+    "IN_PROGRESS 무활동 30분 초과: JB-20260311-PDF-EXTRACT-COUNT-RECOVERY",
+    "BLOCKED:JB-20260311-PDF-EXTRACT-COUNT-RECOVERY:watchdog_stale_in_progress>30m",
+    "context_resume_check_strict_failed",
+    "context_handoff_invalid",
+    "current_task_status_mismatch:JB-20260311-PDF-EXTRACT-COUNT-RECOVERY:snapshot=IN_PROGRESS:db=BLOCKED",
+    "current_task_points_to_closed_db_task:JB-20260311-PDF-EXTRACT-COUNT-RECOVERY:BLOCKED"
+  ],
+  "sent": true,
+  "context_lock": {
+    "active": false
+  }
+}

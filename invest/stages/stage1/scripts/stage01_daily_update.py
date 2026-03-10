@@ -84,28 +84,46 @@ def build_profile_specs(profile: str) -> list[dict[str, Any]]:
             _spec('invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py'),
             _spec('invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_collect_link_sidecars.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
         'rss_fast': [
             _spec('invest/stages/stage1/scripts/stage01_fetch_news_rss.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
         'telegram_fast': [
             _spec('invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_collect_link_sidecars.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
         'blog_fast': [
             _spec('invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_collect_link_sidecars.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
         'kr_ohlcv_intraday': [
             _spec('invest/stages/stage1/scripts/stage01_fetch_ohlcv.py'),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
         'kr_supply_intraday': [
             _spec('invest/stages/stage1/scripts/stage01_fetch_supply.py'),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
         'us_ohlcv_daily': [
             _spec('invest/stages/stage1/scripts/stage01_fetch_us_ohlcv.py'),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
         'dart_fast': [
             _spec('invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py'),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
         'news_backfill': [
             _spec(
@@ -148,6 +166,7 @@ def build_profile_specs(profile: str) -> list[dict[str, Any]]:
                     'NEWS_SELECTED_EXCLUDED_URL_PATTERNS': os.environ.get('NEWS_SELECTED_EXCLUDED_URL_PATTERNS', '/graphics/,/video/'),
                 },
             ),
+            _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
         ],
     }

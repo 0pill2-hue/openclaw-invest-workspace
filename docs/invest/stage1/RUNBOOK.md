@@ -48,6 +48,7 @@ python3 invest/stages/stage1/scripts/stage01_checkpoint_gate.py
 python3 invest/stages/stage1/scripts/stage01_post_collection_validate.py
 python3 invest/stages/stage1/scripts/stage01_build_news_url_index.py
 python3 invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py
+python3 invest/stages/stage1/scripts/stage01_collect_link_sidecars.py
 python3 invest/stages/stage1/scripts/stage01_backfill_10y.py --years 10
 python3 invest/stages/stage1/scripts/stage01_update_coverage_manifest.py
 python3 invest/stages/stage1/scripts/stage01_rss_date_repair.py
@@ -63,13 +64,15 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - US OHLCV: `invest/stages/stage1/outputs/raw/signal/us/ohlcv/*.csv`
   - 매크로: `invest/stages/stage1/outputs/raw/signal/market/macro/*.csv`
 - 정성 raw: `invest/stages/stage1/outputs/raw/qualitative/`
+  - Telegram attachment PDF는 `attachments/telegram/<channel>/bucket_<nn>/msg_<id>__*` bucketed flat 구조(meta/original/extracted/page_text/page_render/bundle)로 저장
   - RSS: `invest/stages/stage1/outputs/raw/qualitative/market/rss/*.json`
   - 뉴스 URL 인덱스: `invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/*.jsonl`
   - 선별 뉴스 본문: `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl`
   - DART: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/*.csv`
   - DART coverage SSOT: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json`
   - 텍스트/텔레그램/프리미엄/OCR: `invest/stages/stage1/outputs/raw/qualitative/text/`
-- 런타임 상태: `invest/stages/stage1/outputs/runtime/daily_update_status.json`, `invest/stages/stage1/outputs/runtime/post_collection_validate.json`
+  - 링크 enrichment sidecar: `invest/stages/stage1/outputs/raw/qualitative/link_enrichment/text/{blog,telegram,premium/startale}/**/*.json`
+- 런타임 상태: `invest/stages/stage1/outputs/runtime/daily_update_status.json`, `invest/stages/stage1/outputs/runtime/post_collection_validate.json`, `invest/stages/stage1/outputs/runtime/link_enrich_sidecar_status.json`
 - 실행 이벤트 로그: `invest/stages/stage1/outputs/runtime/pipeline_events.jsonl`
 - coverage 인덱스: `invest/stages/stage1/outputs/raw/source_coverage_index.json`
 - 리포트/로그: `invest/stages/stage1/outputs/reports/data_quality/`, `invest/stages/stage1/outputs/reports/stage_updates/`, `invest/stages/stage1/outputs/logs/runtime/`
@@ -91,7 +94,7 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - missing_months_between_range
   - needs_incremental_update
   - blog: `active_from=20160101`, `all_buddies_satisfied`, `terminal_registry_path`
-  - telegram: `all_channels_satisfied`, `missing_allowlist_entries`
+  - telegram: `all_channels_satisfied`, `missing_allowlist_entries`, `attachment_artifacts.pdf_files`, `attachment_artifacts.backfill_status`
 - blog raw/backfill 기준 시작일은 rolling 10y가 아니라 `2016-01-01` 고정이다.
 
 ## 실패 / 폴백 규칙
@@ -107,6 +110,7 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - 인증 환경변수가 있으면 `stage01_scrape_telegram_highspeed.py` 우선 실행
   - canonical launchd 경로는 highspeed 실행 시 `TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC>=600`, `TELEGRAM_TIMEOUT_RETRY_COUNT>=1`, `TELEGRAM_TIMEOUT_RETRY_SEC>=1800`을 강제해 과도한 timeout 축소를 막는다.
   - highspeed 성공 실행 뒤에는 `stage01_telegram_attachment_extract_backfill.py`를 이어서 실행해 기존 attachment artifact의 `extracted.txt`/`meta.json`을 후처리로 보강한다.
+  - PDF attachment 후처리의 canonical single-writer는 bucketed meta(`bucket_<nn>/msg_<id>__meta.json`) 기준이다. 레거시 `msg_<id>/meta.json`은 호환 shadow로만 취급하며 DB index/count 입력에서 별도 문서로 중복 집계하지 않는다.
   - 실패하거나 인증 정보가 없으면 `stage01_scrape_telegram_public_fallback.py`로 전환
   - 실행 결과/실사용 collector는 `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`에 기록하고, attachment 후처리 상태는 `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`에 기록한다.
 - 체인 fail-close 위치: `invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh`

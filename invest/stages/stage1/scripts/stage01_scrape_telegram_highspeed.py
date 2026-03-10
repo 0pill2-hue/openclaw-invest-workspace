@@ -104,6 +104,7 @@ ATTACH_MAX_TEXT_CHARS = int(os.environ.get('TELEGRAM_ATTACH_MAX_TEXT_CHARS', '60
 ATTACH_PDF_MAX_PAGES = int(os.environ.get('TELEGRAM_ATTACH_PDF_MAX_PAGES', '25'))
 ATTACH_STORE_MAX_FILE_BYTES = int(os.environ.get('TELEGRAM_ATTACH_STORE_MAX_FILE_BYTES', str(50 * 1024 * 1024)))
 ATTACH_ARTIFACT_ROOT = STAGE1_DIR / 'outputs/raw/qualitative/attachments/telegram'
+ATTACH_BUCKET_COUNT = max(1, int(os.environ.get('TELEGRAM_ATTACH_BUCKET_COUNT', '128')))
 ATTACH_STATS_FILE = str(STAGE1_DIR / 'outputs/runtime/telegram_attachment_extract_stats_latest.json')
 
 IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.tif', '.tiff'}
@@ -284,7 +285,8 @@ def _load_seen_message_ids(path: str, max_scan_ids: int = 200000) -> set[int]:
 
 def _new_attachment_stats() -> dict:
     return {
-        'artifact_schema_version': 1,
+        'artifact_schema_version': 2,
+        'attachment_bucket_count': ATTACH_BUCKET_COUNT,
         'messages_with_attach_text': 0,
         'messages_with_attach_paths': 0,
         'attachments_total': 0,
@@ -319,6 +321,32 @@ def _safe_component(value: str, fallback: str = 'item') -> str:
     cleaned = re.sub(r'\s+', '_', cleaned)
     cleaned = re.sub(r'_+', '_', cleaned).strip('._')
     return cleaned[:160] or fallback
+
+
+def _attachment_file_stem(msg_id: int) -> str:
+    return f'msg_{int(msg_id)}'
+
+
+def _attachment_bucket_name(msg_id: int) -> str:
+    width = max(2, len(str(max(0, ATTACH_BUCKET_COUNT - 1))))
+    return f"bucket_{int(msg_id) % ATTACH_BUCKET_COUNT:0{width}d}"
+
+
+def _attachment_bucket_dir(channel_slug: str, msg_id: int) -> Path:
+    return ATTACH_ARTIFACT_ROOT / channel_slug / _attachment_bucket_name(msg_id)
+
+
+def _attachment_meta_path(channel_slug: str, msg_id: int) -> Path:
+    return _attachment_bucket_dir(channel_slug, msg_id) / f"{_attachment_file_stem(msg_id)}__meta.json"
+
+
+def _attachment_extract_path(channel_slug: str, msg_id: int) -> Path:
+    return _attachment_bucket_dir(channel_slug, msg_id) / f"{_attachment_file_stem(msg_id)}__extracted.txt"
+
+
+def _attachment_original_path(channel_slug: str, msg_id: int, original_name: str) -> Path:
+    safe_name = _safe_component(os.path.basename(original_name) or _attachment_file_stem(msg_id), _attachment_file_stem(msg_id))
+    return _attachment_bucket_dir(channel_slug, msg_id) / f"{_attachment_file_stem(msg_id)}__original__{safe_name}"
 
 
 def _extract_pdf_text_swift(path: str) -> tuple[str, str]:
@@ -616,16 +644,16 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
     kind = str(meta.get('kind') or '')
     msg_id = int(getattr(message, 'id', 0) or 0)
     channel_slug = _safe_component(str(channel_meta.get('slug') or channel_meta.get('username') or 'unknown_channel'), 'unknown_channel')
-    artifact_dir = ATTACH_ARTIFACT_ROOT / channel_slug / f'msg_{msg_id}'
+    artifact_dir = _attachment_bucket_dir(channel_slug, msg_id)
     artifact_dir.mkdir(parents=True, exist_ok=True)
 
     raw_name = str(meta.get('name') or '')
     ext = Path(raw_name).suffix
     fallback_name = f'msg_{msg_id}{ext}' if ext else f'msg_{msg_id}'
     original_name = _safe_component(os.path.basename(raw_name) or fallback_name, fallback_name)
-    original_path = artifact_dir / original_name
-    extract_path = artifact_dir / 'extracted.txt'
-    meta_path = artifact_dir / 'meta.json'
+    original_path = _attachment_original_path(channel_slug, msg_id, original_name)
+    extract_path = _attachment_extract_path(channel_slug, msg_id)
+    meta_path = _attachment_meta_path(channel_slug, msg_id)
 
     result = {
         'artifact_dir': _rel_stage1_path(artifact_dir),
@@ -638,6 +666,10 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
     }
     payload = {
         'saved_at': datetime.now(timezone.utc).isoformat(),
+        'artifact_schema_version': 2,
+        'artifact_layout': 'bucketed_v2',
+        'attachment_bucket_count': ATTACH_BUCKET_COUNT,
+        'attachment_bucket': artifact_dir.name,
         'channel_title': str(channel_meta.get('title') or ''),
         'channel_username': str(channel_meta.get('username') or ''),
         'channel_slug': channel_slug,

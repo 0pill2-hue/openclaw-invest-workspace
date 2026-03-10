@@ -1,0 +1,22 @@
+{
+  "saved_at": "2026-03-09T13:15:29.981908+00:00",
+  "status": "OK",
+  "scanned_logs": 20,
+  "pdf_candidates_seen": 597,
+  "skipped_existing_original": 97,
+  "queued_missing_original": 500,
+  "max_fetch": 500,
+  "entity_resolve_ok": 11,
+  "entity_resolve_failed": 0,
+  "messages_fetched": 500,
+  "messages_missing": 0,
+  "downloads_ok": 500,
+  "downloads_failed": 0,
+  "extract_ok": 500,
+  "extract_failed": 0,
+  "flood_wait_events": 0,
+  "errors": [],
+  "updated_at": "2026-03-09T13:37:08.272907+00:00",
+  "finished_at": "2026-03-09T13:37:08.276391+00:00",
+  "duration_sec": 1298.294
+}

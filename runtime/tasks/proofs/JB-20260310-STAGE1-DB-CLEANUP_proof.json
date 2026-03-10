@@ -1,0 +1,2144 @@
+{
+  "generated_at": "2026-03-10T08:17:24+0900",
+  "started_at": "2026-03-10T08:04:49+0900",
+  "paths": {
+    "raw_root": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw",
+    "runtime_root": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime",
+    "db_path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3"
+  },
+  "inventory": {
+    "raw_tree": {
+      "root": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw",
+      "file_count": 210665,
+      "dir_count": 65206,
+      "total_bytes": 32763543698,
+      "top1_count": [
+        {
+          "key": "qualitative",
+          "count": 204366
+        },
+        {
+          "key": "signal",
+          "count": 6297
+        },
+        {
+          "key": ".DS_Store",
+          "count": 1
+        },
+        {
+          "key": "source_coverage_index.json",
+          "count": 1
+        }
+      ],
+      "top1_bytes": [
+        {
+          "key": "qualitative",
+          "bytes": 30846670870
+        },
+        {
+          "key": "signal",
+          "bytes": 1897771248
+        },
+        {
+          "key": "source_coverage_index.json",
+          "bytes": 19095432
+        },
+        {
+          "key": ".DS_Store",
+          "bytes": 6148
+        }
+      ],
+      "top2_count": [
+        {
+          "key": "qualitative/attachments",
+          "count": 161684
+        },
+        {
+          "key": "qualitative/text",
+          "count": 41641
+        },
+        {
+          "key": "signal/kr",
+          "count": 5764
+        },
+        {
+          "key": "qualitative/kr",
+          "count": 686
+        },
+        {
+          "key": "signal/us",
+          "count": 509
+        },
+        {
+          "key": "qualitative/market",
+          "count": 354
+        },
+        {
+          "key": "signal/market",
+          "count": 24
+        },
+        {
+          "key": ".DS_Store",
+          "count": 1
+        },
+        {
+          "key": "source_coverage_index.json",
+          "count": 1
+        },
+        {
+          "key": "qualitative/.DS_Store",
+          "count": 1
+        }
+      ],
+      "top2_bytes": [
+        {
+          "key": "qualitative/market",
+          "bytes": 22945707289
+        },
+        {
+          "key": "qualitative/attachments",
+          "bytes": 6943622352
+        },
+        {
+          "key": "signal/kr",
+          "bytes": 1757929986
+        },
+        {
+          "key": "qualitative/kr",
+          "bytes": 590310676
+        },
+        {
+          "key": "qualitative/text",
+          "bytes": 367024405
+        },
+        {
+          "key": "signal/us",
+          "bytes": 137903905
+        },
+        {
+          "key": "source_coverage_index.json",
+          "bytes": 19095432
+        },
+        {
+          "key": "signal/market",
+          "bytes": 1937357
+        },
+        {
+          "key": ".DS_Store",
+          "bytes": 6148
+        },
+        {
+          "key": "qualitative/.DS_Store",
+          "bytes": 6148
+        }
+      ],
+      "top_ext_count": [
+        {
+          "key": ".json",
+          "count": 148869
+        },
+        {
+          "key": ".md",
+          "count": 41639
+        },
+        {
+          "key": ".csv",
+          "count": 6770
+        },
+        {
+          "key": ".txt",
+          "count": 6212
+        },
+        {
+          "key": ".png",
+          "count": 5751
+        },
+        {
+          "key": ".pdf",
+          "count": 691
+        },
+        {
+          "key": ".zip",
+          "count": 600
+        },
+        {
+          "key": ".jsonl",
+          "count": 98
+        },
+        {
+          "key": "<no_ext>",
+          "count": 22
+        },
+        {
+          "key": ".mp4",
+          "count": 13
+        }
+      ],
+      "top_ext_bytes": [
+        {
+          "key": ".jsonl",
+          "bytes": 22922168293
+        },
+        {
+          "key": ".zip",
+          "bytes": 3018500708
+        },
+        {
+          "key": ".csv",
+          "bytes": 2319368656
+        },
+        {
+          "key": ".png",
+          "bytes": 2255957335
+        },
+        {
+          "key": ".pdf",
+          "bytes": 1356727345
+        },
+        {
+          "key": ".md",
+          "bytes": 366715085
+        },
+        {
+          "key": ".json",
+          "bytes": 354596044
+        },
+        {
+          "key": ".mp4",
+          "bytes": 78747114
+        },
+        {
+          "key": "<no_ext>",
+          "bytes": 73476351
+        },
+        {
+          "key": ".txt",
+          "bytes": 17286767
+        }
+      ],
+      "archive_dirs": [
+        "qualitative/text/premium/startale/_stale_blocked_archive_20260305"
+      ],
+      "temp_dirs": [],
+      "lock_files": []
+    },
+    "runtime_tree": {
+      "root": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime",
+      "file_count": 888,
+      "dir_count": 1,
+      "total_bytes": 634693,
+      "top1_count": [
+        {
+          "key": "telegram_attach_tmp",
+          "count": 844
+        },
+        {
+          "key": "news_selected_articles_free_probe_20260308.json",
+          "count": 1
+        },
+        {
+          "key": "daily_update_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_date_index.json",
+          "count": 1
+        },
+        {
+          "key": "stage1234_chain_state.json",
+          "count": 1
+        },
+        {
+          "key": "stage01_backfill_10y_status.json",
+          "count": 1
+        },
+        {
+          "key": "daily_update_news_backfill_status.json",
+          "count": 1
+        },
+        {
+          "key": "us_ohlcv_status.json",
+          "count": 1
+        },
+        {
+          "key": "blog_last_run_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_scrape_checkpoint.json",
+          "count": 1
+        },
+        {
+          "key": "daily_update_blog_fast_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_attachment_extract_backfill_status.json",
+          "count": 1
+        },
+        {
+          "key": "daily_update_us_ohlcv_daily_status.json",
+          "count": 1
+        },
+        {
+          "key": "premium_startale_extract_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_terminal_probe_20260308.json",
+          "count": 1
+        },
+        {
+          "key": "stage01_source_coverage_index.json",
+          "count": 1
+        },
+        {
+          "key": "premium_channel_auth_collect_status.json",
+          "count": 1
+        },
+        {
+          "key": "premium_text_collect_status.json",
+          "count": 1
+        },
+        {
+          "key": "news_selected_articles_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_login_pending.json",
+          "count": 1
+        }
+      ],
+      "top1_bytes": [
+        {
+          "key": "post_collection_validate.json",
+          "bytes": 331840
+        },
+        {
+          "key": "pipeline_events.jsonl",
+          "bytes": 172092
+        },
+        {
+          "key": "blog_last_run_status.json",
+          "bytes": 20481
+        },
+        {
+          "key": "telegram_date_index.json",
+          "bytes": 18841
+        },
+        {
+          "key": "telegram_last_run_status.json",
+          "bytes": 15102
+        },
+        {
+          "key": "telegram_public_fallback_status.json",
+          "bytes": 13635
+        },
+        {
+          "key": "news_selected_articles_status.json",
+          "bytes": 12286
+        },
+        {
+          "key": "news_url_index_status.json",
+          "bytes": 4875
+        },
+        {
+          "key": "news_selected_articles_quality_20260308.json",
+          "bytes": 4424
+        },
+        {
+          "key": "daily_update_news_backfill_status.json",
+          "bytes": 4022
+        },
+        {
+          "key": "daily_update_rss_fast_status.json",
+          "bytes": 3687
+        },
+        {
+          "key": "raw_db_sync_status.json",
+          "bytes": 3010
+        },
+        {
+          "key": "premium_channel_auth_collect_status.json",
+          "bytes": 2861
+        },
+        {
+          "key": "daily_update_us_ohlcv_daily_status.json",
+          "bytes": 2096
+        },
+        {
+          "key": "daily_update_dart_fast_status.json",
+          "bytes": 2087
+        },
+        {
+          "key": "daily_update_blog_fast_status.json",
+          "bytes": 2081
+        },
+        {
+          "key": "us_ohlcv_status.json",
+          "bytes": 2044
+        },
+        {
+          "key": "daily_update_status.json",
+          "bytes": 1982
+        },
+        {
+          "key": "news_selected_articles_backfill_probe_20260308.json",
+          "bytes": 1920
+        },
+        {
+          "key": "premium_text_collect_status.json",
+          "bytes": 1675
+        }
+      ],
+      "top2_count": [
+        {
+          "key": "news_selected_articles_free_probe_20260308.json",
+          "count": 1
+        },
+        {
+          "key": "daily_update_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_date_index.json",
+          "count": 1
+        },
+        {
+          "key": "stage1234_chain_state.json",
+          "count": 1
+        },
+        {
+          "key": "stage01_backfill_10y_status.json",
+          "count": 1
+        },
+        {
+          "key": "daily_update_news_backfill_status.json",
+          "count": 1
+        },
+        {
+          "key": "us_ohlcv_status.json",
+          "count": 1
+        },
+        {
+          "key": "blog_last_run_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_scrape_checkpoint.json",
+          "count": 1
+        },
+        {
+          "key": "daily_update_blog_fast_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_attachment_extract_backfill_status.json",
+          "count": 1
+        },
+        {
+          "key": "daily_update_us_ohlcv_daily_status.json",
+          "count": 1
+        },
+        {
+          "key": "premium_startale_extract_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_terminal_probe_20260308.json",
+          "count": 1
+        },
+        {
+          "key": "stage01_source_coverage_index.json",
+          "count": 1
+        },
+        {
+          "key": "premium_channel_auth_collect_status.json",
+          "count": 1
+        },
+        {
+          "key": "premium_text_collect_status.json",
+          "count": 1
+        },
+        {
+          "key": "news_selected_articles_status.json",
+          "count": 1
+        },
+        {
+          "key": "telegram_login_pending.json",
+          "count": 1
+        },
+        {
+          "key": "kr_supply_status.json",
+          "count": 1
+        }
+      ],
+      "top2_bytes": [
+        {
+          "key": "post_collection_validate.json",
+          "bytes": 331840
+        },
+        {
+          "key": "pipeline_events.jsonl",
+          "bytes": 172092
+        },
+        {
+          "key": "blog_last_run_status.json",
+          "bytes": 20481
+        },
+        {
+          "key": "telegram_date_index.json",
+          "bytes": 18841
+        },
+        {
+          "key": "telegram_last_run_status.json",
+          "bytes": 15102
+        },
+        {
+          "key": "telegram_public_fallback_status.json",
+          "bytes": 13635
+        },
+        {
+          "key": "news_selected_articles_status.json",
+          "bytes": 12286
+        },
+        {
+          "key": "news_url_index_status.json",
+          "bytes": 4875
+        },
+        {
+          "key": "news_selected_articles_quality_20260308.json",
+          "bytes": 4424
+        },
+        {
+          "key": "daily_update_news_backfill_status.json",
+          "bytes": 4022
+        },
+        {
+          "key": "daily_update_rss_fast_status.json",
+          "bytes": 3687
+        },
+        {
+          "key": "raw_db_sync_status.json",
+          "bytes": 3010
+        },
+        {
+          "key": "premium_channel_auth_collect_status.json",
+          "bytes": 2861
+        },
+        {
+          "key": "daily_update_us_ohlcv_daily_status.json",
+          "bytes": 2096
+        },
+        {
+          "key": "daily_update_dart_fast_status.json",
+          "bytes": 2087
+        },
+        {
+          "key": "daily_update_blog_fast_status.json",
+          "bytes": 2081
+        },
+        {
+          "key": "us_ohlcv_status.json",
+          "bytes": 2044
+        },
+        {
+          "key": "daily_update_status.json",
+          "bytes": 1982
+        },
+        {
+          "key": "news_selected_articles_backfill_probe_20260308.json",
+          "bytes": 1920
+        },
+        {
+          "key": "premium_text_collect_status.json",
+          "bytes": 1675
+        }
+      ],
+      "top_ext_count": [
+        {
+          "key": "<no_ext>",
+          "count": 844
+        },
+        {
+          "key": ".json",
+          "count": 42
+        },
+        {
+          "key": ".lock",
+          "count": 1
+        },
+        {
+          "key": ".jsonl",
+          "count": 1
+        }
+      ],
+      "top_ext_bytes": [
+        {
+          "key": ".json",
+          "bytes": 462596
+        },
+        {
+          "key": ".jsonl",
+          "bytes": 172092
+        },
+        {
+          "key": ".lock",
+          "bytes": 5
+        },
+        {
+          "key": "<no_ext>",
+          "bytes": 0
+        }
+      ],
+      "archive_dirs": [],
+      "temp_dirs": [
+        "telegram_attach_tmp"
+      ],
+      "lock_files": [
+        {
+          "path": "telegram_scrape.lock",
+          "size_bytes": 5
+        }
+      ]
+    },
+    "db_tables": {
+      "pdf_documents": 63735,
+      "pdf_pages": 5751,
+      "raw_artifacts": 210070,
+      "sync_meta": 5
+    },
+    "db_sync_meta": {
+      "last_pdf_index_summary": {
+        "indexed_documents": 127467,
+        "indexed_pages": 11449,
+        "documents_with_manifest": 84229,
+        "documents_with_text": 1197,
+        "documents_with_renders": 1197,
+        "channels_seen": 23,
+        "earliest_message_date": "20191029",
+        "latest_message_date": "20260309",
+        "grade_counts": {
+          "A": 1105,
+          "B": 92,
+          "F": 126270
+        },
+        "month_counts": {
+          "202512": 1905,
+          "202601": 2626,
+          "202306": 2156,
+          "202303": 1800,
+          "202307": 2564,
+          "202308": 2408,
+          "202309": 1560,
+          "202310": 1952,
+          "202311": 2342,
+          "202304": 2542,
+          "202312": 1724,
+          "202401": 2780,
+          "202402": 2244,
+          "202403": 1928,
+          "202404": 2208,
+          "202405": 2728,
+          "202407": 2894,
+          "202408": 2286,
+          "202409": 1880,
+          "202410": 2496,
+          "202305": 2238,
+          "202411": 2252,
+          "202412": 1772,
+          "202502": 2252,
+          "202503": 1720,
+          "201910": 6,
+          "201911": 22,
+          "201912": 12,
+          "202001": 8,
+          "202002": 18,
+          "202003": 18,
+          "202004": 22,
+          "202005": 26,
+          "202006": 14,
+          "202007": 2,
+          "202008": 8,
+          "202009": 8,
+          "202010": 4,
+          "202011": 4,
+          "202101": 2,
+          "202102": 4,
+          "202106": 4,
+          "202107": 6,
+          "202112": 1690,
+          "202201": 2410,
+          "202202": 2126,
+          "202204": 2546,
+          "202205": 2906,
+          "202207": 2828,
+          "202209": 1656,
+          "202210": 2536,
+          "202212": 2058,
+          "202301": 2660,
+          "202504": 2862,
+          "202506": 1934,
+          "202507": 2890,
+          "202511": 2798,
+          "202602": 2480,
+          "202603": 846,
+          "202203": 2256,
+          "202505": 2862,
+          "202508": 2502,
+          "202509": 1906,
+          "202510": 2564,
+          "202108": 2304,
+          "202109": 1506,
+          "202110": 2176,
+          "202111": 2514,
+          "202206": 1690,
+          "202208": 1990,
+          "202211": 3370,
+          "202302": 2704,
+          "202406": 2202,
+          "202501": 2250
+        },
+        "kind_counts": {
+          "pdf": 127467,
+          "image": 379,
+          "unknown": 11,
+          "document": 13,
+          "docx": 4
+        },
+        "finished_at": "2026-03-09T23:03:57.025901+00:00"
+      },
+      "last_sync_finished_at": "2026-03-09T23:00:00.249807+00:00",
+      "last_sync_id": "20260309T230000Z",
+      "last_sync_summary": {
+        "sync_id": "20260309T230000Z",
+        "scanned_files": 210070,
+        "inserted_files": 1399,
+        "updated_files": 1395,
+        "unchanged_files": 207276,
+        "inactive_files": 0,
+        "db_path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3",
+        "raw_root": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw",
+        "finished_at": "2026-03-09T23:00:00.249807+00:00",
+        "stage1_run_id": "",
+        "stage1_profile": "",
+        "scheduler_origin": ""
+      },
+      "schema_version": 2
+    },
+    "raw_artifacts_active_count": 210070,
+    "raw_artifacts_inactive_count": 0,
+    "pdf_summary": {
+      "pdf_documents": 63735,
+      "pdf_pages": 5751,
+      "docs_with_manifest_rel_path": 20497,
+      "docs_with_original_rel_path": 608,
+      "docs_with_extract_rel_path": 30,
+      "docs_with_bundle_rel_path": 3,
+      "extraction_status": {
+        "failed": 63128,
+        "ok": 568,
+        "partial": 38,
+        "": 1
+      },
+      "render_status": {
+        "": 43238,
+        "failed": 19897,
+        "ok": 600
+      },
+      "quality_grade": {
+        "F": 63135,
+        "A": 553,
+        "B": 47
+      },
+      "source_family": {
+        "telegram_attachment": 63735
+      },
+      "kind": {
+        "pdf": 63735
+      }
+    }
+  },
+  "integrity_checks": {
+    "raw_db_alignment": {
+      "runtime_status_sync_id": "20260309T230505Z",
+      "sync_meta_last_sync_id": "20260309T230000Z",
+      "runtime_status_finished_at": "2026-03-09T23:05:05.930498+00:00",
+      "sync_meta_last_sync_finished_at": "2026-03-09T23:00:00.249807+00:00",
+      "runtime_status_scanned_files": 210604,
+      "sync_meta_last_sync_summary_scanned_files": 210070,
+      "actual_raw_disk_file_count": 210665,
+      "actual_raw_db_active_count": 210070
+    },
+    "raw_vs_db": {
+      "disk_only_count": 595,
+      "disk_only_samples": [
+        ".DS_Store",
+        "qualitative/.DS_Store",
+        "qualitative/attachments/.DS_Store",
+        "qualitative/attachments/telegram/.DS_Store",
+        "qualitative/attachments/telegram/Stock_Trip_stocktrip/msg_577/pdf",
+        "qualitative/attachments/telegram/Stock_Trip_stocktrip/msg_700/pdf",
+        "qualitative/attachments/telegram/TNBfolio_TNBfolio/msg_11208/pdf",
+        "qualitative/attachments/telegram/TNBfolio_TNBfolio/msg_11345/pdf",
+        "qualitative/attachments/telegram/간절한_투자스터디카페_Desperatestudycafe/.DS_Store",
+        "qualitative/attachments/telegram/간절한_투자스터디카페_Desperatestudycafe/msg_52131/digital-pratik-buy-the-dip.mp4",
+        "qualitative/attachments/telegram/김찰저의_관심과_생각_저장소_kimcharger/.DS_Store",
+        "qualitative/attachments/telegram/루팡_bornlupin/msg_16921/3t0_SKPunoib4AOM.mp4",
+        "qualitative/attachments/telegram/마산창투_PRROEresearch/.DS_Store",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/.DS_Store",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_000/msg_40192__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_000/msg_40320__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_000/msg_40448__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_000/msg_40576__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_001/msg_40193__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_001/msg_40321__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_001/msg_40449__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_001/msg_40577__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_002/msg_40194__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_002/msg_40322__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_002/msg_40450__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_002/msg_40578__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_003/msg_40195__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_003/msg_40323__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_003/msg_40451__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_003/msg_40579__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_003/msg_40707__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_004/msg_40196__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_004/msg_40324__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_004/msg_40452__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_004/msg_40708__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_005/msg_40325__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_005/msg_40453__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_005/msg_40709__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_005/msg_40837__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_006/msg_40326__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_006/msg_40454__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_006/msg_40838__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_007/msg_40327__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_007/msg_40455__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_007/msg_40839__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_008/msg_40200__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_008/msg_40328__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_008/msg_40456__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_008/msg_40840__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_009/msg_40201__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_009/msg_40457__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_009/msg_40841__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_010/msg_40202__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_010/msg_40458__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_010/msg_40714__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_010/msg_40842__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_011/msg_40203__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_011/msg_40459__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_011/msg_40587__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_011/msg_40715__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_011/msg_40843__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_012/msg_40204__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_012/msg_40460__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_012/msg_40588__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_012/msg_40716__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_012/msg_40844__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_013/msg_40205__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_013/msg_40333__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_013/msg_40717__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_013/msg_40845__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_014/msg_40206__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_014/msg_40334__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_014/msg_40590__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_014/msg_40718__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_014/msg_40846__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_015/msg_40207__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_015/msg_40335__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_015/msg_40591__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_015/msg_40719__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_015/msg_40847__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_016/msg_40208__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_016/msg_40336__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_016/msg_40592__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_016/msg_40720__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_016/msg_40848__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_017/msg_40209__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_017/msg_40337__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_017/msg_40593__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_017/msg_40721__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_017/msg_40849__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_018/msg_40210__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_018/msg_40338__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_018/msg_40466__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_018/msg_40594__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_018/msg_40722__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_018/msg_40850__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_019/msg_40211__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_019/msg_40339__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_019/msg_40467__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_019/msg_40595__pdf_manifest.json"
+      ],
+      "disk_only_top2": [
+        {
+          "key": "qualitative/attachments",
+          "count": 546
+        },
+        {
+          "key": "qualitative/market",
+          "count": 45
+        },
+        {
+          "key": ".DS_Store",
+          "count": 1
+        },
+        {
+          "key": "qualitative/.DS_Store",
+          "count": 1
+        },
+        {
+          "key": "qualitative/text",
+          "count": 1
+        },
+        {
+          "key": "source_coverage_index.json",
+          "count": 1
+        }
+      ],
+      "disk_only_ext": [
+        {
+          "key": ".json",
+          "count": 515
+        },
+        {
+          "key": ".jsonl",
+          "count": 45
+        },
+        {
+          "key": "<no_ext>",
+          "count": 22
+        },
+        {
+          "key": ".mp4",
+          "count": 13
+        }
+      ],
+      "db_only_count": 0,
+      "db_only_samples": [],
+      "size_mismatch_count": 393,
+      "size_mismatch_samples": [
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40326/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40327/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40328/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40333/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40334/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40335/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40336/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40337/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40338/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40339/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40340/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40341/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40342/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40343/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40344/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40345/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40346/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40347/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40348/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40349/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40350/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40351/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40352/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40353/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40354/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40355/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40356/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40357/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40358/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40359/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40360/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40361/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40362/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40363/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40364/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40365/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40366/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40367/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40368/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40369/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40370/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40371/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40372/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40373/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40374/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40375/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40376/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40377/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40378/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40379/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40380/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40381/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40382/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40383/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40384/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40385/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40386/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40387/meta.json",
+          "disk_size_bytes": 1436,
+          "db_size_bytes": 843
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40388/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40389/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40390/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40391/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40392/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40393/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40394/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40395/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40396/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40397/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40398/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40399/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40400/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40401/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40402/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40403/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40404/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40405/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40406/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40407/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40414/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40415/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40416/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40417/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40418/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40419/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40420/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40421/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40422/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40423/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40424/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40425/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40426/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40427/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40428/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40429/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40430/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40431/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40432/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40433/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40434/meta.json",
+          "disk_size_bytes": 1435,
+          "db_size_bytes": 842
+        },
+        {
+          "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/msg_40435/meta.json",
+          "disk_size_bytes": 1434,
+          "db_size_bytes": 841
+        }
+      ],
+      "size_mismatch_top2": [
+        {
+          "key": "qualitative/attachments",
+          "count": 393
+        }
+      ],
+      "size_mismatch_ext": [
+        {
+          "key": ".json",
+          "count": 393
+        }
+      ]
+    },
+    "manifest_vs_pdf_documents": {
+      "manifest_disk_count": 20524,
+      "manifest_table_count": 20497,
+      "manifest_missing_in_pdf_documents_count": 27,
+      "manifest_missing_in_pdf_documents_samples": [
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_005/msg_40837__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_006/msg_40838__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_007/msg_40839__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_008/msg_40840__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_009/msg_40841__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_010/msg_40842__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_011/msg_40843__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_012/msg_40844__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_013/msg_40845__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_014/msg_40846__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_015/msg_40847__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_016/msg_40848__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_017/msg_40849__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_018/msg_40850__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_020/msg_40852__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_021/msg_40853__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_022/msg_40854__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_023/msg_40855__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_024/msg_40856__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_025/msg_40857__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_026/msg_40858__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_027/msg_40859__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_028/msg_40860__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_042/msg_40874__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_043/msg_40875__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_044/msg_40876__pdf_manifest.json",
+        "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_045/msg_40877__pdf_manifest.json"
+      ],
+      "manifest_missing_on_disk_count": 0,
+      "manifest_missing_on_disk_samples": []
+    },
+    "pdf_document_path_checks": {
+      "missing_in_db_counts": {
+        "original": 4,
+        "manifest": 486
+      },
+      "missing_in_db_samples": {
+        "original": [
+          {
+            "doc_key": "telegram:Stock_Trip_stocktrip:577",
+            "rel_path": "qualitative/attachments/telegram/Stock_Trip_stocktrip/msg_577/pdf"
+          },
+          {
+            "doc_key": "telegram:Stock_Trip_stocktrip:700",
+            "rel_path": "qualitative/attachments/telegram/Stock_Trip_stocktrip/msg_700/pdf"
+          },
+          {
+            "doc_key": "telegram:TNBfolio_TNBfolio:11208",
+            "rel_path": "qualitative/attachments/telegram/TNBfolio_TNBfolio/msg_11208/pdf"
+          },
+          {
+            "doc_key": "telegram:TNBfolio_TNBfolio:11345",
+            "rel_path": "qualitative/attachments/telegram/TNBfolio_TNBfolio/msg_11345/pdf"
+          }
+        ],
+        "manifest": [
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40180",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_116/msg_40180__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40181",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_117/msg_40181__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40182",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_118/msg_40182__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40183",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_119/msg_40183__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40184",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_120/msg_40184__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40185",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_121/msg_40185__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40186",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_122/msg_40186__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40189",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_125/msg_40189__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40191",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_127/msg_40191__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40192",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_000/msg_40192__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40193",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_001/msg_40193__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40194",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_002/msg_40194__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40195",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_003/msg_40195__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40196",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_004/msg_40196__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40200",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_008/msg_40200__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40201",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_009/msg_40201__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40202",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_010/msg_40202__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40203",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_011/msg_40203__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40204",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_012/msg_40204__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40205",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_013/msg_40205__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40206",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_014/msg_40206__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40207",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_015/msg_40207__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40208",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_016/msg_40208__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40209",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_017/msg_40209__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40210",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_018/msg_40210__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40211",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_019/msg_40211__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40212",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_020/msg_40212__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40213",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_021/msg_40213__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40214",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_022/msg_40214__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40215",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_023/msg_40215__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40216",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_024/msg_40216__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40217",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_025/msg_40217__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40218",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_026/msg_40218__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40219",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_027/msg_40219__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40220",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_028/msg_40220__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40221",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_029/msg_40221__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40222",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_030/msg_40222__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40223",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_031/msg_40223__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40224",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_032/msg_40224__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40225",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_033/msg_40225__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40226",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_034/msg_40226__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40227",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_035/msg_40227__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40228",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_036/msg_40228__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40229",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_037/msg_40229__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40230",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_038/msg_40230__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40231",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_039/msg_40231__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40232",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_040/msg_40232__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40233",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_041/msg_40233__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40234",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_042/msg_40234__pdf_manifest.json"
+          },
+          {
+            "doc_key": "telegram:선진짱_주식공부방_1378197756:40235",
+            "rel_path": "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_043/msg_40235__pdf_manifest.json"
+          }
+        ]
+      },
+      "missing_on_disk_counts": {},
+      "missing_on_disk_samples": {}
+    },
+    "pdf_page_checks": {
+      "page_mismatch_counts": {
+        "page_count_vs_rows": 72,
+        "text_pages_vs_rows": 0,
+        "rendered_pages_vs_rows": 0
+      },
+      "page_file_missing_counts": {},
+      "page_file_missing_samples": {}
+    },
+    "duplicate_candidates": {
+      "duplicate_message_groups_count": 3,
+      "duplicate_message_groups": [
+        {
+          "normalized_slug": "nihilsviewofdatainformationviewofdata",
+          "message_id": 3008,
+          "doc_count": 2,
+          "channel_slugs": [
+            "Nihil_s_view_of_data_information_viewofdata",
+            "Nihils_view_of_data__information_viewofdata"
+          ],
+          "docs": [
+            {
+              "doc_key": "telegram:Nihil_s_view_of_data_information_viewofdata:3008",
+              "channel_slug": "Nihil_s_view_of_data_information_viewofdata",
+              "message_id": 3008
+            },
+            {
+              "doc_key": "telegram:Nihils_view_of_data__information_viewofdata:3008",
+              "channel_slug": "Nihils_view_of_data__information_viewofdata",
+              "message_id": 3008
+            }
+          ]
+        },
+        {
+          "normalized_slug": "nihilsviewofdatainformationviewofdata",
+          "message_id": 3013,
+          "doc_count": 2,
+          "channel_slugs": [
+            "Nihil_s_view_of_data_information_viewofdata",
+            "Nihils_view_of_data__information_viewofdata"
+          ],
+          "docs": [
+            {
+              "doc_key": "telegram:Nihil_s_view_of_data_information_viewofdata:3013",
+              "channel_slug": "Nihil_s_view_of_data_information_viewofdata",
+              "message_id": 3013
+            },
+            {
+              "doc_key": "telegram:Nihils_view_of_data__information_viewofdata:3013",
+              "channel_slug": "Nihils_view_of_data__information_viewofdata",
+              "message_id": 3013
+            }
+          ]
+        },
+        {
+          "normalized_slug": "nihilsviewofdatainformationviewofdata",
+          "message_id": 3014,
+          "doc_count": 2,
+          "channel_slugs": [
+            "Nihil_s_view_of_data_information_viewofdata",
+            "Nihils_view_of_data__information_viewofdata"
+          ],
+          "docs": [
+            {
+              "doc_key": "telegram:Nihil_s_view_of_data_information_viewofdata:3014",
+              "channel_slug": "Nihil_s_view_of_data_information_viewofdata",
+              "message_id": 3014
+            },
+            {
+              "doc_key": "telegram:Nihils_view_of_data__information_viewofdata:3014",
+              "channel_slug": "Nihils_view_of_data__information_viewofdata",
+              "message_id": 3014
+            }
+          ]
+        }
+      ],
+      "same_sha1_groups_top20_count": 20,
+      "same_sha1_groups_top20": [
+        {
+          "sha1": "17702dfe5f84a6310e28383d2cf4e4ff34751b6c",
+          "size_bytes": 1090617,
+          "count": 44,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260301_004007.json",
+            "qualitative/kr/dart/dart_list_20260301_004010.json",
+            "qualitative/kr/dart/dart_list_20260301_014007.json",
+            "qualitative/kr/dart/dart_list_20260301_022949.json",
+            "qualitative/kr/dart/dart_list_20260301_024007.json",
+            "qualitative/kr/dart/dart_list_20260301_034007.json",
+            "qualitative/kr/dart/dart_list_20260301_034011.json",
+            "qualitative/kr/dart/dart_list_20260301_044007.json",
+            "qualitative/kr/dart/dart_list_20260301_054006.json",
+            "qualitative/kr/dart/dart_list_20260301_054010.json"
+          ]
+        },
+        {
+          "sha1": "74b7a97f6c25a3bd8efd80cf52f25d0ce850ec97",
+          "size_bytes": 455038,
+          "count": 44,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260301_004007.csv",
+            "qualitative/kr/dart/dart_list_20260301_004010.csv",
+            "qualitative/kr/dart/dart_list_20260301_014007.csv",
+            "qualitative/kr/dart/dart_list_20260301_022949.csv",
+            "qualitative/kr/dart/dart_list_20260301_024007.csv",
+            "qualitative/kr/dart/dart_list_20260301_034007.csv",
+            "qualitative/kr/dart/dart_list_20260301_034011.csv",
+            "qualitative/kr/dart/dart_list_20260301_044007.csv",
+            "qualitative/kr/dart/dart_list_20260301_054006.csv",
+            "qualitative/kr/dart/dart_list_20260301_054010.csv"
+          ]
+        },
+        {
+          "sha1": "356a192b7913b04c54574d18c28d46e6395428ab",
+          "size_bytes": 1,
+          "count": 38,
+          "examples": [
+            "qualitative/attachments/telegram/Stock_Trip_stocktrip/bucket_009/msg_649__page_001.txt",
+            "qualitative/attachments/telegram/Stock_Trip_stocktrip/bucket_046/msg_430__page_001.txt",
+            "qualitative/attachments/telegram/닥터다빈치_투자이야기_drdavinci1/bucket_115/msg_2419__page_013.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_047/msg_32559__page_001.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_004.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_005.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_006.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_007.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_008.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_009.txt"
+          ]
+        },
+        {
+          "sha1": "ba006a9ccaeb141a47d2442d9f478cdc1a8faa5d",
+          "size_bytes": 3720747,
+          "count": 34,
+          "examples": [
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_004.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_005.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_006.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_007.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_008.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_009.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_010.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_011.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_012.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_114/msg_32242__page_013.png"
+          ]
+        },
+        {
+          "sha1": "a94687df77865e78b0f76deca53a845655dc629f",
+          "size_bytes": 366216,
+          "count": 26,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260307_004010.csv",
+            "qualitative/kr/dart/dart_list_20260307_014010.csv",
+            "qualitative/kr/dart/dart_list_20260307_024009.csv",
+            "qualitative/kr/dart/dart_list_20260307_034009.csv",
+            "qualitative/kr/dart/dart_list_20260307_044007.csv",
+            "qualitative/kr/dart/dart_list_20260307_054007.csv",
+            "qualitative/kr/dart/dart_list_20260307_064009.csv",
+            "qualitative/kr/dart/dart_list_20260307_074010.csv",
+            "qualitative/kr/dart/dart_list_20260307_084010.csv",
+            "qualitative/kr/dart/dart_list_20260307_094010.csv"
+          ]
+        },
+        {
+          "sha1": "f80a4e645ec856bd16ae986dfa58acf588863e33",
+          "size_bytes": 161089,
+          "count": 25,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260308_004005.csv",
+            "qualitative/kr/dart/dart_list_20260308_014006.csv",
+            "qualitative/kr/dart/dart_list_20260308_024006.csv",
+            "qualitative/kr/dart/dart_list_20260308_032338.csv",
+            "qualitative/kr/dart/dart_list_20260308_034007.csv",
+            "qualitative/kr/dart/dart_list_20260308_044003.csv",
+            "qualitative/kr/dart/dart_list_20260308_054003.csv",
+            "qualitative/kr/dart/dart_list_20260308_064003.csv",
+            "qualitative/kr/dart/dart_list_20260308_074006.csv",
+            "qualitative/kr/dart/dart_list_20260308_084008.csv"
+          ]
+        },
+        {
+          "sha1": "e618284a2192d14beeb12a06cb34179203f98380",
+          "size_bytes": 146287,
+          "count": 22,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260303_194002.csv",
+            "qualitative/kr/dart/dart_list_20260303_204002.csv",
+            "qualitative/kr/dart/dart_list_20260303_204006.csv",
+            "qualitative/kr/dart/dart_list_20260303_214003.csv",
+            "qualitative/kr/dart/dart_list_20260303_214006.csv",
+            "qualitative/kr/dart/dart_list_20260303_224003.csv",
+            "qualitative/kr/dart/dart_list_20260303_224007.csv",
+            "qualitative/kr/dart/dart_list_20260303_234003.csv",
+            "qualitative/kr/dart/dart_list_20260303_234007.csv",
+            "qualitative/kr/dart/dart_list_20260304_004002.csv"
+          ]
+        },
+        {
+          "sha1": "fdb545f1fb7d10861fd1c1aff3b9286b954c2927",
+          "size_bytes": 227,
+          "count": 21,
+          "examples": [
+            "qualitative/attachments/telegram/TNBfolio_TNBfolio/bucket_005/msg_18565__page_006.txt",
+            "qualitative/attachments/telegram/TNBfolio_TNBfolio/bucket_026/msg_14618__page_006.txt",
+            "qualitative/attachments/telegram/TNBfolio_TNBfolio/bucket_036/msg_15524__page_006.txt",
+            "qualitative/attachments/telegram/TNBfolio_TNBfolio/bucket_051/msg_16051__page_006.txt",
+            "qualitative/attachments/telegram/TNBfolio_TNBfolio/bucket_099/msg_16995__page_006.txt",
+            "qualitative/attachments/telegram/TNBfolio_TNBfolio/bucket_102/msg_17254__page_006.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_033/msg_32289__page_009.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_035/msg_32419__page_005.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_044/msg_32300__page_005.txt",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_045/msg_32429__page_005.txt"
+          ]
+        },
+        {
+          "sha1": "7b56073d0b95be1f8c1b85c90d01281da5b53dbf",
+          "size_bytes": 922801,
+          "count": 17,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260307_004010.json",
+            "qualitative/kr/dart/dart_list_20260307_014010.json",
+            "qualitative/kr/dart/dart_list_20260307_024009.json",
+            "qualitative/kr/dart/dart_list_20260307_034009.json",
+            "qualitative/kr/dart/dart_list_20260307_044007.json",
+            "qualitative/kr/dart/dart_list_20260307_054007.json",
+            "qualitative/kr/dart/dart_list_20260307_064009.json",
+            "qualitative/kr/dart/dart_list_20260307_074010.json",
+            "qualitative/kr/dart/dart_list_20260307_084010.json",
+            "qualitative/kr/dart/dart_list_20260307_094010.json"
+          ]
+        },
+        {
+          "sha1": "53c0632debf5f0a9b8142d0a132ece5a02f9c664",
+          "size_bytes": 118643,
+          "count": 16,
+          "examples": [
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_030/msg_32542__page_025.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_031/msg_32543__page_025.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_035/msg_32419__page_005.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_044/msg_32300__page_005.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_045/msg_32429__page_005.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_054/msg_32310__page_004.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_058/msg_32314__page_007.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_066/msg_32578__page_006.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_067/msg_32579__page_004.png",
+            "qualitative/attachments/telegram/선진짱_주식공부방_1378197756/bucket_068/msg_32580__page_006.png"
+          ]
+        },
+        {
+          "sha1": "a98e5b064a5012151fd72fe26a7624f76b3dc9da",
+          "size_bytes": 1369,
+          "count": 15,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260303_004001.json",
+            "qualitative/kr/dart/dart_list_20260303_004005.json",
+            "qualitative/kr/dart/dart_list_20260303_012819.json",
+            "qualitative/kr/dart/dart_list_20260303_013923.json",
+            "qualitative/kr/dart/dart_list_20260303_014001.json",
+            "qualitative/kr/dart/dart_list_20260303_014004.json",
+            "qualitative/kr/dart/dart_list_20260303_022356.json",
+            "qualitative/kr/dart/dart_list_20260303_022947.json",
+            "qualitative/kr/dart/dart_list_20260303_024001.json",
+            "qualitative/kr/dart/dart_list_20260303_034001.json"
+          ]
+        },
+        {
+          "sha1": "afd31a37ccfe8aa674f9c8692fccacf0d80bddb7",
+          "size_bytes": 569,
+          "count": 15,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260303_004001.csv",
+            "qualitative/kr/dart/dart_list_20260303_004005.csv",
+            "qualitative/kr/dart/dart_list_20260303_012819.csv",
+            "qualitative/kr/dart/dart_list_20260303_013923.csv",
+            "qualitative/kr/dart/dart_list_20260303_014001.csv",
+            "qualitative/kr/dart/dart_list_20260303_014004.csv",
+            "qualitative/kr/dart/dart_list_20260303_022356.csv",
+            "qualitative/kr/dart/dart_list_20260303_022947.csv",
+            "qualitative/kr/dart/dart_list_20260303_024001.csv",
+            "qualitative/kr/dart/dart_list_20260303_034001.csv"
+          ]
+        },
+        {
+          "sha1": "84d9ab90cb422aa2b70ac7f3c990f2c45281e92f",
+          "size_bytes": 364686,
+          "count": 13,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260304_004002.json",
+            "qualitative/kr/dart/dart_list_20260304_004005.json",
+            "qualitative/kr/dart/dart_list_20260304_014002.json",
+            "qualitative/kr/dart/dart_list_20260304_022607.json",
+            "qualitative/kr/dart/dart_list_20260304_024003.json",
+            "qualitative/kr/dart/dart_list_20260304_024007.json",
+            "qualitative/kr/dart/dart_list_20260304_034002.json",
+            "qualitative/kr/dart/dart_list_20260304_034005.json",
+            "qualitative/kr/dart/dart_list_20260304_044002.json",
+            "qualitative/kr/dart/dart_list_20260304_044003.json"
+          ]
+        },
+        {
+          "sha1": "aae81d497e240f6fa92fdf8240769868c249a9ab",
+          "size_bytes": 729567,
+          "count": 9,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260305_004004.json",
+            "qualitative/kr/dart/dart_list_20260305_014008.json",
+            "qualitative/kr/dart/dart_list_20260305_022551.json",
+            "qualitative/kr/dart/dart_list_20260305_024008.json",
+            "qualitative/kr/dart/dart_list_20260305_034006.json",
+            "qualitative/kr/dart/dart_list_20260305_044005.json",
+            "qualitative/kr/dart/dart_list_20260305_054008.json",
+            "qualitative/kr/dart/dart_list_20260305_064008.json",
+            "qualitative/kr/dart/dart_list_20260305_065757.json"
+          ]
+        },
+        {
+          "sha1": "4a3e7319154596886e422d31d69e8701006bf749",
+          "size_bytes": 364686,
+          "count": 9,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260303_194002.json",
+            "qualitative/kr/dart/dart_list_20260303_204002.json",
+            "qualitative/kr/dart/dart_list_20260303_204006.json",
+            "qualitative/kr/dart/dart_list_20260303_214003.json",
+            "qualitative/kr/dart/dart_list_20260303_214006.json",
+            "qualitative/kr/dart/dart_list_20260303_224003.json",
+            "qualitative/kr/dart/dart_list_20260303_224007.json",
+            "qualitative/kr/dart/dart_list_20260303_234003.json",
+            "qualitative/kr/dart/dart_list_20260303_234007.json"
+          ]
+        },
+        {
+          "sha1": "d594078da0cb271bec95b4e5497f093ed474c074",
+          "size_bytes": 288618,
+          "count": 9,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260305_004004.csv",
+            "qualitative/kr/dart/dart_list_20260305_014008.csv",
+            "qualitative/kr/dart/dart_list_20260305_022551.csv",
+            "qualitative/kr/dart/dart_list_20260305_024008.csv",
+            "qualitative/kr/dart/dart_list_20260305_034006.csv",
+            "qualitative/kr/dart/dart_list_20260305_044005.csv",
+            "qualitative/kr/dart/dart_list_20260305_054008.csv",
+            "qualitative/kr/dart/dart_list_20260305_064008.csv",
+            "qualitative/kr/dart/dart_list_20260305_065757.csv"
+          ]
+        },
+        {
+          "sha1": "cd272934a408d277891ac43e57651d14d6b7ca76",
+          "size_bytes": 837454,
+          "count": 8,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260306_004009.json",
+            "qualitative/kr/dart/dart_list_20260306_014010.json",
+            "qualitative/kr/dart/dart_list_20260306_023318.json",
+            "qualitative/kr/dart/dart_list_20260306_024009.json",
+            "qualitative/kr/dart/dart_list_20260306_034009.json",
+            "qualitative/kr/dart/dart_list_20260306_044006.json",
+            "qualitative/kr/dart/dart_list_20260306_054006.json",
+            "qualitative/kr/dart/dart_list_20260306_064010.json"
+          ]
+        },
+        {
+          "sha1": "311285e017019d6c3046b339d362d3465cea1ad3",
+          "size_bytes": 330565,
+          "count": 8,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260306_004009.csv",
+            "qualitative/kr/dart/dart_list_20260306_014010.csv",
+            "qualitative/kr/dart/dart_list_20260306_023318.csv",
+            "qualitative/kr/dart/dart_list_20260306_024009.csv",
+            "qualitative/kr/dart/dart_list_20260306_034009.csv",
+            "qualitative/kr/dart/dart_list_20260306_044006.csv",
+            "qualitative/kr/dart/dart_list_20260306_054006.csv",
+            "qualitative/kr/dart/dart_list_20260306_064010.csv"
+          ]
+        },
+        {
+          "sha1": "173ddb0855954a5d431c48e58f20ecb42c3cfdde",
+          "size_bytes": 1799642,
+          "count": 7,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260228_204810.json",
+            "qualitative/kr/dart/dart_list_20260228_214014.json",
+            "qualitative/kr/dart/dart_list_20260228_214018.json",
+            "qualitative/kr/dart/dart_list_20260228_224014.json",
+            "qualitative/kr/dart/dart_list_20260228_224017.json",
+            "qualitative/kr/dart/dart_list_20260228_234014.json",
+            "qualitative/kr/dart/dart_list_20260228_234019.json"
+          ]
+        },
+        {
+          "sha1": "a6773b945b7916ff34e7ca524e67ed7333b2b5dd",
+          "size_bytes": 753019,
+          "count": 7,
+          "examples": [
+            "qualitative/kr/dart/dart_list_20260228_204810.csv",
+            "qualitative/kr/dart/dart_list_20260228_214014.csv",
+            "qualitative/kr/dart/dart_list_20260228_214018.csv",
+            "qualitative/kr/dart/dart_list_20260228_224014.csv",
+            "qualitative/kr/dart/dart_list_20260228_224017.csv",
+            "qualitative/kr/dart/dart_list_20260228_234014.csv",
+            "qualitative/kr/dart/dart_list_20260228_234019.csv"
+          ]
+        }
+      ]
+    }
+  },
+  "safe_cleanup_actions": [
+    {
+      "action": "index_reinforce_only",
+      "target": "raw_artifacts / pdf_documents coverage gaps",
+      "method": "raw_db_sync_status 기반 재동기화 dry-run + pdf manifest 재색인",
+      "destructive": false
+    },
+    {
+      "action": "rename_plan_only",
+      "target": "normalized channel_slug duplicates",
+      "method": "slug alias map 작성 후 move/rename manifest만 생성, 실제 rename 금지",
+      "destructive": false
+    },
+    {
+      "action": "quarantine_manifest_only",
+      "target": "disk_only artifacts (.DS_Store, mp4, orphan manifest, url_index history)",
+      "method": "이동 후보 목록만 JSON/MD로 저장, 실제 이동 금지",
+      "destructive": false
+    },
+    {
+      "action": "runtime_hygiene_plan_only",
+      "target": "runtime/telegram_attach_tmp and telegram_scrape.lock",
+      "method": "실행 중 프로세스 확인 후 보관/정리 기준 문서화, 실제 삭제 금지",
+      "destructive": false
+    }
+  ],
+  "unverified_items": [
+    "disk_only 및 size_mismatch의 직접 원인(동시 실행/후속 수집/인덱스 누락 등)은 미확인",
+    "same_sha1 중복 파일군의 업무상 동일본/중복본 여부는 미확인",
+    "manifest_missing_in_pdf_documents 633건의 생성 시점과 누락 사유는 미확인"
+  ]
+}

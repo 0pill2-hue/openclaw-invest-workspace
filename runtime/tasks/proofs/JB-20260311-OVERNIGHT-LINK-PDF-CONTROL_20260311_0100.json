@@ -1,0 +1,66 @@
+{
+  "generated_at_kst": "2026-03-11 01:00 KST",
+  "ticket": "JB-20260311-OVERNIGHT-LINK-PDF-CONTROL",
+  "checkpoint": "01:00",
+  "stage2_rebuild": {
+    "active_process_found": false,
+    "processed_index_meta": {
+      "stage2_rule_version": "stage2-refine-20260308-r4",
+      "stage2_config_sha1": "761880cafbacba86de4edf4671bed953b5c51b95",
+      "link_enrichment_enabled": true,
+      "input_source": "stage1_raw_db_mirror"
+    }
+  },
+  "db_lock_audit": {
+    "stage1_raw_archive_lsof_holders": 0,
+    "active_related_processes": [
+      "stage01_daily_update.py --profile news_backfill",
+      "stage01_daily_update.py --profile telegram_fast"
+    ],
+    "duplicate_stage01_sync_raw_to_db_found": false
+  },
+  "blog_link_enrichment": {
+    "clean_blog_total": 40212,
+    "clean_blog_link_enriched_hits": 1225,
+    "quarantine_blog_total": 697,
+    "samples": [
+      {
+        "path": "invest/stages/stage2/outputs/clean/production/qualitative/text/blog/apharm/223326687247.md",
+        "link_enriched": true
+      },
+      {
+        "path": "invest/stages/stage2/outputs/clean/production/qualitative/text/blog/flowerinsnow_23/223422653100.md",
+        "link_enriched": true
+      },
+      {
+        "path": "invest/stages/stage2/outputs/clean/production/qualitative/text/blog/green_finance/223833538696.md",
+        "link_enriched": true
+      }
+    ]
+  },
+  "telegram_link_state": {
+    "clean_telegram_total": 55,
+    "clean_telegram_link_enriched_hits": 0,
+    "quarantine_telegram_total": 18,
+    "observation": "Telegram outputs exist and Stage1 public-fallback raws include outbound URLs, but sampled Stage2 telegram clean files do not yet show LinkEnriched/[LinkEnrichment] sections.",
+    "samples_without_enrichment": [
+      "invest/stages/stage2/outputs/clean/production/qualitative/text/telegram/haetwo_public_fallback.md",
+      "invest/stages/stage2/outputs/clean/production/qualitative/text/telegram/research_public_fallback.md",
+      "invest/stages/stage2/outputs/clean/production/qualitative/text/telegram/comvestment_public_fallback.md"
+    ]
+  },
+  "pdf_continuity": {
+    "status_path": "invest/stages/stage1/outputs/runtime/raw_db_sync_status.json",
+    "sync_id": "20260310T154617Z",
+    "stage1_profile": "dart_fast",
+    "indexed_documents": 127467,
+    "indexed_pages": 18765,
+    "documents_with_manifest": 105704,
+    "documents_with_text": 1197,
+    "documents_with_renders": 1197,
+    "latest_message_date": "20260309",
+    "finished_at": "2026-03-10T15:49:35.424313+00:00"
+  },
+  "blocked_reason": "Telegram linked-page enrichment is not yet evidenced in sampled Stage2 telegram outputs even after the successful Stage2 rebuild.",
+  "next_action": "At the next checkpoint, inspect telegram link-enrichment path for public-fallback/raw telegram inputs, determine whether this is an unsupported format vs. a real regression, and keep avoiding duplicate rebuilds unless metadata or locks justify a rerun."
+}

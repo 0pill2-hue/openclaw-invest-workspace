@@ -1,0 +1,15 @@
+STATUS: PASS
+CHECKS:
+- `docs/invest/stage3/STAGE3_DEEP_ANALYSIS_EXTRACTION_RUBRIC.md` §4/§6/§7에서 추출 단위를 `document_id × focus_entity`로 두고 `stock`/`industry`를 분리했으며, stock claim은 `stock_data`, industry claim은 `industry_data`로 저장 가능하다고 명시했다.
+- 같은 rubric §5/§11에서 `primary_claim`, `supporting_claims`, `evidence`, `risk`, `counterpoint`, `source_refs`를 포함한 공통 필수 추출 계약을 정의했고 `source_tier`, `source_reliability_note`, `time_horizon`, `novelty`까지 포함했다.
+- rubric §8/§9에서 `official / professional / independent / field_signal` source-tier별 우선 추출 원칙과 source 충돌 처리 규칙을 정의해 source-tier 반영 요구를 충족한다.
+- `docs/invest/stage3/README.md`는 해당 문서를 Stage3-B 심층분석용 DRAFT rubric으로 위치시켰고, `STAGE3_RULEBOOK_AND_REPRO.md` 및 `STAGE3_DESIGN.md`와 핵심 방향(문서 기반 증거 추출, Stage4 판단 문구 비포함)도 충돌하지 않는다.
+GAPS:
+- 현재 문서 상태가 `DRAFT`이며 `README.md` 기준 supporting 문서라서, canonical rulebook 수준으로 고정된 계약은 아직 아니다.
+- `stock_data`/`industry_data` 분리 원칙은 명확하지만, 별도 저장 스키마나 출력 경로까지는 아직 문서에 고정되지 않았다.
+- 현 canonical Stage3 문서(`STAGE3_RULEBOOK_AND_REPRO.md`, `STAGE3_DESIGN.md`)는 기존 qualitative axes/claim-card 파이프라인 중심이라, Stage3-B deep analysis 결과를 어디서 어떻게 연결/적재할지는 후속 확정이 필요하다.
+PROOF:
+- 검토 파일: `docs/invest/stage3/STAGE3_DEEP_ANALYSIS_EXTRACTION_RUBRIC.md`, `docs/invest/stage3/STAGE3_RULEBOOK_AND_REPRO.md`, `docs/invest/stage3/STAGE3_DESIGN.md`, `docs/invest/stage3/README.md`.
+- 핵심 증빙 1: rubric §4/§6/§7이 stock/industry 분리와 entity별 필수 추출 축을 직접 정의한다.
+- 핵심 증빙 2: rubric §5/§11이 claim/evidence/risk/counterpoint/source_refs 중심 최소 출력 계약을 직접 정의한다.
+- 핵심 증빙 3: rubric §8/§9가 source-tier 반영 및 충돌 처리 규칙을 정의하고, README가 이 문서를 Stage3-B DRAFT rubric으로 명시한다.

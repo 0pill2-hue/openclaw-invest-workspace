@@ -1,0 +1,121 @@
+{
+  "created_at": "2026-03-10T22:32:41.850673",
+  "prompt": "Write only valid JSON with keys conclusion, positives, risks, verdict. positives and risks must each contain exactly 3 items. Data: revenue +20%, operating profit -5%, free cash flow -12%, debt ratio +10pp, two new contracts, worse inventory days.",
+  "models": [
+    {
+      "label": "Qwen3.5-35B-A3B-Q4_K_M",
+      "path": "/Users/jobiseu/models/qwen35/Qwen3.5-35B-A3B-Q4_K_M.gguf",
+      "ready_sec": 4.855,
+      "ready_error": null,
+      "runs": [
+        {
+          "run": 1,
+          "ok": true,
+          "latency_sec": 6.765,
+          "error": null,
+          "text": "{\n  \"conclusion\": \"The company shows top-line growth but faces significant profitability and liquidity challenges.\",\n  \"positives\": [\n    \"Revenue increased by 20%\",\n    \"Secured two new contracts\",\n    \"Operating profit declined despite revenue growth\"\n  ],\n  \"risks\": [\n    \"Operating profit decreased by 5%\",\n    \"Free cash flow dropped by 12%\",\n    \"Debt ratio worsened by 10 percentage points\"\n  ],\n  \"verdict\": \"Mixed outlook with strong sales momentum offset by deteriorating cash flow and leverage.\"\n}",
+          "text_len": 509,
+          "usage": {
+            "prompt_tokens": 71,
+            "completion_tokens": 133,
+            "total_tokens": 204
+          }
+        },
+        {
+          "run": 2,
+          "ok": true,
+          "latency_sec": 6.805,
+          "error": null,
+          "text": "{\n  \"conclusion\": \"The company shows top-line growth but faces significant profitability and liquidity challenges.\",\n  \"positives\": [\n    \"Revenue increased by 20%\",\n    \"Secured two new contracts\",\n    \"Operating profit declined despite revenue growth\"\n  ],\n  \"risks\": [\n    \"Operating profit decreased by 5%\",\n    \"Free cash flow dropped by 12%\",\n    \"Debt ratio worsened by 10 percentage points\"\n  ],\n  \"verdict\": \"Mixed outlook with strong sales momentum offset by deteriorating cash flow and leverage.\"\n}",
+          "text_len": 509,
+          "usage": {
+            "prompt_tokens": 71,
+            "completion_tokens": 133,
+            "total_tokens": 204
+          }
+        },
+        {
+          "run": 3,
+          "ok": true,
+          "latency_sec": 6.873,
+          "error": null,
+          "text": "{\n  \"conclusion\": \"The company shows top-line growth but faces significant profitability and liquidity challenges.\",\n  \"positives\": [\n    \"Revenue increased by 20%\",\n    \"Secured two new contracts\",\n    \"Operating profit declined despite revenue growth\"\n  ],\n  \"risks\": [\n    \"Operating profit decreased by 5%\",\n    \"Free cash flow dropped by 12%\",\n    \"Debt ratio worsened by 10 percentage points\"\n  ],\n  \"verdict\": \"Mixed outlook with strong sales momentum offset by deteriorating cash flow and leverage.\"\n}",
+          "text_len": 509,
+          "usage": {
+            "prompt_tokens": 71,
+            "completion_tokens": 133,
+            "total_tokens": 204
+          }
+        }
+      ],
+      "summary": {
+        "avg_latency_sec": 6.814,
+        "min_latency_sec": 6.765,
+        "max_latency_sec": 6.873
+      }
+    },
+    {
+      "label": "Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M",
+      "path": "/Users/jobiseu/models/qwen35/Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M.gguf",
+      "ready_sec": 19.357,
+      "ready_error": null,
+      "runs": [
+        {
+          "run": 1,
+          "ok": true,
+          "latency_sec": 6.359,
+          "error": null,
+          "text": "\n\n{\n  \"conclusion\": \"The company shows top-line growth but faces deteriorating profitability and liquidity metrics.\",\n  \"positives\": [\n    \"Revenue increased by 20%\",\n    \"Secured two new contracts\",\n    \"Strong sales momentum\"\n  ],\n  \"risks\": [\n    \"Operating profit declined by 5%\",\n    \"Free cash flow dropped by 12%\",\n    \"Debt ratio worsened by 10 percentage points\"\n  ],\n  \"verdict\": \"Cautious optimism with significant financial stress indicators.\"\n}",
+          "text_len": 457,
+          "usage": {
+            "prompt_tokens": 70,
+            "completion_tokens": 127,
+            "total_tokens": 197
+          }
+        },
+        {
+          "run": 2,
+          "ok": true,
+          "latency_sec": 6.384,
+          "error": null,
+          "text": "\n\n{\n  \"conclusion\": \"The company shows top-line growth but faces deteriorating profitability and liquidity metrics.\",\n  \"positives\": [\n    \"Revenue increased by 20%\",\n    \"Secured two new contracts\",\n    \"Strong sales momentum\"\n  ],\n  \"risks\": [\n    \"Operating profit declined by 5%\",\n    \"Free cash flow dropped by 12%\",\n    \"Debt ratio worsened by 10 percentage points\"\n  ],\n  \"verdict\": \"Cautious optimism with significant financial stress indicators.\"\n}",
+          "text_len": 457,
+          "usage": {
+            "prompt_tokens": 70,
+            "completion_tokens": 127,
+            "total_tokens": 197
+          }
+        },
+        {
+          "run": 3,
+          "ok": true,
+          "latency_sec": 6.924,
+          "error": null,
+          "text": "\n\n{\n  \"conclusion\": \"The company shows top-line growth but faces deteriorating profitability and liquidity metrics.\",\n  \"positives\": [\n    \"Revenue increased by 20%\",\n    \"Secured two new contracts\",\n    \"Strong sales momentum\"\n  ],\n  \"risks\": [\n    \"Operating profit declined by 5%\",\n    \"Free cash flow dropped by 12%\",\n    \"Debt ratio worsened by 10 percentage points\"\n  ],\n  \"verdict\": \"Cautious optimism with significant financial stress indicators.\"\n}",
+          "text_len": 457,
+          "usage": {
+            "prompt_tokens": 70,
+            "completion_tokens": 127,
+            "total_tokens": 197
+          }
+        }
+      ],
+      "summary": {
+        "avg_latency_sec": 6.556,
+        "min_latency_sec": 6.359,
+        "max_latency_sec": 6.924
+      }
+    }
+  ],
+  "restored_model": "Qwen3.5-35B-A3B-Q4_K_M",
+  "restore_status": {
+    "ok": true,
+    "ready_sec": 18.954,
+    "error": null
+  },
+  "restore_live_status": {
+    "ok": true,
+    "ready_sec": 4.689,
+    "error": null
+  }
+}

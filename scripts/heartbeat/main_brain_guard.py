@@ -30,6 +30,8 @@ WATCHDOG_LOG = ROOT / "runtime/tasks/watchdog.launchd.log"
 AUTO_DISPATCH_STATUS = ROOT / "runtime/tasks/auto_dispatch_status.json"
 
 WATCHDOG_LABEL_KEY = "watchdog"
+WATCHDOG_DISABLED_LABEL = "com.jobiseu.openclaw.invest.stage01.watchdog"
+WATCHDOG_PAUSE_DIRECTIVE_ID = "JB-20260310-WATCHDOG-PAUSE"
 AUTO_DISPATCH_LABEL_KEY = "auto-dispatch"
 LOCAL_BRAIN_LABEL_KEY = "local-brain-guard"
 WATCHDOG_MAX_AGE = timedelta(minutes=25)
@@ -254,6 +256,19 @@ def load_launchctl_entries() -> tuple[dict[str, dict[str, str]], list[str]]:
     return entries, []
 
 
+def load_disabled_launchd_labels() -> tuple[set[str], list[str]]:
+    result = run(["launchctl", "print-disabled", f"gui/{os.getuid()}"])
+    if result.rc != 0:
+        return set(), ["launchctl_print_disabled_failed"]
+
+    labels: set[str] = set()
+    for raw in result.stdout.splitlines():
+        match = re.search(r'"([^"]+)"\s*=>\s*disabled', raw)
+        if match:
+            labels.add(match.group(1).strip())
+    return labels, []
+
+
 def find_launchctl_entry(entries: dict[str, dict[str, str]], keyword: str) -> dict[str, str] | None:
     candidates = [entry for label, entry in entries.items() if keyword in label]
     if not candidates:
@@ -322,25 +337,78 @@ def _watchdog_recent_result_ok(payload: dict[str, Any]) -> bool:
     return False
 
 
-def watchdog_component(entries: dict[str, dict[str, str]], launchctl_issues: list[str]) -> dict[str, Any]:
+def detect_watchdog_pause(current_task: dict[str, Any], disabled_labels: set[str]) -> dict[str, Any]:
+    payload = current_task.get("resume_check") if isinstance(current_task, dict) else None
+    status = payload.get("current_task_status") if isinstance(payload, dict) else None
+    if not isinstance(status, dict):
+        status = {}
+
+    directive_ids = {
+        item.strip()
+        for item in str(status.get("directive_ids", "")).split(",")
+        if item.strip()
+    }
+    notes = str(status.get("notes", "")).strip().lower()
+    latest_proof = str(status.get("latest_proof", "")).strip()
+
+    disabled = WATCHDOG_DISABLED_LABEL in disabled_labels
+    note_pause = "watchdog paused until explicit user resume command" in notes
+    directive_pause = WATCHDOG_PAUSE_DIRECTIVE_ID in directive_ids
+    proof_pause = f"launchctl disabled {WATCHDOG_DISABLED_LABEL}" in latest_proof
+    paused = disabled and (note_pause or directive_pause or proof_pause)
+
+    reason_parts: list[str] = []
+    if disabled:
+        reason_parts.append("launchctl_disabled")
+    if directive_pause:
+        reason_parts.append("directive")
+    if note_pause:
+        reason_parts.append("current_task_note")
+    if proof_pause:
+        reason_parts.append("latest_proof")
+
+    return {
+        "paused": paused,
+        "disabled": disabled,
+        "reason": "+".join(reason_parts),
+        "directive_pause": directive_pause,
+        "note_pause": note_pause,
+        "proof_pause": proof_pause,
+        "label": WATCHDOG_DISABLED_LABEL,
+    }
+
+
+def watchdog_component(
+    entries: dict[str, dict[str, str]],
+    launchctl_issues: list[str],
+    pause_override: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    pause_override = pause_override or {}
+    paused = bool(pause_override.get("paused"))
+
     issues = list(launchctl_issues)
     launchd = launchd_component("watchdog", find_launchctl_entry(entries, WATCHDOG_LABEL_KEY))
-    issues.extend(launchd["issues"])
+    launchd_issues = list(launchd["issues"])
+    if paused:
+        launchd_issues = [issue for issue in launchd_issues if issue != "watchdog_launchd_missing"]
+    issues.extend(launchd_issues)
 
     recent_results = load_tail_json_objects(WATCHDOG_LOG, count=2)
     if not WATCHDOG_LOG.exists():
-        issues.append("watchdog_log_missing")
         age = None
+        if not paused:
+            issues.append("watchdog_log_missing")
     else:
         age = age_seconds(datetime.fromtimestamp(WATCHDOG_LOG.stat().st_mtime))
-        if age is not None and age > WATCHDOG_MAX_AGE.total_seconds():
+        if age is not None and age > WATCHDOG_MAX_AGE.total_seconds() and not paused:
             issues.append("watchdog_log_stale")
 
     if len(recent_results) < 1:
-        issues.append("watchdog_recent_json_missing")
+        if not paused:
+            issues.append("watchdog_recent_json_missing")
     else:
         latest_payload = recent_results[-1]
-        if not _watchdog_recent_result_ok(latest_payload):
+        if not _watchdog_recent_result_ok(latest_payload) and not paused:
             issues.append("watchdog_recent_result_latest_failed")
 
     return {
@@ -351,6 +419,8 @@ def watchdog_component(entries: dict[str, dict[str, str]], launchctl_issues: lis
         "log_path": str(WATCHDOG_LOG),
         "log_age": format_age(age),
         "recent_results": recent_results,
+        "paused": paused,
+        "pause_detail": pause_override,
     }
 
 
@@ -460,9 +530,12 @@ def main() -> None:
     local_brain = run_local_brain_guard()
     status_info = run_openclaw_status()
     launchctl_entries, launchctl_issues = load_launchctl_entries()
-    watchdog = watchdog_component(launchctl_entries, launchctl_issues)
-    auto_dispatch = auto_dispatch_component(launchctl_entries, launchctl_issues)
+    disabled_launchd_labels, disabled_launchd_issues = load_disabled_launchd_labels()
+    combined_launchctl_issues = list(dict.fromkeys(launchctl_issues + disabled_launchd_issues))
     current_task = current_task_component()
+    watchdog_pause = detect_watchdog_pause(current_task, disabled_launchd_labels)
+    watchdog = watchdog_component(launchctl_entries, combined_launchctl_issues, watchdog_pause)
+    auto_dispatch = auto_dispatch_component(launchctl_entries, combined_launchctl_issues)
 
     telegram = {
         "ok": bool(status_info.get("telegram", {}).get("ok")) and bool(status_info.get("ok")),

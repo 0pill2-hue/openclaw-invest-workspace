@@ -1,0 +1,47 @@
+# JB-20260310 STAGE1 DB CLEANUP PROOF COMMANDS
+# snapshot_generated_at=2026-03-10T08:17:24+0900
+
+# 1) raw/runtime inventory
+python3 - <<'PY'
+from pathlib import Path
+import os
+root=Path("/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw")
+files=0; dirs=0
+for cur,dirnames,filenames in os.walk(root):
+    dirs += len(dirnames)
+    files += len(filenames)
+print(files, dirs)
+PY
+# observed: raw files=210665, raw dirs=65206
+
+python3 - <<'PY'
+from pathlib import Path
+import os
+root=Path("/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/runtime")
+files=0; dirs=0
+for cur,dirnames,filenames in os.walk(root):
+    dirs += len(dirnames)
+    files += len(filenames)
+print(files, dirs)
+PY
+# observed: runtime files=888, runtime dirs=1
+
+# 2) sqlite core counts
+python3 - <<'PY'
+import sqlite3
+conn=sqlite3.connect("/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3")
+cur=conn.cursor()
+for sql in [
+    "SELECT COUNT(*) FROM raw_artifacts",
+    "SELECT COUNT(*) FROM pdf_documents",
+    "SELECT COUNT(*) FROM pdf_pages",
+    "SELECT COUNT(*) FROM sync_meta",
+]:
+    print(sql, cur.execute(sql).fetchone()[0])
+conn.close()
+PY
+# observed: raw_artifacts=210070, pdf_documents=63735, pdf_pages=5751, sync_meta=5
+
+# 3) proof JSON
+python3 runtime/tasks/JB-20260310_STAGE1_DB_CLEANUP_proof.py
+# observed output file: /Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/JB-20260310-STAGE1-DB-CLEANUP_proof.json

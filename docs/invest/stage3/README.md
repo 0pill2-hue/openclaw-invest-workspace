@@ -9,6 +9,8 @@ Stage3 문서는 **문서만 보고도 현재 Stage3를 재구현할 수 있는 
 - `docs/invest/stage3/STAGE3_DESIGN.md`
   - 상세 설계 기록 / 배경 설명
   - canonical 구현 계약은 `STAGE3_RULEBOOK_AND_REPRO.md` 우선
+- `docs/invest/stage3/STAGE3_DEEP_ANALYSIS_EXTRACTION_RUBRIC.md`
+  - Stage3-B 심층분석에서 문서 선정/추출 항목을 정리한 DRAFT rubric
 
 ## 한 줄 요약
 - Stage3는 Stage2 clean 기반 intermediate corpus를 만들고,

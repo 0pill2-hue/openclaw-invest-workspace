@@ -1,0 +1,204 @@
+{
+  "ticket_id": "JB-20260311-OVERNIGHT-LINK-PDF-CONTROL",
+  "checkpoint_kst": "2026-03-11 05:00",
+  "recorded_at_kst": "2026-03-11 05:00",
+  "summary": {
+    "overall": "observe_only_with_public_fallback_diagnosis",
+    "link_enrichment_meta": null,
+    "blog_path": "authoritative_stage2_meta_still_enabled_no_regression_signal",
+    "telegram_path": "public_fallback_no_link_marker_explained_by_threshold_gate",
+    "pdf_collection_decompose": "healthy_pdf_index_continuity_retained",
+    "raw_db_lock_holder_present": true,
+    "active_stage1_processes_present": true
+  },
+  "observations": {
+    "process_state": {
+      "ps_matches": [
+        "15978     1 Wed Mar 11 03:40:30 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile news_backfill",
+        "16228 15978 Wed Mar 11 03:48:47 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py",
+        "16540     1 Wed Mar 11 04:00:05 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile telegram_fast",
+        "16544 16540 Wed Mar 11 04:00:05 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py",
+        "16545 16544 Wed Mar 11 04:00:05 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_scrape_telegram_public_fallback.py",
+        "20792     1 Wed Mar 11 05:05:05 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile blog_fast",
+        "20793     1 Wed Mar 11 05:05:05 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_daily_update.py --profile rss_fast",
+        "20803 20792 Wed Mar 11 05:05:07 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_sync_raw_to_db.py",
+        "20810 20793 Wed Mar 11 05:05:29 2026     /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /Users/jobiseu/.openclaw/workspace/invest/stages/stage1/scripts/stage01_sync_raw_to_db.py"
+      ],
+      "raw_db_lsof": [
+        "COMMAND   PID    USER   FD   TYPE DEVICE    SIZE/OFF     NODE NAME",
+        "Python  20803 jobiseu    4u   REG   1,17 10159517696 10061611 invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3"
+      ]
+    },
+    "runtime_status_files": {
+      "raw_db_sync_status_timestamp": "2026-03-11T04:53:06.611934",
+      "raw_db_sync_status_finished_at": "2026-03-10T19:46:15.910735+00:00",
+      "raw_db_sync_status_stage1_profile": "dart_fast",
+      "raw_db_sync_status_sync_id": "20260310T194615Z",
+      "pdf_index": {
+        "indexed_documents": 127467,
+        "indexed_pages": 18765,
+        "documents_with_manifest": 105704,
+        "documents_with_text": 1197,
+        "documents_with_renders": 1197,
+        "channels_seen": 23,
+        "earliest_message_date": "20191029",
+        "latest_message_date": "20260309",
+        "grade_counts": {
+          "A": 1105,
+          "B": 92,
+          "F": 126270
+        },
+        "month_counts": {
+          "202512": 1905,
+          "202601": 2626,
+          "202306": 2156,
+          "202303": 1800,
+          "202307": 2564,
+          "202308": 2408,
+          "202309": 1560,
+          "202310": 1952,
+          "202311": 2342,
+          "202304": 2542,
+          "202312": 1724,
+          "202401": 2780,
+          "202402": 2244,
+          "202403": 1928,
+          "202404": 2208,
+          "202405": 2728,
+          "202407": 2894,
+          "202408": 2286,
+          "202409": 1880,
+          "202410": 2496,
+          "202305": 2238,
+          "202411": 2252,
+          "202412": 1772,
+          "202502": 2252,
+          "202503": 1720,
+          "201910": 6,
+          "201911": 22,
+          "201912": 12,
+          "202001": 8,
+          "202002": 18,
+          "202003": 18,
+          "202004": 22,
+          "202005": 26,
+          "202006": 14,
+          "202007": 2,
+          "202008": 8,
+          "202009": 8,
+          "202010": 4,
+          "202011": 4,
+          "202101": 2,
+          "202102": 4,
+          "202106": 4,
+          "202107": 6,
+          "202112": 1690,
+          "202201": 2410,
+          "202202": 2126,
+          "202204": 2546,
+          "202205": 2906,
+          "202207": 2828,
+          "202209": 1656,
+          "202210": 2536,
+          "202212": 2058,
+          "202301": 2660,
+          "202504": 2862,
+          "202506": 1934,
+          "202507": 2890,
+          "202511": 2798,
+          "202602": 2480,
+          "202603": 846,
+          "202203": 2256,
+          "202505": 2862,
+          "202508": 2502,
+          "202509": 1906,
+          "202510": 2564,
+          "202108": 2304,
+          "202109": 1506,
+          "202110": 2176,
+          "202111": 2514,
+          "202206": 1690,
+          "202208": 1990,
+          "202211": 3370,
+          "202302": 2704,
+          "202406": 2202,
+          "202501": 2250
+        },
+        "kind_counts": {
+          "pdf": 127467,
+          "image": 379,
+          "unknown": 11,
+          "document": 13,
+          "docx": 4
+        },
+        "db_path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3",
+        "raw_root": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw",
+        "finished_at": "2026-03-10T19:52:18.467967+00:00"
+      }
+    },
+    "stage2_processed_meta": {
+      "link_enrichment_enabled": null,
+      "input_source": null,
+      "stage2_rule_version": null,
+      "stage2_config_sha1": null
+    },
+    "telegram_public_fallback_samples": {
+      "haetwo_public_fallback": {
+        "raw_exists": true,
+        "clean_exists": true,
+        "clean_chars": 1168509,
+        "clean_http_count": 1977,
+        "clean_non_ws": 952010,
+        "clean_non_ws_no_url": 849923,
+        "clean_non_url_ratio": 0.8928,
+        "link_enriched_marker": false,
+        "link_enrichment_section": false,
+        "raw_clean_sha1_equal": false
+      },
+      "research_public_fallback": {
+        "raw_exists": true,
+        "clean_exists": true,
+        "clean_chars": 156505,
+        "clean_http_count": 2,
+        "clean_non_ws": 130657,
+        "clean_non_ws_no_url": 130563,
+        "clean_non_url_ratio": 0.9993,
+        "link_enriched_marker": false,
+        "link_enrichment_section": false,
+        "raw_clean_sha1_equal": false
+      },
+      "comvestment_public_fallback": {
+        "raw_exists": true,
+        "clean_exists": true,
+        "clean_chars": 239707,
+        "clean_http_count": 246,
+        "clean_non_ws": 190463,
+        "clean_non_ws_no_url": 177439,
+        "clean_non_url_ratio": 0.9316,
+        "link_enriched_marker": false,
+        "link_enrichment_section": false,
+        "raw_clean_sha1_equal": false
+      }
+    },
+    "code_diagnosis": {
+      "validator_gate": "stage02_onepass_refine_full.py only attempts telegram link enrichment when _validate_telegram_text fails with short/empty reason; otherwise clean text returns directly without LinkEnriched section.",
+      "ratio_gate": "_needs_link_enrichment returns False unless effective body is short or url-heavy (non_url_ratio < 0.55).",
+      "sample_ratios": {
+        "haetwo_public_fallback": 0.8928,
+        "research_public_fallback": 0.9993,
+        "comvestment_public_fallback": 0.9316
+      },
+      "diagnosis": "Current haetwo/research/comvestment public_fallback files are content-rich long aggregates, so missing LinkEnriched marker is expected formatting behavior for this output class rather than evidence of a Stage2 regression."
+    }
+  },
+  "decision": {
+    "action_taken": "observe_only_and_unblock_monitoring_status",
+    "why": "Active stage01 daily_update processes reappeared by 05:00, so starting any rebuild or DB-touching retry would risk duplicate work. Read-only raw/clean/code inspection was sufficient to explain the telegram public_fallback marker gap without destructive action."
+  },
+  "blocked": {
+    "is_blocked": false,
+    "reason": "",
+    "next_action": "Until 07:00 KST keep observe-only monitoring: wait for current stage01 writers to finish, then at next checkpoint confirm raw_db_sync_status advances again and PDF index continuity/link-saving outputs remain healthy without launching duplicate rebuilds.",
+    "proof_path": "runtime/tasks/proofs/JB-20260311-OVERNIGHT-LINK-PDF-CONTROL_20260311_0500.json"
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "created_at": "2026-03-10T22:44:16.767985",
+  "host": "127.0.0.1",
+  "port": 8090,
+  "prompt": "Analyze the company snapshot. First write exactly 12 numbered findings, each between 18 and 24 English words. Then output one final compact JSON object with keys thesis, positives, risks, action. positives and risks must each contain exactly 3 short strings. Do not use markdown fences. Data: revenue +20%, operating profit -5%, free cash flow -12%, debt ratio +10pp, two new contracts, worse inventory days, capex +8%, mild FX tailwind, flat demand guidance, small insider selling.",
+  "server_args_common": [
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "8090",
+    "-c",
+    "12288",
+    "-ngl",
+    "99",
+    "--flash-attn",
+    "on",
+    "--cache-type-k",
+    "q8_0",
+    "--cache-type-v",
+    "q8_0",
+    "--temp",
+    "0.5",
+    "--top-p",
+    "0.9",
+    "--top-k",
+    "20",
+    "--min-p",
+    "0.02",
+    "--repeat-penalty",
+    "1.05",
+    "--repeat-last-n",
+    "128"
+  ],
+  "conditions": [
+    {
+      "label": "Qwen3.5-35B-A3B-Q4_K_M::current_off",
+      "model_label": "Qwen3.5-35B-A3B-Q4_K_M",
+      "model_path": "/Users/jobiseu/models/qwen35/Qwen3.5-35B-A3B-Q4_K_M.gguf",
+      "thinking_label": "current_off",
+      "enable_thinking": false,
+      "ready_sec": 4.644,
+      "ready_error": null,
+      "stderr_log": "/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/JB-20260310-LOCAL-MODEL-REPLACE_Qwen3.5-35B-A3B-Q4_K_M_current_off_20260310_224416.stderr.log",
+      "runs": [
+        {
+          "run": 1,
+          "ok": true,
+          "latency_sec": 13.844,
+          "error": null,
+          "text": "1. Revenue growth of twenty percent shows strong top line expansion despite other financial pressures.\n2. Operating profit decline of five percent indicates rising costs are eroding core operational margins significantly.\n3. Free cash flow dropped twelve percent suggesting tighter liquidity constraints for future strategic investments.\n4. Debt ratio increased by ten percentage points reflecting higher leverage and potential solvency concerns.\n5. Securing two new contracts provides a positive foundation for future revenue streams and stability.\n6. Inventory days worsening signals potential inefficiencies in supply chain management or demand forecasting issues.\n7. Capital expenditure rose eight percent showing management commitment to long term asset development plans.\n8. Mild foreign exchange tailwind offered some temporary relief against broader currency headwinds this period.\n9. Flat demand guidance suggests management expects stable but not accelerating market conditions ahead.\n10. Small insider selling activity might signal caution among executives regarding near term stock performance.\n11. The combination of rising debt and falling cash flow creates notable financial risk exposure.\n12. Strong revenue growth contrasts sharply with declining profits and cash flow generation metrics.\n\n{\"thesis\":\"Top line growth masks deteriorating profitability and liquidity.\",\"positives\":[\"new contracts secured\",\"capex investment rising\",\"fx tailwind present\"],\"risks\":[\"debt ratio spiking\",\"cash flow dropping\",\"inventory inefficiency\"],\"action\":\"monitor leverage closely\"}",
+          "text_len": 1583,
+          "usage": {
+            "prompt_tokens": 126,
+            "completion_tokens": 280,
+            "total_tokens": 406
+          },
+          "completion_tok_per_sec": 20.225
+        },
+        {
+          "run": 2,
+          "ok": true,
+          "latency_sec": 13.737,
+          "error": null,
+          "text": "1. Revenue growth of twenty percent shows strong top line expansion despite other financial pressures.\n2. Operating profit decline of five percent indicates rising costs are eroding core operational margins significantly.\n3. Free cash flow dropped twelve percent suggesting tighter liquidity constraints for future strategic investments.\n4. Debt ratio increased by ten percentage points reflecting higher leverage and potential solvency concerns.\n5. Securing two new contracts provides a positive foundation for future revenue streams and stability.\n6. Inventory days worsening signals potential inefficiencies in supply chain management or demand forecasting issues.\n7. Capital expenditure rose eight percent showing management commitment to long term asset development plans.\n8. Mild foreign exchange tailwind offered some temporary relief against broader currency headwinds this period.\n9. Flat demand guidance suggests management expects stable but not accelerating market conditions ahead.\n10. Small insider selling activity might signal caution among executives regarding near term stock performance.\n11. The combination of rising debt and falling cash flow creates notable financial risk exposure.\n12. Strong revenue growth contrasts sharply with declining profits and cash flow generation metrics.\n\n{\"thesis\":\"Top line growth masks deteriorating profitability and liquidity.\",\"positives\":[\"new contracts secured\",\"capex investment rising\",\"fx tailwind present\"],\"risks\":[\"debt ratio spiking\",\"cash flow dropping\",\"inventory inefficiency\"],\"action\":\"monitor leverage closely\"}",
+          "text_len": 1583,
+          "usage": {
+            "prompt_tokens": 126,
+            "completion_tokens": 280,
+            "total_tokens": 406
+          },
+          "completion_tok_per_sec": 20.383
+        },
+        {
+          "run": 3,
+          "ok": true,
+          "latency_sec": 13.949,
+          "error": null,
+          "text": "1. Revenue growth of twenty percent shows strong top line expansion despite other financial pressures.\n2. Operating profit decline of five percent indicates rising costs are eroding core operational margins significantly.\n3. Free cash flow dropped twelve percent suggesting tighter liquidity constraints for future strategic investments.\n4. Debt ratio increased by ten percentage points reflecting higher leverage and potential solvency concerns.\n5. Securing two new contracts provides a positive foundation for future revenue streams and stability.\n6. Inventory days worsening signals potential inefficiencies in supply chain management or demand forecasting issues.\n7. Capital expenditure rose eight percent showing management commitment to long term asset development plans.\n8. Mild foreign exchange tailwind offered some temporary relief against broader currency headwinds this period.\n9. Flat demand guidance suggests management expects stable but not accelerating market conditions ahead.\n10. Small insider selling activity might signal caution among executives regarding near term stock performance.\n11. The combination of rising debt and falling cash flow creates notable financial risk exposure.\n12. Strong revenue growth contrasts sharply with declining profits and cash flow generation metrics.\n\n{\"thesis\":\"Top line growth masks deteriorating profitability and liquidity.\",\"positives\":[\"new contracts secured\",\"capex investment rising\",\"fx tailwind present\"],\"risks\":[\"debt ratio spiking\",\"cash flow dropping\",\"inventory inefficiency\"],\"action\":\"monitor leverage closely\"}",
+          "text_len": 1583,
+          "usage": {
+            "prompt_tokens": 126,
+            "completion_tokens": 280,
+            "total_tokens": 406
+          },
+          "completion_tok_per_sec": 20.073
+        }
+      ],
+      "summary": {
+        "avg_latency_sec": 13.843,
+        "avg_completion_tokens": 280,
+        "avg_completion_tok_per_sec": 20.227,
+        "min_completion_tok_per_sec": 20.073,
+        "max_completion_tok_per_sec": 20.383,
+        "avg_text_len": 1583
+      }
+    },
+    {
+      "label": "Qwen3.5-35B-A3B-Q4_K_M::thinking_high",
+      "model_label": "Qwen3.5-35B-A3B-Q4_K_M",
+      "model_path": "/Users/jobiseu/models/qwen35/Qwen3.5-35B-A3B-Q4_K_M.gguf",
+      "thinking_label": "thinking_high",
+      "enable_thinking": true,
+      "ready_sec": 4.694,
+      "ready_error": null,
+      "stderr_log": "/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/JB-20260310-LOCAL-MODEL-REPLACE_Qwen3.5-35B-A3B-Q4_K_M_thinking_high_20260310_224416.stderr.log",
+      "runs": [
+        {
+          "run": 1,
+          "ok": false,
+          "latency_sec": 44.129,
+          "error": null,
+          "text": "",
+          "text_len": 0,
+          "usage": {
+            "prompt_tokens": 124,
+            "completion_tokens": 900,
+            "total_tokens": 1024
+          },
+          "completion_tok_per_sec": 20.395
+        },
+        {
+          "run": 2,
+          "ok": false,
+          "latency_sec": 44.467,
+          "error": null,
+          "text": "",
+          "text_len": 0,
+          "usage": {
+            "prompt_tokens": 124,
+            "completion_tokens": 900,
+            "total_tokens": 1024
+          },
+          "completion_tok_per_sec": 20.24
+        },
+        {
+          "run": 3,
+          "ok": false,
+          "latency_sec": 44.106,
+          "error": null,
+          "text": "",
+          "text_len": 0,
+          "usage": {
+            "prompt_tokens": 124,
+            "completion_tokens": 900,
+            "total_tokens": 1024
+          },
+          "completion_tok_per_sec": 20.405
+        }
+      ],
+      "summary": {
+        "avg_latency_sec": 44.234,
+        "avg_completion_tokens": 900,
+        "avg_completion_tok_per_sec": 20.347,
+        "min_completion_tok_per_sec": 20.24,
+        "max_completion_tok_per_sec": 20.405,
+        "avg_text_len": 0
+      }
+    },
+    {
+      "label": "Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M::current_off",
+      "model_label": "Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M",
+      "model_path": "/Users/jobiseu/models/qwen35/Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M.gguf",
+      "thinking_label": "current_off",
+      "enable_thinking": false,
+      "ready_sec": 21.387,
+      "ready_error": null,
+      "stderr_log": "/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/JB-20260310-LOCAL-MODEL-REPLACE_Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M_current_off_20260310_224416.stderr.log",
+      "runs": [
+        {
+          "run": 1,
+          "ok": true,
+          "latency_sec": 14.861,
+          "error": null,
+          "text": "\n\n1. Revenue growth of twenty percent indicates strong top line momentum despite other operational headwinds.\n2. Operating profit decline of five percent suggests rising costs are eroding margins significantly this period.\n3. Free cash flow dropped twelve percent showing reduced liquidity available for reinvestment or shareholder returns.\n4. Debt ratio increased ten percentage points reflecting higher leverage and potentially elevated financial risk exposure.\n5. Securing two new contracts demonstrates successful sales efforts and potential future revenue stream expansion.\n6. Inventory days worsening implies slower turnover rates which may tie up working capital unnecessarily.\n7. Capital expenditure rose eight percent indicating management is investing heavily in long term capacity growth.\n8. Mild foreign exchange tailwind provided some benefit but was insufficient to offset broader negative trends.\n9. Flat demand guidance signals management expects stable market conditions without significant near term acceleration.\n10. Small insider selling activity might suggest limited confidence among executives regarding immediate stock performance.\n11. The combination of lower profits and higher debt creates a challenging financial environment for stakeholders.\n12. Overall mixed results show growth exists but profitability and efficiency metrics require immediate attention.\n\n{\"thesis\":\"Growth masked by deteriorating profitability and leverage\",\"positives\":[\"two new contracts\",\"revenue +20%\",\"mild FX tailwind\"],\"risks\":[\"debt ratio +10pp\",\"operating profit -5%\",\"worse inventory days\"],\"action\":\"Monitor cash flow closely while evaluating cost controls\"}",
+          "text_len": 1668,
+          "usage": {
+            "prompt_tokens": 125,
+            "completion_tokens": 300,
+            "total_tokens": 425
+          },
+          "completion_tok_per_sec": 20.187
+        },
+        {
+          "run": 2,
+          "ok": true,
+          "latency_sec": 15.068,
+          "error": null,
+          "text": "\n\n1. Revenue growth of twenty percent indicates strong top line momentum despite other operational headwinds.\n2. Operating profit decline of five percent suggests rising costs are eroding margins significantly this period.\n3. Free cash flow dropped twelve percent showing reduced liquidity available for reinvestment or shareholder returns.\n4. Debt ratio increased ten percentage points reflecting higher leverage and potentially elevated financial risk exposure.\n5. Securing two new contracts demonstrates successful sales efforts and potential future revenue stream expansion.\n6. Inventory days worsening implies slower turnover rates which may tie up working capital unnecessarily.\n7. Capital expenditure rose eight percent indicating management is investing heavily in long term capacity growth.\n8. Mild foreign exchange tailwind provided some benefit but was insufficient to offset broader negative trends.\n9. Flat demand guidance signals management expects stable market conditions without significant near term acceleration.\n10. Small insider selling activity might suggest limited confidence among executives regarding immediate stock performance.\n11. The combination of lower profits and higher debt creates a challenging financial environment for stakeholders.\n12. Overall mixed results show growth exists but profitability and efficiency metrics require immediate attention.\n\n{\"thesis\":\"Growth masked by deteriorating profitability and leverage\",\"positives\":[\"two new contracts\",\"revenue +20%\",\"mild FX tailwind\"],\"risks\":[\"debt ratio +10pp\",\"operating profit -5%\",\"worse inventory days\"],\"action\":\"Monitor cash flow closely while evaluating cost controls\"}",
+          "text_len": 1668,
+          "usage": {
+            "prompt_tokens": 125,
+            "completion_tokens": 300,
+            "total_tokens": 425
+          },
+          "completion_tok_per_sec": 19.91
+        },
+        {
+          "run": 3,
+          "ok": true,
+          "latency_sec": 14.937,
+          "error": null,
+          "text": "\n\n1. Revenue growth of twenty percent indicates strong top line momentum despite other operational headwinds.\n2. Operating profit decline of five percent suggests rising costs are eroding margins significantly this period.\n3. Free cash flow dropped twelve percent showing reduced liquidity available for reinvestment or shareholder returns.\n4. Debt ratio increased ten percentage points reflecting higher leverage and potentially elevated financial risk exposure.\n5. Securing two new contracts demonstrates successful sales efforts and potential future revenue stream expansion.\n6. Inventory days worsening implies slower turnover rates which may tie up working capital unnecessarily.\n7. Capital expenditure rose eight percent indicating management is investing heavily in long term capacity growth.\n8. Mild foreign exchange tailwind provided some benefit but was insufficient to offset broader negative trends.\n9. Flat demand guidance signals management expects stable market conditions without significant near term acceleration.\n10. Small insider selling activity might suggest limited confidence among executives regarding immediate stock performance.\n11. The combination of lower profits and higher debt creates a challenging financial environment for stakeholders.\n12. Overall mixed results show growth exists but profitability and efficiency metrics require immediate attention.\n\n{\"thesis\":\"Growth masked by deteriorating profitability and leverage\",\"positives\":[\"two new contracts\",\"revenue +20%\",\"mild FX tailwind\"],\"risks\":[\"debt ratio +10pp\",\"operating profit -5%\",\"worse inventory days\"],\"action\":\"Monitor cash flow closely while evaluating cost controls\"}",
+          "text_len": 1668,
+          "usage": {
+            "prompt_tokens": 125,
+            "completion_tokens": 300,
+            "total_tokens": 425
+          },
+          "completion_tok_per_sec": 20.084
+        }
+      ],
+      "summary": {
+        "avg_latency_sec": 14.955,
+        "avg_completion_tokens": 300,
+        "avg_completion_tok_per_sec": 20.06,
+        "min_completion_tok_per_sec": 19.91,
+        "max_completion_tok_per_sec": 20.187,
+        "avg_text_len": 1668
+      }
+    },
+    {
+      "label": "Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M::thinking_high",
+      "model_label": "Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M",
+      "model_path": "/Users/jobiseu/models/qwen35/Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M.gguf",
+      "thinking_label": "thinking_high",
+      "enable_thinking": true,
+      "ready_sec": 4.695,
+      "ready_error": null,
+      "stderr_log": "/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/JB-20260310-LOCAL-MODEL-REPLACE_Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled.i1-Q4_K_M_thinking_high_20260310_224416.stderr.log",
+      "runs": [
+        {
+          "run": 1,
+          "ok": false,
+          "latency_sec": 44.478,
+          "error": null,
+          "text": "",
+          "text_len": 0,
+          "usage": {
+            "prompt_tokens": 124,
+            "completion_tokens": 900,
+            "total_tokens": 1024
+          },
+          "completion_tok_per_sec": 20.235
+        },
+        {
+          "run": 2,
+          "ok": false,
+          "latency_sec": 43.703,
+          "error": null,
+          "text": "",
+          "text_len": 0,
+          "usage": {
+            "prompt_tokens": 124,
+            "completion_tokens": 900,
+            "total_tokens": 1024
+          },
+          "completion_tok_per_sec": 20.594
+        },
+        {
+          "run": 3,
+          "ok": false,
+          "latency_sec": 43.615,
+          "error": null,
+          "text": "",
+          "text_len": 0,
+          "usage": {
+            "prompt_tokens": 124,
+            "completion_tokens": 900,
+            "total_tokens": 1024
+          },
+          "completion_tok_per_sec": 20.635
+        }
+      ],
+      "summary": {
+        "avg_latency_sec": 43.932,
+        "avg_completion_tokens": 900,
+        "avg_completion_tok_per_sec": 20.488,
+        "min_completion_tok_per_sec": 20.235,
+        "max_completion_tok_per_sec": 20.635,
+        "avg_text_len": 0
+      }
+    }
+  ],
+  "restored_model": "Qwen3.5-35B-A3B-Q4_K_M",
+  "restored_thinking": false,
+  "restore_status": {
+    "ok": true,
+    "ready_sec": 18.918,
+    "error": null
+  },
+  "restore_live_status": {
+    "ok": true,
+    "ready_sec": 4.571,
+    "error": null
+  }
+}

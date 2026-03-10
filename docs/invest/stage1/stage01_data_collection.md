@@ -1,19 +1,43 @@
 # stage01_data_collection
 
-status: CANONICAL_RAW_APPENDIX  
-updated_at: 2026-03-09 KST
+status: CANONICAL_COLLECTION_APPENDIX  
+updated_at: 2026-03-10 KST
 
 ## 문서 역할
-- 이 문서는 Stage1 collector ↔ output path/source map과 **raw artifact 최소 스키마**를 고정한다.
+- 이 문서는 Stage1 collector ↔ output path/source map과 **DB archive 기준 최소 artifact 스키마**를 고정한다.
 - Stage1 orchestration/gate 계약은 `STAGE1_RULEBOOK_AND_REPRO.md`를 따른다.
 - 운영 명령/launchd/환경변수는 `RUNBOOK.md`를 따른다.
 
 ---
 
 ## 1) 책임 분리
-- Stage1: 수집 + raw/master/runtime 기록
+- Stage1: 수집 + DB archive/master/runtime 기록
 - Stage2: 정제(clean)·격리(quarantine)·품질 리포트
-- 따라서 이 문서의 스키마는 **Stage2가 읽을 수 있는 최소 raw contract** 관점으로 적는다.
+- Stage1은 `outputs/db/stage1_raw_archive.sqlite3`를 Stage2 입력 SSOT로 만든다.
+- `outputs/raw/**`는 collector 호환성과 coverage 점검을 위한 파일 미러이며, 아래 경로 표기는 **DB `rel_path`와 동일한 논리 경로**로 해석한다.
+- 따라서 이 문서의 스키마는 **Stage2가 읽을 수 있는 최소 DB artifact contract** 관점으로 적는다.
+
+---
+
+## 1.1) Stage1 raw DB archive contract
+- archive path: `outputs/db/stage1_raw_archive.sqlite3`
+- sync script: `invest/stages/stage1/scripts/stage01_sync_raw_to_db.py`
+- authoritative row unit: `raw_artifacts.rel_path`
+  - 예: `signal/kr/ohlcv/005930.csv`
+  - 예: `qualitative/text/telegram/channel_a/msg_123.md`
+- Stage2는 DB snapshot을 stage-local runtime mirror로 materialize한 뒤 기존 정제 로직을 수행한다.
+- row-level 최소 메타:
+  - `rel_path`
+  - `content`
+  - `size_bytes`
+  - `mtime_ns`
+  - `sha1`
+  - `is_active`
+  - `last_seen_sync_id`
+- PDF structured index(운영 표준):
+  - `pdf_documents` (`doc_key`, `channel_slug`, `message_id`, `message_date`, `meta_rel_path`, `original_rel_path`, `extract_rel_path`, `manifest_rel_path`, `bundle_rel_path`, `page_count`, `text_pages`, `rendered_pages`, `quality_grade`)
+  - `pdf_pages` (`doc_key`, `page_no`, `text_rel_path`, `render_rel_path`, `text_chars`, `width`, `height`)
+- collector가 파일을 재기록하면 동일 `rel_path` row가 upsert되고, 사라진 파일은 `is_active=0`으로 비활성화된다. PDF structured index는 sync 시점 raw artifact를 다시 읽어 재구성한다.
 
 ---
 
@@ -210,12 +234,39 @@ Source: https://...
 - 구현 메모:
   - Stage2는 `ATTACH_KIND=pdf`와 attachment sidecar를 조인해 clean telegram 본문에 inline 승격한다.
 
+### 4.6.1 Link enrichment sidecar (Stage1-owned)
+- script: `stage01_collect_link_sidecars.py`
+- output: `outputs/raw/qualitative/link_enrichment/text/{blog,telegram,premium/startale}/**/*.json`
+- source mapping:
+  - source: `outputs/raw/qualitative/text/<folder>/<file>`
+  - sidecar: `outputs/raw/qualitative/link_enrichment/<folder>/<file>.json`
+- 최소 JSON 필드:
+  - `generated_at`
+  - `rule_version`
+  - `source_rel_path`
+  - `source_sha1`
+  - `canonical_urls[]`
+  - `body_validation_ok`
+  - `body_validation_reason`
+  - `body_enrichment_needed`
+  - `blocks[]` (`canonical_url`, `text`)
+  - `fetch_meta`
+- 구현 메모:
+  - 외부 링크 fetch ownership은 Stage1 sidecar 단계가 가진다.
+  - Stage2는 sidecar canonical URL/blocks를 우선 소비하고, 필요 시에만 opt-in live fetch fallback을 쓴다.
+
 ### 4.7 Telegram attachment artifact
-- root: `outputs/raw/qualitative/attachments/telegram/<channel_slug>/msg_<message_id>/`
-- 최소 파일:
-  - `meta.json`
-  - original attachment file
-  - `extracted.txt`는 optional
+- root: `outputs/raw/qualitative/attachments/telegram/<channel_slug>/bucket_<nn>/`
+- 저장 원칙: **message별 하위 폴더를 만들지 않고 bucket 안에 flat file로 적재**한다.
+- canonical count/index 단위는 bucketed meta(`bucket_<nn>/msg_<id>__meta.json`) 1건이며, 레거시 `msg_<id>/meta.json`은 migration/shadow 용도만 가진다.
+- PDF 예시 파일:
+  - `msg_<id>__meta.json`
+  - `msg_<id>__original__<safe_name>.pdf`
+  - `msg_<id>__extracted.txt` (optional but preferred)
+  - `msg_<id>__pdf_manifest.json`
+  - `msg_<id>__page_<NNN>.txt`
+  - `msg_<id>__page_<NNN>.png`
+  - `msg_<id>__bundle.zip`
 - `meta.json` 최소 필드:
   - `channel_slug`
   - `message_id`
@@ -225,6 +276,26 @@ Source: https://...
   - `original_path`
   - `extraction_status`
   - `extract_path` (있을 때)
+- PDF 추가 필드(권장/운영 표준):
+  - `pdf_manifest_path`
+  - `pdf_page_count`
+  - `pdf_text_pages`
+  - `pdf_render_pages`
+  - `pdf_quality_grade`
+  - `compressed_bundle_path`
+  - `human_review_window_active`
+- `msg_<id>__pdf_manifest.json` 최소 필드:
+  - `source_original_rel_path`
+  - `page_count`
+  - `max_pages_applied`
+  - `text_pages_written`
+  - `rendered_pages_written`
+  - `quality_grade`
+  - `pages[]` (`page_no`, `text_rel_path`, `render_rel_path`, `text_chars`, `width`, `height`)
+- 페이지 수 의미 계약:
+  - `pdf_documents.page_count` / manifest `page_count` = **원본 PDF 전체 페이지 수**
+  - `pdf_pages` row count / manifest `pages[]` 길이 = **실제로 추출·저장한 indexed page 수**
+  - `max_pages_applied` cap이 걸린 문서는 두 값이 같지 않을 수 있으며, 이 경우만으로 손상으로 판단하지 않는다.
 
 ### 4.8 Premium markdown
 - script: `stage01_collect_premium_startale_channel_auth.py`
@@ -252,17 +323,21 @@ Source: https://...
 - `outputs/runtime/telegram_last_run_status.json`
 - `outputs/runtime/telegram_public_fallback_status.json`
 - `outputs/runtime/telegram_attachment_extract_stats_latest.json`
+- `outputs/runtime/link_enrich_sidecar_status.json`
 - `outputs/runtime/blog_last_run_status.json`
 - `outputs/runtime/kr_supply_status.json`
 - `outputs/runtime/us_ohlcv_status.json`
+- `outputs/runtime/raw_db_sync_status.json`
 
 이 runtime 파일들은 Stage1 gate가 freshness waiver / collector selection / coverage 판단에 사용한다.
+`raw_db_sync_status.json`은 Stage2 DB mirror의 최신 sync provenance를 제공한다.
 
 ---
 
 ## 6) 재현 구현 요약
-Stage1 raw를 재구현할 때 가장 중요한 것은 **Stage2가 기대하는 최소 형식**을 맞추는 것이다.
+Stage1 수집 계층을 재구현할 때 가장 중요한 것은 **Stage2가 기대하는 최소 형식과 DB `rel_path` 계약**을 맞추는 것이다.
 - CSV는 최소 컬럼명 유지
 - JSON/JSONL은 필수 key 유지
 - markdown는 metadata line + body 구조 유지
-- Telegram PDF는 raw markdown marker와 attachment sidecar가 함께 존재해야 한다.
+- DB archive의 `rel_path`는 문서에 적힌 `outputs/raw/**` 논리 경로와 일치해야 한다.
+- Telegram PDF는 markdown marker와 attachment sidecar가 함께 존재해야 한다.

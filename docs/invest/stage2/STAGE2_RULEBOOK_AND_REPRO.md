@@ -1,7 +1,7 @@
 # Stage2 Rulebook & Repro
 
 status: CANONICAL (reproducible refine/QC contract)  
-updated_at: 2026-03-09 KST
+updated_at: 2026-03-10 KST
 
 ## 문서 역할
 - 이 문서는 **문서만 보고 현재 Stage2를 재구현할 수 있도록** input/output, rule, threshold, dedup, incremental, report schema를 고정한다.
@@ -10,9 +10,10 @@ updated_at: 2026-03-09 KST
 ---
 
 ## 1) 범위 / 책임 경계
-- 역할: Stage1 raw/master를 Stage2 `clean/quarantine`으로 정제
+- 역할: Stage1 DB archive/master를 Stage2 `clean/quarantine`으로 정제
 - 원칙:
-  - 입력은 **오직** `invest/stages/stage2/inputs/upstream_stage1/**`
+  - 입력은 **오직** `invest/stages/stage2/inputs/upstream_stage1/**` + `invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3`
+  - raw 파일 트리는 canonical 입력이 아니라 Stage2 runtime mirror의 논리 경로다
   - Stage2는 정제/정규화/격리/중복 제거까지만 담당
   - 정성 점수화/해석/투자판단은 하지 않음
 - writer ownership:
@@ -29,20 +30,33 @@ updated_at: 2026-03-09 KST
   - `invest/stages/stage2/inputs/config/stage2_reason_config.json`
 - master
   - `invest/stages/stage2/inputs/upstream_stage1/master/kr_stock_list.csv`
-- raw signal
+- Stage1 raw DB archive (authoritative)
+  - `invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3`
+  - `raw_artifacts.rel_path` 기준으로 Stage2 runtime mirror를 구성
+  - 기본 mirror root: `invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/current/raw`
+- raw signal (DB mirror logical path)
   - `raw/signal/kr/ohlcv/*.csv`
   - `raw/signal/kr/supply/*_supply.csv`
   - `raw/signal/us/ohlcv/*.csv`
   - `raw/signal/market/macro/*`
-- raw qualitative
+- raw qualitative (DB mirror logical path)
   - `raw/qualitative/kr/dart/*.csv`
   - `raw/qualitative/market/rss/*.json`
   - `raw/qualitative/market/news/selected_articles/*.jsonl`
   - `raw/qualitative/text/{blog,telegram,premium/startale}/**/*`
+  - `raw/qualitative/link_enrichment/text/{blog,telegram,premium/startale}/**/*.json`
   - Telegram attachment artifact: `raw/qualitative/attachments/telegram/**/{meta.json,*.pdf,extracted.txt}`
 - 제외 입력
   - `raw/qualitative/market/news/url_index/*`
   - image 계열 (`image_map`, `images_ocr`)
+- input materialization 정책
+  - DB sync id 단위 snapshot 디렉터리를 만들고 `current` symlink 경로를 고정한다.
+  - Stage2 incremental signature는 stable mirror path + 원본 `mtime` 기준을 유지한다.
+  - DB archive가 없으면 기존 `inputs/upstream_stage1/raw` 파일 트리로 fallback 한다.
+- PDF page-count handoff 계약
+  - `pdf_documents.page_count` 및 PDF manifest `page_count`는 **원본 전체 페이지 수**다.
+  - `pdf_pages` row count 및 manifest `pages[]` 길이는 **cap 적용 후 실제 indexed/stored page 수**다.
+  - `max_pages_applied`가 설정된 문서는 두 값이 달라도 정상일 수 있으므로, Stage2는 이를 손상/누락으로 단정하지 않는다.
 
 ---
 
@@ -214,17 +228,20 @@ updated_at: 2026-03-09 KST
 ---
 
 ## 7) link enrichment 계약
-- 기본값: OFF (`STAGE2_ENABLE_LINK_ENRICHMENT` opt-in)
+- 기본값
+  - enrichment ON: `link_enrichment.enabled_default=true` (필요 시 `STAGE2_ENABLE_LINK_ENRICHMENT=0`)
+  - Stage2 live fetch fallback OFF: `STAGE2_ENABLE_LIVE_LINK_FETCH=0` (opt-in)
 - 적용 조건
   - folder가 `text/blog|text/telegram|text/premium/startale`
   - 기본 validation이 short-body 사유로 실패
   - URL candidate가 존재
-- 동작 순서
-  1. 본문 + `[ATTACH_TEXT]`에서 URL 추출
-  2. canonicalize / within-file dedup
-  3. 외부 본문 fetch
-  4. dedup / text injection
-  5. 재검증
+- 동작 순서(ownership 이동 이후)
+  1. Stage1 sidecar(`raw/qualitative/link_enrichment/...`) 로드
+  2. sidecar `canonical_urls` + `blocks`를 우선 적용
+  3. 재검증
+  4. still short이고 `STAGE2_ENABLE_LIVE_LINK_FETCH=1`인 경우에만 live fetch fallback
+- dedup 계약(텍스트 교차 코퍼스)
+  - `text/blog` / `text/telegram`은 clean 본문 canonical URL에 더해 sidecar `canonical_urls`를 corpus dedup 신호로 사용한다.
 - fetch 전용 실패 reason
   - `blog_link_body_fetch_failed`
   - `telegram_link_body_fetch_failed`
@@ -280,6 +297,8 @@ updated_at: 2026-03-09 KST
     "stage2_rule_version": "stage2-refine-20260308-r4",
     "stage2_config_sha1": "...",
     "link_enrichment_enabled": false,
+    "live_link_fetch_enabled": false,
+    "input_source": "stage1_raw_db_mirror",
     "folders": ["..."]
   },
   "entries": {
@@ -292,10 +311,12 @@ updated_at: 2026-03-09 KST
   - `stage2_rule_version`
   - `config_bundle_sha1`
   - `link_enrichment_enabled`
+  - `live_link_fetch_enabled`
   - `size`
   - `mtime`
   - `path`
   - telegram markdown이면 **attachment subtree signature 추가**
+  - text target(`blog|telegram|premium`)이면 Stage1 sidecar file(`link_enrichment/...`)의 `rel_path:size:mtime` signature 추가
 
 telegram attachment subtree signature는 같은 channel slug 아래 file들의
 `relative_path:size:mtime` 목록의 SHA1이다.

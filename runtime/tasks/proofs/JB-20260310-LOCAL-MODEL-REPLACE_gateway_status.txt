@@ -1,0 +1,43 @@
+Service: LaunchAgent (loaded)
+File logs: /tmp/openclaw/openclaw-2026-03-10.log
+Command: /opt/homebrew/opt/node/bin/node /opt/homebrew/lib/node_modules/openclaw/dist/entry.js gateway --port 18789
+Service file: ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+Service env: OPENCLAW_GATEWAY_PORT=18789
+
+Config (cli): ~/.openclaw/openclaw.json
+Config (service): ~/.openclaw/openclaw.json
+
+Gateway: bind=loopback (127.0.0.1), port=18789 (service args)
+Probe target: ws://127.0.0.1:18789
+Dashboard: http://127.0.0.1:18789/
+Probe note: Loopback-only gateway; only local clients can connect.
+
+Runtime: running (pid 1544, state active)
+RPC probe: ok
+
+Listening: 127.0.0.1:18789
+Other gateway-like services detected (best effort):
+- com.jobiseu.invest.stage1.backfill.dart (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.invest.stage1.backfill.dart.plist)
+- com.jobiseu.invest.stage1.backfill.news (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.invest.stage1.backfill.news.plist)
+- com.jobiseu.invest.stage1.ocr.rolling (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.invest.stage1.ocr.rolling.plist)
+- com.jobiseu.invest.stage1.repair.datefix (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.invest.stage1.repair.datefix.plist)
+- com.jobiseu.invest.stage1.repair.supply (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.invest.stage1.repair.supply.plist)
+- com.jobiseu.invest.stage12345.daily (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.invest.stage12345.daily.plist)
+- com.jobiseu.openclaw.heartbeat.local-brain-guard (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.heartbeat.local-brain-guard.plist)
+- com.jobiseu.openclaw.invest.stage01.blog (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.invest.stage01.blog.plist)
+- com.jobiseu.openclaw.invest.stage01.dart (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.invest.stage01.dart.plist)
+- com.jobiseu.openclaw.invest.stage01.kr-ohlcv (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.invest.stage01.kr-ohlcv.plist)
+- com.jobiseu.openclaw.invest.stage01.kr-supply (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.invest.stage01.kr-supply.plist)
+- com.jobiseu.openclaw.invest.stage01.rss (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.invest.stage01.rss.plist)
+- com.jobiseu.openclaw.invest.stage01.telegram (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.invest.stage01.telegram.plist)
+- com.jobiseu.openclaw.invest.stage01.us-ohlcv (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.invest.stage01.us-ohlcv.plist)
+- com.jobiseu.openclaw.invest.stage01.watchdog (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.invest.stage01.watchdog.plist)
+- com.jobiseu.openclaw.tasks.auto-dispatch (user, plist: /Users/jobiseu/Library/LaunchAgents/com.jobiseu.openclaw.tasks.auto-dispatch.plist)
+Cleanup hint: launchctl bootout gui/$UID/ai.openclaw.gateway
+Cleanup hint: rm ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+
+Recommendation: run a single gateway per machine for most setups. One gateway supports multiple agents (see docs: /gateway#multiple-gateways-same-host).
+If you need multiple gateways (e.g., a rescue bot on the same host), isolate ports + config/state (see docs: /gateway#multiple-gateways-same-host).
+
+Troubles: run openclaw status
+Troubleshooting: https://docs.openclaw.ai/troubleshooting

@@ -1,4 +1,5 @@
 import os
+import sys
 import glob
 import json
 from pathlib import Path
@@ -6,16 +7,54 @@ from datetime import datetime
 
 import pandas as pd
 
+ROOT_PATH = Path(__file__).resolve().parents[4]
+if str(ROOT_PATH) not in sys.path:
+    sys.path.insert(0, str(ROOT_PATH))
+
 from stage2_config import load_stage2_config_bundle
+
+try:
+    from invest.stages.common.stage_raw_db import (
+        DEFAULT_DB_PATH as DEFAULT_STAGE1_RAW_DB_PATH,
+        prepare_stage2_raw_input_root,
+        stage2_default_prefixes,
+    )
+except Exception:
+    DEFAULT_STAGE1_RAW_DB_PATH = None
+    prepare_stage2_raw_input_root = None
+    stage2_default_prefixes = None
 
 # Paths (stage-local input boundary)
 STAGE2_ROOT = Path(__file__).resolve().parents[1]
 UPSTREAM_STAGE1 = STAGE2_ROOT / 'inputs' / 'upstream_stage1'
 STAGE2_OUT_BASE = STAGE2_ROOT / 'outputs'
+_RAW_BASE_FALLBACK = UPSTREAM_STAGE1 / 'raw'
+_STAGE1_RAW_DB_PATH = os.environ.get(
+    'STAGE1_RAW_DB_PATH',
+    str(DEFAULT_STAGE1_RAW_DB_PATH) if DEFAULT_STAGE1_RAW_DB_PATH is not None else '',
+).strip()
+_STAGE2_DB_MIRROR_ROOT = os.environ.get(
+    'STAGE2_DB_MIRROR_ROOT',
+    str(STAGE2_OUT_BASE / 'runtime' / 'upstream_stage1_db_mirror'),
+).strip()
+_DB_PREFIXES = stage2_default_prefixes() if stage2_default_prefixes is not None else []
+RAW_BASE = Path(
+    (
+        prepare_stage2_raw_input_root(
+            db_path=_STAGE1_RAW_DB_PATH,
+            mirror_root=_STAGE2_DB_MIRROR_ROOT,
+            prefixes=_DB_PREFIXES,
+        )
+        if prepare_stage2_raw_input_root is not None and _STAGE1_RAW_DB_PATH
+        else ''
+    )
+    or str(_RAW_BASE_FALLBACK)
+)
+STAGE2_INPUT_SOURCE = 'stage1_raw_db_mirror' if RAW_BASE != _RAW_BASE_FALLBACK else 'stage1_raw_files'
 
 
 def _resolve_raw_dir(rel_path: str) -> Path:
-    return UPSTREAM_STAGE1 / 'raw' / 'signal' / rel_path
+    return RAW_BASE / 'signal' / rel_path
 
 
 RAW_DIRS = {
@@ -332,6 +371,12 @@ def run_qc():
             'fail_types': sorted(HARD_FAIL_TYPES),
         },
         'config_provenance': STAGE2_CONFIG_PROVENANCE,
+        'input_source': {
+            'mode': STAGE2_INPUT_SOURCE,
+            'raw_base': str(RAW_BASE),
+            'db_path': _STAGE1_RAW_DB_PATH,
+            'mirror_root': _STAGE2_DB_MIRROR_ROOT,
+        },
         'groups': report_data,
         'totals': {
             'target_files': total_target,
@@ -362,7 +407,9 @@ def run_qc():
         f.write("Writer policy: kr/us signal canonical writer=`stage02_qc_cleaning_full.py`, stage02_onepass_refine_full.py=`market signal + qualitative only`\n")
         f.write(f"Runtime config: {STAGE2_CONFIG_PROVENANCE['runtime_config_path']} ({STAGE2_CONFIG_PROVENANCE['runtime_config_sha1']})\n")
         f.write(f"Reason config: {STAGE2_CONFIG_PROVENANCE['reason_config_path']} ({STAGE2_CONFIG_PROVENANCE['reason_config_sha1']})\n")
-        f.write(f"Config bundle SHA1: {STAGE2_CONFIG_PROVENANCE['bundle_sha1']}\n\n")
+        f.write(f"Config bundle SHA1: {STAGE2_CONFIG_PROVENANCE['bundle_sha1']}\n")
+        f.write(f"Input source: {STAGE2_INPUT_SOURCE}\n")
+        f.write(f"Raw base: {RAW_BASE}\n\n")
         f.write("Universe policy (KR): include KOSPI/KOSDAQ/KOSDAQ GLOBAL, exclude others (e.g., KONEX).\n\n")
 
         f.write("## Coverage Summary\n\n")

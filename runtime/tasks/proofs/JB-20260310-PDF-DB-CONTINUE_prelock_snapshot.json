@@ -1,0 +1,90 @@
+{
+  "generated_at_local": "2026-03-11 00:14 KST",
+  "note": "Observed before user warning about active stage01_sync_raw_to_db.py writers; treat as live/in-flight snapshot, not final post-quiescent truth.",
+  "raw_disk_file_count": 232474,
+  "telegram_pdf_meta": {
+    "pdf_total": 127467,
+    "legacy_meta_layout": 63735,
+    "original_exists": 1213,
+    "extract_exists": 635,
+    "extract_nonempty": 635,
+    "manifest_exists": 83941,
+    "bundle_exists": 600,
+    "page_txt_files_total": 11102,
+    "page_png_files_total": 11449,
+    "extraction_status_counts": {
+      "ok": 635,
+      "failed": 126255,
+      "": 577
+    },
+    "top_reasons": [
+      ["missing_original", 63127],
+      ["swift_pdf_open_failed", 63127],
+      ["ok", 635],
+      ["", 577],
+      ["file_too_large:pdf", 1]
+    ],
+    "sample_missing_examples": [
+      {
+        "meta": "qualitative/attachments/telegram/Nihil_s_view_of_data_information_viewofdata/msg_3013/meta.json",
+        "orig": "outputs/raw/qualitative/attachments/telegram/Nihil_s_view_of_data_information_viewofdata/msg_3013/국영문합본_IPCC_AR6_WGII_SPM_기후변화_2022_영향_적응_취약성.pdf",
+        "extract": null,
+        "manifest": "outputs/raw/qualitative/attachments/telegram/Nihil_s_view_of_data_information_viewofdata/bucket_069/msg_3013__pdf_manifest.json",
+        "status": "failed",
+        "reason": "file_too_large:pdf"
+      },
+      {
+        "meta": "qualitative/attachments/telegram/Nihils_view_of_data__information_viewofdata/bucket_064/msg_3008__meta.json",
+        "orig": "outputs/raw/qualitative/attachments/telegram/Nihils_view_of_data__information_viewofdata/msg_3008/에너지_시스템의_인공지능_전환_본격_추진보도자료기후에너지신산업_12_22.pdf",
+        "extract": null,
+        "manifest": "outputs/raw/qualitative/attachments/telegram/Nihils_view_of_data__information_viewofdata/bucket_064/msg_3008__pdf_manifest.json",
+        "status": "",
+        "reason": ""
+      },
+      {
+        "meta": "qualitative/attachments/telegram/Stock_Trip_stocktrip/bucket_003/msg_643__meta.json",
+        "orig": "outputs/raw/qualitative/attachments/telegram/Stock_Trip_stocktrip/msg_643/산업_엔터_2023_하반기_전망_이해를_노력하지_말자_받아들이자__성장_JYP_ENT_하이브_와이지엔터테인먼트_에스엠.pdf",
+        "extract": null,
+        "manifest": "outputs/raw/qualitative/attachments/telegram/Stock_Trip_stocktrip/bucket_003/msg_643__pdf_manifest.json",
+        "status": "",
+        "reason": ""
+      }
+    ]
+  },
+  "db": {
+    "raw_artifacts_active": 232384,
+    "pdf_documents": 63735,
+    "pdf_documents_with_manifest": 41972,
+    "pdf_documents_with_extract": 30,
+    "pdf_documents_with_original": 608,
+    "pdf_pages": 9469,
+    "extraction_status_counts": {
+      "": 1,
+      "failed": 63128,
+      "ok": 568,
+      "partial": 38
+    },
+    "quality_grade_counts": {
+      "A": 553,
+      "B": 47,
+      "F": 63135
+    },
+    "channel_count": 23,
+    "sync_meta": {
+      "last_sync_id": "20260310T150528Z",
+      "last_sync_finished_at": "2026-03-10T15:05:28.786423+00:00"
+    }
+  },
+  "status_json": {
+    "sync_id": "20260310T144702Z",
+    "finished_at": "2026-03-10T14:47:02.157373+00:00",
+    "status_mode": "full_sync",
+    "pdf_index_indexed_documents": 127467,
+    "pdf_index_indexed_pages": 18765
+  },
+  "interpretation": {
+    "likely_duplicate_layout_effect": "telegram pdf meta count exceeds db pdf_documents because legacy meta + bucketed meta coexist and unique doc_key cardinality is lower",
+    "status_lag": "runtime raw_db_sync_status.json lagged behind sync_meta at observation time",
+    "safety": "no follow-up writer should be started until live writers quiesce"
+  }
+}

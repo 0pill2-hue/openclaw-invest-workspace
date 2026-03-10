@@ -2,9 +2,11 @@
 """Heartbeat guard for main local brain.
 
 Checks gateway/session health and local llama-server responsiveness.
-Adds session-overflow recovery for local-model sessions:
+Adds session-reset recovery for local-model sessions:
 - if active main session token usage is near llama context size,
-  rotate (reset) the main session storage so next turn starts fresh.
+  reset the main session storage so next turn starts fresh.
+- if local brain recovery is needed, restart llama-server and reset the
+  local main session without restarting the gateway.
 """
 
 from __future__ import annotations
@@ -39,7 +41,7 @@ LLAMA_SERVER_CMD = [
     "--port",
     os.environ.get("OPENCLAW_LOCAL_PORT", "8090"),
     "-c",
-    os.environ.get("OPENCLAW_LOCAL_CTX", "12288"),
+    os.environ.get("OPENCLAW_LOCAL_CTX", "8192"),
     "-ngl",
     "99",
     "--flash-attn",
@@ -183,7 +185,7 @@ def is_session_near_context_limit(sess: dict, ctx_limit: int) -> bool:
     return tokens >= int(ctx_limit * 0.9)
 
 
-def rotate_main_session_store() -> tuple[bool, str]:
+def reset_main_session_store() -> tuple[bool, str]:
     try:
         with open(SESSIONS_STORE, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -203,7 +205,7 @@ def rotate_main_session_store() -> tuple[bool, str]:
             except Exception:
                 pass
 
-        return True, "rotated"
+        return True, "reset"
     except Exception as e:
         return False, str(e)[:200]
 
@@ -242,9 +244,12 @@ def main() -> None:
     recovered = False
     llama_restarted = False
     llama_restart_error = ""
+    session_reset_attempted = False
+    session_rotated = False
+    session_rotate_reason = ""
 
     # Recovery order (requested):
-    # 1) pkill llama 2) start llama 3) sleep 2s 4) gateway restart
+    # 1) pkill llama 2) start llama 3) sleep 2s 4) reset local main session
     if (not status_healthy) or (not llama_ok):
         llama_restarted = True
         recovered, llama_restart_error = restart_llama_server()
@@ -253,12 +258,13 @@ def main() -> None:
 
         time.sleep(2)
 
-        gateway_restarted = True
-        gw_rc, gw_out, gw_err = run(["openclaw", "gateway", "restart"])
-        if gw_rc != 0:
-            add_stage_failure(stage_failures, "recovery.gateway_restart", "gateway_restart_command_failed", (gw_err or gw_out).strip())
+        session_reset_attempted = True
+        session_rotated, session_reset_reason = reset_main_session_store()
+        session_rotate_reason = f"guard_recovery:{session_reset_reason}"
+        if not session_rotated:
+            add_stage_failure(stage_failures, "recovery.session_reset", "session_reset_failed", session_reset_reason)
 
-        # Re-check gateway/session health.
+        # Re-check gateway/session health without restarting the gateway.
         status_rc, status_out, status_err = run(["openclaw", "status"])
         if status_rc == 0:
             status_healthy, status_issues = parse_status_health(status_out)
@@ -279,18 +285,14 @@ def main() -> None:
         else:
             llama_ok = False
 
-    # NEW: if local session is near llama context limit, rotate session store.
-    session_rotated = False
-    session_rotate_reason = ""
+    # If no recovery reset happened, proactively reset when main session is near llama context limit.
     sess = load_main_session()
-    if sess:
-        # Rotate if main session token load is near current llama context limit.
-        # (Do not rely only on model metadata; runtime model switches may lag in sessions.json.)
+    if sess and not session_reset_attempted:
         ctx_limit = running_llama_ctx()
         if is_session_near_context_limit(sess, ctx_limit):
-            ok, reason = rotate_main_session_store()
+            ok, reason = reset_main_session_store()
             session_rotated = ok
-            session_rotate_reason = reason
+            session_rotate_reason = f"near_context_limit:{reason}"
             if not ok:
                 add_stage_failure(stage_failures, "session.rotate", "session_rotate_failed", reason)
 

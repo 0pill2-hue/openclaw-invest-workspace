@@ -57,15 +57,15 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
 ### 3.2 profile별 정확한 실행 스크립트
 | profile | ordered scripts |
 | --- | --- |
-| `daily_full` | `stage01_fetch_stock_list.py` → `stage01_fetch_ohlcv.py` → `stage01_fetch_supply.py` → `stage01_fetch_us_ohlcv.py` → `stage01_fetch_macro_fred.py` → `stage01_fetch_global_macro.py` → `stage01_fetch_news_rss.py` → `stage01_build_news_url_index.py` → `stage01_collect_selected_news_articles.py` → `stage01_fetch_dart_disclosures.py` → `stage01_collect_premium_startale_channel_auth.py` → `stage01_update_coverage_manifest.py` |
-| `rss_fast` | `stage01_fetch_news_rss.py` |
-| `telegram_fast` | `stage01_scrape_telegram_launchd.py` |
-| `blog_fast` | `stage01_scrape_all_posts_v2.py` |
-| `kr_ohlcv_intraday` | `stage01_fetch_ohlcv.py` |
-| `kr_supply_intraday` | `stage01_fetch_supply.py` |
-| `us_ohlcv_daily` | `stage01_fetch_us_ohlcv.py` |
-| `dart_fast` | `stage01_fetch_dart_disclosures.py` |
-| `news_backfill` | `stage01_fetch_news_rss.py` → `stage01_build_news_url_index.py` → `stage01_collect_selected_news_articles.py` → `stage01_update_coverage_manifest.py` |
+| `daily_full` | `stage01_fetch_stock_list.py` → `stage01_fetch_ohlcv.py` → `stage01_fetch_supply.py` → `stage01_fetch_us_ohlcv.py` → `stage01_fetch_macro_fred.py` → `stage01_fetch_global_macro.py` → `stage01_fetch_news_rss.py` → `stage01_build_news_url_index.py` → `stage01_collect_selected_news_articles.py` → `stage01_fetch_dart_disclosures.py` → `stage01_collect_premium_startale_channel_auth.py` → `stage01_collect_link_sidecars.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `rss_fast` | `stage01_fetch_news_rss.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `telegram_fast` | `stage01_scrape_telegram_launchd.py` → `stage01_collect_link_sidecars.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `blog_fast` | `stage01_scrape_all_posts_v2.py` → `stage01_collect_link_sidecars.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `kr_ohlcv_intraday` | `stage01_fetch_ohlcv.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `kr_supply_intraday` | `stage01_fetch_supply.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `us_ohlcv_daily` | `stage01_fetch_us_ohlcv.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `dart_fast` | `stage01_fetch_dart_disclosures.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `news_backfill` | `stage01_fetch_news_rss.py` → `stage01_build_news_url_index.py` → `stage01_collect_selected_news_articles.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
 
 ### 3.3 fallback 계약
 다음 스크립트는 primary 실패 시 fallback script를 순서대로 시도한다.
@@ -123,14 +123,16 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
 - `invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/*.jsonl`
 - `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl`
 - `invest/stages/stage1/outputs/raw/qualitative/text/{telegram,blog,premium}/**/*`
+- `invest/stages/stage1/outputs/raw/qualitative/link_enrichment/text/{blog,telegram,premium/startale}/**/*.json`
 - Telegram attachment artifact
-  - `invest/stages/stage1/outputs/raw/qualitative/attachments/telegram/<channel_slug>/msg_<message_id>/{meta.json,original,extracted.txt?}`
+  - `invest/stages/stage1/outputs/raw/qualitative/attachments/telegram/<channel_slug>/bucket_<nn>/msg_<id>__{meta,original,extracted,pdf_manifest,page_XXX,bundle}.<ext>`
 
 ### 4.3 Runtime / reports
 - runtime
   - `invest/stages/stage1/outputs/runtime/daily_update_status.json` (`daily_full` alias)
   - `invest/stages/stage1/outputs/runtime/daily_update_<profile>_status.json`
   - `invest/stages/stage1/outputs/runtime/post_collection_validate.json`
+  - `invest/stages/stage1/outputs/runtime/link_enrich_sidecar_status.json`
   - `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`
   - `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`
   - `invest/stages/stage1/outputs/runtime/pipeline_events.jsonl`
@@ -313,7 +315,8 @@ python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile us_ohlcv_
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile dart_fast
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile news_backfill
 
-# Gate
+# Sidecar / Gate
+python3 invest/stages/stage1/scripts/stage01_collect_link_sidecars.py
 python3 invest/stages/stage1/scripts/stage01_checkpoint_gate.py
 python3 invest/stages/stage1/scripts/stage01_post_collection_validate.py
 

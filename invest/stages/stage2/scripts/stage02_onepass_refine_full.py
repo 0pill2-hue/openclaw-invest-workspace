@@ -2,17 +2,60 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 import glob
 import pandas as pd
 import json
 import hashlib
 import re
 import shutil
+import subprocess
+import tempfile
 import time
 from datetime import datetime
+from pathlib import Path
 from html import unescape
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from urllib.request import Request, urlopen
+
+MACOS_SWIFT_BIN = '/usr/bin/swift'
+SWIFT_PDFKIT_EXTRACT_SCRIPT = r'''
+import Foundation
+import PDFKit
+
+let args = CommandLine.arguments
+
+guard args.count >= 3 else {
+    fputs("usage: pdf_extract.swift <pdf_path> <max_pages>\n", stderr)
+    exit(64)
+}
+
+let pdfPath = args[1]
+let maxPages = max(1, Int(args[2]) ?? 1)
+guard let doc = PDFDocument(url: URL(fileURLWithPath: pdfPath)) else {
+    fputs("open_failed\n", stderr)
+    exit(65)
+}
+
+var chunks: [String] = []
+let upper = min(doc.pageCount, maxPages)
+if upper > 0 {
+    for idx in 0..<upper {
+        if let page = doc.page(at: idx) {
+            let text = (page.string ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty {
+                chunks.append(text)
+            }
+        }
+    }
+}
+
+FileHandle.standardOutput.write((chunks.joined(separator: "\n\n")).data(using: .utf8) ?? Data())
+'''
+
+ROOT_PATH = Path(__file__).resolve().parents[4]
+if str(ROOT_PATH) not in sys.path:
+    sys.path.insert(0, str(ROOT_PATH))
 
 from stage2_config import load_stage2_config_bundle
 
@@ -23,16 +66,45 @@ except Exception:
     # import 준비용: 현재 동작 영향 0 유지
     pass
 
+try:
+    from invest.stages.common.stage_raw_db import (
+        DEFAULT_DB_PATH as DEFAULT_STAGE1_RAW_DB_PATH,
+        prepare_stage2_raw_input_root,
+        stage2_default_prefixes,
+    )
+except Exception:
+    DEFAULT_STAGE1_RAW_DB_PATH = None
+    prepare_stage2_raw_input_root = None
+    stage2_default_prefixes = None
+
 # Configuration (stage-local input boundary)
 STAGE2_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UPSTREAM_STAGE1 = os.path.join(STAGE2_ROOT, 'inputs', 'upstream_stage1')
-RAW_BASE = os.path.join(UPSTREAM_STAGE1, 'raw')
+_RAW_BASE_FALLBACK = os.path.join(UPSTREAM_STAGE1, 'raw')
+_STAGE1_RAW_DB_PATH = os.environ.get(
+    'STAGE1_RAW_DB_PATH',
+    str(DEFAULT_STAGE1_RAW_DB_PATH) if DEFAULT_STAGE1_RAW_DB_PATH is not None else '',
+).strip()
+_STAGE2_DB_MIRROR_ROOT = os.environ.get(
+    'STAGE2_DB_MIRROR_ROOT',
+    os.path.join(STAGE2_ROOT, 'outputs', 'runtime', 'upstream_stage1_db_mirror'),
+).strip()
+_DB_PREFIXES = stage2_default_prefixes() if stage2_default_prefixes is not None else []
+RAW_BASE = (
+    prepare_stage2_raw_input_root(
+        db_path=_STAGE1_RAW_DB_PATH,
+        mirror_root=_STAGE2_DB_MIRROR_ROOT,
+        prefixes=_DB_PREFIXES,
+    )
+    if prepare_stage2_raw_input_root is not None and _STAGE1_RAW_DB_PATH
+    else ''
+) or _RAW_BASE_FALLBACK
+STAGE2_INPUT_SOURCE = 'stage1_raw_db_mirror' if RAW_BASE != _RAW_BASE_FALLBACK else 'stage1_raw_files'
 CLEAN_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'clean')
 # Stage2가 유일한 검역(quarantine) 저장 단계다. Stage1은 raw/상태 파일만 저장한다.
 Q_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'quarantine')
 REPORT_DIR = os.path.join(STAGE2_ROOT, 'outputs', 'reports', 'qc')
 STAGE2_RULE_VERSION = 'stage2-refine-20260308-r4'
-STAGE2_ENABLE_LINK_ENRICHMENT = os.environ.get('STAGE2_ENABLE_LINK_ENRICHMENT', '0').strip().lower() in ('1', 'true', 'yes')
 FOLDERS = [
     'kr/dart',
     'market/news/rss', 'market/news/selected_articles', 'market/macro', 'market/google_trends',
@@ -74,6 +146,10 @@ TEXT_VALIDATION_CONFIG = REFINE_RUNTIME_CONFIG['text_validation']
 DEDUP_CONFIG = REFINE_RUNTIME_CONFIG['dedup']
 FILTER_CONFIG = REFINE_RUNTIME_CONFIG['filters']
 LINK_ENRICHMENT_CONFIG = REFINE_RUNTIME_CONFIG['link_enrichment']
+STAGE2_ENABLE_LINK_ENRICHMENT = os.environ.get(
+    'STAGE2_ENABLE_LINK_ENRICHMENT',
+    '1' if LINK_ENRICHMENT_CONFIG.get('enabled_default', True) else '0',
+).strip().lower() in ('1', 'true', 'yes')
 ATTACHMENT_CLEANUP_CONFIG = FILTER_CONFIG.get('attachment_cleanup', {})
 
 BLOG_UI_MARKERS = set(FILTER_CONFIG['blog_ui_markers'])
@@ -95,6 +171,9 @@ TARGET_LINK_ENRICH_FOLDERS = set(LINK_ENRICHMENT_CONFIG['target_folders'])
 URL_PATTERN = re.compile(r'https?://[^\s<>()\[\]{}"\']+', flags=re.IGNORECASE)
 ATTACH_TEXT_BLOCK_RE = re.compile(r'(?is)\[ATTACH_TEXT\]\s*(.*?)\s*\[/ATTACH_TEXT\]')
 TELEGRAM_ATTACH_ROOT = os.path.join(RAW_BASE, 'qualitative', 'attachments', 'telegram')
+LINK_SIDECAR_ROOT = os.path.join(RAW_BASE, 'qualitative', 'link_enrichment')
+TELEGRAM_ATTACH_BUCKET_COUNT = max(1, int(os.environ.get('TELEGRAM_ATTACH_BUCKET_COUNT', '128')))
+STAGE2_ENABLE_LIVE_LINK_FETCH = os.environ.get('STAGE2_ENABLE_LIVE_LINK_FETCH', '0').strip().lower() in ('1', 'true', 'yes')
 TRACKING_QUERY_PREFIXES = tuple(FILTER_CONFIG['tracking_query_prefixes'])
 ALLOWED_LINK_DOMAIN_SUFFIXES = tuple(FILTER_CONFIG['allowed_link_domain_suffixes'])
 # allowlist 확장 모드(기본 ON): 뉴스/리포트 링크 누락 최소화
@@ -134,6 +213,10 @@ def _new_link_runtime_stats() -> dict:
         'enrichment_applied_files': 0,
         'enrichment_promoted_files': 0,
         'enrichment_still_quarantined_files': 0,
+        'stage1_sidecar_seen_files': 0,
+        'stage1_sidecar_canonical_urls_total': 0,
+        'stage1_sidecar_promoted_files': 0,
+        'stage1_sidecar_dedup_signal_files': 0,
         'attachment_blocks_seen': 0,
         'attachment_text_chars_total': 0,
         'telegram_pdf_total': 0,
@@ -191,6 +274,8 @@ def _current_index_meta() -> dict:
         'stage2_rule_version': STAGE2_RULE_VERSION,
         'stage2_config_sha1': STAGE2_CONFIG_SHA1,
         'link_enrichment_enabled': bool(STAGE2_ENABLE_LINK_ENRICHMENT),
+        'live_link_fetch_enabled': bool(STAGE2_ENABLE_LIVE_LINK_FETCH),
+        'input_source': STAGE2_INPUT_SOURCE,
         'folders': list(FOLDERS),
     }
 
@@ -246,6 +331,40 @@ def _telegram_attachment_dir_for_log(path: str) -> str:
     return os.path.join(TELEGRAM_ATTACH_ROOT, slug) if slug else ''
 
 
+def _telegram_attach_file_stem(message_id: str) -> str:
+    return f'msg_{int(message_id)}'
+
+
+def _telegram_attach_bucket_name(message_id: str) -> str:
+    width = max(2, len(str(max(0, TELEGRAM_ATTACH_BUCKET_COUNT - 1))))
+    return f"bucket_{int(message_id) % TELEGRAM_ATTACH_BUCKET_COUNT:0{width}d}"
+
+
+def _telegram_attach_bucket_dir(channel_slug: str, message_id: str) -> str:
+    return os.path.join(TELEGRAM_ATTACH_ROOT, channel_slug, _telegram_attach_bucket_name(message_id)) if channel_slug else ''
+
+
+def _telegram_attach_legacy_dir(channel_slug: str, message_id: str) -> str:
+    return os.path.join(TELEGRAM_ATTACH_ROOT, channel_slug, f'msg_{message_id}') if channel_slug else ''
+
+
+def _telegram_attach_meta_path(channel_slug: str, message_id: str) -> str:
+    bucket_dir = _telegram_attach_bucket_dir(channel_slug, message_id)
+    return os.path.join(bucket_dir, f"{_telegram_attach_file_stem(message_id)}__meta.json") if bucket_dir else ''
+
+
+def _telegram_attach_extract_path(channel_slug: str, message_id: str) -> str:
+    bucket_dir = _telegram_attach_bucket_dir(channel_slug, message_id)
+    return os.path.join(bucket_dir, f"{_telegram_attach_file_stem(message_id)}__extracted.txt") if bucket_dir else ''
+
+
+def _telegram_attach_original_candidates(channel_slug: str, message_id: str) -> list[str]:
+    bucket_dir = _telegram_attach_bucket_dir(channel_slug, message_id)
+    if not bucket_dir:
+        return []
+    return sorted(glob.glob(os.path.join(bucket_dir, f"{_telegram_attach_file_stem(message_id)}__original__*")))
+
+
 def _telegram_attachment_subtree_sig(path: str) -> str:
     attach_dir = _telegram_attachment_dir_for_log(path)
     if not attach_dir or not os.path.isdir(attach_dir):
@@ -265,6 +384,40 @@ def _telegram_attachment_subtree_sig(path: str) -> str:
     return hashlib.sha1(digest_src.encode('utf-8')).hexdigest()
 
 
+def _sidecar_path_for_source(path: str, folder: str = '') -> str:
+    normalized = os.path.normpath(path)
+    candidates = []
+    normalized_folder = _normalize_folder(folder)
+    if normalized_folder in TARGET_LINK_ENRICH_FOLDERS:
+        candidates.append(normalized_folder)
+    else:
+        candidates.extend(sorted(TARGET_LINK_ENRICH_FOLDERS, key=lambda x: len(x), reverse=True))
+
+    for candidate in candidates:
+        folder_root = os.path.normpath(_resolve_raw_dir(candidate))
+        if normalized == folder_root or not normalized.startswith(folder_root + os.sep):
+            continue
+        rel = os.path.relpath(normalized, folder_root)
+        if rel.startswith('..'):
+            continue
+        return os.path.join(LINK_SIDECAR_ROOT, candidate, rel + '.json')
+    return ''
+
+
+def _stage1_sidecar_sig(path: str, folder: str = '') -> str:
+    sidecar_path = _sidecar_path_for_source(path, folder=folder)
+    if not sidecar_path:
+        return ''
+    if not os.path.exists(sidecar_path):
+        return 'sidecar:missing'
+    try:
+        st = os.stat(sidecar_path)
+    except FileNotFoundError:
+        return 'sidecar:missing'
+    rel = os.path.relpath(sidecar_path, LINK_SIDECAR_ROOT).replace('\\', '/')
+    return f"sidecar:{rel}:{st.st_size}:{int(st.st_mtime)}"
+
+
 def _file_sig(path: str) -> str:
     st = os.stat(path)
     extra = ''
@@ -272,7 +425,13 @@ def _file_sig(path: str) -> str:
     telegram_root = os.path.normpath(os.path.join(RAW_BASE, 'qualitative', 'text', 'telegram'))
     if normalized.startswith(telegram_root + os.sep) and normalized.lower().endswith('.md'):
         extra = ':' + _telegram_attachment_subtree_sig(path)
-    key = f"{STAGE2_RULE_VERSION}:{STAGE2_CONFIG_SHA1}:{int(STAGE2_ENABLE_LINK_ENRICHMENT)}:{st.st_size}:{int(st.st_mtime)}:{path}{extra}".encode('utf-8')
+    sidecar_sig = _stage1_sidecar_sig(path)
+    if sidecar_sig:
+        extra += ':' + sidecar_sig
+    key = (
+        f"{STAGE2_RULE_VERSION}:{STAGE2_CONFIG_SHA1}:{int(STAGE2_ENABLE_LINK_ENRICHMENT)}:"
+        f"{int(STAGE2_ENABLE_LIVE_LINK_FETCH)}:{st.st_size}:{int(st.st_mtime)}:{path}{extra}"
+    ).encode('utf-8')
     return hashlib.sha1(key).hexdigest()
 
 
@@ -587,15 +746,22 @@ def _telegram_rewrite_stage1_path(raw_path: str) -> str:
     return resolved if os.path.exists(resolved) else ''
 
 
-def _telegram_pdf_original_candidates(artifact_dir: str, meta: dict) -> list[str]:
+def _telegram_pdf_original_candidates(channel_slug: str, message_id: str, artifact_dir: str, meta: dict) -> list[str]:
     candidates = []
-    for raw in [
-        str(meta.get('original_path') or ''),
-        os.path.join(artifact_dir, str(meta.get('original_name') or '')) if artifact_dir and meta.get('original_name') else '',
-    ]:
-        resolved = _telegram_rewrite_stage1_path(raw) if raw else ''
-        if resolved and resolved not in candidates:
+
+    def _add(raw: str) -> None:
+        if not raw:
+            return
+        resolved = _telegram_rewrite_stage1_path(raw) if not os.path.isabs(raw) else raw
+        if resolved and os.path.exists(resolved) and resolved not in candidates:
             candidates.append(resolved)
+
+    _add(str(meta.get('original_path') or ''))
+
+    for fp in _telegram_attach_original_candidates(channel_slug, message_id):
+        if fp not in candidates:
+            candidates.append(fp)
+
     if artifact_dir and os.path.isdir(artifact_dir):
         for name in sorted(os.listdir(artifact_dir)):
             if name.lower().endswith('.pdf'):
@@ -603,6 +769,46 @@ def _telegram_pdf_original_candidates(artifact_dir: str, meta: dict) -> list[str
                 if fp not in candidates:
                     candidates.append(fp)
     return candidates
+
+
+def _extract_pdf_text_swift(original_path: str, max_pages: int = 25) -> tuple[str, str]:
+    if os.uname().sysname.lower() != 'darwin':
+        return '', 'swift_pdfkit_non_darwin'
+    if not os.path.exists(MACOS_SWIFT_BIN):
+        return '', 'swift_unavailable'
+
+    script_path = ''
+    try:
+        with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.swift', delete=False) as tf:
+            tf.write(SWIFT_PDFKIT_EXTRACT_SCRIPT)
+            script_path = tf.name
+        proc = subprocess.run(
+            [MACOS_SWIFT_BIN, script_path, str(original_path), str(max(1, max_pages))],
+            capture_output=True,
+            text=True,
+            timeout=max(30, min(300, max_pages * 12)),
+        )
+    except subprocess.TimeoutExpired:
+        return '', 'swift_timeout'
+    except Exception as e:
+        return '', f'swift_run_error:{type(e).__name__}'
+    finally:
+        if script_path:
+            try:
+                os.unlink(script_path)
+            except Exception:
+                pass
+
+    if proc.returncode != 0:
+        stderr = (proc.stderr or '').lower()
+        if 'open_failed' in stderr:
+            return '', 'swift_pdf_open_failed'
+        if 'no such module' in stderr and 'pdfkit' in stderr:
+            return '', 'swift_pdfkit_unavailable'
+        return '', f'swift_pdfkit_error:{proc.returncode}'
+
+    text = (proc.stdout or '').strip()
+    return (text, 'swift_pdfkit') if text else ('', 'swift_pdf_text_empty')
 
 
 def _telegram_extract_pdf_text_from_original(original_path: str) -> tuple[str, str]:
@@ -634,7 +840,11 @@ def _telegram_extract_pdf_text_from_original(original_path: str) -> tuple[str, s
     except Exception:
         pass
 
-    return '', 'extractor_unavailable_or_failed'
+    swift_text, swift_origin = _extract_pdf_text_swift(original_path)
+    if swift_text:
+        return swift_text, swift_origin
+
+    return '', swift_origin or 'extractor_unavailable_or_failed'
 
 
 def _normalize_pdf_title(raw: str, fallback_path: str = '') -> str:
@@ -730,11 +940,17 @@ def _resolve_telegram_pdf_artifact(block: str, log_path: str) -> tuple[dict | No
         meta_path = marker_meta
         resolution_mode = 'marker'
     else:
-        fallback_dir = os.path.join(TELEGRAM_ATTACH_ROOT, channel_slug, f'msg_{message_id}') if channel_slug else ''
-        fallback_meta = os.path.join(fallback_dir, 'meta.json') if fallback_dir else ''
-        if fallback_meta and os.path.exists(fallback_meta):
-            meta_path = fallback_meta
-            resolution_mode = 'fallback'
+        fallback_candidates = []
+        if channel_slug:
+            fallback_candidates.append(_telegram_attach_meta_path(channel_slug, message_id))
+            legacy_dir = _telegram_attach_legacy_dir(channel_slug, message_id)
+            if legacy_dir:
+                fallback_candidates.append(os.path.join(legacy_dir, 'meta.json'))
+        for candidate in fallback_candidates:
+            if candidate and os.path.exists(candidate):
+                meta_path = candidate
+                resolution_mode = 'fallback'
+                break
 
     if not meta_path:
         LINK_RUNTIME_STATS['telegram_pdf_orphan_artifacts'] += 1
@@ -783,16 +999,29 @@ def _resolve_telegram_pdf_artifact(block: str, log_path: str) -> tuple[dict | No
             'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
         }
 
-    artifact_dir = marker_dir if marker_dir and os.path.isdir(marker_dir) else os.path.dirname(meta_path)
+    bucket_dir = _telegram_attach_bucket_dir(channel_slug, message_id) if channel_slug else ''
+    legacy_dir = _telegram_attach_legacy_dir(channel_slug, message_id) if channel_slug else ''
+    if marker_dir and os.path.isdir(marker_dir):
+        artifact_dir = marker_dir
+    elif os.path.basename(meta_path) == 'meta.json' and legacy_dir and os.path.isdir(legacy_dir):
+        artifact_dir = legacy_dir
+    else:
+        artifact_dir = os.path.dirname(meta_path)
+
     extract_path = marker_extract if marker_extract and os.path.exists(marker_extract) else _telegram_rewrite_stage1_path(str(meta.get('extract_path') or ''))
-    if not extract_path and artifact_dir:
-        probe = os.path.join(artifact_dir, 'extracted.txt')
-        if os.path.exists(probe):
-            extract_path = probe
+    if not extract_path:
+        for probe in [
+            _telegram_attach_extract_path(channel_slug, message_id) if channel_slug else '',
+            os.path.join(legacy_dir, 'extracted.txt') if legacy_dir else '',
+            os.path.join(artifact_dir, 'extracted.txt') if artifact_dir else '',
+        ]:
+            if probe and os.path.exists(probe):
+                extract_path = probe
+                break
 
     original_path = marker_original if marker_original and os.path.exists(marker_original) else ''
     if not original_path:
-        original_candidates = _telegram_pdf_original_candidates(artifact_dir, meta)
+        original_candidates = _telegram_pdf_original_candidates(channel_slug, message_id, artifact_dir, meta)
         original_path = original_candidates[0] if original_candidates else ''
 
     text_source = ''
@@ -1000,29 +1229,80 @@ def _html_to_text(payload: str) -> str:
     return '\n'.join(lines)[:LINK_FETCH_MAX_TEXT_CHARS].strip()
 
 
-def _fetch_link_text(canonical_url: str) -> tuple[str, str]:
+def _looks_like_pdf_link(canonical_url: str, content_type: str = '', content_disposition: str = '') -> bool:
+    path = ''
+    try:
+        path = (urlparse(canonical_url).path or '').lower()
+    except Exception:
+        path = ''
+
+    ct = (content_type or '').lower()
+    cd = (content_disposition or '').lower()
+    return (
+        path.endswith('.pdf')
+        or 'application/pdf' in ct
+        or ('attachment' in cd and '.pdf' in cd)
+    )
+
+
+def _extract_pdf_text_from_bytes(raw: bytes) -> tuple[str, str]:
+    if not raw:
+        return '', 'pdf_bytes_empty'
+
+    tmp_path = ''
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tf:
+            tf.write(raw)
+            tmp_path = tf.name
+        text, origin = _telegram_extract_pdf_text_from_original(tmp_path)
+        cleaned = _cleanup_pdf_text(text) if text else ''
+        if cleaned:
+            return cleaned[:LINK_FETCH_MAX_TEXT_CHARS], origin
+        return '', origin or 'pdf_text_empty'
+    finally:
+        if tmp_path:
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+
+
+def _fetch_link_text(canonical_url: str) -> tuple[str, str, dict]:
     cached = LINK_FETCH_CACHE.get(canonical_url)
     if cached is not None:
         LINK_RUNTIME_STATS['url_cache_hits'] += 1
-        return cached.get('text', ''), cached.get('error', '')
+        return cached.get('text', ''), cached.get('error', ''), dict(cached.get('meta') or {})
 
     if not _is_allowed_link_url(canonical_url):
         LINK_RUNTIME_STATS['url_disallowed'] += 1
-        LINK_FETCH_CACHE[canonical_url] = {'text': '', 'error': 'disallowed_domain'}
-        return '', 'disallowed_domain'
+        LINK_FETCH_CACHE[canonical_url] = {'text': '', 'error': 'disallowed_domain', 'meta': {'is_pdf': False, 'allow_short': False}}
+        return '', 'disallowed_domain', {'is_pdf': False, 'allow_short': False}
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (compatible; stage2-link-enrich/1.0)',
-        'Accept': 'text/html,application/xhtml+xml,text/plain',
+        'Accept': 'text/html,application/xhtml+xml,text/plain,application/pdf',
     }
 
     last_err = 'fetch_failed'
+    last_meta = {'is_pdf': False, 'allow_short': False}
     for attempt in range(LINK_FETCH_MAX_RETRIES + 1):
         try:
             req = Request(canonical_url, headers=headers)
             with urlopen(req, timeout=LINK_FETCH_TIMEOUT_SEC) as resp:
                 raw = resp.read(LINK_FETCH_MAX_BYTES)
                 content_type = str(resp.headers.get('Content-Type', '')).lower()
+                content_disposition = str(resp.headers.get('Content-Disposition', '')).lower()
+
+            is_pdf = _looks_like_pdf_link(canonical_url, content_type, content_disposition)
+            if is_pdf:
+                pdf_text, pdf_origin = _extract_pdf_text_from_bytes(raw)
+                last_meta = {'is_pdf': True, 'allow_short': True, 'pdf_origin': pdf_origin}
+                if pdf_text:
+                    LINK_RUNTIME_STATS['url_fetch_success'] += 1
+                    LINK_FETCH_CACHE[canonical_url] = {'text': pdf_text, 'error': '', 'meta': last_meta}
+                    return pdf_text, '', last_meta
+                last_err = f'pdf_extract_failed:{pdf_origin}'
+                continue
 
             if 'charset=' in content_type:
                 charset = content_type.split('charset=')[-1].split(';')[0].strip()
@@ -1044,16 +1324,16 @@ def _fetch_link_text(canonical_url: str) -> tuple[str, str]:
                 continue
 
             LINK_RUNTIME_STATS['url_fetch_success'] += 1
-            LINK_FETCH_CACHE[canonical_url] = {'text': text, 'error': ''}
-            return text, ''
+            LINK_FETCH_CACHE[canonical_url] = {'text': text, 'error': '', 'meta': last_meta}
+            return text, '', last_meta
         except Exception as e:
             last_err = f'{type(e).__name__}:{e}'
             if attempt < LINK_FETCH_MAX_RETRIES:
                 time.sleep(LINK_FETCH_BACKOFF_BASE_SEC * (2 ** attempt))
 
     LINK_RUNTIME_STATS['url_fetch_failure'] += 1
-    LINK_FETCH_CACHE[canonical_url] = {'text': '', 'error': last_err}
-    return '', last_err
+    LINK_FETCH_CACHE[canonical_url] = {'text': '', 'error': last_err, 'meta': last_meta}
+    return '', last_err, last_meta
 
 
 def _canonical_dedup_urls(urls: list[str]) -> tuple[list[str], int]:
@@ -1070,6 +1350,99 @@ def _canonical_dedup_urls(urls: list[str]) -> tuple[list[str], int]:
         seen.add(cu)
         canonical.append(cu)
     return canonical, deduped
+
+
+def _safe_read_json_dict(path: str) -> dict:
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _sha1_text(text: str) -> str:
+    return hashlib.sha1((text or '').encode('utf-8')).hexdigest()
+
+
+def _load_stage1_link_sidecar(path: str, folder: str, source_sha1: str) -> dict:
+    out = {
+        'exists': False,
+        'sidecar_path': '',
+        'sidecar_rel_path': '',
+        'canonical_urls': [],
+        'blocks': [],
+        'fetch_meta': {},
+        'source_sha1_match': False,
+    }
+    sidecar_path = _sidecar_path_for_source(path, folder=folder)
+    if not sidecar_path:
+        return out
+    out['sidecar_path'] = sidecar_path
+    out['sidecar_rel_path'] = os.path.relpath(sidecar_path, RAW_BASE).replace('\\', '/')
+    if not os.path.exists(sidecar_path):
+        return out
+
+    payload = _safe_read_json_dict(sidecar_path)
+    if not payload:
+        return out
+
+    sidecar_source_sha1 = str(payload.get('source_sha1') or '').strip()
+    source_match = bool(sidecar_source_sha1 and source_sha1 and sidecar_source_sha1 == source_sha1)
+    out['source_sha1_match'] = source_match
+    out['exists'] = True
+    if sidecar_source_sha1 and source_sha1 and not source_match:
+        return out
+
+    canonical_urls, _ = _canonical_dedup_urls(list(payload.get('canonical_urls') or []))
+    out['canonical_urls'] = canonical_urls
+    out['fetch_meta'] = dict(payload.get('fetch_meta') or {})
+
+    blocks = []
+    for row in (payload.get('blocks') or []):
+        if not isinstance(row, dict):
+            continue
+        canonical_url = _canonicalize_url(str(row.get('canonical_url') or '').strip())
+        text = str(row.get('text') or '').strip()
+        if not canonical_url or not text:
+            continue
+        blocks.append((canonical_url, text))
+    out['blocks'] = blocks
+    return out
+
+
+def _collect_sidecar_enrichment_blocks(blocks: list[tuple[str, str]], base_effective: str) -> tuple[list[tuple[str, str]], int]:
+    seen_fp = set()
+    if base_effective.strip():
+        seen_fp.add(_fingerprint(base_effective))
+
+    out = []
+    deduped = 0
+    total_chars = 0
+    for canonical_url, raw_text in blocks[:LINK_ENRICH_MAX_URLS_PER_FILE]:
+        text = str(raw_text or '').strip()
+        if not text:
+            continue
+        fp = _fingerprint(text)
+        if fp in seen_fp:
+            deduped += 1
+            continue
+        seen_fp.add(fp)
+        if total_chars + len(text) > LINK_ENRICH_MAX_TOTAL_CHARS:
+            allowed = max(0, LINK_ENRICH_MAX_TOTAL_CHARS - total_chars)
+            text = text[:allowed].strip()
+        if not text:
+            continue
+        out.append((canonical_url, text))
+        total_chars += len(text)
+        if total_chars >= LINK_ENRICH_MAX_TOTAL_CHARS:
+            break
+    return out, deduped
+
+
+def _merge_canonical_urls(primary: list[str], secondary: list[str]) -> list[str]:
+    merged, _ = _canonical_dedup_urls([*(primary or []), *(secondary or [])])
+    return merged
 
 
 def _needs_link_enrichment(content: str, effective: str, min_len: int, url_count: int) -> bool:
@@ -1101,11 +1474,13 @@ def _collect_unique_enrichment_blocks(canonical_urls: list[str], base_effective:
         'fetch_failed_urls': 0,
         'disallowed_urls': 0,
         'fetched_text_too_short_urls': 0,
+        'pdf_urls': 0,
+        'pdf_short_override_urls': 0,
     }
 
     for cu in canonical_urls[:LINK_ENRICH_MAX_URLS_PER_FILE]:
         fetch_meta['attempted_urls'] += 1
-        fetched_text, fetch_error = _fetch_link_text(cu)
+        fetched_text, fetch_error, fetch_info = _fetch_link_text(cu)
         if not fetched_text:
             if fetch_error == 'disallowed_domain':
                 fetch_meta['disallowed_urls'] += 1
@@ -1116,12 +1491,25 @@ def _collect_unique_enrichment_blocks(canonical_urls: list[str], base_effective:
             continue
 
         fetch_meta['successful_urls'] += 1
+        if fetch_info.get('is_pdf'):
+            fetch_meta['pdf_urls'] += 1
+            if fetch_info.get('allow_short'):
+                fetch_meta['pdf_short_override_urls'] += 1
+
         candidates = []
+        min_seg_len = 1 if fetch_info.get('allow_short') else 45
         for seg in re.split(r'\n{2,}', fetched_text):
             s = re.sub(r'\s+', ' ', seg).strip()
-            if len(s) < 45:
+            if len(s) < min_seg_len:
+                continue
+            if fetch_info.get('allow_short') and not re.search(r'[A-Za-z가-힣]', s):
                 continue
             candidates.append(s)
+
+        if fetch_info.get('allow_short') and not candidates:
+            fallback = re.sub(r'\s+', ' ', fetched_text).strip()
+            if fallback and re.search(r'[A-Za-z가-힣]', fallback):
+                candidates.append(fallback)
 
         kept = []
         for seg in candidates:
@@ -1343,48 +1731,114 @@ def sanitize_text(path: str, folder: str = ''):
         if normalized_folder == 'text/telegram':
             text_for_clean, pdf_meta = _promote_telegram_pdf_content(raw_content, path)
 
+        source_sha1 = _sha1_text(raw_content)
+        sidecar_meta = _load_stage1_link_sidecar(path, folder=normalized_folder, source_sha1=source_sha1)
+        sidecar_urls = list(sidecar_meta.get('canonical_urls') or [])
+        if sidecar_meta.get('exists'):
+            LINK_RUNTIME_STATS['stage1_sidecar_seen_files'] += 1
+            LINK_RUNTIME_STATS['stage1_sidecar_canonical_urls_total'] += len(sidecar_urls)
+
         cleaned_content = _strip_attachment_residue(text_for_clean)
+        common_meta = {
+            'sidecar_canonical_urls': sidecar_urls,
+            'sidecar_rel_path': sidecar_meta.get('sidecar_rel_path', ''),
+            'sidecar_source_sha1_match': bool(sidecar_meta.get('source_sha1_match')),
+            **pdf_meta,
+        }
+
         ok, reason, ctx = _validate_text_by_folder(cleaned_content, normalized_folder)
         if ok:
             return cleaned_content, None, {
                 'link_enriched': False,
-                'canonical_urls': 0,
+                'canonical_urls': len(sidecar_urls),
                 'attachment_residue_removed': cleaned_content != raw_content,
-                **pdf_meta,
+                **common_meta,
+            }
+
+        if normalized_folder == 'text/telegram' and pdf_meta.get('pdf_promoted') and _is_short_reason(reason):
+            return cleaned_content, None, {
+                'link_enriched': False,
+                'canonical_urls': len(sidecar_urls),
+                'attachment_residue_removed': cleaned_content != raw_content,
+                'pdf_short_override': True,
+                **common_meta,
             }
 
         if not STAGE2_ENABLE_LINK_ENRICHMENT:
             return None, reason, {
                 'link_enriched': False,
                 'link_enrichment_enabled': False,
-                **pdf_meta,
+                **common_meta,
             }
 
         if normalized_folder not in TARGET_LINK_ENRICH_FOLDERS or not _is_short_reason(reason):
-            return None, reason, pdf_meta
+            return None, reason, common_meta
 
         link_source_text = _build_link_source_text(text_for_clean, attach_text)
         raw_urls = _extract_urls(link_source_text)
         LINK_RUNTIME_STATS['url_raw_extracted_total'] += len(raw_urls)
-        canonical_urls, deduped = _canonical_dedup_urls(raw_urls)
+        canonical_urls_raw, deduped_raw = _canonical_dedup_urls(raw_urls)
+        canonical_urls = _merge_canonical_urls(sidecar_urls, canonical_urls_raw)
+        deduped_total = max(0, (len(sidecar_urls) + len(canonical_urls_raw)) - len(canonical_urls)) + deduped_raw
         LINK_RUNTIME_STATS['url_canonical_total'] += len(canonical_urls)
-        LINK_RUNTIME_STATS['url_deduped_within_file'] += deduped
+        LINK_RUNTIME_STATS['url_deduped_within_file'] += deduped_total
 
         if not _needs_link_enrichment(cleaned_content, ctx.get('effective', ''), int(ctx.get('min_len', 0)), len(canonical_urls)):
-            return None, reason, pdf_meta
+            return None, reason, common_meta
 
         LINK_RUNTIME_STATS['enrichment_attempt_files'] += 1
+
+        sidecar_blocks, sidecar_block_dedup = _collect_sidecar_enrichment_blocks(
+            list(sidecar_meta.get('blocks') or []),
+            str(ctx.get('effective', '') or ''),
+        )
+        if sidecar_blocks:
+            LINK_RUNTIME_STATS['content_fingerprint_dedup'] += sidecar_block_dedup
+            fetch_meta = {
+                'attempted_urls': int((sidecar_meta.get('fetch_meta') or {}).get('attempted_urls', len(canonical_urls))),
+                'successful_urls': int((sidecar_meta.get('fetch_meta') or {}).get('successful_urls', len(sidecar_blocks))),
+                'fetch_failed_urls': int((sidecar_meta.get('fetch_meta') or {}).get('fetch_failed_urls', 0)),
+                'disallowed_urls': int((sidecar_meta.get('fetch_meta') or {}).get('disallowed_urls', 0)),
+                'fetched_text_too_short_urls': int((sidecar_meta.get('fetch_meta') or {}).get('fetched_text_too_short_urls', 0)),
+                'pdf_urls': int((sidecar_meta.get('fetch_meta') or {}).get('pdf_urls', 0)),
+                'pdf_short_override_urls': int((sidecar_meta.get('fetch_meta') or {}).get('pdf_short_override_urls', 0)),
+                'source': 'stage1_sidecar',
+            }
+            enriched_content = _inject_enriched_content(cleaned_content, normalized_folder, sidecar_blocks, canonical_urls)
+            ok2, reason2, _ = _validate_text_by_folder(enriched_content, normalized_folder)
+            if ok2 or (fetch_meta.get('pdf_short_override_urls', 0) > 0 and _is_short_reason(reason2)):
+                LINK_RUNTIME_STATS['enrichment_applied_files'] += 1
+                LINK_RUNTIME_STATS['enrichment_promoted_files'] += 1
+                LINK_RUNTIME_STATS['stage1_sidecar_promoted_files'] += 1
+                return enriched_content, None, {
+                    'link_enriched': True,
+                    'canonical_urls': len(canonical_urls),
+                    'enriched_blocks': len(sidecar_blocks),
+                    'attachment_residue_removed': cleaned_content != raw_content,
+                    'pdf_short_override': fetch_meta.get('pdf_short_override_urls', 0) > 0 and _is_short_reason(reason2),
+                    **fetch_meta,
+                    **common_meta,
+                }
+
+        if not STAGE2_ENABLE_LIVE_LINK_FETCH:
+            LINK_RUNTIME_STATS['enrichment_still_quarantined_files'] += 1
+            return None, reason, {
+                'link_enriched': False,
+                'live_link_fetch_enabled': False,
+                **common_meta,
+            }
+
         blocks, content_dup_count, fetch_meta = _collect_unique_enrichment_blocks(canonical_urls, ctx.get('effective', ''))
         LINK_RUNTIME_STATS['content_fingerprint_dedup'] += content_dup_count
         if not blocks:
             LINK_RUNTIME_STATS['enrichment_still_quarantined_files'] += 1
             if fetch_meta.get('attempted_urls', 0) > 0 and fetch_meta.get('successful_urls', 0) == 0 and fetch_meta.get('fetch_failed_urls', 0) > 0:
-                return None, _link_fetch_failure_reason(normalized_folder), {'link_enriched': False, **fetch_meta, **pdf_meta}
-            return None, reason, {'link_enriched': False, **fetch_meta, **pdf_meta}
+                return None, _link_fetch_failure_reason(normalized_folder), {'link_enriched': False, **fetch_meta, **common_meta}
+            return None, reason, {'link_enriched': False, **fetch_meta, **common_meta}
 
         enriched_content = _inject_enriched_content(cleaned_content, normalized_folder, blocks, canonical_urls)
         ok2, reason2, _ = _validate_text_by_folder(enriched_content, normalized_folder)
-        if ok2:
+        if ok2 or (fetch_meta.get('pdf_short_override_urls', 0) > 0 and _is_short_reason(reason2)):
             LINK_RUNTIME_STATS['enrichment_applied_files'] += 1
             LINK_RUNTIME_STATS['enrichment_promoted_files'] += 1
             return enriched_content, None, {
@@ -1392,11 +1846,13 @@ def sanitize_text(path: str, folder: str = ''):
                 'canonical_urls': len(canonical_urls),
                 'enriched_blocks': len(blocks),
                 'attachment_residue_removed': cleaned_content != raw_content,
-                **pdf_meta,
+                'pdf_short_override': fetch_meta.get('pdf_short_override_urls', 0) > 0 and _is_short_reason(reason2),
+                **fetch_meta,
+                **common_meta,
             }
 
         LINK_RUNTIME_STATS['enrichment_still_quarantined_files'] += 1
-        return None, reason2, pdf_meta
+        return None, reason2, {**fetch_meta, **common_meta}
     except Exception as e:
         return None, f'exception:{type(e).__name__}:{e}', {}
 
@@ -1693,16 +2149,20 @@ def _should_use_title_date_key(folder: str, title: str) -> bool:
     return True
 
 
-def _build_text_dedup_signals(content: str, folder: str) -> dict:
+def _build_text_dedup_signals(content: str, folder: str, sidecar_canonical_urls: list[str] | None = None) -> dict:
     title = _extract_text_title(content)
     date = _extract_text_date(content)
     normalized_title = _normalize_title_text(title)
     title_date_keys = [f'{date}|{normalized_title}'] if date and _should_use_title_date_key(folder, title) else []
     effective = _extract_text_effective_for_dedup(content, folder)
+    canonical_urls = _extract_text_canonical_urls(content)
+    normalized_folder = _normalize_folder(folder)
+    if normalized_folder in {'text/blog', 'text/telegram'} and sidecar_canonical_urls:
+        canonical_urls = _merge_canonical_urls(sidecar_canonical_urls, canonical_urls)
     return {
         'title': title,
         'date': date,
-        'canonical_urls': _extract_text_canonical_urls(content),
+        'canonical_urls': canonical_urls,
         'title_date_keys': title_date_keys,
         'content_fingerprints': _content_fingerprints(effective),
     }
@@ -2006,7 +2466,11 @@ def _bootstrap_corpus_dedup_registry(registry: dict, clean_base: str):
                     content = _safe_read_text(path, max_chars=500000)
                     if not content:
                         continue
-                    signals = _build_text_dedup_signals(content, folder)
+                    raw_source_path = os.path.join(_resolve_raw_dir(folder), rel_path)
+                    sidecar_urls = list(_load_stage1_link_sidecar(raw_source_path, folder=folder, source_sha1='').get('canonical_urls') or [])
+                    if sidecar_urls and _normalize_folder(folder) in {'text/blog', 'text/telegram'}:
+                        LINK_RUNTIME_STATS['stage1_sidecar_dedup_signal_files'] += 1
+                    signals = _build_text_dedup_signals(content, folder, sidecar_canonical_urls=sidecar_urls)
                     if not _has_dedup_signals(signals):
                         continue
                     current_ref = _make_dedup_ref(
@@ -2158,7 +2622,10 @@ def run_full_refine(force_rebuild: bool = False):
                         duplicate = None
                         normalized_folder = _normalize_folder(folder)
                         if normalized_folder in DEDUP_TARGET_FOLDERS:
-                            signals = _build_text_dedup_signals(content, folder)
+                            sidecar_urls_for_dedup = list((meta or {}).get('sidecar_canonical_urls') or [])
+                            if sidecar_urls_for_dedup and normalized_folder in {'text/blog', 'text/telegram'}:
+                                LINK_RUNTIME_STATS['stage1_sidecar_dedup_signal_files'] += 1
+                            signals = _build_text_dedup_signals(content, folder, sidecar_canonical_urls=sidecar_urls_for_dedup)
                             current_ref = _make_dedup_ref(
                                 folder,
                                 rel_path,
@@ -2264,11 +2731,14 @@ def run_full_refine(force_rebuild: bool = False):
         f.write(f"- Config Bundle SHA1: {STAGE2_CONFIG_PROVENANCE['bundle_sha1']}\n")
         f.write(f"- Runtime Config: {STAGE2_CONFIG_PROVENANCE['runtime_config_path']} ({STAGE2_CONFIG_PROVENANCE['runtime_config_sha1']})\n")
         f.write(f"- Reason Config: {STAGE2_CONFIG_PROVENANCE['reason_config_path']} ({STAGE2_CONFIG_PROVENANCE['reason_config_sha1']})\n")
+        f.write(f"- Input Source: {STAGE2_INPUT_SOURCE}\n")
+        f.write(f"- Raw Base: {RAW_BASE}\n")
         f.write(f"- Clean Base: {final_clean_base}\n")
         f.write(f"- Quarantine Base: {final_q_base}\n")
         f.write("- Writer policy: market signal + qualitative canonical writer=`stage02_onepass_refine_full.py`, kr/us signal canonical writer=`stage02_qc_cleaning_full.py`\n")
         f.write("- Output policy: canonical=`production/(signal|qualitative)/*` only\n")
-        f.write(f"- Link enrichment enabled: {STAGE2_ENABLE_LINK_ENRICHMENT}\n\n")
+        f.write(f"- Link enrichment enabled: {STAGE2_ENABLE_LINK_ENRICHMENT}\n")
+        f.write(f"- Live link fetch fallback enabled: {STAGE2_ENABLE_LIVE_LINK_FETCH}\n\n")
         f.write("| Folder | Bucket | Canonical | Total | Clean | Quarantine | Skipped(incremental) | Exceptions |\n")
         f.write("| :--- | :--- | :--- | ---: | ---: | ---: | ---: | ---: |\n")
         for r in results:
@@ -2304,6 +2774,10 @@ def run_full_refine(force_rebuild: bool = False):
         f.write(f"- enrichment_applied_files={int(LINK_RUNTIME_STATS.get('enrichment_applied_files', 0))}\n")
         f.write(f"- enrichment_promoted_files={int(LINK_RUNTIME_STATS.get('enrichment_promoted_files', 0))}\n")
         f.write(f"- enrichment_still_quarantined_files={int(LINK_RUNTIME_STATS.get('enrichment_still_quarantined_files', 0))}\n")
+        f.write(f"- stage1_sidecar_seen_files={int(LINK_RUNTIME_STATS.get('stage1_sidecar_seen_files', 0))}\n")
+        f.write(f"- stage1_sidecar_canonical_urls_total={int(LINK_RUNTIME_STATS.get('stage1_sidecar_canonical_urls_total', 0))}\n")
+        f.write(f"- stage1_sidecar_promoted_files={int(LINK_RUNTIME_STATS.get('stage1_sidecar_promoted_files', 0))}\n")
+        f.write(f"- stage1_sidecar_dedup_signal_files={int(LINK_RUNTIME_STATS.get('stage1_sidecar_dedup_signal_files', 0))}\n")
         f.write(f"- url_raw_extracted_total={int(LINK_RUNTIME_STATS.get('url_raw_extracted_total', 0))}\n")
         f.write(f"- url_canonical_total={int(LINK_RUNTIME_STATS.get('url_canonical_total', 0))}\n")
         f.write(f"- url_deduped_within_file={int(LINK_RUNTIME_STATS.get('url_deduped_within_file', 0))}\n")
@@ -2356,9 +2830,16 @@ def run_full_refine(force_rebuild: bool = False):
             'salt': STAGE2_RULE_VERSION,
             'config_bundle_sha1': STAGE2_CONFIG_PROVENANCE['bundle_sha1'],
             'link_enrichment_enabled': STAGE2_ENABLE_LINK_ENRICHMENT,
-            'strategy': 'size+mtime+path+rule_version+config_bundle_sha1+link_enrichment_flag+telegram_attachment_subtree_for_text_telegram',
+            'live_link_fetch_enabled': STAGE2_ENABLE_LIVE_LINK_FETCH,
+            'strategy': 'size+mtime+path+rule_version+config_bundle_sha1+link_enrichment_flag+live_link_fetch_flag+telegram_attachment_subtree_for_text_telegram+stage1_link_sidecar_sig',
         },
         'config_provenance': STAGE2_CONFIG_PROVENANCE,
+        'input_source': {
+            'mode': STAGE2_INPUT_SOURCE,
+            'raw_base': RAW_BASE,
+            'db_path': _STAGE1_RAW_DB_PATH,
+            'mirror_root': _STAGE2_DB_MIRROR_ROOT,
+        },
         'clean_base': final_clean_base,
         'quarantine_base': final_q_base,
         'writer_policy': {
@@ -2392,6 +2873,7 @@ def run_full_refine(force_rebuild: bool = False):
         },
         'link_enrichment': {
             'enabled': STAGE2_ENABLE_LINK_ENRICHMENT,
+            'live_link_fetch_enabled': STAGE2_ENABLE_LIVE_LINK_FETCH,
             **{k: int(v) for k, v in LINK_RUNTIME_STATS.items()},
             'deduped_url_total': dedup_urls_total,
         },

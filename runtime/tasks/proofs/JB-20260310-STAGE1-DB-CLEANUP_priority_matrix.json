@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-03-10T07:51:33.960183+09:00",
+  "ticket_id": "JB-20260310-STAGE1-DB-CLEANUP",
+  "source_paths": {
+    "raw_root": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/raw",
+    "db_path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3"
+  },
+  "priorities": [
+    {
+      "priority": "P0",
+      "id": "pdf-manifest-gap",
+      "verified_count": 143,
+      "stage2_impact": "Stage1 DB catalog(pdf_documents) missing current PDF manifests; Stage1→Stage2 PDF handoff/gate can undercount documents.",
+      "why_now": "Stage2 DB-centered pipeline and PDF gate depend on current structured index.",
+      "safe_action": "Keep manifests as-is; prepare audit manifest and rerun Stage1 DB sync/pdf index once approved.",
+      "artifact": "JB-20260310-STAGE1-DB-CLEANUP_manifest_gap_manifest.json"
+    },
+    {
+      "priority": "P0",
+      "id": "raw-artifact-staleness-size-mismatch",
+      "verified_count": 460,
+      "stage2_impact": "raw_artifacts authoritative DB snapshot is stale for changed files; Stage2 DB mirror can ingest old meta content.",
+      "why_now": "Stage2 reads stage1_raw_archive.sqlite3, not live raw tree.",
+      "safe_action": "Generate delta manifest first; then single sync pass instead of manual overwrite.",
+      "artifact": "JB-20260310-STAGE1-DB-CLEANUP_size_mismatch_manifest.json"
+    },
+    {
+      "priority": "P1",
+      "id": "pdf-page-count-mismatch",
+      "verified_count": 72,
+      "stage2_impact": "Structured PDF page counts disagree with pdf_pages rows; page-level quality/reporting can drift.",
+      "why_now": "Files exist, so this is quality/index repair rather than raw loss.",
+      "safe_action": "Targeted page index audit/rebuild after sync.",
+      "artifact": "JB-20260310-STAGE1-DB-CLEANUP_page_count_mismatch_manifest.json"
+    },
+    {
+      "priority": "P1",
+      "id": "raw-db-sync-lag-and-disk-only",
+      "verified_count": 659,
+      "stage2_impact": "Some live raw files are absent from DB snapshot; only a subset is canonical for Stage2.",
+      "why_now": "Need to separate canonical unsynced artifacts from deferable noise/excluded inputs.",
+      "safe_action": "Use classification manifest; sync only after audit, ignore noncanonical buckets in Stage2 readiness.",
+      "artifact": "JB-20260310-STAGE1-DB-CLEANUP_disk_only_manifest.json"
+    },
+    {
+      "priority": "P2",
+      "id": "slug-alias-duplicates",
+      "verified_count": 3,
+      "stage2_impact": "Potential duplicate document lineage; does not block current Stage1→Stage2 DB refresh.",
+      "why_now": "Needs alias policy before rename/doc_key rewrite.",
+      "safe_action": "Alias map only; no rename/doc_key rewrite.",
+      "artifact": "JB-20260310-STAGE1-DB-CLEANUP_alias_map_dryrun.json"
+    },
+    {
+      "priority": "P2",
+      "id": "pdf-original-path-not-in-raw-artifacts",
+      "verified_count": 608,
+      "stage2_impact": "Path normalization mismatch candidate for a few docs; not a broad block.",
+      "why_now": "Likely path-key mismatch, not missing file body.",
+      "safe_action": "Audit path normalization during sync/reindex; do not move files.",
+      "artifact": "JB-20260310-STAGE1-DB-CLEANUP_pdf_original_path_gap.json"
+    }
+  ],
+  "disk_only_bucket_counts": {
+    "os_noise": 9,
+    "no_extension_path_anomaly": 13,
+    "media_outside_contract": 13,
+    "pdf_manifest_unindexed_or_unsynced": 577,
+    "url_index_history": 45,
+    "other": 2
+  },
+  "disk_only_stage2_relevance_counts": {
+    "defer_noncanonical": 67,
+    "review_stage2_relevant": 13,
+    "stage2_blocking_candidate": 577,
+    "review_unknown": 2
+  }
+}

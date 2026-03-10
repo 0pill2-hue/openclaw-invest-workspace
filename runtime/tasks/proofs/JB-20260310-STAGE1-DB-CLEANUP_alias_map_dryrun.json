@@ -1,0 +1,75 @@
+{
+  "generated_at": "2026-03-10T07:51:33.960183+09:00",
+  "count": 3,
+  "items": [
+    {
+      "normalized_slug": "nihilsviewofdatainformationviewofdata",
+      "message_id": 3008,
+      "doc_count": 2,
+      "channel_slugs": [
+        "Nihil_s_view_of_data_information_viewofdata",
+        "Nihils_view_of_data__information_viewofdata"
+      ],
+      "canonical_slug_candidate": "미확인",
+      "action": "alias_map_only",
+      "docs": [
+        {
+          "doc_key": "telegram:Nihil_s_view_of_data_information_viewofdata:3008",
+          "channel_slug": "Nihil_s_view_of_data_information_viewofdata",
+          "message_id": 3008
+        },
+        {
+          "doc_key": "telegram:Nihils_view_of_data__information_viewofdata:3008",
+          "channel_slug": "Nihils_view_of_data__information_viewofdata",
+          "message_id": 3008
+        }
+      ]
+    },
+    {
+      "normalized_slug": "nihilsviewofdatainformationviewofdata",
+      "message_id": 3013,
+      "doc_count": 2,
+      "channel_slugs": [
+        "Nihil_s_view_of_data_information_viewofdata",
+        "Nihils_view_of_data__information_viewofdata"
+      ],
+      "canonical_slug_candidate": "미확인",
+      "action": "alias_map_only",
+      "docs": [
+        {
+          "doc_key": "telegram:Nihil_s_view_of_data_information_viewofdata:3013",
+          "channel_slug": "Nihil_s_view_of_data_information_viewofdata",
+          "message_id": 3013
+        },
+        {
+          "doc_key": "telegram:Nihils_view_of_data__information_viewofdata:3013",
+          "channel_slug": "Nihils_view_of_data__information_viewofdata",
+          "message_id": 3013
+        }
+      ]
+    },
+    {
+      "normalized_slug": "nihilsviewofdatainformationviewofdata",
+      "message_id": 3014,
+      "doc_count": 2,
+      "channel_slugs": [
+        "Nihil_s_view_of_data_information_viewofdata",
+        "Nihils_view_of_data__information_viewofdata"
+      ],
+      "canonical_slug_candidate": "미확인",
+      "action": "alias_map_only",
+      "docs": [
+        {
+          "doc_key": "telegram:Nihil_s_view_of_data_information_viewofdata:3014",
+          "channel_slug": "Nihil_s_view_of_data_information_viewofdata",
+          "message_id": 3014
+        },
+        {
+          "doc_key": "telegram:Nihils_view_of_data__information_viewofdata:3014",
+          "channel_slug": "Nihils_view_of_data__information_viewofdata",
+          "message_id": 3014
+        }
+      ]
+    }
+  ]
+}
