@@ -16,6 +16,15 @@ SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
+from context_policy import (
+    CONTEXT_HANDOFF,
+    CURRENT_TASK,
+    atomic_write_text,
+    inspect_runtime_ticket_references,
+    read_text,
+    write_context_handoff_from_current,
+    write_snapshot_pair,
+)
 from lib.runtime_env import TASKS_DB
 from lib.context_lock import format_lock_reason, is_blocking_context_lock, is_context_locked
 from lib.task_runtime import is_nonterminal_wait_phase
@@ -34,6 +43,10 @@ TASK_COLUMNS = [
     "started_at", "last_activity_at", "resume_due",
     "extra_lines", "sort_order", "created_at", "updated_at",
 ]
+CONTEXT_HYGIENE_TASK_ID = "WD-CONTEXT-HYGIENE"
+CONTEXT_HYGIENE_TASK_TITLE = "watchdog maintenance: context handoff/작업연속성 정리"
+CONTEXT_HYGIENE_TASK_SCOPE = "close guard/current-task mismatch/context-handoff 정리를 atomic하게 수행하고 후속 snapshot 전환을 마무리"
+CONTEXT_HYGIENE_TASK_PATHS = "runtime/current-task.md,runtime/context-handoff.md,runtime/tasks/tasks.db,scripts/tasks/db.py,scripts/context_policy.py"
 
 
 def now_ts() -> str:
@@ -620,11 +633,17 @@ def cmd_add(args: argparse.Namespace) -> int:
     return 0
 
 
-def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, bucket: str, blocked_reason: str | None = None, proof: str | None = None, resume_due: str | None = None, closed_by: str | None = None) -> bool:
-    row = conn.execute("SELECT * FROM tasks WHERE id=?", (ticket_id,)).fetchone()
-    if not row:
-        return False
-
+def build_status_update_payload(
+    row: sqlite3.Row,
+    *,
+    status: str,
+    bucket: str,
+    blocked_reason: str | None = None,
+    proof: str | None = None,
+    resume_due: str | None = None,
+    closed_by: str | None = None,
+    force_review_pass: bool = False,
+) -> dict[str, str]:
     now = now_ts()
     new_blocked = row["blocked_reason"]
     new_proof = row["proof"]
@@ -658,7 +677,7 @@ def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, buck
     elif status == "DONE":
         new_blocked = ""
         new_proof_pending = ""
-        if (new_review_status or "").upper() == "PENDING":
+        if force_review_pass or (new_review_status or "").upper() == "PENDING":
             new_review_status = "PASS"
             new_review_note = ""
         if not new_closed_by:
@@ -669,16 +688,304 @@ def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, buck
     if resume_due is not None:
         new_resume_due = resume_due
 
+    return {
+        "status": status,
+        "bucket": bucket,
+        "blocked_reason": new_blocked,
+        "proof": new_proof,
+        "proof_pending": new_proof_pending,
+        "review_status": new_review_status,
+        "review_note": new_review_note,
+        "closed_by": new_closed_by,
+        "started_at": new_started_at,
+        "last_activity_at": new_last_activity,
+        "resume_due": new_resume_due,
+        "updated_at": now,
+    }
+
+
+def apply_status_update(conn: sqlite3.Connection, ticket_id: str, payload: dict[str, str]) -> None:
+    conn.execute(
+        """
+        UPDATE tasks
+        SET status=?, bucket=?, blocked_reason=?, proof=?, proof_pending=?, review_status=?, review_note=?, closed_by=?, started_at=?, last_activity_at=?, resume_due=?, updated_at=?
+        WHERE id=?
+        """,
+        (
+            payload["status"],
+            payload["bucket"],
+            payload["blocked_reason"],
+            payload["proof"],
+            payload["proof_pending"],
+            payload["review_status"],
+            payload["review_note"],
+            payload["closed_by"],
+            payload["started_at"],
+            payload["last_activity_at"],
+            payload["resume_due"],
+            payload["updated_at"],
+            ticket_id,
+        ),
+    )
+
+
+def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, bucket: str, blocked_reason: str | None = None, proof: str | None = None, resume_due: str | None = None, closed_by: str | None = None, force_review_pass: bool = False) -> bool:
+    row = conn.execute("SELECT * FROM tasks WHERE id=?", (ticket_id,)).fetchone()
+    if not row:
+        return False
+    payload = build_status_update_payload(
+        row,
+        status=status,
+        bucket=bucket,
+        blocked_reason=blocked_reason,
+        proof=proof,
+        resume_due=resume_due,
+        closed_by=closed_by,
+        force_review_pass=force_review_pass,
+    )
     with conn:
+        apply_status_update(conn, ticket_id, payload)
+    return True
+
+
+def compact_context_text(value: str | None, limit: int = 220) -> str:
+    text = (value or "").strip()
+    if len(text) <= limit:
+        return text or "-"
+    return text[: limit - 3].rstrip() + "..."
+
+
+def close_guard_task_state(source_ticket_id: str, target_status: str) -> dict[str, str]:
+    runtime_state = "assigned_by=close_guard | owner=close_guard | assignee=close_guard | phase=close_guard"
+    return {
+        "task_status": "IN_PROGRESS",
+        "task_bucket": "active",
+        "task_phase": "close_guard",
+        "task_assigned_by": "close_guard",
+        "task_owner": "close_guard",
+        "task_assignee": "close_guard",
+        "task_review_status": "미정",
+        "task_closed_by": "미정",
+        "task_resume_due": "미정",
+        "task_assigned_run_id": f"close-guard:{source_ticket_id}",
+        "task_runtime_state": runtime_state,
+        "task_blocked_reason": f"close_guard source={source_ticket_id} status={target_status}",
+    }
+
+
+def ensure_context_hygiene_ticket(
+    conn: sqlite3.Connection,
+    *,
+    source_ticket_id: str,
+    target_status: str,
+    latest_proof: str,
+    blocked_reason: str,
+) -> None:
+    now = now_ts()
+    note_lines = [
+        "phase: close_guard",
+        f"close_guard_source_ticket: {source_ticket_id}",
+        f"close_guard_source_status: {target_status}",
+        f"close_guard_latest_proof: {compact_context_text(latest_proof)}",
+    ]
+    if blocked_reason:
+        note_lines.append(f"close_guard_blocked_reason: {compact_context_text(blocked_reason)}")
+    note = "\n".join(note_lines)
+    row = conn.execute("SELECT id, created_at, started_at FROM tasks WHERE id=?", (CONTEXT_HYGIENE_TASK_ID,)).fetchone()
+    if row is None:
         conn.execute(
             """
-            UPDATE tasks
-            SET status=?, bucket=?, blocked_reason=?, proof=?, proof_pending=?, review_status=?, review_note=?, closed_by=?, started_at=?, last_activity_at=?, resume_due=?, updated_at=?
-            WHERE id=?
+            INSERT INTO tasks(
+                id, status, title, scope, priority, bucket,
+                note, blocked_reason, proof, proof_pending, proof_last,
+                assigned_by, owner, assignee, assigned_run_id, assigned_at, review_status, review_note, closed_by,
+                started_at, last_activity_at, resume_due,
+                extra_lines, sort_order, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (status, bucket, new_blocked, new_proof, new_proof_pending, new_review_status, new_review_note, new_closed_by, new_started_at, new_last_activity, new_resume_due, now, ticket_id),
+            (
+                CONTEXT_HYGIENE_TASK_ID,
+                "IN_PROGRESS",
+                CONTEXT_HYGIENE_TASK_TITLE,
+                CONTEXT_HYGIENE_TASK_SCOPE,
+                "P0",
+                "active",
+                note,
+                "",
+                "",
+                "",
+                "",
+                "close_guard",
+                "close_guard",
+                "close_guard",
+                f"close-guard:{source_ticket_id}",
+                now,
+                "",
+                "",
+                "",
+                now,
+                now,
+                "",
+                json.dumps([], ensure_ascii=False),
+                next_sort_order(conn, "active"),
+                now,
+                now,
+            ),
         )
-    return True
+        return
+    conn.execute(
+        """
+        UPDATE tasks
+        SET status='IN_PROGRESS', bucket='active', title=?, scope=?, priority='P0',
+            note=?, blocked_reason='',
+            assigned_by='close_guard', owner='close_guard', assignee='close_guard', assigned_run_id=?, assigned_at=?,
+            review_status='', review_note='', closed_by='',
+            started_at=CASE WHEN COALESCE(started_at,'')='' THEN ? ELSE started_at END,
+            last_activity_at=?, resume_due='', updated_at=?
+        WHERE id=?
+        """,
+        (
+            CONTEXT_HYGIENE_TASK_TITLE,
+            CONTEXT_HYGIENE_TASK_SCOPE,
+            note,
+            f"close-guard:{source_ticket_id}",
+            now,
+            now,
+            now,
+            now,
+            CONTEXT_HYGIENE_TASK_ID,
+        ),
+    )
+
+
+def restore_runtime_file(path: Path, original_text: str, existed: bool) -> None:
+    if existed:
+        atomic_write_text(path, original_text)
+        return
+    if path.exists():
+        path.unlink()
+
+
+def write_close_guard_context(
+    conn: sqlite3.Connection,
+    *,
+    ticket_id: str,
+    target_status: str,
+    latest_proof: str,
+    blocked_reason: str,
+    closed_by: str,
+    refs: dict[str, object],
+) -> None:
+    if not refs["current_task_points"] and not refs["context_handoff_points"]:
+        return
+    if refs["current_task_points"] and ticket_id == CONTEXT_HYGIENE_TASK_ID:
+        raise RuntimeError(
+            "close gate blocked: runtime/current-task.md still points to WD-CONTEXT-HYGIENE; snapshot the successor task before closing it"
+        )
+    if not refs["current_task_points"] and refs["context_handoff_points"]:
+        current_ticket = str(refs.get("current_task_ticket_id") or "").strip()
+        if current_ticket and current_ticket != ticket_id:
+            write_context_handoff_from_current(
+                handoff_reason="close_guard_realign",
+                trigger="task_close",
+                required_action="read_then_resume",
+                observed_total_tokens="-",
+                threshold="-",
+                reset_guard="valid_handoff_required_before_clean_reset",
+                notes=(
+                    f"close_guard_realign_from={ticket_id}; "
+                    f"closed_status={target_status}; closed_by={closed_by or '-'}"
+                ),
+            )
+            return
+    ensure_context_hygiene_ticket(
+        conn,
+        source_ticket_id=ticket_id,
+        target_status=target_status,
+        latest_proof=latest_proof,
+        blocked_reason=blocked_reason,
+    )
+    write_snapshot_pair(
+        ticket_id=CONTEXT_HYGIENE_TASK_ID,
+        directive_ids=CONTEXT_HYGIENE_TASK_ID,
+        goal=f"{ticket_id} {target_status} close 이후 current-task/context-handoff 정리",
+        last=(
+            f"taskdb close guard가 {ticket_id}를 {target_status}로 전환하기 직전에 "
+            "runtime 포인터를 maintenance ticket으로 넘길 준비를 완료했다."
+        ),
+        next_action=(
+            "다음 실제 작업 ticket을 정해 snapshot으로 교체하고, 닫힌 ticket을 가리키는 잔여 포인터가 없는지 확인한 뒤 "
+            "WD-CONTEXT-HYGIENE를 정리한다."
+        ),
+        touched_paths=CONTEXT_HYGIENE_TASK_PATHS,
+        latest_proof=compact_context_text(latest_proof),
+        paths=CONTEXT_HYGIENE_TASK_PATHS,
+        notes=(
+            f"close_guard_source_ticket={ticket_id}; close_guard_source_status={target_status}; "
+            f"close_guard_closed_by={closed_by or '-'}; close_guard_blocked_reason={compact_context_text(blocked_reason)}"
+        ),
+        handoff_reason="task_close_guard",
+        trigger="task_close",
+        required_action="read_then_resume",
+        observed_total_tokens="-",
+        threshold="-",
+        reset_guard="valid_handoff_required_before_clean_reset",
+        task_state_override=close_guard_task_state(ticket_id, target_status),
+    )
+
+
+def close_status_with_context_guard(
+    conn: sqlite3.Connection,
+    ticket_id: str,
+    *,
+    status: str,
+    bucket: str,
+    blocked_reason: str | None = None,
+    proof: str | None = None,
+    resume_due: str | None = None,
+    closed_by: str | None = None,
+    force_review_pass: bool = False,
+) -> tuple[bool, str | None]:
+    row = conn.execute("SELECT * FROM tasks WHERE id=?", (ticket_id,)).fetchone()
+    if not row:
+        return False, f"ticket not found: {ticket_id}"
+    payload = build_status_update_payload(
+        row,
+        status=status,
+        bucket=bucket,
+        blocked_reason=blocked_reason,
+        proof=proof,
+        resume_due=resume_due,
+        closed_by=closed_by,
+        force_review_pass=force_review_pass,
+    )
+    refs = inspect_runtime_ticket_references(ticket_id)
+    current_original = read_text(CURRENT_TASK)
+    handoff_original = read_text(CONTEXT_HANDOFF)
+    current_existed = CURRENT_TASK.exists()
+    handoff_existed = CONTEXT_HANDOFF.exists()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        write_close_guard_context(
+            conn,
+            ticket_id=ticket_id,
+            target_status=status,
+            latest_proof=proof or payload["proof"] or blocked_reason or "-",
+            blocked_reason=blocked_reason or payload["blocked_reason"] or "",
+            closed_by=payload["closed_by"],
+            refs=refs,
+        )
+        apply_status_update(conn, ticket_id, payload)
+        conn.commit()
+        return True, None
+    except Exception as exc:
+        conn.rollback()
+        try:
+            restore_runtime_file(CURRENT_TASK, current_original, current_existed)
+            restore_runtime_file(CONTEXT_HANDOFF, handoff_original, handoff_existed)
+        except Exception:
+            pass
+        return False, str(exc)
 
 
 def cmd_start(args: argparse.Namespace) -> int:
@@ -695,9 +1002,16 @@ def cmd_start(args: argparse.Namespace) -> int:
 def cmd_block(args: argparse.Namespace) -> int:
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
-    ok = update_status(conn, args.id, status="BLOCKED", bucket="backlog", blocked_reason=args.reason, resume_due=args.resume_due)
+    ok, error = close_status_with_context_guard(
+        conn,
+        args.id,
+        status="BLOCKED",
+        bucket="backlog",
+        blocked_reason=args.reason,
+        resume_due=args.resume_due,
+    )
     if not ok:
-        print(f"ticket not found: {args.id}", file=sys.stderr)
+        print(error or f"ticket not found: {args.id}", file=sys.stderr)
         return 1
     print(f"blocked: {args.id}")
     return 0
@@ -706,9 +1020,16 @@ def cmd_block(args: argparse.Namespace) -> int:
 def cmd_done(args: argparse.Namespace) -> int:
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
-    ok = update_status(conn, args.id, status="DONE", bucket="done", proof=args.proof, closed_by=args.closed_by)
+    ok, error = close_status_with_context_guard(
+        conn,
+        args.id,
+        status="DONE",
+        bucket="done",
+        proof=args.proof,
+        closed_by=args.closed_by,
+    )
     if not ok:
-        print(f"ticket not found: {args.id}", file=sys.stderr)
+        print(error or f"ticket not found: {args.id}", file=sys.stderr)
         return 1
     print(f"done: {args.id}")
     return 0
@@ -880,11 +1201,18 @@ def cmd_review_pass(args: argparse.Namespace) -> int:
         print(f"ticket not found: {args.id}", file=sys.stderr)
         return 1
     closed_by = (args.closed_by or "").strip() or (row["assignee"] or "").strip()
-    with conn:
-        conn.execute(
-            "UPDATE tasks SET status='DONE', bucket='done', proof=?, proof_pending='', review_status='PASS', review_note='', closed_by=?, last_activity_at=?, updated_at=? WHERE id=?",
-            (args.proof, closed_by, now_ts(), now_ts(), args.id),
-        )
+    ok, error = close_status_with_context_guard(
+        conn,
+        args.id,
+        status="DONE",
+        bucket="done",
+        proof=args.proof,
+        closed_by=closed_by,
+        force_review_pass=True,
+    )
+    if not ok:
+        print(error or f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
     print(f"review-pass: {args.id}")
     return 0
 

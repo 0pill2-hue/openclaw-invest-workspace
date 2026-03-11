@@ -13,6 +13,11 @@
 4. FAIL이면 gate_fail_protocol 복귀
 5. 재실행 후 동일 gate 재검증
 
+## Task 운영 규칙
+- 남은 backlog가 있으면 추가 지시를 기다리지 말고 우선순위대로 자동 진행한다. 단, 승인 필요 작업/실제 blocker는 예외다.
+- 태스크 착수 시에는 사용자에게 1줄 시작 보고를 먼저 한다.
+- 외부 검토(web-review 등) 답변은 자동 실행 트리거가 아니다. 메인이 먼저 검토하고, 실제 개선 필요 판정일 때만 task/directive/proof 절차로 후속 작업을 연다.
+
 ## Git 운영 규칙
 - 검증 후 커밋/푸시 우선
 - Push 타이밍 SSOT: `docs/operations/CONTRIBUTING.md`

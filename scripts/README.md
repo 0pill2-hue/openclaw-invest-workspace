@@ -15,7 +15,7 @@
 - `scripts/watchdog/`
   - `watchdog_validate.py`: TASK ledger 정합성 검사
   - `watchdog_recover.py`: stale task 자동 BLOCKED 전환 (단, delegated/awaiting/long-running nonterminal waiting phase는 age만으로 막지 않고 `resume_due` 초과 시에만 승격)
-  - `context_hygiene.py`: current-task/context-handoff/resume-check/blocked-proof hygiene 검사 + 120k threshold에서 `finish_current_step_then_reset` handoff 갱신
+  - `context_hygiene.py`: current-task/context-handoff/resume-check/blocked-proof hygiene 검사 + 닫힌 ticket 잔여 포인터를 안전할 때 `WD-CONTEXT-HYGIENE`로 self-heal + 120k threshold에서 `finish_current_step_then_reset` handoff 갱신
   - `watchdog_cycle.py`: watchdog validate/recover + context hygiene + main notify cycle (soft advisory+nudge 우선, hard lock only for reset-grade actions)
   - `launchd_watchdog.sh`: watchdog용 launchd 진입 쉘
 - `scripts/directives/`
@@ -34,6 +34,7 @@
 - TASK/context watchdog cycle: `python3 scripts/watchdog/watchdog_cycle.py`
 - TASK auto-dispatch: `python3 scripts/tasks/dispatch_tick.py`
 - TASK assignee 해제: `python3 scripts/tasks/db.py release --id <ID>`
+- TASK close(`done`/`block`/`review-pass`): 닫히는 ticket이 `runtime/current-task.md`/`runtime/context-handoff.md`에 걸려 있으면 close guard가 `WD-CONTEXT-HYGIENE`로 atomic handoff 후 전이하며, `WD-CONTEXT-HYGIENE` 자체를 아직 current-task가 가리키는 상태에서는 hard fail
 - TASK phase 표기(예: `delegated_to_subagent`/`subagent_running`/`awaiting_callback`/`long_running_execution`/`main_review`): `python3 scripts/tasks/db.py mark-phase --id <ID> --phase <phase> --child-session <session> --resume-due "YYYY-MM-DD HH:MM:SS"` (`TODO`/`BLOCKED` task에 nonterminal waiting phase를 찍으면 자동으로 `IN_PROGRESS/active`로 되돌림)
 - TASK 삭제: `python3 scripts/tasks/db.py remove --id <ID>`
 - DIRECTIVES 요약: `python3 scripts/directives/db.py summary --top 5 --recent 5`

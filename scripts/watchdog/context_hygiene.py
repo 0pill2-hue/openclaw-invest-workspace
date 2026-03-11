@@ -13,7 +13,16 @@ SCRIPTS_DIR = ROOT / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-from context_policy import PLACEHOLDER_VALUES, extract_phase, load_task_state, parse_context_handoff, parse_current_task
+from context_policy import (
+    PLACEHOLDER_VALUES,
+    extract_phase,
+    inspect_runtime_ticket_references,
+    load_task_state,
+    parse_context_handoff,
+    parse_current_task,
+    write_context_handoff_from_current,
+    write_snapshot_pair,
+)
 from lib.runtime_env import TASKS_DB, context_handoff_path, current_task_path
 from lib.task_runtime import is_nonterminal_wait_state
 
@@ -21,6 +30,8 @@ CONTEXT_POLICY = ROOT / "scripts/context_policy.py"
 CURRENT_TASK = current_task_path()
 CONTEXT_HANDOFF = context_handoff_path()
 CONTEXT_TOKEN_THRESHOLD = int(os.environ.get('WATCHDOG_CONTEXT_TOKEN_THRESHOLD', '120000'))
+CONTEXT_HYGIENE_TASK_ID = 'WD-CONTEXT-HYGIENE'
+CONTEXT_HYGIENE_PATHS = 'runtime/current-task.md,runtime/context-handoff.md,runtime/tasks/tasks.db,scripts/watchdog/context_hygiene.py'
 
 
 def is_waiting_callback_state(db_task: dict[str, str]) -> bool:
@@ -164,17 +175,74 @@ def pick_primary_session(status_payload: dict) -> dict:
     return max(candidates, key=lambda row: row.get('updatedAt') or 0)
 
 
+def compact_note(value: str | None, limit: int = 220) -> str:
+    text = str(value or '').strip()
+    if len(text) <= limit:
+        return text or '-'
+    return text[: limit - 3].rstrip() + '...'
+
+
+def self_heal_closed_ticket_reference(
+    *,
+    ticket_id: str,
+    db_status: str,
+    current_task: dict[str, str],
+    detail: dict[str, object],
+) -> dict[str, object] | None:
+    refs = inspect_runtime_ticket_references(ticket_id)
+    if not refs['current_task_points'] and not refs['context_handoff_points']:
+        return None
+
+    if refs['current_task_points']:
+        if ticket_id == CONTEXT_HYGIENE_TASK_ID:
+            return None
+        maintenance = load_task_state(CONTEXT_HYGIENE_TASK_ID)
+        maintenance_status = (maintenance.get('task_status') or '').strip().upper()
+        if maintenance_status != 'IN_PROGRESS':
+            return None
+        write_snapshot_pair(
+            ticket_id=CONTEXT_HYGIENE_TASK_ID,
+            directive_ids=CONTEXT_HYGIENE_TASK_ID,
+            goal=f'{ticket_id} {db_status} 잔여 포인터 self-heal',
+            last=f'context_hygiene가 닫힌 ticket {ticket_id}를 가리키는 current-task/context-handoff를 감지했다.',
+            next_action='다음 실제 작업 ticket으로 snapshot을 교체하고, WD-CONTEXT-HYGIENE를 마무리한다.',
+            touched_paths=CONTEXT_HYGIENE_PATHS,
+            latest_proof=compact_note(current_task.get('latest_proof') or f'{ticket_id}:{db_status}'),
+            paths=CONTEXT_HYGIENE_PATHS,
+            notes=f'prepared_by=context_hygiene_self_heal; source_ticket={ticket_id}; source_status={db_status}',
+            handoff_reason='closed_ticket_self_heal',
+            trigger='closed_ticket_pointer_detected',
+            required_action='read_then_resume',
+            observed_total_tokens='-',
+            threshold='-',
+            reset_guard='valid_handoff_required_before_clean_reset',
+        )
+        detail['self_heal_action'] = f'repointed_to_{CONTEXT_HYGIENE_TASK_ID}'
+        detail['self_heal_ticket'] = ticket_id
+        return {'mode': 'maintenance', 'ticket_id': ticket_id}
+
+    current_ticket = str(refs.get('current_task_ticket_id') or '').strip()
+    if current_ticket and current_ticket != ticket_id and current_ticket not in PLACEHOLDER_VALUES:
+        write_context_handoff_from_current(
+            handoff_reason='closed_ticket_self_heal',
+            trigger='closed_ticket_pointer_detected',
+            required_action='read_then_resume',
+            observed_total_tokens='-',
+            threshold='-',
+            reset_guard='valid_handoff_required_before_clean_reset',
+            notes=f'prepared_by=context_hygiene_self_heal; realigned_from={ticket_id}; closed_status={db_status}',
+        )
+        detail['self_heal_action'] = 'handoff_realigned_from_current_task'
+        detail['self_heal_ticket'] = ticket_id
+        return {'mode': 'handoff_realign', 'ticket_id': ticket_id}
+    return None
+
+
 def main() -> int:
     issues: list[str] = []
     detail: dict[str, object] = {
         'context_handoff_path': str(CONTEXT_HANDOFF),
     }
-
-    rc, resume_payload = run_resume_check()
-    detail['resume_check_rc'] = rc
-    detail['resume_check'] = resume_payload
-    if rc != 0:
-        issues.append('context_resume_check_strict_failed')
 
     current_task = parse_current_task(CURRENT_TASK.read_text(encoding='utf-8') if CURRENT_TASK.exists() else '')
     ticket_id = (current_task.get('ticket_id') or '').strip()
@@ -184,6 +252,50 @@ def main() -> int:
     detail['current_goal'] = current_task.get('current_goal', '') or '-'
     detail['current_next_action'] = current_task.get('next_action', '') or '-'
     detail['current_latest_proof'] = current_task.get('latest_proof', '') or '-'
+
+    if ticket_id and ticket_id not in PLACEHOLDER_VALUES:
+        precheck_db_task = load_task_state(ticket_id)
+        precheck_status = (precheck_db_task.get('task_status') or '').strip().upper()
+        precheck_waiting = is_waiting_callback_state(precheck_db_task)
+        if precheck_status in {'DONE', 'BLOCKED'} and not precheck_waiting:
+            heal_result = self_heal_closed_ticket_reference(
+                ticket_id=ticket_id,
+                db_status=precheck_status,
+                current_task=current_task,
+                detail=detail,
+            )
+            if heal_result:
+                detail['self_healed_closed_ticket_reference'] = heal_result
+                current_task = parse_current_task(CURRENT_TASK.read_text(encoding='utf-8') if CURRENT_TASK.exists() else '')
+                ticket_id = (current_task.get('ticket_id') or '').strip()
+                task_status = (current_task.get('task_status') or '').strip().upper()
+                detail['current_task_ticket_id'] = ticket_id
+                detail['current_task_status'] = task_status
+                detail['current_goal'] = current_task.get('current_goal', '') or '-'
+                detail['current_next_action'] = current_task.get('next_action', '') or '-'
+                detail['current_latest_proof'] = current_task.get('latest_proof', '') or '-'
+
+    handoff_precheck = parse_context_handoff(CONTEXT_HANDOFF.read_text(encoding='utf-8') if CONTEXT_HANDOFF.exists() else '')
+    handoff_ticket_id = (handoff_precheck.get('source_ticket_id') or '').strip()
+    if handoff_ticket_id and handoff_ticket_id not in PLACEHOLDER_VALUES and handoff_ticket_id != ticket_id:
+        handoff_db_task = load_task_state(handoff_ticket_id)
+        handoff_db_status = (handoff_db_task.get('task_status') or '').strip().upper()
+        handoff_waiting = is_waiting_callback_state(handoff_db_task)
+        if handoff_db_status in {'DONE', 'BLOCKED'} and not handoff_waiting:
+            heal_result = self_heal_closed_ticket_reference(
+                ticket_id=handoff_ticket_id,
+                db_status=handoff_db_status,
+                current_task=current_task,
+                detail=detail,
+            )
+            if heal_result:
+                detail['self_healed_closed_handoff_reference'] = heal_result
+
+    rc, resume_payload = run_resume_check()
+    detail['resume_check_rc'] = rc
+    detail['resume_check'] = resume_payload
+    if rc != 0:
+        issues.append('context_resume_check_strict_failed')
 
     status_rc, status_payload = run_openclaw_status_json()
     detail['openclaw_status_rc'] = status_rc

@@ -28,7 +28,7 @@ parent: `docs/operations/OPERATIONS_BOOK.md`
 
 ## 2) Context / Resume
 ### `scripts/context_policy.py`
-- 역할: `current-task` + `context-handoff` snapshot, reload bundle, resume-check, handoff-validate, token action 판단
+- 역할: `current-task` + `context-handoff` snapshot, reload bundle, resume-check, handoff-validate, token action 판단, close guard/maintenance handoff용 atomic runtime card write
 - 주 입력: `runtime/current-task.md`, `runtime/context-handoff.md`, tasks/directives DB
 - 주 출력: snapshot 파일, reload/resume-check JSON, handoff validation JSON
 - 실패 시: strict resume-check/handoff-validate non-zero
@@ -48,7 +48,7 @@ parent: `docs/operations/OPERATIONS_BOOK.md`
 - 실패 시: non-zero 또는 parse_error
 
 ### `scripts/watchdog/context_hygiene.py`
-- 역할: context resume-check strict, context-handoff 유효성, blocked_with_proof_no_reason, current-task snapshot↔taskdb 상태 불일치, closed ticket 잔존, session context token threshold(기본 120k 도달/초과 시점) 같은 최소 hygiene 검사와 `finish_current_step_then_reset` handoff 갱신
+- 역할: context resume-check strict, context-handoff 유효성, blocked_with_proof_no_reason, current-task snapshot↔taskdb 상태 불일치, closed ticket 잔존, session context token threshold(기본 120k 도달/초과 시점) 같은 최소 hygiene 검사와 `finish_current_step_then_reset` handoff 갱신. 닫힌 non-maintenance ticket이 runtime 포인터에 남아 있으면 안전할 때 `WD-CONTEXT-HYGIENE` 또는 current-task 기준 handoff로 self-heal한다.
 - 주 입력: `runtime/current-task.md`, `runtime/context-handoff.md`, `runtime/tasks/tasks.db`, `scripts/context_policy.py` 상태 조회, `openclaw status --json`
 - 주 출력: hygiene JSON
 - 실패 시: `ok=false`, issue 목록 반환

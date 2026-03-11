@@ -31,6 +31,7 @@
 - `runtime/context-handoff.md` 최소 필수 필드: `source_ticket_id`, `source_directive_ids`, `business_goal`, `last_completed_step`, `next_action`, `latest_proof`, `touched_paths`, `required_action`, `reset_guard`
 - 가능하면 같은 ticket의 taskdb 상태를 함께 적재한다: `task_status`, `task_phase`, `task_assignee`, `task_runtime_state`, `task_resume_due`
 - `runtime/current-task.md`의 `task_status`가 taskdb 실제 상태와 다르면 stale snapshot으로 간주하고 즉시 다시 snapshot 한다.
+- `scripts/tasks/db.py done|block|review-pass`가 현재 ticket을 닫을 때는 close guard가 `runtime/current-task.md`/`runtime/context-handoff.md`를 먼저 maintenance snapshot으로 넘기거나, 안전한 successor가 없으면 hard fail 해야 한다. 닫힌 ticket 포인터 잔존은 사후 경고가 아니라 구조적으로 차단 대상이다.
 - clean reset/cutover는 `runtime/context-handoff.md` 검증 통과 전에는 금지한다.
 
 ## 세션 복구 체크

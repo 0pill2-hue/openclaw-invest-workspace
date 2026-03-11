@@ -6,6 +6,7 @@ import json
 import re
 import sqlite3
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -189,7 +190,28 @@ def load_task_state(ticket_id: str) -> dict[str, str]:
     }
 
 
-def write_current_task(
+def merged_task_state(ticket_id: str, task_state_override: dict[str, str] | None = None) -> dict[str, str]:
+    task_state = load_task_state(ticket_id)
+    if task_state_override:
+        for key, value in task_state_override.items():
+            task_state[key] = value
+    return task_state
+
+
+def atomic_write_text(path: Path, content: str) -> None:
+    ensure_parent(path)
+    tmp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=path.parent, delete=False) as handle:
+            handle.write(content)
+            tmp_path = Path(handle.name)
+        tmp_path.replace(path)
+    finally:
+        if tmp_path and tmp_path.exists():
+            tmp_path.unlink(missing_ok=True)
+
+
+def render_current_task_content(
     *,
     ticket_id: str,
     directive_ids: str,
@@ -200,10 +222,10 @@ def write_current_task(
     latest_proof: str,
     paths: str,
     notes: str,
-) -> None:
-    ensure_parent(CURRENT_TASK)
-    task_state = load_task_state(ticket_id)
-    content = (
+    task_state_override: dict[str, str] | None = None,
+) -> str:
+    task_state = merged_task_state(ticket_id, task_state_override)
+    return (
         '# current-task\n\n'
         f'- ticket_id: {_clean(ticket_id)}\n'
         f'- directive_ids: {_clean(directive_ids)}\n'
@@ -227,10 +249,9 @@ def write_current_task(
         f'- required_paths_or_params: {_clean(paths)}\n'
         f"- notes: {_clean(notes) if notes.strip() else '-'}\n"
     )
-    CURRENT_TASK.write_text(content, encoding='utf-8')
 
 
-def write_context_handoff(
+def render_context_handoff_content(
     *,
     ticket_id: str,
     directive_ids: str,
@@ -247,10 +268,10 @@ def write_context_handoff(
     observed_total_tokens: str,
     threshold: str,
     reset_guard: str,
-) -> None:
-    ensure_parent(CONTEXT_HANDOFF)
-    task_state = load_task_state(ticket_id)
-    content = (
+    task_state_override: dict[str, str] | None = None,
+) -> str:
+    task_state = merged_task_state(ticket_id, task_state_override)
+    return (
         '# context-handoff\n\n'
         f'- handoff_version: v1\n'
         f'- generated_at: {now_ts()}\n'
@@ -277,7 +298,177 @@ def write_context_handoff(
         f'- reset_guard: {_clean(reset_guard)}\n'
         f"- notes: {_clean(notes) if notes.strip() else '-'}\n"
     )
-    CONTEXT_HANDOFF.write_text(content, encoding='utf-8')
+
+
+def write_current_task(
+    *,
+    ticket_id: str,
+    directive_ids: str,
+    goal: str,
+    last: str,
+    next_action: str,
+    touched_paths: str,
+    latest_proof: str,
+    paths: str,
+    notes: str,
+    task_state_override: dict[str, str] | None = None,
+) -> None:
+    atomic_write_text(
+        CURRENT_TASK,
+        render_current_task_content(
+            ticket_id=ticket_id,
+            directive_ids=directive_ids,
+            goal=goal,
+            last=last,
+            next_action=next_action,
+            touched_paths=touched_paths,
+            latest_proof=latest_proof,
+            paths=paths,
+            notes=notes,
+            task_state_override=task_state_override,
+        ),
+    )
+
+
+def write_context_handoff(
+    *,
+    ticket_id: str,
+    directive_ids: str,
+    goal: str,
+    last: str,
+    next_action: str,
+    touched_paths: str,
+    latest_proof: str,
+    paths: str,
+    notes: str,
+    handoff_reason: str,
+    trigger: str,
+    required_action: str,
+    observed_total_tokens: str,
+    threshold: str,
+    reset_guard: str,
+    task_state_override: dict[str, str] | None = None,
+) -> None:
+    atomic_write_text(
+        CONTEXT_HANDOFF,
+        render_context_handoff_content(
+            ticket_id=ticket_id,
+            directive_ids=directive_ids,
+            goal=goal,
+            last=last,
+            next_action=next_action,
+            touched_paths=touched_paths,
+            latest_proof=latest_proof,
+            paths=paths,
+            notes=notes,
+            handoff_reason=handoff_reason,
+            trigger=trigger,
+            required_action=required_action,
+            observed_total_tokens=observed_total_tokens,
+            threshold=threshold,
+            reset_guard=reset_guard,
+            task_state_override=task_state_override,
+        ),
+    )
+
+
+def write_snapshot_pair(
+    *,
+    ticket_id: str,
+    directive_ids: str,
+    goal: str,
+    last: str,
+    next_action: str,
+    touched_paths: str,
+    latest_proof: str,
+    paths: str,
+    notes: str,
+    handoff_reason: str = 'steady_state',
+    trigger: str = 'work_update',
+    required_action: str = 'read_then_resume',
+    observed_total_tokens: str = '-',
+    threshold: str = '-',
+    reset_guard: str = 'valid_handoff_required_before_clean_reset',
+    task_state_override: dict[str, str] | None = None,
+) -> None:
+    write_current_task(
+        ticket_id=ticket_id,
+        directive_ids=directive_ids,
+        goal=goal,
+        last=last,
+        next_action=next_action,
+        touched_paths=touched_paths,
+        latest_proof=latest_proof,
+        paths=paths,
+        notes=notes,
+        task_state_override=task_state_override,
+    )
+    write_context_handoff(
+        ticket_id=ticket_id,
+        directive_ids=directive_ids,
+        goal=goal,
+        last=last,
+        next_action=next_action,
+        touched_paths=touched_paths,
+        latest_proof=latest_proof,
+        paths=paths,
+        notes=notes,
+        handoff_reason=handoff_reason,
+        trigger=trigger,
+        required_action=required_action,
+        observed_total_tokens=observed_total_tokens,
+        threshold=threshold,
+        reset_guard=reset_guard,
+        task_state_override=task_state_override,
+    )
+
+
+def write_context_handoff_from_current(
+    *,
+    handoff_reason: str,
+    trigger: str,
+    required_action: str,
+    observed_total_tokens: str,
+    threshold: str,
+    reset_guard: str,
+    notes: str = '',
+) -> dict[str, str]:
+    current = parse_current_task(read_text(CURRENT_TASK))
+    write_context_handoff(
+        ticket_id=current.get('ticket_id', '미정'),
+        directive_ids=current.get('directive_ids', '미정'),
+        goal=current.get('current_goal', '미정'),
+        last=current.get('last_completed_step', '미정'),
+        next_action=current.get('next_action', '미정'),
+        touched_paths=current.get('touched_paths', '미정'),
+        latest_proof=current.get('latest_proof', '미정'),
+        paths=current.get('required_paths_or_params', '미정'),
+        notes=notes or current.get('notes', ''),
+        handoff_reason=handoff_reason,
+        trigger=trigger,
+        required_action=required_action,
+        observed_total_tokens=observed_total_tokens,
+        threshold=threshold,
+        reset_guard=reset_guard,
+    )
+    return current
+
+
+def inspect_runtime_ticket_references(ticket_id: str) -> dict[str, object]:
+    current = parse_current_task(read_text(CURRENT_TASK))
+    handoff = parse_context_handoff(read_text(CONTEXT_HANDOFF))
+    target = (ticket_id or '').strip()
+    current_ticket = (current.get('ticket_id') or '').strip()
+    handoff_ticket = (handoff.get('source_ticket_id') or '').strip()
+    return {
+        'ticket_id': target,
+        'current_task': current,
+        'context_handoff': handoff,
+        'current_task_ticket_id': current_ticket,
+        'context_handoff_ticket_id': handoff_ticket,
+        'current_task_points': bool(target) and current_ticket == target,
+        'context_handoff_points': bool(target) and handoff_ticket == target,
+    }
 
 
 def compact(text: str, limit: int) -> str:
@@ -560,7 +751,7 @@ def build_reload_bundle(mode: str, top: int, recent: int) -> dict:
 
 
 def cmd_snapshot(args: argparse.Namespace) -> int:
-    write_current_task(
+    write_snapshot_pair(
         ticket_id=args.ticket_id,
         directive_ids=args.directive_ids,
         goal=args.goal,
@@ -570,23 +761,6 @@ def cmd_snapshot(args: argparse.Namespace) -> int:
         latest_proof=args.proof,
         paths=args.paths,
         notes=args.notes,
-    )
-    write_context_handoff(
-        ticket_id=args.ticket_id,
-        directive_ids=args.directive_ids,
-        goal=args.goal,
-        last=args.last,
-        next_action=args.next_action,
-        touched_paths=args.touched_paths,
-        latest_proof=args.proof,
-        paths=args.paths,
-        notes=args.notes,
-        handoff_reason='steady_state',
-        trigger='work_update',
-        required_action='read_then_resume',
-        observed_total_tokens='-',
-        threshold='-',
-        reset_guard='valid_handoff_required_before_clean_reset',
     )
     print(json.dumps({'ok': True, 'files': [str(CURRENT_TASK), str(CONTEXT_HANDOFF)], 'action': 'snapshot_and_handoff_written'}, ensure_ascii=False))
     return 0
@@ -603,23 +777,14 @@ def cmd_handoff_show(_: argparse.Namespace) -> int:
 
 
 def cmd_handoff_from_current(args: argparse.Namespace) -> int:
-    current = parse_current_task(read_text(CURRENT_TASK))
-    write_context_handoff(
-        ticket_id=current.get('ticket_id', '미정'),
-        directive_ids=current.get('directive_ids', '미정'),
-        goal=current.get('current_goal', '미정'),
-        last=current.get('last_completed_step', '미정'),
-        next_action=current.get('next_action', '미정'),
-        touched_paths=current.get('touched_paths', '미정'),
-        latest_proof=current.get('latest_proof', '미정'),
-        paths=current.get('required_paths_or_params', '미정'),
-        notes=args.notes or current.get('notes', ''),
+    write_context_handoff_from_current(
         handoff_reason=args.handoff_reason,
         trigger=args.trigger,
         required_action=args.required_action,
         observed_total_tokens=args.observed_total_tokens,
         threshold=args.threshold,
         reset_guard=args.reset_guard,
+        notes=args.notes,
     )
     print(json.dumps({'ok': True, 'file': str(CONTEXT_HANDOFF), 'action': 'handoff_written_from_current'}, ensure_ascii=False))
     return 0
