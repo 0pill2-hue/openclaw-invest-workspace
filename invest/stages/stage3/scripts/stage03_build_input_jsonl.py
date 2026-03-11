@@ -90,6 +90,69 @@ RISK_ON_WORDS = {
 RISK_OFF_WORDS = {
     "긴축", "인상", "침체", "전쟁", "관세", "하락", "위기", "리스크오프", "risk-off", "risk off", "recession", "conflict", "sanction",
 }
+SEMANTIC_SCHEMA_VERSION = "stage-semantic-20260311-r1"
+INDUSTRY_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "반도체": ("반도체", "메모리", "dram", "nand", "낸드", "hbm", "파운드리"),
+    "자동차": ("자동차", "완성차", "ev", "전기차", "하이브리드", "차량용"),
+    "2차전지": ("2차전지", "배터리", "양극재", "음극재", "전해액", "lfp"),
+    "바이오/헬스케어": ("바이오", "헬스케어", "의약", "제약", "임상", "의료기기"),
+    "인터넷/플랫폼": ("플랫폼", "인터넷", "커머스", "포털", "핀테크", "광고"),
+    "게임/콘텐츠": ("게임", "콘텐츠", "엔터", "드라마", "웹툰", "음원"),
+    "조선/해운": ("조선", "해운", "선박", "lng선", "수주잔고"),
+    "방산/우주": ("방산", "국방", "우주", "위성", "미사일", "항공우주"),
+    "철강/소재": ("철강", "소재", "알루미늄", "구리", "니켈", "희토류"),
+    "정유/화학": ("정유", "화학", "석유화학", "납사", "에틸렌", "정제마진"),
+    "은행/금융": ("은행", "보험", "증권", "카드", "여신", "npl"),
+    "건설/부동산": ("건설", "부동산", "분양", "재건축", "pf", "플랜트"),
+    "통신/네트워크": ("통신", "네트워크", "5g", "통신장비", "가입자"),
+    "유통/소비재": ("유통", "소비재", "면세", "리테일", "백화점", "편의점"),
+    "전력/유틸리티": ("전력", "유틸리티", "원전", "태양광", "풍력", "송배전"),
+}
+EVENT_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "order": ("수주", "공급계약", "단일판매", "계약체결", "수주계약", "판매계약", "order", "contract"),
+    "rights_issue": ("유상증자", "증자", "전환사채", "cb", "bw", "신주발행", "희석", "rights issue", "dilution"),
+    "lawsuit": ("소송", "피소", "판결", "항소", "가처분", "분쟁", "lawsuit", "litigation", "dispute"),
+    "guidance": ("가이던스", "실적전망", "전망치", "컨센서스", "잠정실적", "실적발표", "guidance", "earnings"),
+}
+MACRO_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "risk_on": tuple(sorted(RISK_ON_WORDS)),
+    "risk_off": tuple(sorted(RISK_OFF_WORDS)),
+    "rates": ("금리", "기준금리", "fed", "fomc", "ecb", "boj", "yield", "수익률", "국채"),
+    "inflation": ("인플레이션", "cpi", "ppi", "물가", "inflation"),
+    "fx": ("환율", "원/달러", "원달러", "달러", "dxy", "fx", "외환", "usdkrw"),
+    "liquidity": ("유동성", "양적완화", "양적긴축", "qe", "qt", "liquidity"),
+    "policy": ("정책", "재정", "부양책", "stimulus", "regulation", "규제", "관세", "제재"),
+    "energy": ("유가", "wti", "brent", "원유", "천연가스", "lng"),
+    "recession_growth": ("침체", "recession", "성장률", "gdp", "경기", "회복", "soft landing", "둔화"),
+    "geopolitics": ("전쟁", "분쟁", "중동", "러시아", "우크라이나", "iran", "china", "taiwan", "제재"),
+}
+REGION_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "kr": ("한국", "국내", "korea", "kospi", "kosdaq", "krx", "krw", "원/달러"),
+    "us": ("미국", "연준", "fed", "fomc", "nasdaq", "s&p", "dow", "qqq", "spy", "treasury", "dxy", "usa"),
+    "cn": ("중국", "china", "위안", "csi300", "상하이", "홍콩"),
+    "jp": ("일본", "japan", "boj", "닛케이", "nikkei"),
+    "eu": ("유럽", "eurozone", "ecb", "독일", "프랑스", "france", "italy"),
+    "global": ("글로벌", "global", "world", "해외", "국제"),
+}
+SHORT_HORIZON_KEYWORDS = (
+    "오늘", "당일", "즉시", "단기", "이번주", "이번 달", "이번달", "near-term", "short-term", "1-5d",
+)
+MEDIUM_HORIZON_KEYWORDS = (
+    "분기", "이번 분기", "연내", "상반기", "하반기", "6개월", "quarter", "half-year", "medium-term",
+)
+LONG_HORIZON_KEYWORDS = (
+    "장기", "중장기", "구조적", "연간", "다년", "pipeline", "recurring", "long-term", "backlog",
+)
+POSITIVE_DIRECTION_WORDS = {
+    "성장", "개선", "확대", "수주", "계약", "흑자", "상향", "반등", "증가", "회복", "신제품", "점유율", "가이던스", "성공", "강세",
+    "growth", "improve", "expand", "order", "beat", "upgrade", "strong", "recovery", "guidance", "launch",
+    *RISK_ON_WORDS,
+}
+NEGATIVE_DIRECTION_WORDS = {
+    "감소", "부진", "하락", "적자", "둔화", "악화", "소송", "분쟁", "유상증자", "리스크", "규제", "지연", "차질", "정정", "우려",
+    "decline", "weak", "drop", "loss", "lawsuit", "dispute", "dilution", "downgrade", "risk", "regulation", "delay", "concern",
+    *RISK_OFF_WORDS,
+}
 
 
 def _norm_code(v: object) -> str:
@@ -226,6 +289,149 @@ def _is_macro_news_text(text: str) -> bool:
     has_on = any(k in tl for k in RISK_ON_WORDS)
     has_off = any(k in tl for k in RISK_OFF_WORDS)
     return has_on or has_off
+
+
+def _canonical_source_family(source: str, explicit: str = "") -> str:
+    s = (explicit or "").strip().lower()
+    if s.endswith("_nosymbol"):
+        s = s[: -len("_nosymbol")]
+    if s in {
+        "dart",
+        "news_rss_macro",
+        "news_rss",
+        "market_selected_articles",
+        "text_telegram",
+        "text_blog",
+        "text_premium",
+        "text_image_map",
+        "text_images_ocr",
+        "other",
+    }:
+        return s
+
+    src = (source or "").strip().lower()
+    if src == "dart" or src.startswith("dart"):
+        return "dart"
+    if src.startswith("rss_macro:"):
+        return "news_rss_macro"
+    if src.startswith("rss:"):
+        return "news_rss"
+    if src.startswith("market/selected_articles"):
+        return "market_selected_articles"
+    if src.startswith("text/telegram"):
+        return "text_telegram"
+    if src.startswith("text/blog"):
+        return "text_blog"
+    if src.startswith("text/premium"):
+        return "text_premium"
+    if src.startswith("text/image_map"):
+        return "text_image_map"
+    if src.startswith("text/images_ocr"):
+        return "text_images_ocr"
+    return "other"
+
+
+def _keyword_hit_count(text_l: str, keywords: tuple[str, ...] | set[str]) -> int:
+    return sum(text_l.count(str(keyword).lower()) for keyword in keywords if keyword)
+
+
+def _ranked_tags_from_keywords(text: str, table: dict[str, tuple[str, ...]]) -> list[str]:
+    text_l = (text or "").lower()
+    scored: list[tuple[str, int]] = []
+    for tag, keywords in table.items():
+        score = _keyword_hit_count(text_l, keywords)
+        if score > 0:
+            scored.append((tag, score))
+    scored.sort(key=lambda item: (-item[1], item[0]))
+    return [tag for tag, _ in scored]
+
+
+def _normalized_stock_tags(symbols: object) -> list[str]:
+    if not isinstance(symbols, list):
+        return []
+    out: list[str] = []
+    for raw in symbols:
+        symbol = _norm_code(raw)
+        if not symbol or symbol.startswith("__"):
+            continue
+        if symbol not in out:
+            out.append(symbol)
+    return out
+
+
+def _infer_impact_direction(text: str, event_tags: list[str]) -> str:
+    text_l = (text or "").lower()
+    pos_hits = _keyword_hit_count(text_l, POSITIVE_DIRECTION_WORDS)
+    neg_hits = _keyword_hit_count(text_l, NEGATIVE_DIRECTION_WORDS)
+    if "order" in event_tags or "guidance" in event_tags:
+        pos_hits += 1
+    if "rights_issue" in event_tags or "lawsuit" in event_tags:
+        neg_hits += 1
+    if pos_hits > 0 and neg_hits == 0:
+        return "positive"
+    if neg_hits > 0 and pos_hits == 0:
+        return "negative"
+    if pos_hits > 0 and neg_hits > 0:
+        return "mixed"
+    return "neutral"
+
+
+def _infer_horizon(text: str, source_family: str) -> str:
+    text_l = (text or "").lower()
+    if any(keyword.lower() in text_l for keyword in LONG_HORIZON_KEYWORDS):
+        return "long_term"
+    if any(keyword.lower() in text_l for keyword in MEDIUM_HORIZON_KEYWORDS):
+        return "medium_term"
+    if any(keyword.lower() in text_l for keyword in SHORT_HORIZON_KEYWORDS):
+        return "short_term"
+    if source_family == "news_rss_macro":
+        return "short_term"
+    return "unknown"
+
+
+def _region_tags(text: str, *, source_family: str, stock_tags: list[str]) -> list[str]:
+    tags = _ranked_tags_from_keywords(text, REGION_TAG_KEYWORDS)
+    if stock_tags and source_family in {"dart", "market_selected_articles", "text_telegram", "text_blog", "text_premium", "news_rss"} and "kr" not in tags:
+        tags.append("kr")
+    if source_family == "news_rss_macro":
+        if "global" not in tags:
+            tags.append("global")
+        if "us" not in tags:
+            tags.append("us")
+    return tags
+
+
+def _semantic_fields(row: dict) -> dict:
+    text = str(row.get("text") or "").strip()
+    source = str(row.get("source") or "").strip()
+    source_family = _canonical_source_family(source, str(row.get("source_family") or ""))
+    stock_tags = _normalized_stock_tags(row.get("symbols"))
+    industry_tags = _ranked_tags_from_keywords(text, INDUSTRY_KEYWORDS)
+    macro_tags = _ranked_tags_from_keywords(text, MACRO_TAG_KEYWORDS)
+    event_tags = _ranked_tags_from_keywords(text, EVENT_TAG_KEYWORDS)
+    region_tags = _region_tags(text, source_family=source_family, stock_tags=stock_tags)
+
+    target_levels: list[str] = []
+    symbols = row.get("symbols") if isinstance(row.get("symbols"), list) else []
+    if "__MACRO__" in symbols or source_family == "news_rss_macro" or macro_tags:
+        target_levels.append("macro")
+    if industry_tags:
+        target_levels.append("industry")
+    if stock_tags:
+        target_levels.append("stock")
+
+    return {
+        "source_family": source_family,
+        "semantic_version": SEMANTIC_SCHEMA_VERSION,
+        "target_levels": target_levels,
+        "macro_tags": macro_tags,
+        "industry_tags": industry_tags,
+        "stock_tags": stock_tags,
+        "event_tags": event_tags,
+        "impact_direction": _infer_impact_direction(text, event_tags),
+        "horizon": _infer_horizon(text, source_family),
+        "region_tags": region_tags,
+    }
 
 
 def _extract_markdown_title(txt: str, fallback: str = "") -> str:
@@ -904,7 +1110,11 @@ def main() -> int:
         *premium_rows,
         *selected_article_rows,
     ]
-    for r in all_rows:
+    for raw_row in all_rows:
+        r = dict(raw_row)
+        semantic = _semantic_fields(r)
+        r.update(semantic)
+
         rid = str(r.get("record_id", "")).strip()
         if not rid:
             continue
@@ -962,6 +1172,17 @@ def main() -> int:
     summary_json.parent.mkdir(parents=True, exist_ok=True)
     summary = {
         "stage": "stage3_input_build",
+        "semantic_schema_version": SEMANTIC_SCHEMA_VERSION,
+        "semantic_fields": [
+            "target_levels",
+            "macro_tags",
+            "industry_tags",
+            "stock_tags",
+            "event_tags",
+            "impact_direction",
+            "horizon",
+            "region_tags",
+        ],
         "dart_source": dart_src,
         "rss_source": rss_src,
         "rows_from_dart": len(dart_rows),

@@ -12,6 +12,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from lib.runtime_env import TASKS_DB
+from lib.task_runtime import is_nonterminal_wait_phase, normalize_phase_name
 
 STALE_MINUTES = 30
 
@@ -54,9 +55,13 @@ def main():
         last_act = parse_dt(row['last_activity_at']) or started
         resume_due = parse_dt(row['resume_due'])
         phase = extract_phase(row['note'])
+        normalized_phase = normalize_phase_name(phase)
+        waiting_state = is_nonterminal_wait_phase(phase)
         reason = ''
-        if status == 'IN_PROGRESS' and phase in {'subagent_running', 'awaiting_callback'} and resume_due and now > resume_due:
-            reason = f'watchdog_{phase}_deadline_expired'
+        if waiting_state and resume_due and now > resume_due:
+            reason = f"watchdog_{normalized_phase or 'waiting'}_deadline_expired"
+        elif status == 'IN_PROGRESS' and waiting_state:
+            continue
         elif status == 'IN_PROGRESS' and last_act and now - last_act > timedelta(minutes=STALE_MINUTES):
             reason = f'watchdog_stale_in_progress>{STALE_MINUTES}m'
         elif status == 'BLOCKED' and resume_due and now > resume_due:
@@ -71,7 +76,7 @@ def main():
             conn.execute(
                 """
                 UPDATE tasks
-                SET status='BLOCKED', bucket='backlog', blocked_reason=?, note=?, resume_due='', updated_at=?
+                SET status='BLOCKED', bucket='backlog', blocked_reason=?, note=?, resume_due='', closed_by='watchdog', updated_at=?
                 WHERE id=?
                 """,
                 (reason, note, now.strftime('%Y-%m-%d %H:%M:%S'), tid),

@@ -26,6 +26,7 @@ from lib.runtime_env import (
     tasks_md_path,
     user_path,
 )
+from lib.task_runtime import is_nonterminal_wait_phase
 
 ROOT = repo_root()
 CURRENT_TASK = current_task_path()
@@ -121,18 +122,29 @@ def extract_phase(note: str | None) -> str:
 
 def format_task_runtime_state(row: sqlite3.Row) -> str:
     parts: list[str] = []
+    assigned_by = (row['assigned_by'] or '').strip() if 'assigned_by' in row.keys() else ''
+    owner = (row['owner'] or '').strip() if 'owner' in row.keys() else ''
     assignee = (row['assignee'] or '').strip() if 'assignee' in row.keys() else ''
     phase = extract_phase(row['note'] if 'note' in row.keys() else '')
     review_status = (row['review_status'] or '').strip() if 'review_status' in row.keys() else ''
+    closed_by = (row['closed_by'] or '').strip() if 'closed_by' in row.keys() else ''
     resume_due = (row['resume_due'] or '').strip() if 'resume_due' in row.keys() else ''
     child_session = extract_note_value(row['note'] if 'note' in row.keys() else '', 'child_session')
 
+    if assigned_by:
+        parts.append(f'assigned_by={assigned_by}')
+    if owner:
+        parts.append(f'owner={owner}')
     if assignee:
         parts.append(f'assignee={assignee}')
     if phase != '-':
         parts.append(f'phase={phase}')
+        if is_nonterminal_wait_phase(phase):
+            parts.append('wait_state=nonterminal')
     if review_status:
         parts.append(f'review={review_status}')
+    if closed_by:
+        parts.append(f'closed_by={closed_by}')
     if child_session:
         parts.append(f'child={child_session}')
     if resume_due:
@@ -150,7 +162,7 @@ def load_task_state(ticket_id: str) -> dict[str, str]:
     try:
         row = conn.execute(
             """
-            SELECT id, status, bucket, note, blocked_reason, assignee, assigned_run_id, review_status, resume_due
+            SELECT id, status, bucket, note, blocked_reason, assigned_by, owner, assignee, assigned_run_id, review_status, resume_due, closed_by
             FROM tasks
             WHERE id=?
             """,
@@ -165,8 +177,11 @@ def load_task_state(ticket_id: str) -> dict[str, str]:
         'task_status': row['status'] or '미정',
         'task_bucket': row['bucket'] or '미정',
         'task_phase': phase if phase != '-' else '미정',
+        'task_assigned_by': (row['assigned_by'] or '').strip() or '미정',
+        'task_owner': (row['owner'] or '').strip() or '미정',
         'task_assignee': (row['assignee'] or '').strip() or '미정',
         'task_review_status': (row['review_status'] or '').strip() or '미정',
+        'task_closed_by': (row['closed_by'] or '').strip() or '미정',
         'task_resume_due': (row['resume_due'] or '').strip() or '미정',
         'task_runtime_state': format_task_runtime_state(row),
         'task_blocked_reason': (row['blocked_reason'] or '').strip() or '미정',
@@ -195,8 +210,11 @@ def write_current_task(
         f"- task_status: {_clean(task_state.get('task_status', ''))}\n"
         f"- task_bucket: {_clean(task_state.get('task_bucket', ''))}\n"
         f"- task_phase: {_clean(task_state.get('task_phase', ''))}\n"
+        f"- task_assigned_by: {_clean(task_state.get('task_assigned_by', ''))}\n"
+        f"- task_owner: {_clean(task_state.get('task_owner', ''))}\n"
         f"- task_assignee: {_clean(task_state.get('task_assignee', ''))}\n"
         f"- task_review_status: {_clean(task_state.get('task_review_status', ''))}\n"
+        f"- task_closed_by: {_clean(task_state.get('task_closed_by', ''))}\n"
         f"- task_resume_due: {_clean(task_state.get('task_resume_due', ''))}\n"
         f"- task_assigned_run_id: {_clean(task_state.get('task_assigned_run_id', ''))}\n"
         f"- task_runtime_state: {_clean(task_state.get('task_runtime_state', ''))}\n"
@@ -240,6 +258,10 @@ def write_context_handoff(
         f'- source_ticket_id: {_clean(ticket_id)}\n'
         f'- source_directive_ids: {_clean(directive_ids)}\n'
         f'- task_status: {_clean(task_state.get("task_status", ""))}\n'
+        f'- task_assigned_by: {_clean(task_state.get("task_assigned_by", ""))}\n'
+        f'- task_owner: {_clean(task_state.get("task_owner", ""))}\n'
+        f'- task_assignee: {_clean(task_state.get("task_assignee", ""))}\n'
+        f'- task_closed_by: {_clean(task_state.get("task_closed_by", ""))}\n'
         f'- task_runtime_state: {_clean(task_state.get("task_runtime_state", ""))}\n'
         f'- handoff_reason: {_clean(handoff_reason)}\n'
         f'- trigger: {_clean(trigger)}\n'
@@ -280,7 +302,7 @@ def summarize_tasks(top: int, recent: int) -> dict:
     ).fetchone()
     active_rows = conn.execute(
         """
-        SELECT id, priority, status, title
+        SELECT id, priority, status, title, note, assigned_by, owner, assignee, review_status, resume_due, closed_by
         FROM tasks
         WHERE bucket='active'
         ORDER BY CASE UPPER(priority)
@@ -320,6 +342,11 @@ def summarize_tasks(top: int, recent: int) -> dict:
                 'priority': row['priority'] or '-',
                 'status': row['status'],
                 'title': row['title'],
+                'assigned_by': (row['assigned_by'] or '').strip() if 'assigned_by' in row.keys() else '',
+                'owner': (row['owner'] or '').strip() if 'owner' in row.keys() else '',
+                'assignee': (row['assignee'] or '').strip() if 'assignee' in row.keys() else '',
+                'closed_by': (row['closed_by'] or '').strip() if 'closed_by' in row.keys() else '',
+                'runtime_state': format_task_runtime_state(row),
             }
             for row in active_rows
         ],

@@ -20,11 +20,13 @@ OUT_BASE = ROOT / "invest/stages/stage1/outputs/raw/qualitative/text/blog"
 BACKOFF_STATE = ROOT / "invest/stages/stage1/outputs/runtime/blog_scrape_backoff.json"
 BUDDY_CURSOR_PATH = ROOT / "invest/stages/stage1/outputs/runtime/blog_buddy_cursor.json"
 BLOG_LAST_RUN_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/blog_last_run_status.json"
+BLOG_TERMINAL_REGISTRY_PATH = ROOT / "invest/stages/stage1/inputs/config/blog_terminal_status.json"
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36"
 
 POST_LINK_RE = re.compile(r"https?://blog\.naver\.com/PostView\.naver\?[^\"'\s<]+")
 LOGNO_RE = re.compile(r"logNo=(\d+)")
 DEFAULT_BLOG_TARGET_DATE = "2016-01-01"
+PERSISTENT_TERMINAL_CAUSES = {"empty-posts", "404"}
 
 
 def _resolve_target_date(raw_target_date: Optional[str], target_years: int) -> str:
@@ -262,6 +264,73 @@ def _classify_buddy_error(raw: str) -> str:
     if "parse-fail" in s or "short_body" in s:
         return "parse-fail"
     return "fetch-fail"
+
+
+def _load_blog_terminal_registry() -> dict:
+    default_payload = {
+        "checked_at": _utc_now().isoformat(),
+        "ssot": "Stage1 blog buddy terminal/non-archive classification registry",
+        "note": (
+            "Missing buddy entries with these classifications are treated as 정상 종결(MAX_AVAILABLE_OK) "
+            "rather than crawler failure. Collector-observed empty-posts/404 cases may be appended automatically."
+        ),
+        "entries": {},
+    }
+    if not BLOG_TERMINAL_REGISTRY_PATH.exists():
+        return default_payload
+    try:
+        payload = json.loads(BLOG_TERMINAL_REGISTRY_PATH.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            if not isinstance(payload.get("entries"), dict):
+                payload["entries"] = {}
+            payload.setdefault("ssot", default_payload["ssot"])
+            payload.setdefault("note", default_payload["note"])
+            return payload
+    except Exception:
+        pass
+    return default_payload
+
+
+def _persist_terminal_registry_entries(rows: list[dict]) -> None:
+    registry = _load_blog_terminal_registry()
+    entries = registry.setdefault("entries", {})
+    changed = False
+    checked_at = _utc_now().isoformat()
+
+    for row in rows:
+        bid = str(row.get("id", "")).strip()
+        cause = str(row.get("cause", "")).strip().lower()
+        if not bid or cause not in PERSISTENT_TERMINAL_CAUSES:
+            continue
+
+        existing = entries.get(bid, {}) if isinstance(entries.get(bid), dict) else {}
+        classification = "삭제/404" if cause == "404" else "no-data/collector-observed"
+        evidence = (
+            "collector page fetch returned 404"
+            if cause == "404"
+            else "collector sampled buddy and found zero candidate posts (empty-posts)"
+        )
+        merged = dict(existing)
+        merged.setdefault("classification", classification)
+        merged["cause"] = cause
+        merged["status"] = existing.get("status") or "collector-registry"
+        merged["direct_url"] = existing.get("direct_url") or row.get("url") or f"https://blog.naver.com/{bid}"
+        merged["evidence"] = existing.get("evidence") or evidence
+        merged["normal_completion_class"] = "MAX_AVAILABLE_OK"
+        merged["picked_count"] = row.get("picked_count")
+        merged["saved_count"] = row.get("saved_count")
+        merged["last_seen_at"] = checked_at
+        merged["source_script"] = "invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py"
+        if merged != existing:
+            entries[bid] = merged
+            changed = True
+
+    if not changed:
+        return
+
+    registry["checked_at"] = checked_at
+    BLOG_TERMINAL_REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    BLOG_TERMINAL_REGISTRY_PATH.write_text(json.dumps(registry, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def run(
@@ -516,6 +585,11 @@ def run(
         "buddy_results": buddy_results,
         "errors": errors[:2000],
     }
+    try:
+        _persist_terminal_registry_entries(buddy_results)
+    except Exception as e:
+        errors.append(f"terminal_registry_persist:{e}")
+        run_payload["errors"] = errors[:2000]
     try:
         BLOG_LAST_RUN_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
         BLOG_LAST_RUN_STATUS_PATH.write_text(json.dumps(run_payload, ensure_ascii=False, indent=2), encoding="utf-8")

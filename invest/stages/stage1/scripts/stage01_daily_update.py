@@ -25,6 +25,7 @@ FALLBACK_MAP = {
 
 PROFILE_CHOICES = [
     'daily_full',
+    'selected_articles_naver_only',
     'rss_fast',
     'telegram_fast',
     'blog_fast',
@@ -81,12 +82,15 @@ def build_profile_specs(profile: str) -> list[dict[str, Any]]:
             _spec('invest/stages/stage1/scripts/stage01_fetch_global_macro.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_fetch_news_rss.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_build_news_url_index.py', use_fallbacks=False),
-            _spec('invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py', use_fallbacks=False),
+            _spec('invest/stages/stage1/scripts/stage01_collect_selected_news_articles_naver.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_fetch_dart_disclosures.py'),
             _spec('invest/stages/stage1/scripts/stage01_collect_premium_startale_channel_auth.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_collect_link_sidecars.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),
             _spec('invest/stages/stage1/scripts/stage01_update_coverage_manifest.py', use_fallbacks=False),
+        ],
+        'selected_articles_naver_only': [
+            _spec('invest/stages/stage1/scripts/stage01_collect_selected_news_articles_naver.py', use_fallbacks=False),
         ],
         'rss_fast': [
             _spec('invest/stages/stage1/scripts/stage01_fetch_news_rss.py', use_fallbacks=False),
@@ -150,20 +154,6 @@ def build_profile_specs(profile: str) -> list[dict[str, Any]]:
                     'GUARDIAN_MAX_MONTHS': os.environ.get('GUARDIAN_MAX_MONTHS', '48'),
                     'GUARDIAN_MAX_PAGES_PER_SLICE': os.environ.get('GUARDIAN_MAX_PAGES_PER_SLICE', '1'),
                     'GUARDIAN_PAGE_SIZE': os.environ.get('GUARDIAN_PAGE_SIZE', '50'),
-                },
-            ),
-            _spec(
-                'invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py',
-                use_fallbacks=False,
-                env={
-                    'NEWS_SELECTED_TARGET_DATE': TARGET_DATE_2016,
-                    'NEWS_SELECTED_MIN_KEYWORD_HITS': os.environ.get('NEWS_SELECTED_MIN_KEYWORD_HITS', '0'),
-                    'NEWS_SELECTED_MAX_ARTICLES': os.environ.get('NEWS_SELECTED_MAX_ARTICLES', '600'),
-                    'NEWS_SELECTED_MAX_ATTEMPTS': os.environ.get('NEWS_SELECTED_MAX_ATTEMPTS', '5000'),
-                    'NEWS_SELECTED_YEARLY_QUOTA': os.environ.get('NEWS_SELECTED_YEARLY_QUOTA', '50'),
-                    'NEWS_SELECTED_SKIP_EXISTING': os.environ.get('NEWS_SELECTED_SKIP_EXISTING', '1'),
-                    'NEWS_SELECTED_EXCLUDED_DOMAINS': os.environ.get('NEWS_SELECTED_EXCLUDED_DOMAINS', 'bloomberg.com,wsj.com'),
-                    'NEWS_SELECTED_EXCLUDED_URL_PATTERNS': os.environ.get('NEWS_SELECTED_EXCLUDED_URL_PATTERNS', '/graphics/,/video/'),
                 },
             ),
             _spec('invest/stages/stage1/scripts/stage01_sync_raw_to_db.py', use_fallbacks=False),

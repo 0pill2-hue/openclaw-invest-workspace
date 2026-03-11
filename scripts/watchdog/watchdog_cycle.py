@@ -14,7 +14,8 @@ SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from lib.context_lock import clear_context_lock, load_context_lock, save_context_lock
+from lib.context_lock import clear_context_lock, context_lock_mode, is_blocking_context_lock, load_context_lock, save_context_lock
+from lib.task_runtime import is_nonterminal_wait_state
 
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATE_SCRIPT = ROOT / "scripts/watchdog/watchdog_validate.py"
@@ -22,7 +23,6 @@ RECOVER_SCRIPT = ROOT / "scripts/watchdog/watchdog_recover.py"
 CONTEXT_HYGIENE_SCRIPT = ROOT / "scripts/watchdog/context_hygiene.py"
 STATE_PATH = ROOT / "runtime/tasks/watchdog_notify_state.json"
 TASKS_DB = ROOT / "runtime/tasks/tasks.db"
-NONTERMINAL_BLOCKED_PHASES = {'subagent_running', 'awaiting_callback'}
 MAINTENANCE_TASK_SPECS = {
     'task': {
         'id': 'WD-TASK-HYGIENE',
@@ -203,15 +203,15 @@ def upsert_maintenance_task(kind: str, grouped_issues: list[str], notify_text: s
                 INSERT INTO tasks(
                     id, status, title, scope, priority, bucket,
                     note, blocked_reason, proof, proof_pending, proof_last,
-                    assignee, assigned_run_id, assigned_at, review_status, review_note,
+                    assigned_by, owner, assignee, assigned_run_id, assigned_at, review_status, review_note, closed_by,
                     started_at, last_activity_at, resume_due,
                     extra_lines, sort_order, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''',
                 (
                     spec['id'], 'IN_PROGRESS', spec['title'], spec['scope'], 'P0', 'active',
                     note, '', '', '', '',
-                    'watchdog', '', '', '', '',
+                    'watchdog', 'watchdog', 'watchdog', '', '', '', '', '',
                     '', now, '', '[]', sort_order, now, now,
                 ),
             )
@@ -220,7 +220,7 @@ def upsert_maintenance_task(kind: str, grouped_issues: list[str], notify_text: s
                 '''
                 UPDATE tasks
                 SET status='IN_PROGRESS', bucket='active', title=?, scope=?, priority='P0', note=?, blocked_reason='',
-                    assignee='watchdog', last_activity_at=?, updated_at=?
+                    assigned_by='watchdog', owner='watchdog', assignee='watchdog', closed_by='', last_activity_at=?, updated_at=?
                 WHERE id=?
                 ''',
                 (spec['title'], spec['scope'], note, now, now, spec['id']),
@@ -238,7 +238,7 @@ def close_maintenance_task(kind: str) -> None:
         conn.execute(
             '''
             UPDATE tasks
-            SET status='DONE', bucket='done', note=?, last_activity_at=?, updated_at=?
+            SET status='DONE', bucket='done', note=?, closed_by='watchdog', last_activity_at=?, updated_at=?
             WHERE id=? AND status != 'DONE'
             ''',
             ('phase: watchdog_clear\nruntime_state: clean\nlast_update: ' + now, now, now, spec['id']),
@@ -328,7 +328,7 @@ def has_active_non_maintenance_work(context_payload: dict[str, Any] | None = Non
             if line.startswith('phase:'):
                 phase = line.split(':', 1)[1].strip().lower()
                 break
-        if status == 'BLOCKED' and phase in NONTERMINAL_BLOCKED_PHASES:
+        if is_nonterminal_wait_state(status, phase):
             return True
     return False
 
@@ -385,13 +385,17 @@ def build_notify_text(
     issue_preview = " | ".join(issues[:3])
     context_detail = (context_payload.get('detail') or {}) if isinstance(context_payload, dict) else {}
     ticket_id = str(context_detail.get('current_task_ticket_id') or '').strip()
-    lock_active = bool((context_lock or {}).get('active'))
-    severity = 'CONTEXT LOCK' if lock_active else 'watchdog alert'
+    lock_mode = context_lock_mode(context_lock or {})
+    lock_active = lock_mode != 'inactive'
+    lock_blocking = is_blocking_context_lock(context_lock or {})
+    severity = 'CONTEXT LOCK' if lock_blocking else ('CONTEXT NUDGE' if lock_active else 'watchdog alert')
     parts = [severity]
     if ticket_id and ticket_id != '-':
         parts.append(f"ticket={ticket_id}")
-    if lock_active:
+    if lock_blocking:
         parts.append('new_work_blocked')
+    elif lock_active:
+        parts.append('soft_advisory')
     if moved_preview:
         parts.append(f"blocked={moved_preview}")
     parts.append(f"issues={len(issues)}")
@@ -399,13 +403,15 @@ def build_notify_text(
         parts.append(issue_preview)
     required_action = str(context_detail.get('required_action') or context_detail.get('context_handoff_required_action') or '').strip()
     if required_action == 'finish_current_step_then_reset':
-        if lock_active:
+        if lock_blocking:
             parts.append("reset 전까지 신규 task/spawn/dispatch 잠금. 지금 current step 정리 후 reset → 새 세션에서 runtime/context-handoff.md 읽고 next_action 재개 → WD-CONTEXT-HYGIENE 완료")
         else:
-            parts.append("메인실행: 현재 step 완료 후 reset → 새 세션에서 runtime/context-handoff.md 읽고 next_action 재개 → WD-CONTEXT-HYGIENE 완료")
+            parts.append("wake/remind/retry 우선. 현재 step 완료 후 reset → 새 세션에서 runtime/context-handoff.md 읽고 next_action 재개 → WD-CONTEXT-HYGIENE 완료")
     else:
-        if lock_active:
-            parts.append("lock active: current-task·context-handoff·proof 정리와 reset/unlock만 허용")
+        if lock_blocking:
+            parts.append("hard lock active: current-task·context-handoff·proof 정리와 reset/unlock만 허용")
+        elif lock_active:
+            parts.append("soft advisory active: current-task·context-handoff·proof 정리 우선, 신규 진행은 허용")
         else:
             parts.append("현재 step 완료 후 reset·proof·보고·후속정리")
     return " / ".join(parts)
@@ -443,14 +449,14 @@ def main() -> int:
         signature = json.dumps(
             {
                 "issues": issues,
-                "context_lock_active": bool(context_lock.get('active')),
+                "context_lock_mode": context_lock_mode(context_lock),
             },
             ensure_ascii=False,
             sort_keys=True,
         )
         last_signature = str(last_state.get("signature") or "")
         notify["text"] = text
-        notify["severity"] = "critical" if bool(context_lock.get('active')) else "warning"
+        notify["severity"] = "critical" if is_blocking_context_lock(context_lock) else "warning"
         notify["context_lock"] = context_lock
         if signature != last_signature:
             event_result = emit_main_event(text)

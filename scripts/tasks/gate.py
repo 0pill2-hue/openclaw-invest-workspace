@@ -13,7 +13,7 @@ SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from lib.context_lock import format_lock_reason, is_context_locked
+from lib.context_lock import format_lock_reason, is_blocking_context_lock, is_context_locked
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = ROOT / "runtime/tasks/tasks.db"
@@ -31,7 +31,7 @@ def main() -> int:
         return 2
 
     locked, lock_payload = is_context_locked()
-    if locked and not args.ticket.upper().startswith("WD-"):
+    if locked and is_blocking_context_lock(lock_payload) and not args.ticket.upper().startswith("WD-"):
         print(f"gate fail: {format_lock_reason(lock_payload)}", file=sys.stderr)
         return 2
 
@@ -63,7 +63,7 @@ def main() -> int:
         maintenance_id = str(maintenance_row['id'])
         note = str(maintenance_row['note'] or '')
         if maintenance_id == 'WD-CONTEXT-HYGIENE':
-            if 'required_action: clean_reset' not in note:
+            if 'required_action: clean_reset' not in note and 'required_action: hard_reset' not in note:
                 continue
         blocking_maintenance_ids.append(maintenance_id)
 

@@ -104,7 +104,10 @@ CLEAN_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'clean')
 # Stage2가 유일한 검역(quarantine) 저장 단계다. Stage1은 raw/상태 파일만 저장한다.
 Q_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'quarantine')
 REPORT_DIR = os.path.join(STAGE2_ROOT, 'outputs', 'reports', 'qc')
+MASTER_LIST_PATH = os.path.join(UPSTREAM_STAGE1, 'master', 'kr_stock_list.csv')
 STAGE2_RULE_VERSION = 'stage2-refine-20260308-r4'
+CLASSIFICATION_VERSION = 'stage2-classify-20260311-r2'
+SEMANTIC_SCHEMA_VERSION = 'stage-semantic-20260311-r1'
 FOLDERS = [
     'kr/dart',
     'market/news/rss', 'market/news/selected_articles', 'market/macro', 'market/google_trends',
@@ -237,6 +240,294 @@ def _new_link_runtime_stats() -> dict:
 
 LINK_FETCH_CACHE: dict[str, dict] = {}
 LINK_RUNTIME_STATS: dict = _new_link_runtime_stats()
+CLASSIFICATION_RUNTIME_STATS: dict[str, int] = {
+    'documents_classified': 0,
+    'documents_with_stock': 0,
+    'documents_with_industry': 0,
+    'selected_articles_rows_classified': 0,
+}
+
+INDUSTRY_KEYWORDS: dict[str, tuple[str, ...]] = {
+    '반도체': ('반도체', '메모리', 'dram', 'nand', '낸드', 'hbm', '파운드리'),
+    '자동차': ('자동차', '완성차', 'ev', '전기차', '하이브리드', '차량용'),
+    '2차전지': ('2차전지', '배터리', '양극재', '음극재', '전해액', 'lfp'),
+    '바이오/헬스케어': ('바이오', '헬스케어', '의약', '제약', '임상', '의료기기'),
+    '인터넷/플랫폼': ('플랫폼', '인터넷', '커머스', '포털', '핀테크', '광고'),
+    '게임/콘텐츠': ('게임', '콘텐츠', '엔터', '드라마', '웹툰', '음원'),
+    '조선/해운': ('조선', '해운', '선박', 'lng선', '수주잔고'),
+    '방산/우주': ('방산', '국방', '우주', '위성', '미사일', '항공우주'),
+    '철강/소재': ('철강', '소재', '알루미늄', '구리', '니켈', '희토류'),
+    '정유/화학': ('정유', '화학', '석유화학', '납사', '에틸렌', '정제마진'),
+    '은행/금융': ('은행', '보험', '증권', '카드', '여신', 'npl'),
+    '건설/부동산': ('건설', '부동산', '분양', '재건축', 'pf', '플랜트'),
+    '통신/네트워크': ('통신', '네트워크', '5g', '통신장비', '가입자'),
+    '유통/소비재': ('유통', '소비재', '면세', '리테일', '백화점', '편의점'),
+    '전력/유틸리티': ('전력', '유틸리티', '원전', '태양광', '풍력', '송배전'),
+}
+EVENT_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
+    'order': ('수주', '공급계약', '단일판매', '계약체결', '수주계약', '판매계약', 'order', 'contract'),
+    'rights_issue': ('유상증자', '증자', '전환사채', 'cb', 'bw', '신주발행', '희석', 'rights issue', 'dilution'),
+    'lawsuit': ('소송', '피소', '판결', '항소', '가처분', '분쟁', 'lawsuit', 'litigation', 'dispute'),
+    'guidance': ('가이던스', '실적전망', '전망치', '컨센서스', '잠정실적', '실적발표', 'guidance', 'earnings'),
+}
+MACRO_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
+    'risk_on': ('완화', '인하', '랠리', '상승', '회복', 'risk-on', 'risk on', 'soft landing', 'stimulus', 'easing'),
+    'risk_off': ('긴축', '인상', '침체', '전쟁', '관세', '하락', '위기', '리스크오프', 'risk-off', 'risk off', 'recession', 'conflict', 'sanction'),
+    'rates': ('금리', '기준금리', 'fed', 'fomc', 'ecb', 'boj', 'yield', '수익률', '국채'),
+    'inflation': ('인플레이션', 'cpi', 'ppi', '물가', 'inflation'),
+    'fx': ('환율', '원/달러', '원달러', '달러', 'dxy', 'fx', '외환', 'usdkrw'),
+    'liquidity': ('유동성', '양적완화', '양적긴축', 'qe', 'qt', 'liquidity'),
+    'policy': ('정책', '재정', '부양책', 'stimulus', 'regulation', '규제', '관세', '제재'),
+    'energy': ('유가', 'wti', 'brent', '원유', '천연가스', 'lng'),
+    'recession_growth': ('침체', 'recession', '성장률', 'gdp', '경기', '회복', 'soft landing', '둔화'),
+    'geopolitics': ('전쟁', '분쟁', '중동', '러시아', '우크라이나', 'iran', 'china', 'taiwan', '제재'),
+}
+REGION_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
+    'kr': ('한국', '국내', 'korea', 'kospi', 'kosdaq', 'krx', 'krw', '원/달러'),
+    'us': ('미국', '연준', 'fed', 'fomc', 'nasdaq', 's&p', 'dow', 'qqq', 'spy', 'treasury', 'dxy', 'usa'),
+    'cn': ('중국', 'china', '위안', 'csi300', '상하이', '홍콩'),
+    'jp': ('일본', 'japan', 'boj', '닛케이', 'nikkei'),
+    'eu': ('유럽', 'eurozone', 'ecb', '독일', '프랑스', 'france', 'italy'),
+    'global': ('글로벌', 'global', 'world', '해외', '국제'),
+}
+SHORT_HORIZON_KEYWORDS = ('오늘', '당일', '즉시', '단기', '이번주', '이번 달', '이번달', 'near-term', 'short-term', '1-5d')
+MEDIUM_HORIZON_KEYWORDS = ('분기', '이번 분기', '연내', '상반기', '하반기', '6개월', 'quarter', 'half-year', 'medium-term')
+LONG_HORIZON_KEYWORDS = ('장기', '중장기', '구조적', '연간', '다년', 'pipeline', 'recurring', 'long-term', 'backlog')
+POSITIVE_DIRECTION_WORDS = {
+    '성장', '개선', '확대', '수주', '계약', '흑자', '상향', '반등', '증가', '회복', '신제품', '점유율', '가이던스', '성공', '강세',
+    'growth', 'improve', 'expand', 'order', 'beat', 'upgrade', 'strong', 'recovery', 'guidance', 'launch',
+    '완화', '인하', '랠리', 'risk-on', 'risk on', 'soft landing', 'stimulus', 'easing',
+}
+NEGATIVE_DIRECTION_WORDS = {
+    '감소', '부진', '하락', '적자', '둔화', '악화', '소송', '분쟁', '유상증자', '리스크', '규제', '지연', '차질', '정정', '우려',
+    'decline', 'weak', 'drop', 'loss', 'lawsuit', 'dispute', 'dilution', 'downgrade', 'risk', 'regulation', 'delay', 'concern',
+    '긴축', '인상', '침체', '전쟁', '관세', '위기', '리스크오프', 'risk-off', 'risk off', 'recession', 'conflict', 'sanction',
+}
+
+_STOCK_REF_LOADED = False
+STOCK_NAME_TO_ENTRY: dict[str, dict] = {}
+STOCK_CODE_TO_ENTRY: dict[str, dict] = {}
+STOCK_NAME_PATTERN: re.Pattern[str] | None = None
+
+
+def _load_stock_reference() -> None:
+    global _STOCK_REF_LOADED, STOCK_NAME_PATTERN
+    if _STOCK_REF_LOADED:
+        return
+    _STOCK_REF_LOADED = True
+    if not os.path.exists(MASTER_LIST_PATH):
+        return
+    try:
+        df = pd.read_csv(MASTER_LIST_PATH)
+    except Exception:
+        return
+    if 'Code' not in df.columns or 'Name' not in df.columns:
+        return
+    for row in df.itertuples(index=False):
+        code = str(getattr(row, 'Code', '') or '').strip().zfill(6)
+        name = str(getattr(row, 'Name', '') or '').strip()
+        market = str(getattr(row, 'Market', '') or '').strip()
+        if not code or not name:
+            continue
+        entry = {'ticker': code, 'stock_name': name, 'market': market}
+        STOCK_CODE_TO_ENTRY.setdefault(code, entry)
+        STOCK_NAME_TO_ENTRY.setdefault(name, entry)
+    names = sorted(STOCK_NAME_TO_ENTRY.keys(), key=len, reverse=True)
+    if names:
+        STOCK_NAME_PATTERN = re.compile('|'.join(re.escape(name) for name in names))
+
+
+def _extract_stock_mentions(text: str) -> list[dict]:
+    _load_stock_reference()
+    raw = str(text or '').strip()
+    if not raw:
+        return []
+    mentions: list[dict] = []
+    seen: set[str] = set()
+    if STOCK_NAME_PATTERN is not None:
+        for match in STOCK_NAME_PATTERN.finditer(raw):
+            entry = STOCK_NAME_TO_ENTRY.get(match.group(0))
+            if not entry:
+                continue
+            ticker = str(entry.get('ticker') or '')
+            if not ticker or ticker in seen:
+                continue
+            seen.add(ticker)
+            mentions.append(dict(entry))
+    for code in re.findall(r'(?<!\d)(\d{6})(?!\d)', raw):
+        entry = STOCK_CODE_TO_ENTRY.get(code)
+        if not entry:
+            continue
+        ticker = str(entry.get('ticker') or '')
+        if not ticker or ticker in seen:
+            continue
+        seen.add(ticker)
+        mentions.append(dict(entry))
+    return mentions
+
+
+def _extract_industry_mentions(text: str) -> list[str]:
+    raw = str(text or '').strip().lower()
+    if not raw:
+        return []
+    scored: list[tuple[str, int]] = []
+    for label, keywords in INDUSTRY_KEYWORDS.items():
+        score = sum(raw.count(keyword.lower()) for keyword in keywords if keyword)
+        if score > 0:
+            scored.append((label, score))
+    scored.sort(key=lambda item: (-item[1], item[0]))
+    return [label for label, _ in scored]
+
+
+def _keyword_hit_count(text_l: str, keywords: tuple[str, ...] | set[str]) -> int:
+    return sum(text_l.count(str(keyword).lower()) for keyword in keywords if keyword)
+
+
+def _ranked_tags_from_keywords(text: str, table: dict[str, tuple[str, ...]]) -> list[str]:
+    text_l = str(text or '').lower()
+    scored: list[tuple[str, int]] = []
+    for tag, keywords in table.items():
+        score = _keyword_hit_count(text_l, keywords)
+        if score > 0:
+            scored.append((tag, score))
+    scored.sort(key=lambda item: (-item[1], item[0]))
+    return [tag for tag, _ in scored]
+
+
+def _infer_impact_direction(text: str, event_tags: list[str]) -> str:
+    text_l = str(text or '').lower()
+    pos_hits = _keyword_hit_count(text_l, POSITIVE_DIRECTION_WORDS)
+    neg_hits = _keyword_hit_count(text_l, NEGATIVE_DIRECTION_WORDS)
+    if 'order' in event_tags or 'guidance' in event_tags:
+        pos_hits += 1
+    if 'rights_issue' in event_tags or 'lawsuit' in event_tags:
+        neg_hits += 1
+    if pos_hits > 0 and neg_hits == 0:
+        return 'positive'
+    if neg_hits > 0 and pos_hits == 0:
+        return 'negative'
+    if pos_hits > 0 and neg_hits > 0:
+        return 'mixed'
+    return 'neutral'
+
+
+def _infer_horizon(text: str, folder: str = '') -> str:
+    text_l = str(text or '').lower()
+    if any(keyword.lower() in text_l for keyword in LONG_HORIZON_KEYWORDS):
+        return 'long_term'
+    if any(keyword.lower() in text_l for keyword in MEDIUM_HORIZON_KEYWORDS):
+        return 'medium_term'
+    if any(keyword.lower() in text_l for keyword in SHORT_HORIZON_KEYWORDS):
+        return 'short_term'
+    if _normalize_folder(folder) == 'market/rss':
+        return 'short_term'
+    return 'unknown'
+
+
+def _infer_region_tags(text: str, *, folder: str, stock_tags: list[str]) -> list[str]:
+    tags = _ranked_tags_from_keywords(text, REGION_TAG_KEYWORDS)
+    normalized_folder = _normalize_folder(folder)
+    if stock_tags and normalized_folder in {'kr/dart', 'market/news/selected_articles', 'market/rss', 'text/blog', 'text/telegram', 'text/premium/startale'} and 'kr' not in tags:
+        tags.append('kr')
+    if normalized_folder == 'market/rss' and 'global' in tags and 'us' not in tags:
+        tags.append('us')
+    return tags
+
+
+def _semantic_fields(text: str, *, folder: str, stocks: list[dict], industries: list[str]) -> dict:
+    stock_tags = [str(entry.get('ticker') or '').strip() for entry in stocks if str(entry.get('ticker') or '').strip()]
+    macro_tags = _ranked_tags_from_keywords(text, MACRO_TAG_KEYWORDS)
+    event_tags = _ranked_tags_from_keywords(text, EVENT_TAG_KEYWORDS)
+    region_tags = _infer_region_tags(text, folder=folder, stock_tags=stock_tags)
+    target_levels: list[str] = []
+    if macro_tags:
+        target_levels.append('macro')
+    if industries:
+        target_levels.append('industry')
+    if stock_tags:
+        target_levels.append('stock')
+    return {
+        'semantic_version': SEMANTIC_SCHEMA_VERSION,
+        'target_levels': target_levels,
+        'macro_tags': macro_tags,
+        'industry_tags': industries,
+        'stock_tags': stock_tags,
+        'event_tags': event_tags,
+        'impact_direction': _infer_impact_direction(text, event_tags),
+        'horizon': _infer_horizon(text, folder=folder),
+        'region_tags': region_tags,
+    }
+
+
+def _classify_document_text(text: str, *, title: str = '', folder: str = '', source_file: str = '') -> dict:
+    body = '\n'.join(part for part in [str(title or '').strip(), str(text or '').strip()] if part).strip()
+    stocks = _extract_stock_mentions(body)
+    industries = _extract_industry_mentions(body)
+    semantic = _semantic_fields(body, folder=folder, stocks=stocks, industries=industries)
+    CLASSIFICATION_RUNTIME_STATS['documents_classified'] += 1
+    if stocks:
+        CLASSIFICATION_RUNTIME_STATS['documents_with_stock'] += 1
+    if industries:
+        CLASSIFICATION_RUNTIME_STATS['documents_with_industry'] += 1
+    return {
+        'classification_version': CLASSIFICATION_VERSION,
+        'folder': folder,
+        'source_file': source_file,
+        'primary_ticker': stocks[0]['ticker'] if stocks else '',
+        'primary_stock_name': stocks[0]['stock_name'] if stocks else '',
+        'mentioned_tickers': [entry['ticker'] for entry in stocks],
+        'mentioned_stock_names': [entry['stock_name'] for entry in stocks],
+        'primary_industry': industries[0] if industries else '',
+        'mentioned_industries': industries,
+        **semantic,
+    }
+
+
+def _classification_output_path(base_dir: str, folder: str, rel_path: str) -> str:
+    base = _output_paths(base_dir, folder, rel_path)[0]
+    return f'{base}.classification.json'
+
+
+def _build_selected_article_classification(row: dict) -> dict:
+    text = '\n'.join(
+        str(row.get(key) or '').strip()
+        for key in ('title', 'summary', 'body')
+        if str(row.get(key) or '').strip()
+    )
+    classification = _classify_document_text(
+        text,
+        title=str(row.get('title') or '').strip(),
+        folder='market/news/selected_articles',
+        source_file=str(row.get('url') or ''),
+    )
+    CLASSIFICATION_RUNTIME_STATS['selected_articles_rows_classified'] += 1
+    return classification
+
+
+def _build_selected_articles_classification_summary(rows: list[dict], source_file: str) -> dict:
+    return {
+        'classification_version': CLASSIFICATION_VERSION,
+        'folder': 'market/news/selected_articles',
+        'source_file': source_file,
+        'rows': [
+            {
+                'line_no': idx,
+                'title': str(row.get('title') or '').strip(),
+                'published_date': str(row.get('published_date') or row.get('published_at') or '').strip(),
+                **dict(row.get('stage2_classification') or {}),
+            }
+            for idx, row in enumerate(rows, start=1)
+        ],
+    }
+
+
+def _build_text_classification_payload(content: str, folder: str, source_file: str) -> dict:
+    return _classify_document_text(
+        content,
+        title=_extract_text_title(content),
+        folder=folder,
+        source_file=source_file,
+    )
 
 
 def _normalize_folder(folder: str) -> str:
@@ -273,6 +564,7 @@ def _current_index_meta() -> dict:
     return {
         'stage2_rule_version': STAGE2_RULE_VERSION,
         'stage2_config_sha1': STAGE2_CONFIG_SHA1,
+        'classification_version': CLASSIFICATION_VERSION,
         'link_enrichment_enabled': bool(STAGE2_ENABLE_LINK_ENRICHMENT),
         'live_link_fetch_enabled': bool(STAGE2_ENABLE_LIVE_LINK_FETCH),
         'input_source': STAGE2_INPUT_SOURCE,
@@ -2378,6 +2670,7 @@ def sanitize_jsonl(path: str, folder: str = '', dedup_registry: dict | None = No
             })
             continue
 
+        clean_row['stage2_classification'] = _build_selected_article_classification(clean_row)
         signals = _build_selected_article_dedup_signals(clean_row)
         current_ref = _make_dedup_ref(
             folder,
@@ -2604,12 +2897,15 @@ def run_full_refine(force_rebuild: bool = False):
                         dedup_registry=corpus_dedup_registry,
                         rel_path=rel_path,
                     )
+                    classification_sidecar_path = _classification_output_path(final_clean_base, folder, rel_path)
                     if clean_rows:
                         _write_jsonl(clean_rows, clean_paths)
+                        _write_json(_build_selected_articles_classification_summary(clean_rows, f), [classification_sidecar_path])
                         clean_count += 1
                     else:
                         for p in clean_paths:
                             _remove_if_exists(p)
+                        _remove_if_exists(classification_sidecar_path)
                     if quarantine_rows:
                         _write_jsonl(quarantine_rows, q_paths)
                         q_count += 1
@@ -2638,14 +2934,18 @@ def run_full_refine(force_rebuild: bool = False):
                                 duplicate = _find_corpus_duplicate(corpus_dedup_registry, signals, current_ref)
                                 if duplicate is None:
                                     _register_corpus_signals(corpus_dedup_registry, signals, current_ref)
+                        classification_sidecar_path = _classification_output_path(final_clean_base, folder, rel_path)
                         if duplicate is None:
                             _write_text(content, clean_paths)
+                            if _folder_bucket(folder) == 'qualitative':
+                                _write_json(_build_text_classification_payload(content, folder, f), [classification_sidecar_path])
                             for p in q_paths:
                                 _remove_if_exists(p)
                             clean_count += 1
                         else:
                             for p in clean_paths:
                                 _remove_if_exists(p)
+                            _remove_if_exists(classification_sidecar_path)
                             payload = _build_text_quarantine_payload(
                                 folder=folder,
                                 source_file=f,
@@ -2658,6 +2958,7 @@ def run_full_refine(force_rebuild: bool = False):
                     else:
                         for p in clean_paths:
                             _remove_if_exists(p)
+                        _remove_if_exists(_classification_output_path(final_clean_base, folder, rel_path))
                         raw_text = _safe_read_text(f, max_chars=12000)
                         payload = _build_text_quarantine_payload(
                             folder=folder,
@@ -2797,6 +3098,12 @@ def run_full_refine(force_rebuild: bool = False):
         f.write(f"- telegram_pdf_path_resolution_marker={int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_marker', 0))}\n")
         f.write(f"- telegram_pdf_path_resolution_fallback={int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_fallback', 0))}\n")
         f.write(f"- telegram_pdf_orphan_artifacts={int(LINK_RUNTIME_STATS.get('telegram_pdf_orphan_artifacts', 0))}\n")
+        f.write("\n## Industry / Stock Classification\n\n")
+        f.write(f"- classification_version={CLASSIFICATION_VERSION}\n")
+        f.write(f"- documents_classified={int(CLASSIFICATION_RUNTIME_STATS.get('documents_classified', 0))}\n")
+        f.write(f"- documents_with_stock={int(CLASSIFICATION_RUNTIME_STATS.get('documents_with_stock', 0))}\n")
+        f.write(f"- documents_with_industry={int(CLASSIFICATION_RUNTIME_STATS.get('documents_with_industry', 0))}\n")
+        f.write(f"- selected_articles_rows_classified={int(CLASSIFICATION_RUNTIME_STATS.get('selected_articles_rows_classified', 0))}\n")
         f.write("\n## Reason / Filter / Quarantine Taxonomy\n\n")
         f.write("- reason_filter_taxonomy:\n")
         for name, meta in reason_taxonomy['reason_filter_taxonomy'].items():
@@ -2887,6 +3194,11 @@ def run_full_refine(force_rebuild: bool = False):
             'telegram_pdf_path_resolution_marker': int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_marker', 0)),
             'telegram_pdf_path_resolution_fallback': int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_fallback', 0)),
             'telegram_pdf_orphan_artifacts': int(LINK_RUNTIME_STATS.get('telegram_pdf_orphan_artifacts', 0)),
+        },
+        'classification': {
+            'classification_version': CLASSIFICATION_VERSION,
+            **{k: int(v) for k, v in CLASSIFICATION_RUNTIME_STATS.items()},
+            'industry_taxonomy_labels': sorted(INDUSTRY_KEYWORDS.keys()),
         },
         'reason_taxonomy': reason_taxonomy,
         'corpus_dedup': {

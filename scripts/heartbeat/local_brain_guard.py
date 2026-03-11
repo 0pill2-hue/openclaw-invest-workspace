@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 """Heartbeat guard for main local brain.
 
-Checks gateway/session health and local llama-server responsiveness.
-Adds session-reset recovery for local-model sessions:
-- if active main session token usage is near llama context size,
-  reset the main session storage so next turn starts fresh.
-- if local brain recovery is needed, restart llama-server and reset the
-  local main session without restarting the gateway.
+Checks basic Gateway/session health and local llama-server responsiveness.
+If local brain recovery is needed, restart llama-server and re-check health.
+This guard must stay local-only and must not mutate the main session store.
 """
 
 from __future__ import annotations
@@ -26,11 +23,9 @@ SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from lib.runtime_env import llama_model_path, sessions_store
+from lib.runtime_env import llama_model_path
 
 LLAMA_MODEL_PATH = str(llama_model_path())
-SESSIONS_STORE = str(sessions_store())
-MAIN_SESSION_KEY = "agent:main:main"
 
 LLAMA_SERVER_CMD = [
     "llama-server",
@@ -41,7 +36,7 @@ LLAMA_SERVER_CMD = [
     "--port",
     os.environ.get("OPENCLAW_LOCAL_PORT", "8090"),
     "-c",
-    os.environ.get("OPENCLAW_LOCAL_CTX", "8192"),
+    os.environ.get("OPENCLAW_LOCAL_CTX", "16384"),
     "-ngl",
     "99",
     "--flash-attn",
@@ -152,64 +147,6 @@ def wait_for_llama(retries: int = 8, interval_sec: int = 2) -> tuple[bool, str]:
     return False, last_err
 
 
-def running_llama_ctx() -> int:
-    rc, out, _ = run(["pgrep", "-af", f"llama-server.*{LLAMA_MODEL_PATH}"])
-    if rc != 0 or not out.strip():
-        return 16384
-    m = re.search(r"\s-c\s+(\d+)\b", out)
-    return int(m.group(1)) if m else 16384
-
-
-def load_main_session() -> dict | None:
-    try:
-        with open(SESSIONS_STORE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        v = data.get(MAIN_SESSION_KEY)
-        return v if isinstance(v, dict) else None
-    except Exception:
-        return None
-
-
-def is_local_session_model(sess: dict) -> bool:
-    model = str(sess.get("model", "")).lower()
-    provider = str(sess.get("modelProvider", "")).lower()
-    if "local" in provider:
-        return True
-    return ("gguf" in model) or ("qwen" in model and "gpt" not in model)
-
-
-def is_session_near_context_limit(sess: dict, ctx_limit: int) -> bool:
-    tokens = int(sess.get("inputTokens", 0) or 0)
-    if tokens <= 0:
-        return False
-    return tokens >= int(ctx_limit * 0.9)
-
-
-def reset_main_session_store() -> tuple[bool, str]:
-    try:
-        with open(SESSIONS_STORE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        if MAIN_SESSION_KEY not in data:
-            return True, "session_missing"
-
-        entry = data.get(MAIN_SESSION_KEY) or {}
-        session_file = entry.get("sessionFile")
-
-        del data[MAIN_SESSION_KEY]
-        with open(SESSIONS_STORE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-        if isinstance(session_file, str) and session_file and os.path.exists(session_file):
-            try:
-                os.remove(session_file)
-            except Exception:
-                pass
-
-        return True, "reset"
-    except Exception as e:
-        return False, str(e)[:200]
-
-
 def add_stage_failure(stage_failures: list[dict], stage: str, reason: str, detail: str = "") -> None:
     stage_failures.append({
         "stage": stage,
@@ -244,12 +181,11 @@ def main() -> None:
     recovered = False
     llama_restarted = False
     llama_restart_error = ""
-    session_reset_attempted = False
     session_rotated = False
     session_rotate_reason = ""
 
     # Recovery order (requested):
-    # 1) pkill llama 2) start llama 3) sleep 2s 4) reset local main session
+    # 1) pkill llama 2) start llama 3) sleep 2s 4) re-check health
     if (not status_healthy) or (not llama_ok):
         llama_restarted = True
         recovered, llama_restart_error = restart_llama_server()
@@ -257,12 +193,6 @@ def main() -> None:
             add_stage_failure(stage_failures, "recovery.llama_restart", "llama_restart_failed", llama_restart_error)
 
         time.sleep(2)
-
-        session_reset_attempted = True
-        session_rotated, session_reset_reason = reset_main_session_store()
-        session_rotate_reason = f"guard_recovery:{session_reset_reason}"
-        if not session_rotated:
-            add_stage_failure(stage_failures, "recovery.session_reset", "session_reset_failed", session_reset_reason)
 
         # Re-check gateway/session health without restarting the gateway.
         status_rc, status_out, status_err = run(["openclaw", "status"])
@@ -284,17 +214,6 @@ def main() -> None:
                 add_stage_failure(stage_failures, "llama.probe.recheck", "local_llama_still_unhealthy", llama_err)
         else:
             llama_ok = False
-
-    # If no recovery reset happened, proactively reset when main session is near llama context limit.
-    sess = load_main_session()
-    if sess and not session_reset_attempted:
-        ctx_limit = running_llama_ctx()
-        if is_session_near_context_limit(sess, ctx_limit):
-            ok, reason = reset_main_session_store()
-            session_rotated = ok
-            session_rotate_reason = f"near_context_limit:{reason}"
-            if not ok:
-                add_stage_failure(stage_failures, "session.rotate", "session_rotate_failed", reason)
 
     all_ok = status_healthy and llama_ok
 

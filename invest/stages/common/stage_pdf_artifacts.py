@@ -10,6 +10,67 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 MACOS_SWIFT_BIN = '/usr/bin/swift'
+PAGE_MARKER_FORMAT = '[PAGE NNN]'
+PAGE_MARKER_TEMPLATE = '[PAGE {page_no:03d}]'
+PAGE_MARKER_REGEX = re.compile(r'(?m)^\[PAGE \d{3}\]\s*$')
+SWIFT_PDF_PAGE_TEXT_SCRIPT = r'''
+import Foundation
+import PDFKit
+
+struct PagePayload: Codable {
+    let page_no: Int
+    let text: String
+}
+
+struct Payload: Codable {
+    let page_count: Int
+    let pages: [PagePayload]
+}
+
+func clip(_ raw: String, maxChars: Int) -> String {
+    var s = raw.replacingOccurrences(of: "\r\n", with: "\n")
+    s = s.replacingOccurrences(of: "\r", with: "\n")
+    while s.contains("\n\n\n") {
+        s = s.replacingOccurrences(of: "\n\n\n", with: "\n\n")
+    }
+    s = s.trimmingCharacters(in: .whitespacesAndNewlines)
+    if s.count > maxChars {
+        return String(s.prefix(maxChars))
+    }
+    return s
+}
+
+let args = CommandLine.arguments
+if args.count < 4 {
+    fputs("usage: pdf_page_text.swift <pdf_path> <max_pages> <max_chars>\n", stderr)
+    exit(64)
+}
+
+let pdfPath = args[1]
+let maxPages = max(1, Int(args[2]) ?? 1)
+let maxChars = max(256, Int(args[3]) ?? 6000)
+guard let doc = PDFDocument(url: URL(fileURLWithPath: pdfPath)) else {
+    fputs("open_failed\n", stderr)
+    exit(65)
+}
+
+var pages: [PagePayload] = []
+let upper = min(doc.pageCount, maxPages)
+if upper > 0 {
+    for idx in 0..<upper {
+        if let page = doc.page(at: idx) {
+            let text = clip(page.string ?? "", maxChars: maxChars)
+            pages.append(PagePayload(page_no: idx + 1, text: text))
+        }
+    }
+}
+
+let payload = Payload(page_count: doc.pageCount, pages: pages)
+let enc = JSONEncoder()
+if let data = try? enc.encode(payload), let out = String(data: data, encoding: .utf8) {
+    FileHandle.standardOutput.write(out.data(using: .utf8) ?? Data())
+}
+'''
 SWIFT_PDF_PAGE_ARTIFACT_SCRIPT = r'''
 import Foundation
 import PDFKit
@@ -132,6 +193,44 @@ def _clip_text(text: str, max_chars: int) -> str:
     return x.strip()[:max_chars]
 
 
+def _normalize_text_block(text: str) -> str:
+    x = (text or '').replace('\x00', ' ').replace('\r\n', '\n').replace('\r', '\n')
+    x = re.sub(r'\n{3,}', '\n\n', x)
+    x = re.sub(r'[ \t]+', ' ', x)
+    return x.strip()
+
+
+def count_pdf_page_markers(text: str) -> int:
+    return len(PAGE_MARKER_REGEX.findall(str(text or '')))
+
+
+def has_pdf_page_markers(text: str) -> bool:
+    return count_pdf_page_markers(text) > 0
+
+
+def _compose_page_marked_text(page_entries: list[tuple[int, str]], max_chars: int) -> tuple[str, int]:
+    sections: list[str] = []
+    nonempty_pages = 0
+    for raw_page_no, raw_text in page_entries:
+        try:
+            page_no = int(raw_page_no)
+        except Exception:
+            continue
+        if page_no <= 0:
+            continue
+        body = _normalize_text_block(str(raw_text or ''))
+        if body:
+            nonempty_pages += 1
+        section = PAGE_MARKER_TEMPLATE.format(page_no=page_no)
+        if body:
+            section += f'\n{body}'
+        sections.append(section)
+    if nonempty_pages <= 0:
+        return '', 0
+    merged = _clip_text('\n\n'.join(sections), max_chars)
+    return merged, count_pdf_page_markers(merged)
+
+
 def _msg_stem(message_id: int) -> str:
     return f'msg_{int(message_id)}'
 
@@ -186,6 +285,223 @@ def _all_manifest_files_exist(stage1_dir: Path, manifest: dict) -> bool:
         if render_rel and not (stage1_dir / render_rel).exists():
             return False
     return True
+
+
+def _run_swift_page_text_extract(
+    *,
+    original_path: Path,
+    max_pages: int,
+    max_text_chars: int,
+) -> dict:
+    if os.uname().sysname.lower() != 'darwin':
+        return {'ok': False, 'reason': 'swift_pdfkit_non_darwin'}
+    if not os.path.exists(MACOS_SWIFT_BIN):
+        return {'ok': False, 'reason': 'swift_unavailable'}
+
+    script_path = ''
+    try:
+        with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.swift', delete=False) as tf:
+            tf.write(SWIFT_PDF_PAGE_TEXT_SCRIPT)
+            script_path = tf.name
+        proc = subprocess.run(
+            [
+                MACOS_SWIFT_BIN,
+                script_path,
+                str(original_path),
+                str(max(1, max_pages)),
+                str(max(256, max_text_chars)),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=max(30, min(300, max_pages * 12)),
+        )
+    except subprocess.TimeoutExpired:
+        return {'ok': False, 'reason': 'swift_timeout'}
+    except Exception as e:
+        return {'ok': False, 'reason': f'swift_run_error:{type(e).__name__}'}
+    finally:
+        if script_path:
+            try:
+                os.unlink(script_path)
+            except Exception:
+                pass
+
+    if proc.returncode != 0:
+        stderr = (proc.stderr or '').lower()
+        if 'open_failed' in stderr:
+            return {'ok': False, 'reason': 'swift_pdf_open_failed'}
+        if 'no such module' in stderr and 'pdfkit' in stderr:
+            return {'ok': False, 'reason': 'swift_pdfkit_unavailable'}
+        return {'ok': False, 'reason': f'swift_pdfkit_error:{proc.returncode}'}
+
+    try:
+        payload = json.loads(proc.stdout or '{}')
+    except Exception:
+        return {'ok': False, 'reason': 'swift_payload_parse_failed'}
+    if not isinstance(payload, dict):
+        return {'ok': False, 'reason': 'swift_payload_invalid'}
+    return {'ok': True, 'payload': payload}
+
+
+def _extract_pdf_page_entries_pypdf(path: Path, max_pages: int) -> dict:
+    try:
+        from pypdf import PdfReader  # type: ignore
+    except ModuleNotFoundError:
+        return {'ok': False, 'reason': 'pypdf_unavailable'}
+    except Exception as e:
+        return {'ok': False, 'reason': f'pypdf_error:{type(e).__name__}'}
+
+    try:
+        reader = PdfReader(str(path))
+        total_pages = len(reader.pages)
+        pages: list[tuple[int, str]] = []
+        for idx in range(min(total_pages, max(1, max_pages))):
+            try:
+                text = reader.pages[idx].extract_text() or ''
+            except Exception:
+                text = ''
+            pages.append((idx + 1, text))
+        return {'ok': True, 'page_count': total_pages, 'pages': pages}
+    except Exception as e:
+        return {'ok': False, 'reason': f'pypdf_error:{type(e).__name__}'}
+
+
+def _extract_pdf_page_entries_pdfminer(path: Path, max_pages: int) -> dict:
+    try:
+        from pdfminer.high_level import extract_text as pdfminer_extract_text  # type: ignore
+        from pdfminer.pdfpage import PDFPage  # type: ignore
+    except ModuleNotFoundError:
+        return {'ok': False, 'reason': 'pdfminer_unavailable'}
+    except Exception as e:
+        return {'ok': False, 'reason': f'pdfminer_error:{type(e).__name__}'}
+
+    try:
+        with path.open('rb') as fh:
+            total_pages = sum(1 for _ in PDFPage.get_pages(fh, check_extractable=False))
+        pages: list[tuple[int, str]] = []
+        for idx in range(min(total_pages, max(1, max_pages))):
+            text = pdfminer_extract_text(str(path), page_numbers=[idx], maxpages=1) or ''
+            pages.append((idx + 1, text))
+        return {'ok': True, 'page_count': total_pages, 'pages': pages}
+    except Exception as e:
+        return {'ok': False, 'reason': f'pdfminer_error:{type(e).__name__}'}
+
+
+def _extract_pdf_page_entries_swift(path: Path, max_pages: int, max_text_chars: int) -> dict:
+    run = _run_swift_page_text_extract(original_path=path, max_pages=max_pages, max_text_chars=max_text_chars)
+    if not run.get('ok'):
+        return {'ok': False, 'reason': str(run.get('reason') or 'swift_pdf_extract_failed')}
+    payload = run.get('payload') or {}
+    pages_in = payload.get('pages', []) if isinstance(payload.get('pages'), list) else []
+    pages: list[tuple[int, str]] = []
+    for page in pages_in:
+        if not isinstance(page, dict):
+            continue
+        try:
+            page_no = int(page.get('page_no') or 0)
+        except Exception:
+            page_no = 0
+        if page_no <= 0:
+            continue
+        pages.append((page_no, str(page.get('text') or '')))
+    return {'ok': True, 'page_count': int(payload.get('page_count') or len(pages) or 0), 'pages': pages}
+
+
+def extract_pdf_text_with_page_markers(*, path: str | Path, max_pages: int, max_text_chars: int) -> dict:
+    pdf_path = Path(path)
+    last_reason = ''
+    for extractor in (
+        lambda: _extract_pdf_page_entries_pypdf(pdf_path, max_pages),
+        lambda: _extract_pdf_page_entries_pdfminer(pdf_path, max_pages),
+        lambda: _extract_pdf_page_entries_swift(pdf_path, max_pages, max_text_chars),
+    ):
+        result = extractor()
+        if not result.get('ok'):
+            last_reason = str(result.get('reason') or last_reason or 'pdf_extractor_unavailable')
+            continue
+        text, marker_count = _compose_page_marked_text(result.get('pages', []) or [], max_text_chars)
+        if text:
+            return {
+                'text': text,
+                'reason': 'ok',
+                'page_marked': True,
+                'page_marker_count': marker_count,
+                'page_marker_format': PAGE_MARKER_FORMAT,
+                'page_count': int(result.get('page_count') or 0),
+            }
+        last_reason = 'pdf_text_empty'
+
+    if last_reason in {'pypdf_unavailable', 'pdfminer_unavailable', 'swift_unavailable', 'swift_pdfkit_unavailable', 'swift_pdfkit_non_darwin', ''}:
+        last_reason = 'pdf_extractor_unavailable'
+    return {
+        'text': '',
+        'reason': last_reason,
+        'page_marked': False,
+        'page_marker_count': 0,
+        'page_marker_format': PAGE_MARKER_FORMAT,
+        'page_count': 0,
+    }
+
+
+def _resolve_stage1_rel_path(stage1_dir: Path, rel_path: str) -> Path:
+    raw = str(rel_path or '').strip()
+    if not raw:
+        return Path('')
+    p = Path(raw)
+    if p.is_absolute():
+        return p
+    return stage1_dir / raw
+
+
+def build_pdf_page_marked_text_from_manifest(*, stage1_dir: Path, manifest: dict, max_text_chars: int) -> dict:
+    pages_in = manifest.get('pages', []) if isinstance(manifest.get('pages'), list) else []
+    page_entries: list[tuple[int, str]] = []
+    text_pages_loaded = 0
+    for page in pages_in:
+        if not isinstance(page, dict):
+            continue
+        try:
+            page_no = int(page.get('page_no') or 0)
+        except Exception:
+            page_no = 0
+        if page_no <= 0:
+            continue
+        text_rel = str(page.get('text_rel_path') or '').strip()
+        text_value = ''
+        if text_rel:
+            text_path = _resolve_stage1_rel_path(stage1_dir, text_rel)
+            if text_path.exists() and text_path.is_file():
+                try:
+                    text_value = text_path.read_text(encoding='utf-8', errors='ignore')
+                except Exception:
+                    text_value = ''
+                if text_value.strip():
+                    text_pages_loaded += 1
+        page_entries.append((page_no, text_value))
+
+    text, marker_count = _compose_page_marked_text(page_entries, max_text_chars)
+    if text:
+        return {
+            'text': text,
+            'reason': 'ok',
+            'page_marked': True,
+            'page_marker_count': marker_count,
+            'page_marker_format': PAGE_MARKER_FORMAT,
+            'page_count': int(manifest.get('page_count') or len(page_entries) or 0),
+            'text_pages_loaded': text_pages_loaded,
+            'page_mapping_status': 'available_from_manifest_pages',
+        }
+
+    return {
+        'text': '',
+        'reason': 'manifest_text_pages_missing' if page_entries else 'manifest_pages_missing',
+        'page_marked': False,
+        'page_marker_count': 0,
+        'page_marker_format': PAGE_MARKER_FORMAT,
+        'page_count': int(manifest.get('page_count') or len(page_entries) or 0),
+        'text_pages_loaded': text_pages_loaded,
+        'page_mapping_status': 'missing_manifest_text_pages' if page_entries else 'missing_original_and_page_artifacts',
+    }
 
 
 def _run_swift_page_artifacts(

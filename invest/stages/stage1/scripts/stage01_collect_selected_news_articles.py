@@ -3,6 +3,8 @@ import argparse
 import json
 import os
 import re
+import subprocess
+import tempfile
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -25,6 +27,38 @@ TEXT_FILTER_PATH = ROOT / "invest/stages/stage1/inputs/config/text_filter_keywor
 
 UA = "Mozilla/5.0 (compatible; stage01-news-select/1.0; +https://openclaw.local)"
 DATE_RE = re.compile(r"(20\d{2})[-./]?(\d{1,2})[-./]?(\d{1,2})")
+MACOS_SWIFT_BIN = "/usr/bin/swift"
+SWIFT_PDFKIT_EXTRACT_SCRIPT = r'''
+import Foundation
+import PDFKit
+
+let args = CommandLine.arguments
+
+guard args.count >= 3 else {
+    fputs("usage: pdf_extract.swift <pdf_path> <max_pages>\n", stderr)
+    exit(64)
+}
+
+guard let doc = PDFDocument(url: URL(fileURLWithPath: args[1])) else {
+    fputs("open_failed\n", stderr)
+    exit(65)
+}
+
+let maxPages = max(1, Int(args[2]) ?? 1)
+let upper = min(doc.pageCount, maxPages)
+var chunks: [String] = []
+if upper > 0 {
+    for idx in 0..<upper {
+        if let page = doc.page(at: idx) {
+            let text = (page.string ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty {
+                chunks.append(text)
+            }
+        }
+    }
+}
+FileHandle.standardOutput.write((chunks.joined(separator: "\n\n")).data(using: .utf8) ?? Data())
+'''
 PAYWALL_DOMAIN_PENALTIES = {
     "bloomberg.com": 18.0,
     "wsj.com": 16.0,
@@ -441,6 +475,119 @@ def _collect_guardian_article(session: requests.Session, row: dict[str, Any], ti
 
 
 
+def _cleanup_pdf_text(text: str, max_chars: int = 120000) -> str:
+    lines = []
+    for raw in (text or "").splitlines():
+        s = re.sub(r"\s+", " ", raw).strip()
+        if not s:
+            continue
+        lines.append(s)
+    return "\n".join(lines)[:max_chars].strip()
+
+
+
+def _extract_pdf_text_swift(path: str, max_pages: int = 25) -> tuple[str, str]:
+    if os.uname().sysname.lower() != "darwin":
+        return "", "swift_pdfkit_non_darwin"
+    if not os.path.exists(MACOS_SWIFT_BIN):
+        return "", "swift_unavailable"
+
+    script_path = ""
+    try:
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".swift", delete=False) as tf:
+            tf.write(SWIFT_PDFKIT_EXTRACT_SCRIPT)
+            script_path = tf.name
+        proc = subprocess.run(
+            [MACOS_SWIFT_BIN, script_path, path, str(max(1, max_pages))],
+            capture_output=True,
+            text=True,
+            timeout=max(30, min(300, max_pages * 12)),
+        )
+    except FileNotFoundError:
+        return "", "swift_unavailable"
+    except subprocess.TimeoutExpired:
+        return "", "swift_timeout"
+    except Exception as e:
+        return "", f"swift_run_error:{type(e).__name__}"
+    finally:
+        if script_path:
+            try:
+                os.unlink(script_path)
+            except Exception:
+                pass
+
+    if proc.returncode != 0:
+        stderr = (proc.stderr or "").lower()
+        if "no such module" in stderr and "pdfkit" in stderr:
+            return "", "swift_pdfkit_unavailable"
+        if "open_failed" in stderr:
+            return "", "swift_pdf_open_failed"
+        return "", f"swift_pdfkit_error:{proc.returncode}"
+
+    text = _cleanup_pdf_text(proc.stdout or "")
+    return (text, "swift_pdfkit") if text else ("", "pdf_text_empty")
+
+
+
+def _extract_pdf_text_from_bytes(raw: bytes, max_pages: int = 25) -> tuple[str, str]:
+    if not raw:
+        return "", "pdf_bytes_empty"
+
+    tmp_path = ""
+    last_reason = "pdf_extractor_unavailable"
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tf:
+            tf.write(raw)
+            tmp_path = tf.name
+
+        try:
+            from pypdf import PdfReader  # type: ignore
+
+            reader = PdfReader(tmp_path)
+            chunks = []
+            for page in reader.pages[: max(1, max_pages)]:
+                try:
+                    txt = page.extract_text() or ""
+                except Exception:
+                    txt = ""
+                if txt.strip():
+                    chunks.append(txt.strip())
+            merged = _cleanup_pdf_text("\n\n".join(chunks))
+            if merged:
+                return merged, "pypdf"
+        except ModuleNotFoundError:
+            pass
+        except Exception as e:
+            last_reason = f"pypdf_error:{type(e).__name__}"
+        else:
+            last_reason = "pdf_text_empty"
+
+        try:
+            from pdfminer.high_level import extract_text as pdfminer_extract_text  # type: ignore
+
+            txt = pdfminer_extract_text(tmp_path, maxpages=max(1, max_pages)) or ""
+            cleaned = _cleanup_pdf_text(txt)
+            if cleaned:
+                return cleaned, "pdfminer"
+            last_reason = "pdf_text_empty"
+        except ModuleNotFoundError:
+            pass
+        except Exception as e:
+            last_reason = f"pdfminer_error:{type(e).__name__}"
+
+        txt, reason = _extract_pdf_text_swift(tmp_path, max_pages=max_pages)
+        if txt:
+            return txt, reason
+        return "", reason or locals().get("last_reason", "pdf_extractor_unavailable")
+    finally:
+        if tmp_path:
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+
+
+
 def _extract_title(soup: BeautifulSoup) -> str:
     selectors = [
         "meta[property='og:title']",
@@ -540,26 +687,43 @@ def _collect_article(session: requests.Session, row: dict[str, Any], timeout: in
         return {"ok": False, "reason": f"http_{resp.status_code}", "url": url, "collected_at": now, "http_status": resp.status_code}
 
     content_type = str(resp.headers.get("Content-Type") or "").lower()
-    if content_type and not any(token in content_type for token in ("text/html", "application/xhtml+xml", "text/plain", "application/xml", "text/xml")):
-        return {
-            "ok": False,
-            "reason": f"unsupported_content_type:{content_type.split(';', 1)[0]}",
-            "url": url,
-            "collected_at": now,
-            "http_status": resp.status_code,
-        }
+    is_pdf = "application/pdf" in content_type or urlparse(url).path.lower().endswith(".pdf")
+    if is_pdf:
+        title = str(row.get("title") or "").strip() or Path(urlparse(url).path).name or url
+        row_published_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
+        body, pdf_origin = _extract_pdf_text_from_bytes(resp.content, max_pages=25)
+        if len(body) < 280:
+            return {
+                "ok": False,
+                "reason": f"short_or_empty_pdf_text:{pdf_origin}",
+                "url": url,
+                "title": title,
+                "http_status": resp.status_code,
+                "collected_at": now,
+            }
+        published_dt = row_published_dt
+        extractor = f"pdf:{pdf_origin}"
+    else:
+        if content_type and not any(token in content_type for token in ("text/html", "application/xhtml+xml", "text/plain", "application/xml", "text/xml")):
+            return {
+                "ok": False,
+                "reason": f"unsupported_content_type:{content_type.split(';', 1)[0]}",
+                "url": url,
+                "collected_at": now,
+                "http_status": resp.status_code,
+            }
 
-    html = resp.text
-    soup = BeautifulSoup(html, "html.parser")
-    title = _extract_title(soup) or str(row.get("title") or "")
-    published_raw = _extract_published(soup, html)
-    row_published_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
-    extracted_published_dt = _parse_date(published_raw)
-    published_dt = row_published_dt
-    if extracted_published_dt is not None:
-        if row_published_dt is None or abs((extracted_published_dt - row_published_dt).days) <= 370:
-            published_dt = extracted_published_dt
-    body, extractor = _extract_body(soup)
+        html = resp.text
+        soup = BeautifulSoup(html, "html.parser")
+        title = _extract_title(soup) or str(row.get("title") or "")
+        published_raw = _extract_published(soup, html)
+        row_published_dt = _parse_date(str(row.get("published_at") or row.get("published_date") or ""))
+        extracted_published_dt = _parse_date(published_raw)
+        published_dt = row_published_dt
+        if extracted_published_dt is not None:
+            if row_published_dt is None or abs((extracted_published_dt - row_published_dt).days) <= 370:
+                published_dt = extracted_published_dt
+        body, extractor = _extract_body(soup)
 
     if not title.strip():
         return {
@@ -704,6 +868,20 @@ def _select_year_spread_candidates(rows: list[dict[str, Any]], target_dt: Option
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    if not args.input_index and not args.allow_nonverifiable_live_write:
+        summary = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "status": "FAIL",
+            "reason": "live_selected_articles_requires_input_index",
+            "selected_count": 0,
+            "contract_note": "Canonical live selected_articles updates require an explicit --input-index (verifiable lane). Use --allow-nonverifiable-live-write only for manual debugging/backfill outside the live contract.",
+        }
+        RUNTIME_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        RUNTIME_STATUS_PATH.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+        append_pipeline_event("collect_selected_news_articles", "FAIL", count=0, errors=[summary["reason"]], note="")
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return summary
+
     index_files, rows = _read_url_index_rows(args.input_index, args.merge_all_indexes)
     keywords = _load_keywords()
     existing_urls = _load_existing_selected_urls() if args.skip_existing else set()
@@ -748,7 +926,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
 
     session = requests.Session()
-    session.headers.update({"User-Agent": UA, "Accept": "text/html,application/xhtml+xml"})
+    session.headers.update({"User-Agent": UA, "Accept": "text/html,application/xhtml+xml,text/plain,application/xml,text/xml,application/pdf"})
 
     successes = []
     failures = []
@@ -829,7 +1007,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Stage1 selected news body collector")
     ap.add_argument("--input-index", default=os.environ.get("NEWS_SELECTED_INPUT_INDEX", ""), help="url index jsonl path (default: auto-discover)")
-    ap.add_argument("--merge-all-indexes", action="store_true", default=os.environ.get("NEWS_SELECTED_MERGE_ALL_INDEXES", "1").strip().lower() in {"1", "true", "yes", "on"}, help="merge all url_index jsonl files in news folder before selection")
+    ap.add_argument("--merge-all-indexes", action="store_true", default=os.environ.get("NEWS_SELECTED_MERGE_ALL_INDEXES", "0").strip().lower() in {"1", "true", "yes", "on"}, help="merge all url_index jsonl files in news folder before selection")
+    ap.add_argument("--allow-nonverifiable-live-write", action="store_true", default=_truthy(os.environ.get("NEWS_SELECTED_ALLOW_NONVERIFIABLE_LIVE_WRITE", "0")), help="allow live selected_articles write without explicit --input-index (manual debugging/backfill only)")
     ap.add_argument("--min-keyword-hits", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MIN_KEYWORD_HITS"), 1, min_v=0))
     ap.add_argument("--max-candidates", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MAX_ARTICLES"), 0, min_v=0))
     ap.add_argument("--max-attempts", type=int, default=_safe_int(os.environ.get("NEWS_SELECTED_MAX_ATTEMPTS"), 0, min_v=0))

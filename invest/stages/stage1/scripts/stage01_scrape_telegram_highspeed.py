@@ -14,6 +14,8 @@ from datetime import datetime, timedelta, timezone
 ROOT = Path(__file__).resolve().parents[4]
 STAGE1_DIR = ROOT / 'invest/stages/stage1'
 WORKSPACE_VENV_PY = ROOT / '.venv/bin/python3'
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 try:
     from telethon import TelegramClient
@@ -24,6 +26,11 @@ except ModuleNotFoundError:
         os.execv(venv_py, [venv_py] + sys.argv)
     raise
 
+from invest.stages.common.stage_pdf_artifacts import (
+    PAGE_MARKER_FORMAT,
+    count_pdf_page_markers,
+    extract_pdf_text_with_page_markers,
+)
 from pipeline_logger import append_pipeline_event
 
 # Force unbuffered output
@@ -407,6 +414,16 @@ def _write_json_file(path_value, payload: dict):
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
+def _set_pdf_extract_contract(payload: dict, *, page_marked: bool, marker_count: int, mapping_status: str, extract_format: str) -> None:
+    if str(payload.get('kind') or '').strip().lower() != 'pdf':
+        return
+    payload['extract_format'] = str(extract_format or '')
+    payload['pdf_page_marked'] = bool(page_marked)
+    payload['pdf_page_marker_format'] = PAGE_MARKER_FORMAT
+    payload['pdf_page_marker_count'] = int(marker_count if page_marked else 0)
+    payload['pdf_page_mapping_status'] = str(mapping_status or '')
+
+
 def _normalize_url(url: str) -> str:
     if not isinstance(url, str):
         return ''
@@ -732,6 +749,15 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
         if store_reason:
             _bump_reason(stats, store_reason)
 
+    if kind == 'pdf':
+        _set_pdf_extract_contract(
+            payload,
+            page_marked=False,
+            marker_count=0,
+            mapping_status='available_from_original' if original_saved else 'missing_original_and_page_artifacts',
+            extract_format='',
+        )
+
     supported = kind in {'pdf', 'text_doc', 'docx'}
     if supported:
         stats['attachments_supported'] = int(stats.get('attachments_supported', 0)) + 1
@@ -762,8 +788,16 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
             payload['extraction_status'] = 'failed'
             payload['extraction_reason'] = result['reason']
         else:
+            page_marker_count = 0
             if kind == 'pdf':
-                attach_text, reason = _extract_pdf_text(str(original_path))
+                pdf_extract = extract_pdf_text_with_page_markers(
+                    path=original_path,
+                    max_pages=ATTACH_PDF_MAX_PAGES,
+                    max_text_chars=ATTACH_MAX_TEXT_CHARS,
+                )
+                attach_text = str(pdf_extract.get('text') or '')
+                reason = str(pdf_extract.get('reason') or '')
+                page_marker_count = int(pdf_extract.get('page_marker_count') or 0)
             elif kind == 'docx':
                 attach_text, reason = _extract_docx_text(str(original_path))
             else:
@@ -778,12 +812,28 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
                 payload['extract_path'] = result['extract_path']
                 payload['extraction_status'] = 'ok'
                 payload['extraction_reason'] = 'ok'
+                if kind == 'pdf':
+                    _set_pdf_extract_contract(
+                        payload,
+                        page_marked=True,
+                        marker_count=page_marker_count or count_pdf_page_markers(attach_text),
+                        mapping_status='available_from_original',
+                        extract_format='pdf_page_marked_text_v1',
+                    )
                 stats['attachments_text_extracted'] = int(stats.get('attachments_text_extracted', 0)) + 1
                 stats['attachments_text_files_written'] = int(stats.get('attachments_text_files_written', 0)) + 1
             else:
                 result['reason'] = reason or f'empty_text:{kind}'
                 payload['extraction_status'] = 'failed'
                 payload['extraction_reason'] = result['reason']
+                if kind == 'pdf':
+                    _set_pdf_extract_contract(
+                        payload,
+                        page_marked=False,
+                        marker_count=0,
+                        mapping_status='available_from_original',
+                        extract_format='',
+                    )
                 stats['attachments_failed'] = int(stats.get('attachments_failed', 0)) + 1
                 _bump_reason(stats, result['reason'])
 

@@ -42,7 +42,7 @@ parent: `docs/operations/OPERATIONS_BOOK.md`
 - 실패 시: `ok=false`, issue 목록 반환
 
 ### `scripts/watchdog/watchdog_recover.py`
-- 역할: stale/deadline 초과 task를 BLOCKED 전환
+- 역할: **진짜 stale/blocker만** BLOCKED 전환 (`delegated_to_subagent`/`subagent_running`/`awaiting_callback`/`long_running_execution` 같은 nonterminal waiting phase는 age만으로 막지 않고, `resume_due` 초과 시에만 blocker로 승격)
 - 주 입력: `runtime/tasks/tasks.db`
 - 주 출력: 상태 전이 JSON
 - 실패 시: non-zero 또는 parse_error
@@ -54,7 +54,7 @@ parent: `docs/operations/OPERATIONS_BOOK.md`
 - 실패 시: `ok=false`, issue 목록 반환
 
 ### `scripts/watchdog/watchdog_cycle.py`
-- 역할: validate + recover + context hygiene를 묶고, 이상 시 메인 에이전트를 즉시 깨우며 maintenance task(`WD-TASK-HYGIENE`, `WD-CONTEXT-HYGIENE`)를 자동 등록/갱신. context threshold는 fail로만 두지 않고 **synthetic reset trigger**로 승격해, 메인이 현재 step을 끝낸 뒤 reset을 실행하도록 깨운다.
+- 역할: validate + recover + context hygiene를 묶고, 이상 시 메인 에이전트를 즉시 깨우며 maintenance task(`WD-TASK-HYGIENE`, `WD-CONTEXT-HYGIENE`)를 자동 등록/갱신. context threshold는 fail로만 두지 않고 **synthetic reset trigger**로 승격해, 메인이 현재 step을 끝낸 뒤 reset을 실행하도록 wake/remind/retry를 건다. 신규 진행 hard lock은 `clean_reset`/`hard_reset`급일 때만 유지하고, `finish_current_step_then_reset`은 soft advisory로 둔다.
 - 주 입력: watchdog 하위 검사 결과
 - 주 출력: 종합 JSON, `runtime/tasks/watchdog_notify_state.json`, maintenance task 상태 반영
 - 실패 시: `openclaw system event --mode now`로 메인 notify

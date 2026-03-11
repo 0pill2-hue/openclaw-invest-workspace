@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Upper-level main brain guard aggregation.
 
-Runs the local brain guard, then aggregates higher-level operating-path health for:
+Runs the local brain guard and records it as a separate advisory component, then
+aggregates higher-level main operating-path health for:
 - Telegram response channel state from `openclaw status`
 - tasks watchdog launchd/log health
 - auto-dispatch launchd/status health
@@ -512,7 +513,11 @@ def summarize_component_flags(checks: dict[str, dict[str, Any]]) -> str:
     parts = []
     for name in order:
         payload = checks.get(name, {})
-        parts.append(f"{name}={'OK' if payload.get('ok') else 'FAIL'}")
+        if name == "local_brain" and not payload.get("ok"):
+            state = "WARN"
+        else:
+            state = "OK" if payload.get("ok") else "FAIL"
+        parts.append(f"{name}={state}")
     return " ".join(parts)
 
 
@@ -547,6 +552,12 @@ def main() -> None:
     if not status_info.get("ok") and "openclaw_status_failed" in status_info.get("issues", []):
         telegram["issues"] = list(dict.fromkeys(telegram["issues"] + ["openclaw_status_failed"]))
 
+    local_brain = {
+        **local_brain,
+        "severity": "advisory",
+        "affects_main_ok": False,
+    }
+
     checks = {
         "local_brain": local_brain,
         "telegram": telegram,
@@ -555,18 +566,33 @@ def main() -> None:
         "current_task": current_task,
     }
 
-    failed_components = [name for name, payload in checks.items() if not payload.get("ok")]
+    failed_components = [
+        name
+        for name, payload in checks.items()
+        if (not payload.get("ok")) and payload.get("affects_main_ok", True)
+    ]
+    advisory_components = [
+        name
+        for name, payload in checks.items()
+        if (not payload.get("ok")) and not payload.get("affects_main_ok", True)
+    ]
     issues: list[str] = []
     alerts: list[str] = []
+    advisory_issues: list[str] = []
+    advisory_alerts: list[str] = []
 
     for name, payload in checks.items():
+        affects_main_ok = bool(payload.get("affects_main_ok", True))
+        target_issues = issues if affects_main_ok else advisory_issues
+        target_alerts = alerts if affects_main_ok else advisory_alerts
+
         for issue in flatten_str_list(payload.get("issues")):
-            issues.append(f"{name}:{issue}")
+            target_issues.append(f"{name}:{issue}")
         direct_alert = str(payload.get("alert", "")).strip()
         if direct_alert:
-            alerts.append(f"{name}:{direct_alert}")
+            target_alerts.append(f"{name}:{direct_alert}")
         for item in flatten_str_list(payload.get("alerts")):
-            alerts.append(f"{name}:{item}")
+            target_alerts.append(f"{name}:{item}")
 
     ok = len(failed_components) == 0
     alert = build_alert(failed_components, issues)
@@ -576,8 +602,11 @@ def main() -> None:
         "message": "MAIN_BRAIN_GUARD_OK" if ok else "MAIN_BRAIN_GUARD_FAIL",
         "summary": summarize_component_flags(checks),
         "failed_components": failed_components,
+        "advisory_components": advisory_components,
         "issues": issues,
+        "advisory_issues": advisory_issues,
         "alerts": alerts,
+        "advisory_alerts": advisory_alerts,
         "alert": alert,
         "checks": checks,
         "sources": {

@@ -1,7 +1,7 @@
 # Stage3 Rulebook & Repro
 
 status: CANONICAL (reproducible Stage3 implementation contract)  
-updated_at: 2026-03-09 KST
+updated_at: 2026-03-11 KST
 
 ## 문서 역할
 - 이 문서는 **문서만 보고 현재 Stage3를 재구현할 수 있도록** 입력 JSONL 스키마, builder 규칙, claim-card 스키마, 점수 산식, dedup/cluster/feature/output schema를 고정한다.
@@ -28,6 +28,7 @@ updated_at: 2026-03-09 KST
 ### 2.1 Step A — input builder
 - script: `invest/stages/stage3/scripts/stage03_build_input_jsonl.py`
 - 역할: Stage2 clean artifacts를 읽어 canonical intermediate corpus `stage2_text_meta_records.jsonl` 생성
+- 추가 계약: DART/RSS/macro/blog/telegram/premium/selected_articles 모든 row에 동일한 deterministic semantic contract를 부여한다.
 
 ### 2.2 Step B — qualitative axes gate
 - script: `invest/stages/stage3/scripts/stage03_attention_gate_local_brain.py`
@@ -72,8 +73,17 @@ updated_at: 2026-03-09 KST
   "symbols": ["000000", "__MACRO__", "__NOSYMBOL__"],
   "text": "string",
   "source": "string",
-  "source_family": "optional string",
-  "content_fingerprint": "sha1(normalized_text)"
+  "source_family": "canonical string",
+  "content_fingerprint": "sha1(normalized_text)",
+  "semantic_version": "stage-semantic-20260311-r1",
+  "target_levels": ["macro", "industry", "stock"],
+  "macro_tags": ["risk_off", "rates"],
+  "industry_tags": ["반도체"],
+  "stock_tags": ["005930"],
+  "event_tags": ["guidance"],
+  "impact_direction": "positive|negative|mixed|neutral",
+  "horizon": "short_term|medium_term|long_term|unknown",
+  "region_tags": ["kr", "us", "global"]
 }
 ```
 
@@ -85,8 +95,13 @@ updated_at: 2026-03-09 KST
   - `__MACRO__`: 종목 없는 macro-only 문서
   - `__NOSYMBOL__`: 종목 미추출 텍스트(기본 builder는 포함 가능)
 - `source`: lineage string
-- `source_family`: builder가 명시하지 않아도 gate가 `source`로부터 추론 가능
+- `source_family`: builder가 canonical family로 normalize한 값
 - `content_fingerprint`: Stage3 builder의 1차 dedup key
+- `semantic_version`: semantic contract version
+- `target_levels`: 문서가 겨냥하는 분석 레벨 집합 (`macro|industry|stock`)
+- `macro_tags`, `industry_tags`, `stock_tags`, `event_tags`, `region_tags`: deterministic rule-based tag list
+- `impact_direction`: `positive|negative|mixed|neutral`
+- `horizon`: `short_term|medium_term|long_term|unknown`
 
 ---
 
@@ -100,6 +115,15 @@ updated_at: 2026-03-09 KST
   2. 6자리 코드 regex 매칭
   순으로 수행
 - `include_nosymbol=true`가 기본이며, symbol 미검출 텍스트는 `__NOSYMBOL__`로 포함 가능
+- semantic contract는 builder 마지막 공통 단계에서 모든 source row에 동일하게 부여한다.
+  - `target_levels`: `macro_tags` 존재 또는 `__MACRO__/news_rss_macro`면 `macro`, industry tag 존재면 `industry`, 실제 stock code 존재면 `stock`
+  - `macro_tags`: risk-on/off, rates, inflation, fx, liquidity, policy, energy, recession_growth, geopolitics 키워드 기반
+  - `industry_tags`: Stage2와 같은 industry keyword table 기반
+  - `stock_tags`: placeholder 제외 실제 stock code list
+  - `event_tags`: `order|rights_issue|lawsuit|guidance` keyword 기반
+  - `impact_direction`: positive/negative keyword count + event bias 기반
+  - `horizon`: short/medium/long keyword 우선, macro row fallback=`short_term`, 없으면 `unknown`
+  - `region_tags`: kr/us/cn/jp/eu/global keyword + source-family fallback 기반
 
 ### 5.2 source별 record 생성 규칙
 

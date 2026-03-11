@@ -19,7 +19,8 @@ SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from lib.context_lock import format_lock_reason, is_context_locked
+from lib.context_lock import format_lock_reason, is_blocking_context_lock, is_context_locked
+from lib.task_runtime import is_nonterminal_wait_state
 
 ROOT = Path(__file__).resolve().parents[2]
 TASKDB_SCRIPT = ROOT / "scripts/tasks/db.py"
@@ -29,11 +30,13 @@ TASK_DB_PATH = ROOT / "runtime/tasks/tasks.db"
 OPENCLAW_BIN = Path("/opt/homebrew/bin/openclaw")
 NODE_BIN = Path("/opt/homebrew/bin/node")
 ASSIGNEE = "main-orchestrator"
+ASSIGNED_BY = "auto-dispatch"
+SUBAGENT_WORKERS = [worker.strip() for worker in os.environ.get("OPENCLAW_SUBAGENT_WORKERS", "subagent:long-1,subagent:long-2").split(",") if worker.strip()]
+WORKER_POOL = list(dict.fromkeys([ASSIGNEE] + SUBAGENT_WORKERS))
 ORCH_AGENT_ID = os.environ.get("OPENCLAW_ORCH_AGENT_ID", "main").strip() or "main"
 ORCH_TIMEOUT_SEC = 180
 CLOSE_WAIT_SEC = 20
 RECENT_TRANSITION_WINDOW_MINUTES = 15
-NONTERMINAL_BLOCKED_PHASES = {"subagent_running", "awaiting_callback"}
 
 SUBPROCESS_ENV = dict(os.environ)
 SUBPROCESS_ENV["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
@@ -67,7 +70,7 @@ def extract_phase(note: str | None) -> str:
 
 
 def is_waiting_callback_state(status: str, phase: str) -> bool:
-    return status == "BLOCKED" and phase.lower() in NONTERMINAL_BLOCKED_PHASES
+    return is_nonterminal_wait_state(status, phase)
 
 
 def append_debug_log(
@@ -110,6 +113,25 @@ def read_ticket_db_state(ticket_id: str) -> tuple[str, str]:
     if not row:
         return "", ""
     return (row["status"] or "").upper(), (row["review_status"] or "").upper()
+
+
+def read_ticket_phase(ticket_id: str) -> str:
+    if not ticket_id or not TASK_DB_PATH.exists():
+        return ""
+
+    conn = sqlite3.connect(TASK_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        row = conn.execute(
+            "SELECT note FROM tasks WHERE id=?",
+            (ticket_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    if not row:
+        return ""
+    return extract_phase(row["note"])
 
 
 def write_status(
@@ -158,18 +180,20 @@ def run_task_assignment() -> tuple[int, str, str, str]:
     cmd = [
         sys.executable,
         str(TASKDB_SCRIPT),
-        "assign-next",
-        "--assignee",
-        ASSIGNEE,
+        "assign-pool",
+        "--worker",
+        *WORKER_POOL,
         "--run-id",
         run_id,
+        "--assigned-by",
+        ASSIGNED_BY,
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     return proc.returncode, run_id, (proc.stdout or "").strip(), (proc.stderr or "").strip()
 
 
-def trigger_event(ticket_id: str, run_id: str) -> tuple[bool, str]:
-    text = f"[AUTO_DISPATCH] assigned {ticket_id} assignee={ASSIGNEE} run_id={run_id}"
+def trigger_event(ticket_id: str, run_id: str, worker: str) -> tuple[bool, str]:
+    text = f"[AUTO_DISPATCH] assigned {ticket_id} assignee={worker} run_id={run_id}"
 
     openclaw_candidates: list[str] = []
     if OPENCLAW_BIN.exists():
@@ -292,19 +316,17 @@ def recent_run_transition(run_id: str) -> tuple[bool, str, str, str]:
     conn = sqlite3.connect(TASK_DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
-        recent_runs = [run_id] if run_id else []
         rows = conn.execute(
             """
             SELECT id, status, review_status, note, assigned_run_id, assigned_at, updated_at
             FROM tasks
-            WHERE assignee=?
-              AND COALESCE(assigned_run_id, '')!=''
+            WHERE assigned_by=?
+              AND COALESCE(assigned_run_id, '') LIKE ?
             ORDER BY updated_at DESC, assigned_run_id DESC, id DESC
             LIMIT 64
             """,
-            (ASSIGNEE,),
+            (ASSIGNED_BY, f"{run_id}%"),
         ).fetchall()
-
         recent_rows = []
         for row in rows:
             rid = (row["assigned_run_id"] or "").strip()
@@ -314,8 +336,6 @@ def recent_run_transition(run_id: str) -> tuple[bool, str, str, str]:
             if not rid or ref_dt is None or ref_dt < threshold:
                 continue
             recent_rows.append(row)
-            if rid not in recent_runs:
-                recent_runs.append(rid)
     finally:
         conn.close()
 
@@ -334,12 +354,13 @@ def recent_run_transition(run_id: str) -> tuple[bool, str, str, str]:
     return False, "", "", ""
 
 
-def run_orchestrator(ticket_id: str, run_id: str) -> tuple[bool, str]:
+def run_orchestrator(ticket_id: str, run_id: str, worker: str) -> tuple[bool, str]:
+    lane = "subagent" if worker.startswith("subagent") or worker.startswith("sub:") else "main"
     message = (
-        f"[AUTO_ORCHESTRATE] ticket={ticket_id} run_id={run_id}\n"
+        f"[AUTO_ORCHESTRATE] ticket={ticket_id} run_id={run_id} assignee={worker} lane={lane}\n"
         "You are the main orchestrator.\n"
         "1) Read taskdb ticket details for the assigned ticket only.\n"
-        "2) Spawn the required subagent(s) to execute it.\n"
+        "2) If lane=subagent, spawn a subagent and delegate execution. If lane=main, execute directly in main.\n"
         "3) Update task status/proof in taskdb and CLOSE the ticket with one of: DONE/BLOCKED/REWORK.\n"
         "4) If close is not possible now, set BLOCKED with explicit reason.\n"
         "5) Reply concise progress to the user."
@@ -373,7 +394,7 @@ def run_orchestrator(ticket_id: str, run_id: str) -> tuple[bool, str]:
 
 def main() -> int:
     locked, lock_payload = is_context_locked()
-    if locked:
+    if locked and is_blocking_context_lock(lock_payload):
         reason = format_lock_reason(lock_payload)
         write_status(
             assigned_ticket="",
@@ -402,14 +423,37 @@ def main() -> int:
         phase="assign_next_result",
         db_status="",
         db_review_status="",
-        status_write={"rc": rc, "stdout": stdout, "stderr": stderr},
+        status_write={"rc": rc, "stdout": stdout, "stderr": stderr, "workers": WORKER_POOL},
     )
 
     if rc == 0:
-        m = re.search(r"assigned\s+(\S+)", stdout)
-        ticket_id = m.group(1).strip() if m else ""
-        if not ticket_id:
-            error = f"assign-next succeeded but ticket parse failed: stdout={stdout!r}"
+        assigned_rows: list[tuple[str, str, str]] = []
+        for line in stdout.splitlines():
+            m = re.search(r"assigned\s+(\S+)\s+->\s+(\S+)", line.strip())
+            if m:
+                ticket_id = m.group(1).strip()
+                worker = m.group(2).strip()
+                suffix = len(assigned_rows) + 1
+                assigned_rows.append((ticket_id, worker, f"{run_id}-{suffix}"))
+                continue
+            m = re.search(r"assigned\s+(\S+)", line.strip())
+            if m:
+                ticket_id = m.group(1).strip()
+                assigned_rows.append((ticket_id, ASSIGNEE, run_id))
+
+        if not assigned_rows:
+            idle_lines = [line.strip() for line in stdout.splitlines() if line.strip().startswith("idle ")]
+            if idle_lines:
+                write_status(
+                    assigned_ticket="",
+                    status="idle",
+                    error="; ".join(idle_lines),
+                    run_id=run_id,
+                    phase="status_idle_pool",
+                )
+                print(" | ".join(idle_lines))
+                return 0
+            error = f"assign-pool succeeded but no ticket parse: stdout={stdout!r}"
             write_status(
                 assigned_ticket="",
                 status="error",
@@ -420,105 +464,86 @@ def main() -> int:
             print(error, file=sys.stderr)
             return 1
 
-        db_status, db_review_status = read_ticket_db_state(ticket_id)
-        append_debug_log(
-            run_id=run_id,
-            ticket_id=ticket_id,
-            phase="assigned_ticket",
-            db_status=db_status,
-            db_review_status=db_review_status,
-            status_write="assigned_by_taskdb",
-        )
+        summaries: list[str] = []
+        hard_errors: list[str] = []
+        waiting_any = False
+        ticket_ids = [ticket_id for ticket_id, _, _ in assigned_rows]
 
-        ok, event_error = trigger_event(ticket_id, run_id)
-        event_warn = ""
-        if not ok:
-            event_warn = f"event delivery failed; continue orchestrator: {event_error}"
+        for ticket_id, worker, worker_run_id in assigned_rows:
             db_status, db_review_status = read_ticket_db_state(ticket_id)
-            write_status(
-                assigned_ticket=ticket_id,
-                status="assigned",
-                error=event_warn,
-                orchestrator="event_failed_continue",
-                run_id=run_id,
-                ticket_id=ticket_id,
-                phase="status_event_failed_continue",
-                db_status=db_status,
-                db_review_status=db_review_status,
-            )
             append_debug_log(
-                run_id=run_id,
+                run_id=worker_run_id,
                 ticket_id=ticket_id,
-                phase="event_failed_continue",
+                phase="assigned_ticket",
                 db_status=db_status,
                 db_review_status=db_review_status,
-                status_write={"event_error": event_error, "policy": "continue_orchestrator"},
+                status_write={"assigned_by_taskdb": True, "worker": worker},
             )
 
-        orch_ok, orch_error = run_orchestrator(ticket_id, run_id)
-        if not orch_ok:
-            db_status, db_review_status = read_ticket_db_state(ticket_id)
-            err_msg = f"{event_warn} | {orch_error}" if event_warn else orch_error
-            write_status(
-                assigned_ticket=ticket_id,
-                status="assigned",
-                error=err_msg,
-                orchestrator="spawn_failed",
-                run_id=run_id,
+            ok, event_error = trigger_event(ticket_id, worker_run_id, worker)
+            event_warn = ""
+            if not ok:
+                event_warn = f"event delivery failed; continue orchestrator: {event_error}"
+                append_debug_log(
+                    run_id=worker_run_id,
+                    ticket_id=ticket_id,
+                    phase="event_failed_continue",
+                    db_status=db_status,
+                    db_review_status=db_review_status,
+                    status_write={"event_error": event_error, "policy": "continue_orchestrator", "worker": worker},
+                )
+
+            orch_ok, orch_error = run_orchestrator(ticket_id, worker_run_id, worker)
+            if not orch_ok:
+                err_msg = f"{ticket_id}@{worker}: {orch_error}"
+                if event_warn:
+                    err_msg = f"{err_msg} | {event_warn}"
+                hard_errors.append(err_msg)
+                continue
+
+            closed, close_detail, db_status, db_review_status = wait_for_close(ticket_id)
+            append_debug_log(
+                run_id=worker_run_id,
                 ticket_id=ticket_id,
-                phase="status_orchestrator_spawn_failed",
+                phase="wait_for_close_result",
                 db_status=db_status,
                 db_review_status=db_review_status,
+                status_write={"closed": closed, "detail": close_detail, "worker": worker},
             )
-            print(err_msg, file=sys.stderr)
-            return 1
+            if not closed:
+                msg = f"{ticket_id}@{worker}: spawned but not closed within {CLOSE_WAIT_SEC}s ({close_detail})"
+                if event_warn:
+                    msg = f"{msg} | {event_warn}"
+                db_phase = read_ticket_phase(ticket_id)
+                waiting_close = is_waiting_callback_state(db_status, db_phase) or (
+                    db_status == "IN_PROGRESS" and db_review_status in {"", "PENDING"}
+                )
+                waiting_any = waiting_any or waiting_close
+                if waiting_close:
+                    summaries.append(msg)
+                else:
+                    hard_errors.append(msg)
+                continue
 
-        closed, close_detail, db_status, db_review_status = wait_for_close(ticket_id)
-        append_debug_log(
-            run_id=run_id,
-            ticket_id=ticket_id,
-            phase="wait_for_close_result",
-            db_status=db_status,
-            db_review_status=db_review_status,
-            status_write={"closed": closed, "detail": close_detail},
-        )
-        if not closed:
-            msg = f"orchestrator spawned but ticket not closed within {CLOSE_WAIT_SEC}s ({close_detail})"
+            close_msg = f"closed {ticket_id}@{worker} ({close_detail})"
             if event_warn:
-                msg = f"{event_warn} | {msg}"
-            waiting_close = db_status == "IN_PROGRESS" and db_review_status in {"", "PENDING"}
-            write_status(
-                assigned_ticket=ticket_id,
-                status="assigned",
-                error=msg,
-                orchestrator="spawned_waiting_close" if waiting_close else "spawned_not_closed",
-                run_id=run_id,
-                ticket_id=ticket_id,
-                phase="status_waiting_close" if waiting_close else "status_not_closed",
-                db_status=db_status,
-                db_review_status=db_review_status,
-            )
-            if waiting_close:
-                print(msg)
-                return 0
-            print(msg, file=sys.stderr)
-            return 1
+                close_msg = f"{close_msg} | {event_warn}"
+            summaries.append(close_msg)
 
-        close_msg = f"closed {ticket_id} ({close_detail})"
-        if event_warn:
-            close_msg = f"{close_msg} | {event_warn}"
+        joined = " | ".join(summaries + hard_errors)
         write_status(
-            assigned_ticket=ticket_id,
-            status="assigned",
-            error=close_msg,
-            orchestrator="spawned_closed",
+            assigned_ticket=",".join(ticket_ids),
+            status="assigned" if (summaries or waiting_any) else "error",
+            error=joined,
+            orchestrator="pool_dispatch",
             run_id=run_id,
-            ticket_id=ticket_id,
-            phase="status_closed",
-            db_status=db_status,
-            db_review_status=db_review_status,
+            ticket_id=",".join(ticket_ids),
+            phase="status_pool_dispatch",
         )
-        print(close_msg)
+        if hard_errors and not summaries and not waiting_any:
+            print(joined, file=sys.stderr)
+            return 1
+        print(joined or f"assigned {','.join(ticket_ids)}")
         return 0
 
     combined = f"{stdout}\n{stderr}".lower()
@@ -549,7 +574,7 @@ def main() -> int:
         )
         return 0
 
-    error = stderr or stdout or f"assign-next failed (code={rc})"
+    error = stderr or stdout or f"assign-pool failed (code={rc})"
     write_status(
         assigned_ticket="",
         status="error",

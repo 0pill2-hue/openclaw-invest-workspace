@@ -9,14 +9,14 @@
   - `common_env.sh`: 공통 쉘 환경 변수
 - `scripts/tasks/`
   - `db.py`: TASKS SQLite CLI
-  - `gate.py`: TASK fail-close gate
-  - `dispatch_tick.py`: 다음 task 자동 배정/기동 tick
+  - `gate.py`: TASK fail-close gate (`clean_reset`/`hard_reset`급 context lock만 신규 진행 차단, `finish_current_step_then_reset`은 advisory)
+  - `dispatch_tick.py`: 다음 task 자동 배정/기동 tick (soft advisory는 계속 진행, hard lock만 idle)
   - `launchd_dispatch.sh`: task auto-dispatch용 launchd 진입 쉘
 - `scripts/watchdog/`
   - `watchdog_validate.py`: TASK ledger 정합성 검사
-  - `watchdog_recover.py`: stale task 자동 BLOCKED 전환
+  - `watchdog_recover.py`: stale task 자동 BLOCKED 전환 (단, delegated/awaiting/long-running nonterminal waiting phase는 age만으로 막지 않고 `resume_due` 초과 시에만 승격)
   - `context_hygiene.py`: current-task/context-handoff/resume-check/blocked-proof hygiene 검사 + 120k threshold에서 `finish_current_step_then_reset` handoff 갱신
-  - `watchdog_cycle.py`: watchdog validate/recover + context hygiene + main notify cycle
+  - `watchdog_cycle.py`: watchdog validate/recover + context hygiene + main notify cycle (soft advisory+nudge 우선, hard lock only for reset-grade actions)
   - `launchd_watchdog.sh`: watchdog용 launchd 진입 쉘
 - `scripts/directives/`
   - `db.py`: DIRECTIVES SQLite CLI
@@ -34,7 +34,7 @@
 - TASK/context watchdog cycle: `python3 scripts/watchdog/watchdog_cycle.py`
 - TASK auto-dispatch: `python3 scripts/tasks/dispatch_tick.py`
 - TASK assignee 해제: `python3 scripts/tasks/db.py release --id <ID>`
-- TASK phase 표기(예: subagent_running/awaiting_callback/main_review): `python3 scripts/tasks/db.py mark-phase --id <ID> --phase <phase> --child-session <session> --resume-due "YYYY-MM-DD HH:MM:SS"`
+- TASK phase 표기(예: `delegated_to_subagent`/`subagent_running`/`awaiting_callback`/`long_running_execution`/`main_review`): `python3 scripts/tasks/db.py mark-phase --id <ID> --phase <phase> --child-session <session> --resume-due "YYYY-MM-DD HH:MM:SS"` (`TODO`/`BLOCKED` task에 nonterminal waiting phase를 찍으면 자동으로 `IN_PROGRESS/active`로 되돌림)
 - TASK 삭제: `python3 scripts/tasks/db.py remove --id <ID>`
 - DIRECTIVES 요약: `python3 scripts/directives/db.py summary --top 5 --recent 5`
 - DIRECTIVE 게이트: `python3 scripts/directives/gate.py --id <ID>`

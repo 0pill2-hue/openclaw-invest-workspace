@@ -1,7 +1,7 @@
 # Stage2 Rulebook & Repro
 
 status: CANONICAL (reproducible refine/QC contract)  
-updated_at: 2026-03-10 KST
+updated_at: 2026-03-11 KST
 
 ## 문서 역할
 - 이 문서는 **문서만 보고 현재 Stage2를 재구현할 수 있도록** input/output, rule, threshold, dedup, incremental, report schema를 고정한다.
@@ -14,7 +14,7 @@ updated_at: 2026-03-10 KST
 - 원칙:
   - 입력은 **오직** `invest/stages/stage2/inputs/upstream_stage1/**` + `invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3`
   - raw 파일 트리는 canonical 입력이 아니라 Stage2 runtime mirror의 논리 경로다
-  - Stage2는 정제/정규화/격리/중복 제거까지만 담당
+  - Stage2는 정제/정규화/격리/중복 제거를 담당하고, qualitative clean 산출물에 대해 **deterministic semantic tagging**(`target_levels/macro_tags/industry_tags/stock_tags/event_tags/impact_direction/horizon/region_tags`)을 추가할 수 있다.
   - 정성 점수화/해석/투자판단은 하지 않음
 - writer ownership:
   - `stage02_qc_cleaning_full.py`
@@ -145,6 +145,21 @@ updated_at: 2026-03-10 KST
 ### 5.2 quarantine
 - `invest/stages/stage2/outputs/quarantine/production/signal/{kr,us,market}/...`
 - `invest/stages/stage2/outputs/quarantine/production/qualitative/...`
+
+### 5.2-b classification sidecar
+- text/blog, text/telegram, text/premium/startale clean 파일은 같은 경로에 `*.classification.json` sidecar를 둔다.
+- selected_articles clean JSONL row는 `stage2_classification` 필드를 포함하고, 파일 단위 `*.classification.json` summary를 함께 둔다.
+- classification은 deterministic 규칙 기반이며, Stage1 raw/page split을 바꾸지 않는다.
+- classification payload는 기존 `primary_* / mentioned_*` 필드를 유지하면서 아래 semantic contract를 추가한다.
+  - `semantic_version`
+  - `target_levels`
+  - `macro_tags`
+  - `industry_tags`
+  - `stock_tags`
+  - `event_tags`
+  - `impact_direction`
+  - `horizon`
+  - `region_tags`
 
 ### 5.3 canonical alias policy
 - raw/input alias: `market/news/rss`

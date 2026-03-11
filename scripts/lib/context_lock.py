@@ -8,6 +8,7 @@ from typing import Any
 from lib.runtime_env import context_lock_path
 
 LOCK_PATH = context_lock_path()
+BLOCKING_REQUIRED_ACTIONS = {'clean_reset', 'hard_reset'}
 
 
 def now_ts() -> str:
@@ -34,6 +35,22 @@ def clear_context_lock() -> None:
         LOCK_PATH.unlink()
 
 
+def context_lock_required_action(payload: dict[str, Any]) -> str:
+    return str(payload.get('required_action') or 'reset_required').strip() or 'reset_required'
+
+
+def is_blocking_context_lock(payload: dict[str, Any]) -> bool:
+    return bool(payload.get('active')) and context_lock_required_action(payload) in BLOCKING_REQUIRED_ACTIONS
+
+
+def context_lock_mode(payload: dict[str, Any]) -> str:
+    if not payload:
+        return 'inactive'
+    if is_blocking_context_lock(payload):
+        return 'hard_lock'
+    return 'advisory'
+
+
 def is_context_locked() -> tuple[bool, dict[str, Any]]:
     payload = load_context_lock()
     return bool(payload.get('active')), payload
@@ -44,5 +61,6 @@ def format_lock_reason(payload: dict[str, Any]) -> str:
         return 'context_lock_active'
     ticket = str(payload.get('ticket_id') or '-').strip() or '-'
     trigger = str(payload.get('trigger') or 'context_threshold').strip() or 'context_threshold'
-    required_action = str(payload.get('required_action') or 'reset_required').strip() or 'reset_required'
-    return f'context_lock_active ticket={ticket} trigger={trigger} required_action={required_action}'
+    required_action = context_lock_required_action(payload)
+    mode = context_lock_mode(payload)
+    return f'context_lock_active ticket={ticket} trigger={trigger} required_action={required_action} mode={mode}'

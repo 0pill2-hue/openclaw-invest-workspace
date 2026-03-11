@@ -14,7 +14,7 @@ STAGE1_OUTPUTS_DIR = ROOT_PATH / 'invest/stages/stage1/outputs'
 DEFAULT_RAW_ROOT = STAGE1_OUTPUTS_DIR / 'raw'
 DEFAULT_DB_DIR = STAGE1_OUTPUTS_DIR / 'db'
 DEFAULT_DB_PATH = DEFAULT_DB_DIR / 'stage1_raw_archive.sqlite3'
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 @dataclass(frozen=True)
@@ -50,6 +50,8 @@ class PdfIndexSummary:
     documents_with_manifest: int
     documents_with_text: int
     documents_with_renders: int
+    documents_page_marked: int
+    documents_page_mapping_missing: int
     channels_seen: int
     earliest_message_date: str
     latest_message_date: str
@@ -67,6 +69,8 @@ class PdfIndexSummary:
             'documents_with_manifest': self.documents_with_manifest,
             'documents_with_text': self.documents_with_text,
             'documents_with_renders': self.documents_with_renders,
+            'documents_page_marked': self.documents_page_marked,
+            'documents_page_mapping_missing': self.documents_page_mapping_missing,
             'channels_seen': self.channels_seen,
             'earliest_message_date': self.earliest_message_date,
             'latest_message_date': self.latest_message_date,
@@ -187,6 +191,10 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             render_status TEXT,
             render_reason TEXT,
             quality_grade TEXT,
+            page_marked INTEGER NOT NULL DEFAULT 0,
+            page_marker_count INTEGER NOT NULL DEFAULT 0,
+            page_mapping_status TEXT,
+            extract_format TEXT,
             human_review_window_active INTEGER NOT NULL DEFAULT 0,
             db_synced_at TEXT NOT NULL
         );
@@ -210,8 +218,23 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_pdf_pages_doc_key ON pdf_pages(doc_key);
         '''
     )
+    _ensure_column(conn, 'pdf_documents', 'page_marked', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(conn, 'pdf_documents', 'page_marker_count', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(conn, 'pdf_documents', 'page_mapping_status', 'TEXT')
+    _ensure_column(conn, 'pdf_documents', 'extract_format', 'TEXT')
     _set_meta(conn, 'schema_version', str(SCHEMA_VERSION))
     conn.commit()
+
+
+def _table_columns(conn: sqlite3.Connection, table_name: str) -> set[str]:
+    rows = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return {str(row[1]) for row in rows}
+
+
+def _ensure_column(conn: sqlite3.Connection, table_name: str, column_name: str, declaration: str) -> None:
+    if column_name in _table_columns(conn, table_name):
+        return
+    conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {declaration}")
 
 
 def _set_meta(conn: sqlite3.Connection, key: str, value: str) -> None:
@@ -640,7 +663,20 @@ def _iter_canonical_pdf_meta_entries(raw_root: Path) -> list[tuple[Path, dict]]:
                     merged[one_key] = value
                 elif one_key not in merged:
                     merged[one_key] = value
-        best_path, _ = ranked[-1]
+        best_path, best_meta = ranked[-1]
+        deleted_after_decompose = (
+            str(merged.get('original_store_status') or '').strip().lower() == 'deleted_after_decompose'
+            or str(merged.get('original_store_reason') or '').strip().lower() == 'deleted_after_decompose'
+            or bool(merged.get('original_deleted_after_decompose'))
+            or str(best_meta.get('original_store_status') or '').strip().lower() == 'deleted_after_decompose'
+            or str(best_meta.get('original_store_reason') or '').strip().lower() == 'deleted_after_decompose'
+            or bool(best_meta.get('original_deleted_after_decompose'))
+        )
+        if deleted_after_decompose:
+            original_rel = str(merged.get('original_path') or '').strip()
+            if original_rel and not str(merged.get('original_deleted_rel_path') or '').strip():
+                merged['original_deleted_rel_path'] = original_rel
+            merged['original_path'] = ''
         merged['channel_slug'] = key[0]
         merged['message_id'] = key[1]
         merged['kind'] = 'pdf'
@@ -663,6 +699,8 @@ def index_pdf_artifacts_from_raw(
     documents_with_manifest = 0
     documents_with_text = 0
     documents_with_renders = 0
+    documents_page_marked = 0
+    documents_page_mapping_missing = 0
     channels_seen: set[str] = set()
     month_counts: dict[str, int] = {}
     kind_counts: dict[str, int] = {}
@@ -717,6 +755,17 @@ def index_pdf_artifacts_from_raw(
                 documents_with_renders += 1
             quality_grade = str(manifest.get('quality_grade') or meta.get('pdf_quality_grade') or _pdf_quality_grade(page_count, text_pages, rendered_pages)).strip() or 'F'
             grade_counts[quality_grade] = int(grade_counts.get(quality_grade, 0)) + 1
+            page_marked = 1 if bool(meta.get('pdf_page_marked')) else 0
+            try:
+                page_marker_count = int(meta.get('pdf_page_marker_count') or 0)
+            except Exception:
+                page_marker_count = 0
+            page_mapping_status = str(meta.get('pdf_page_mapping_status') or '').strip()
+            extract_format = str(meta.get('extract_format') or '').strip()
+            if page_marked:
+                documents_page_marked += 1
+            if page_mapping_status.startswith('missing'):
+                documents_page_mapping_missing += 1
 
             original_path = _resolve_stage1_or_raw_path(raw_root_path, original_rel) if original_rel else None
             original_size_bytes = int(original_path.stat().st_size) if original_path is not None and original_path.exists() and original_path.is_file() else 0
@@ -735,8 +784,9 @@ def index_pdf_artifacts_from_raw(
                     manifest_rel_path, bundle_rel_path, original_size_bytes, page_count,
                     text_pages, rendered_pages, extraction_status, extraction_reason,
                     render_status, render_reason, quality_grade,
+                    page_marked, page_marker_count, page_mapping_status, extract_format,
                     human_review_window_active, db_synced_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(doc_key) DO UPDATE SET
                     source_family=excluded.source_family,
                     channel_slug=excluded.channel_slug,
@@ -759,6 +809,10 @@ def index_pdf_artifacts_from_raw(
                     render_status=excluded.render_status,
                     render_reason=excluded.render_reason,
                     quality_grade=excluded.quality_grade,
+                    page_marked=excluded.page_marked,
+                    page_marker_count=excluded.page_marker_count,
+                    page_mapping_status=excluded.page_mapping_status,
+                    extract_format=excluded.extract_format,
                     human_review_window_active=excluded.human_review_window_active,
                     db_synced_at=excluded.db_synced_at
                 ''',
@@ -785,6 +839,10 @@ def index_pdf_artifacts_from_raw(
                     render_status,
                     render_reason,
                     quality_grade,
+                    page_marked,
+                    page_marker_count,
+                    page_mapping_status,
+                    extract_format,
                     human_review_window_active,
                     finished_at,
                 ),
@@ -843,6 +901,8 @@ def index_pdf_artifacts_from_raw(
             'documents_with_manifest': documents_with_manifest,
             'documents_with_text': documents_with_text,
             'documents_with_renders': documents_with_renders,
+            'documents_page_marked': documents_page_marked,
+            'documents_page_mapping_missing': documents_page_mapping_missing,
             'channels_seen': len(channels_seen),
             'earliest_message_date': earliest_message_date,
             'latest_message_date': latest_message_date,
@@ -859,6 +919,8 @@ def index_pdf_artifacts_from_raw(
         documents_with_manifest=documents_with_manifest,
         documents_with_text=documents_with_text,
         documents_with_renders=documents_with_renders,
+        documents_page_marked=documents_page_marked,
+        documents_page_mapping_missing=documents_page_mapping_missing,
         channels_seen=len(channels_seen),
         earliest_message_date=earliest_message_date,
         latest_message_date=latest_message_date,

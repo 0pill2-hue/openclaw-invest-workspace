@@ -21,4 +21,5 @@ Stage2 문서는 **문서만 보고 현재 Stage2 refine/QC를 재현 구현할 
 - Stage2는 `upstream_stage1/master` + `stage1_raw_archive.sqlite3`를 읽고, raw DB snapshot을 stage-local mirror로 materialize해 사용한다.
 - `stage02_onepass_refine_full.py`는 **market signal + qualitative** canonical writer다.
 - `stage02_qc_cleaning_full.py`는 **kr/us signal** canonical writer이자 QC gate다.
+- Stage1은 PDF/문서를 문서·페이지 단위로만 분해하고, Stage2는 정제 이후 **산업/종목 deterministic 태깅**을 추가한다.
 - clean/quarantine 경계, taxonomy, rerun 규칙은 `STAGE2_RULEBOOK_AND_REPRO.md`를 기준으로 본다.

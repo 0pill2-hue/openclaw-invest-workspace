@@ -15,18 +15,18 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from context_policy import PLACEHOLDER_VALUES, extract_phase, load_task_state, parse_context_handoff, parse_current_task
 from lib.runtime_env import TASKS_DB, context_handoff_path, current_task_path
+from lib.task_runtime import is_nonterminal_wait_state
 
 CONTEXT_POLICY = ROOT / "scripts/context_policy.py"
 CURRENT_TASK = current_task_path()
 CONTEXT_HANDOFF = context_handoff_path()
 CONTEXT_TOKEN_THRESHOLD = int(os.environ.get('WATCHDOG_CONTEXT_TOKEN_THRESHOLD', '120000'))
-NONTERMINAL_BLOCKED_PHASES = {'subagent_running', 'awaiting_callback'}
 
 
 def is_waiting_callback_state(db_task: dict[str, str]) -> bool:
     status = (db_task.get('task_status') or '').strip().upper()
     phase = (db_task.get('task_phase') or '').strip().lower()
-    return status == 'BLOCKED' and phase in NONTERMINAL_BLOCKED_PHASES
+    return is_nonterminal_wait_state(status, phase)
 
 
 def load_active_execution_rows() -> list[dict[str, str]]:

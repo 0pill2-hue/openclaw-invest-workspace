@@ -35,7 +35,7 @@ updated_at: 2026-03-10 KST
   - `is_active`
   - `last_seen_sync_id`
 - PDF structured index(운영 표준):
-  - `pdf_documents` (`doc_key`, `channel_slug`, `message_id`, `message_date`, `meta_rel_path`, `original_rel_path`, `extract_rel_path`, `manifest_rel_path`, `bundle_rel_path`, `page_count`, `text_pages`, `rendered_pages`, `quality_grade`)
+  - `pdf_documents` (`doc_key`, `channel_slug`, `message_id`, `message_date`, `meta_rel_path`, `original_rel_path`, `extract_rel_path`, `manifest_rel_path`, `bundle_rel_path`, `page_count`, `text_pages`, `rendered_pages`, `quality_grade`, `page_marked`, `page_marker_count`, `page_mapping_status`, `extract_format`)
   - `pdf_pages` (`doc_key`, `page_no`, `text_rel_path`, `render_rel_path`, `text_chars`, `width`, `height`)
 - collector가 파일을 재기록하면 동일 `rel_path` row가 upsert되고, 사라진 파일은 `is_active=0`으로 비활성화된다. PDF structured index는 sync 시점 raw artifact를 다시 읽어 재구성한다.
 
@@ -180,6 +180,10 @@ KR universe 필터는 `Market` 또는 `MarketId`로 수행한다.
 - 구현 메모:
   - Stage2는 `url`, `title`, `published_date|published_at`, `summary/body`를 검증한다.
   - Stage3는 `title + summary + body`를 이어 붙여 본문으로 사용한다.
+  - canonical corpus는 항상 `selected_articles_*.jsonl` live 파일셋이다.
+  - `selected_articles_merged_summary.json`은 파생 directory summary이며, live 파일셋과 불일치하면 stale/invalid로 간주하고 소비자는 fail-close(요약 비신뢰)해야 한다.
+  - `news_backfill` / `stage01_backfill_10y.py`는 generic `stage01_collect_selected_news_articles.py`를 더 이상 live `selected_articles/`에 직접 쓰지 않는다.
+  - 검증 가능한 selected_articles 갱신은 별도 verifiable lane(예: Naver-only wrapper/전용 collector)에서만 수행해야 하며, mixed-source backfill이 live 디렉터리를 다시 오염시키면 계약 위반으로 본다.
 
 ### 4.5 Blog markdown
 - script: `stage01_scrape_all_posts_v2.py`
@@ -262,7 +266,7 @@ Source: https://...
 - PDF 예시 파일:
   - `msg_<id>__meta.json`
   - `msg_<id>__original__<safe_name>.pdf`
-  - `msg_<id>__extracted.txt` (optional but preferred)
+  - `msg_<id>__extracted.txt` (preferred durable form; PDF는 가능하면 `[PAGE 001]`, `[PAGE 002]` 같은 explicit marker를 포함)
   - `msg_<id>__pdf_manifest.json`
   - `msg_<id>__page_<NNN>.txt`
   - `msg_<id>__page_<NNN>.png`
@@ -284,6 +288,11 @@ Source: https://...
   - `pdf_quality_grade`
   - `compressed_bundle_path`
   - `human_review_window_active`
+  - `pdf_page_marked` (durable extracted text가 explicit page marker를 포함하는지)
+  - `pdf_page_marker_format` (`[PAGE NNN]`)
+  - `pdf_page_marker_count`
+  - `pdf_page_mapping_status` (`available_from_original|available_from_manifest_pages|available_from_extract_text|missing_*`)
+  - `extract_format` (`pdf_page_marked_text_v1|plain_text_legacy|''`)
 - `msg_<id>__pdf_manifest.json` 최소 필드:
   - `source_original_rel_path`
   - `page_count`
@@ -296,6 +305,10 @@ Source: https://...
   - `pdf_documents.page_count` / manifest `page_count` = **원본 PDF 전체 페이지 수**
   - `pdf_pages` row count / manifest `pages[]` 길이 = **실제로 추출·저장한 indexed page 수**
   - `max_pages_applied` cap이 걸린 문서는 두 값이 같지 않을 수 있으며, 이 경우만으로 손상으로 판단하지 않는다.
+- page-marked extracted text / bounded backfill 계약:
+  - 새 PDF 또는 rerun 시 원본 bytes가 있으면 `msg_<id>__extracted.txt`를 page-marked single text(`pdf_page_marked=true`, `extract_format=pdf_page_marked_text_v1`)로 저장한다.
+  - original PDF를 영구 보관할 필요는 없다. 이미 `pdf_manifest/pages[]`가 있으면 original이 삭제된 뒤에도 manifest page text로 aggregate extracted text를 재구성할 수 있다.
+  - original도 manifest page text도 없으면 기존 plain text를 유지하되 `pdf_page_marked=false`, `pdf_page_mapping_status=missing_*`로 명시한다. 이 경우 backfill scope는 여기서 종료되며 corpus를 삭제/실패 처리하지 않는다.
 
 ### 4.8 Premium markdown
 - script: `stage01_collect_premium_startale_channel_auth.py`
@@ -330,7 +343,8 @@ Source: https://...
 - `outputs/runtime/raw_db_sync_status.json`
 
 이 runtime 파일들은 Stage1 gate가 freshness waiver / collector selection / coverage 판단에 사용한다.
-`raw_db_sync_status.json`은 Stage2 DB mirror의 최신 sync provenance를 제공한다.
+`raw_db_sync_status.json`은 Stage2 DB mirror의 최신 sync provenance를 제공하며, status contract는 `RUNNING|FAIL|PASS` + `status_mode` + `lock` lifecycle 메타를 포함한다.
+락 없이 RUNNING 잔재가 남은 경우에는 stale cleanup 후 `status_only_from_sync_meta_after_stale_cleanup` 또는 `stale_lock_cleanup_no_sync_meta`로 정리한다.
 
 ---
 

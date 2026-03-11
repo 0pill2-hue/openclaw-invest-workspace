@@ -16,7 +16,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from lib.runtime_env import DIRECTIVES_DB
-from lib.context_lock import format_lock_reason, is_context_locked
+from lib.context_lock import format_lock_reason, is_blocking_context_lock, is_context_locked
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = DIRECTIVES_DB
@@ -188,7 +188,7 @@ def _context_lock_blocks_new_id(raw_id: str) -> bool:
 
 def cmd_add(args: argparse.Namespace) -> int:
     locked, lock_payload = is_context_locked()
-    if locked and _context_lock_blocks_new_id(args.id):
+    if locked and is_blocking_context_lock(lock_payload) and _context_lock_blocks_new_id(args.id):
         print(format_lock_reason(lock_payload), file=sys.stderr)
         return 2
 

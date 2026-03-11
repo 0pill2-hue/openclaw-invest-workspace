@@ -17,7 +17,8 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from lib.runtime_env import TASKS_DB
-from lib.context_lock import format_lock_reason, is_context_locked
+from lib.context_lock import format_lock_reason, is_blocking_context_lock, is_context_locked
+from lib.task_runtime import is_nonterminal_wait_phase
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = TASKS_DB
@@ -29,7 +30,7 @@ ALLOWED_PRIORITY = {"", "P0", "P1", "P2", "P3"}
 TASK_COLUMNS = [
     "id", "status", "title", "scope", "priority", "bucket",
     "note", "blocked_reason", "proof", "proof_pending", "proof_last",
-    "assignee", "assigned_run_id", "assigned_at", "review_status", "review_note",
+    "assigned_by", "owner", "assignee", "assigned_run_id", "assigned_at", "review_status", "review_note", "closed_by",
     "started_at", "last_activity_at", "resume_due",
     "extra_lines", "sort_order", "created_at", "updated_at",
 ]
@@ -69,7 +70,7 @@ def _needs_rebuild(conn: sqlite3.Connection) -> bool:
     info = _task_columns(conn)
     if not info:
         return False
-    required = {"started_at", "last_activity_at", "resume_due"}
+    required = {"started_at", "last_activity_at", "resume_due", "assigned_by", "owner", "closed_by"}
     if not required.issubset(info):
         return True
     create_sql_row = conn.execute(
@@ -94,11 +95,14 @@ def init_schema(conn: sqlite3.Connection) -> None:
             proof TEXT DEFAULT '',
             proof_pending TEXT DEFAULT '',
             proof_last TEXT DEFAULT '',
+            assigned_by TEXT DEFAULT '',
+            owner TEXT DEFAULT '',
             assignee TEXT DEFAULT '',
             assigned_run_id TEXT DEFAULT '',
             assigned_at TEXT DEFAULT '',
             review_status TEXT DEFAULT '',
             review_note TEXT DEFAULT '',
+            closed_by TEXT DEFAULT '',
             started_at TEXT DEFAULT '',
             last_activity_at TEXT DEFAULT '',
             resume_due TEXT DEFAULT '',
@@ -140,11 +144,14 @@ def init_schema(conn: sqlite3.Connection) -> None:
                     proof TEXT DEFAULT '',
                     proof_pending TEXT DEFAULT '',
                     proof_last TEXT DEFAULT '',
+                    assigned_by TEXT DEFAULT '',
+                    owner TEXT DEFAULT '',
                     assignee TEXT DEFAULT '',
                     assigned_run_id TEXT DEFAULT '',
                     assigned_at TEXT DEFAULT '',
                     review_status TEXT DEFAULT '',
                     review_note TEXT DEFAULT '',
+                    closed_by TEXT DEFAULT '',
                     started_at TEXT DEFAULT '',
                     last_activity_at TEXT DEFAULT '',
                     resume_due TEXT DEFAULT '',
@@ -156,6 +163,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
                 CREATE INDEX IF NOT EXISTS idx_tasks_bucket_order ON tasks(bucket, sort_order);
                 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
                 CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks(assignee, assigned_run_id);
+                CREATE INDEX IF NOT EXISTS idx_tasks_owner ON tasks(owner);
                 CREATE INDEX IF NOT EXISTS idx_tasks_resume_due ON tasks(resume_due);
                 """
             )
@@ -167,6 +175,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_bucket_order ON tasks(bucket, sort_order)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks(assignee, assigned_run_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_owner ON tasks(owner)")
     cols = _task_columns(conn)
     if "resume_due" in cols:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_resume_due ON tasks(resume_due)")
@@ -196,20 +205,69 @@ def extract_note_value(note: str | None, key: str) -> str:
     return ""
 
 
+def infer_worker_kind(assignee: str) -> str:
+    text = (assignee or "").strip().lower()
+    if not text:
+        return "main"
+    return "subagent" if "subagent" in text or text.startswith("sub:") else "main"
+
+
+def infer_task_difficulty(title: str | None, scope: str | None, note: str | None) -> str:
+    explicit = extract_note_value(note, "difficulty").strip().lower()
+    if explicit in {"easy", "normal", "hard"}:
+        return explicit
+    text = " ".join(x for x in [title or "", scope or "", note or ""] if x).lower()
+    hard_keywords = ("hard", "complex", "debug", "root cause", "contract", "architecture", "refactor", "migration", "정렬", "정합")
+    return "hard" if any(keyword in text for keyword in hard_keywords) else "normal"
+
+
+def infer_task_duration(title: str | None, scope: str | None, note: str | None) -> str:
+    explicit = extract_note_value(note, "duration").strip().lower()
+    if explicit in {"short", "long"}:
+        return explicit
+    text = " ".join(x for x in [title or "", scope or "", note or ""] if x).lower()
+    long_keywords = ("collect", "sync", "refresh", "scan", "backfill", "monitor", "crawl", "wait", "coverage", "import", "index", "batch", "수집", "동기화", "대기")
+    return "long" if any(keyword in text for keyword in long_keywords) else "short"
+
+
+def infer_execution_lane(title: str | None, scope: str | None, note: str | None) -> str:
+    explicit = extract_note_value(note, "execution_lane").strip().lower()
+    if explicit in {"main", "subagent", "auto"}:
+        return explicit
+    difficulty = infer_task_difficulty(title, scope, note)
+    duration = infer_task_duration(title, scope, note)
+    if difficulty == "hard":
+        return "main"
+    if duration == "long":
+        return "subagent"
+    return "auto"
+
+
 def format_task_runtime_state(row: sqlite3.Row) -> str:
     parts: List[str] = []
+    assigned_by = (row["assigned_by"] or "").strip() if "assigned_by" in row.keys() else ""
+    owner = (row["owner"] or "").strip() if "owner" in row.keys() else ""
     assignee = (row["assignee"] or "").strip() if "assignee" in row.keys() else ""
     phase = extract_phase(row["note"] if "note" in row.keys() else "")
     review_status = (row["review_status"] or "").strip() if "review_status" in row.keys() else ""
+    closed_by = (row["closed_by"] or "").strip() if "closed_by" in row.keys() else ""
     resume_due = (row["resume_due"] or "").strip() if "resume_due" in row.keys() else ""
     child_session = extract_note_value(row["note"] if "note" in row.keys() else "", "child_session")
 
+    if assigned_by:
+        parts.append(f"assigned_by={assigned_by}")
+    if owner:
+        parts.append(f"owner={owner}")
     if assignee:
         parts.append(f"assignee={assignee}")
     if phase != "-":
         parts.append(f"phase={phase}")
+        if is_nonterminal_wait_phase(phase):
+            parts.append("wait_state=nonterminal")
     if review_status:
         parts.append(f"review={review_status}")
+    if closed_by:
+        parts.append(f"closed_by={closed_by}")
     if child_session:
         parts.append(f"child={child_session}")
     if resume_due:
@@ -233,17 +291,47 @@ def normalize_closed_runtime_metadata(conn: sqlite3.Connection) -> None:
                 review_note=CASE
                     WHEN UPPER(COALESCE(review_status, ''))='PENDING' THEN ''
                     ELSE review_note
+                END,
+                closed_by=CASE
+                    WHEN TRIM(COALESCE(closed_by, ''))='' AND TRIM(COALESCE(assignee, ''))!='' THEN assignee
+                    ELSE closed_by
                 END
             WHERE status='DONE'
             """
         )
+        blocked_rows = conn.execute(
+            "SELECT id, note, assignee, review_status, review_note FROM tasks WHERE status='BLOCKED'"
+        ).fetchall()
+        for row in blocked_rows:
+            phase = extract_phase(row['note'])
+            waiting_state = is_nonterminal_wait_phase(phase)
+            review_status = row['review_status']
+            review_note = row['review_note']
+            if (review_status or '').upper() == 'PENDING':
+                review_status = ''
+                review_note = ''
+            resume_due = None if waiting_state else ''
+            closed_by = '' if waiting_state else ((row['assignee'] or '').strip() if not (row['assignee'] is None) else '')
+            conn.execute(
+                """
+                UPDATE tasks
+                SET resume_due=COALESCE(?, resume_due),
+                    review_status=?,
+                    review_note=?,
+                    closed_by=CASE
+                        WHEN ? THEN ''
+                        WHEN TRIM(COALESCE(closed_by, ''))='' AND TRIM(COALESCE(assignee, ''))!='' THEN assignee
+                        ELSE closed_by
+                    END
+                WHERE id=?
+                """,
+                (resume_due, review_status, review_note, 1 if waiting_state else 0, row['id']),
+            )
         conn.execute(
             """
             UPDATE tasks
-            SET resume_due='',
-                review_status=CASE WHEN UPPER(COALESCE(review_status, ''))='PENDING' THEN '' ELSE review_status END,
-                review_note=CASE WHEN UPPER(COALESCE(review_status, ''))='PENDING' THEN '' ELSE review_note END
-            WHERE status='BLOCKED'
+            SET closed_by=''
+            WHERE status='IN_PROGRESS'
             """
         )
 
@@ -459,7 +547,7 @@ def _context_lock_blocks_new_id(raw_id: str) -> bool:
 
 def cmd_add(args: argparse.Namespace) -> int:
     locked, lock_payload = is_context_locked()
-    if locked and _context_lock_blocks_new_id(args.id):
+    if locked and is_blocking_context_lock(lock_payload) and _context_lock_blocks_new_id(args.id):
         print(format_lock_reason(lock_payload), file=sys.stderr)
         return 2
 
@@ -490,11 +578,18 @@ def cmd_add(args: argparse.Namespace) -> int:
     proof = existing["proof"] if existing else ""
     proof_pending = existing["proof_pending"] if existing else ""
     proof_last = existing["proof_last"] if existing else ""
+    assigned_by = existing["assigned_by"] if existing and "assigned_by" in existing.keys() else ""
+    owner = existing["owner"] if existing and "owner" in existing.keys() else ""
     assignee = existing["assignee"] if existing else ""
     assigned_run_id = existing["assigned_run_id"] if existing else ""
     assigned_at = existing["assigned_at"] if existing else ""
     review_status = existing["review_status"] if existing else ""
     review_note = existing["review_note"] if existing else ""
+    closed_by = existing["closed_by"] if existing and "closed_by" in existing.keys() else ""
+    if args.assigned_by:
+        assigned_by = args.assigned_by
+    if args.owner:
+        owner = args.owner
     started_at = existing["started_at"] if existing else (now if status == "IN_PROGRESS" else "")
     last_activity_at = existing["last_activity_at"] if existing else (now if status == "IN_PROGRESS" else "")
     resume_due = existing["resume_due"] if existing else ""
@@ -507,15 +602,15 @@ def cmd_add(args: argparse.Namespace) -> int:
             INSERT OR REPLACE INTO tasks(
                 id, status, title, scope, priority, bucket,
                 note, blocked_reason, proof, proof_pending, proof_last,
-                assignee, assigned_run_id, assigned_at, review_status, review_note,
+                assigned_by, owner, assignee, assigned_run_id, assigned_at, review_status, review_note, closed_by,
                 started_at, last_activity_at, resume_due,
                 extra_lines, sort_order, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 args.id, status, args.title, args.scope, priority, bucket,
                 note, blocked_reason, proof, proof_pending, proof_last,
-                assignee, assigned_run_id, assigned_at, review_status, review_note,
+                assigned_by, owner, assignee, assigned_run_id, assigned_at, review_status, review_note, closed_by,
                 started_at, last_activity_at, resume_due,
                 extra_lines, sort_order, created_at, now,
             ),
@@ -525,7 +620,7 @@ def cmd_add(args: argparse.Namespace) -> int:
     return 0
 
 
-def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, bucket: str, blocked_reason: str | None = None, proof: str | None = None, resume_due: str | None = None) -> bool:
+def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, bucket: str, blocked_reason: str | None = None, proof: str | None = None, resume_due: str | None = None, closed_by: str | None = None) -> bool:
     row = conn.execute("SELECT * FROM tasks WHERE id=?", (ticket_id,)).fetchone()
     if not row:
         return False
@@ -539,27 +634,35 @@ def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, buck
     new_resume_due = row["resume_due"]
     new_review_status = row["review_status"]
     new_review_note = row["review_note"]
+    new_closed_by = row["closed_by"] if "closed_by" in row.keys() else ""
 
     if blocked_reason is not None:
         new_blocked = blocked_reason
     if proof is not None:
         new_proof = proof
         new_proof_pending = ""
+    if closed_by is not None:
+        new_closed_by = closed_by
     if status == "IN_PROGRESS":
         if not new_started_at:
             new_started_at = now
         if blocked_reason is None:
             new_blocked = ""
+        new_closed_by = ""
     elif status == "BLOCKED":
         if (new_review_status or "").upper() == "PENDING":
             new_review_status = ""
             new_review_note = ""
+        if not new_closed_by:
+            new_closed_by = (row["assignee"] or "").strip() if "assignee" in row.keys() else ""
     elif status == "DONE":
         new_blocked = ""
         new_proof_pending = ""
         if (new_review_status or "").upper() == "PENDING":
             new_review_status = "PASS"
             new_review_note = ""
+        if not new_closed_by:
+            new_closed_by = (row["assignee"] or "").strip() if "assignee" in row.keys() else ""
 
     if status != "BLOCKED":
         new_resume_due = ""
@@ -570,10 +673,10 @@ def update_status(conn: sqlite3.Connection, ticket_id: str, *, status: str, buck
         conn.execute(
             """
             UPDATE tasks
-            SET status=?, bucket=?, blocked_reason=?, proof=?, proof_pending=?, review_status=?, review_note=?, started_at=?, last_activity_at=?, resume_due=?, updated_at=?
+            SET status=?, bucket=?, blocked_reason=?, proof=?, proof_pending=?, review_status=?, review_note=?, closed_by=?, started_at=?, last_activity_at=?, resume_due=?, updated_at=?
             WHERE id=?
             """,
-            (status, bucket, new_blocked, new_proof, new_proof_pending, new_review_status, new_review_note, new_started_at, new_last_activity, new_resume_due, now, ticket_id),
+            (status, bucket, new_blocked, new_proof, new_proof_pending, new_review_status, new_review_note, new_closed_by, new_started_at, new_last_activity, new_resume_due, now, ticket_id),
         )
     return True
 
@@ -603,7 +706,7 @@ def cmd_block(args: argparse.Namespace) -> int:
 def cmd_done(args: argparse.Namespace) -> int:
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
-    ok = update_status(conn, args.id, status="DONE", bucket="done", proof=args.proof)
+    ok = update_status(conn, args.id, status="DONE", bucket="done", proof=args.proof, closed_by=args.closed_by)
     if not ok:
         print(f"ticket not found: {args.id}", file=sys.stderr)
         return 1
@@ -625,34 +728,58 @@ def pick_next_task(conn: sqlite3.Connection) -> sqlite3.Row | None:
     ).fetchone()
 
 
-def pick_next_assignable_task(conn: sqlite3.Connection) -> sqlite3.Row | None:
-    todo_row = conn.execute(
-        """
-        SELECT id, status, bucket, priority, title, scope, sort_order
-        FROM tasks
-        WHERE status='TODO' AND COALESCE(assignee, '')=''
-        ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 WHEN 'P3' THEN 3 ELSE 4 END,
-                 CASE bucket WHEN 'active' THEN 0 WHEN 'backlog' THEN 1 WHEN 'done' THEN 2 ELSE 3 END,
-                 sort_order, id
-        LIMIT 1
-        """
-    ).fetchone()
-    if todo_row:
-        return todo_row
-    return conn.execute(
-        """
-        SELECT id, status, bucket, priority, title, scope, sort_order
-        FROM tasks
-        WHERE status='IN_PROGRESS' AND COALESCE(assignee, '')=''
-        ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 WHEN 'P3' THEN 3 ELSE 4 END,
-                 CASE bucket WHEN 'active' THEN 0 WHEN 'backlog' THEN 1 WHEN 'done' THEN 2 ELSE 3 END,
-                 sort_order, id
-        LIMIT 1
-        """
-    ).fetchone()
+def task_priority_rank(priority: str) -> int:
+    value = (priority or "").strip().upper()
+    return {"P0": 0, "P1": 1, "P2": 2, "P3": 3}.get(value, 4)
 
 
-def assign_next_task(conn: sqlite3.Connection, assignee: str, run_id: str) -> sqlite3.Row | None:
+def bucket_rank(bucket: str) -> int:
+    value = (bucket or "").strip().lower()
+    return {"active": 0, "backlog": 1, "done": 2}.get(value, 3)
+
+
+def pick_next_assignable_task(conn: sqlite3.Connection, assignee: str) -> sqlite3.Row | None:
+    worker_kind = infer_worker_kind(assignee)
+    rows = conn.execute(
+        """
+        SELECT id, status, bucket, priority, title, scope, sort_order, note
+        FROM tasks
+        WHERE status IN ('TODO', 'IN_PROGRESS') AND COALESCE(assignee, '')=''
+        ORDER BY CASE status WHEN 'TODO' THEN 0 ELSE 1 END,
+                 CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 WHEN 'P3' THEN 3 ELSE 4 END,
+                 CASE bucket WHEN 'active' THEN 0 WHEN 'backlog' THEN 1 WHEN 'done' THEN 2 ELSE 3 END,
+                 sort_order, id
+        """
+    ).fetchall()
+    candidates: list[tuple[tuple[int, int, int, int, str], sqlite3.Row]] = []
+    for row in rows:
+        note = row['note'] or ''
+        title = row['title'] or ''
+        scope = row['scope'] or ''
+        difficulty = infer_task_difficulty(title, scope, note)
+        duration = infer_task_duration(title, scope, note)
+        lane = infer_execution_lane(title, scope, note)
+        if worker_kind == 'subagent':
+            if lane == 'main' or difficulty == 'hard':
+                continue
+            lane_pref = 0 if lane == 'subagent' else 1 if duration == 'long' else 2
+        else:
+            lane_pref = 0 if difficulty == 'hard' or lane == 'main' else 1 if duration == 'short' else 2
+        sort_key = (
+            lane_pref,
+            0 if (row['status'] or '').upper() == 'TODO' else 1,
+            task_priority_rank(row['priority'] or ''),
+            bucket_rank(row['bucket'] or ''),
+            f"{int(row['sort_order']) if row['sort_order'] is not None else 0:06d}:{row['id']}",
+        )
+        candidates.append((sort_key, row))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: item[0])
+    return candidates[0][1]
+
+
+def assign_next_task(conn: sqlite3.Connection, assignee: str, run_id: str, assigned_by: str = "") -> sqlite3.Row | None:
     in_progress = conn.execute(
         "SELECT id FROM tasks WHERE assignee=? AND status='IN_PROGRESS' LIMIT 1",
         (assignee,),
@@ -661,7 +788,7 @@ def assign_next_task(conn: sqlite3.Connection, assignee: str, run_id: str) -> sq
         return None
 
     for _ in range(5):
-        row = pick_next_assignable_task(conn)
+        row = pick_next_assignable_task(conn, assignee=assignee)
         if not row:
             return None
         now = now_ts()
@@ -669,13 +796,13 @@ def assign_next_task(conn: sqlite3.Connection, assignee: str, run_id: str) -> sq
             cur = conn.execute(
                 """
                 UPDATE tasks
-                SET status='IN_PROGRESS', bucket='active', assignee=?, assigned_run_id=?, assigned_at=?,
-                    review_status='PENDING', review_note='',
+                SET status='IN_PROGRESS', bucket='active', assigned_by=?, owner=CASE WHEN COALESCE(owner,'')='' THEN ? ELSE owner END, assignee=?, assigned_run_id=?, assigned_at=?,
+                    review_status='PENDING', review_note='', closed_by='',
                     started_at=CASE WHEN COALESCE(started_at,'')='' THEN ? ELSE started_at END,
                     last_activity_at=?, updated_at=?
                 WHERE id=? AND COALESCE(assignee, '')=''
                 """,
-                (assignee, run_id, now, now, now, now, row["id"]),
+                (assigned_by, assignee, assignee, run_id, now, now, now, now, row["id"]),
             )
         if cur.rowcount == 1:
             return row
@@ -697,18 +824,19 @@ def cmd_pick_next(args: argparse.Namespace) -> int:
 
 def cmd_assign_next(args: argparse.Namespace) -> int:
     locked, lock_payload = is_context_locked()
-    if locked:
+    if locked and is_blocking_context_lock(lock_payload):
         print(format_lock_reason(lock_payload), file=sys.stderr)
         return 2
 
     assignee = (args.assignee or "").strip()
     run_id = (args.run_id or "").strip()
+    assigned_by = (args.assigned_by or "").strip()
     if not assignee:
         print("--assignee is required", file=sys.stderr)
         return 1
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
-    row = assign_next_task(conn, assignee=assignee, run_id=run_id)
+    row = assign_next_task(conn, assignee=assignee, run_id=run_id, assigned_by=assigned_by)
     if not row:
         print("no assignable ticket", file=sys.stderr)
         return 1
@@ -716,17 +844,46 @@ def cmd_assign_next(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_assign_pool(args: argparse.Namespace) -> int:
+    locked, lock_payload = is_context_locked()
+    if locked and is_blocking_context_lock(lock_payload):
+        print(format_lock_reason(lock_payload), file=sys.stderr)
+        return 2
+
+    workers = [worker.strip() for worker in (args.worker or []) if worker.strip()]
+    if not workers:
+        print("--worker is required", file=sys.stderr)
+        return 1
+    base_run_id = (args.run_id or "").strip() or datetime.now().strftime("%Y%m%d%H%M%S")
+    assigned_by = (args.assigned_by or "").strip()
+
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+
+    assigned_count = 0
+    for idx, worker in enumerate(workers, start=1):
+        row = assign_next_task(conn, assignee=worker, run_id=f"{base_run_id}-{idx}", assigned_by=assigned_by)
+        if row is None:
+            print(f"idle {worker}")
+            continue
+        assigned_count += 1
+        print(f"assigned {row['id']} -> {worker}")
+
+    return 0
+
+
 def cmd_review_pass(args: argparse.Namespace) -> int:
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
-    row = conn.execute("SELECT id FROM tasks WHERE id=?", (args.id,)).fetchone()
+    row = conn.execute("SELECT id, assignee FROM tasks WHERE id=?", (args.id,)).fetchone()
     if not row:
         print(f"ticket not found: {args.id}", file=sys.stderr)
         return 1
+    closed_by = (args.closed_by or "").strip() or (row["assignee"] or "").strip()
     with conn:
         conn.execute(
-            "UPDATE tasks SET status='DONE', bucket='done', proof=?, proof_pending='', review_status='PASS', review_note='', last_activity_at=?, updated_at=? WHERE id=?",
-            (args.proof, now_ts(), now_ts(), args.id),
+            "UPDATE tasks SET status='DONE', bucket='done', proof=?, proof_pending='', review_status='PASS', review_note='', closed_by=?, last_activity_at=?, updated_at=? WHERE id=?",
+            (args.proof, closed_by, now_ts(), now_ts(), args.id),
         )
     print(f"review-pass: {args.id}")
     return 0
@@ -741,7 +898,7 @@ def cmd_review_rework(args: argparse.Namespace) -> int:
         return 1
     with conn:
         conn.execute(
-            "UPDATE tasks SET status='IN_PROGRESS', bucket='active', review_status='REWORK', review_note=?, last_activity_at=?, updated_at=? WHERE id=?",
+            "UPDATE tasks SET status='IN_PROGRESS', bucket='active', review_status='REWORK', review_note=?, closed_by='', last_activity_at=?, updated_at=? WHERE id=?",
             (args.note, now_ts(), now_ts(), args.id),
         )
     print(f"review-rework: {args.id}")
@@ -768,7 +925,7 @@ def cmd_release(args: argparse.Namespace) -> int:
         cur = conn.execute(
             """
             UPDATE tasks
-            SET assignee='', assigned_run_id='', assigned_at='', review_status='', review_note='', updated_at=?
+            SET assigned_by='', assignee='', assigned_run_id='', assigned_at='', review_status='', review_note='', updated_at=?
             WHERE id=?
             """,
             (now, args.id),
@@ -783,7 +940,7 @@ def cmd_release(args: argparse.Namespace) -> int:
 def cmd_mark_phase(args: argparse.Namespace) -> int:
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
-    row = conn.execute("SELECT note FROM tasks WHERE id=?", (args.id,)).fetchone()
+    row = conn.execute("SELECT status, note FROM tasks WHERE id=?", (args.id,)).fetchone()
     if not row:
         print(f"ticket not found: {args.id}", file=sys.stderr)
         return 1
@@ -799,11 +956,24 @@ def cmd_mark_phase(args: argparse.Namespace) -> int:
     note = "\n".join(line for line in new_lines if line.strip())
     now = now_ts()
     resume_due = args.resume_due or ""
+    waiting_state = is_nonterminal_wait_phase(args.phase)
+    status = (row["status"] or "").upper()
     with conn:
-        conn.execute(
-            "UPDATE tasks SET note=?, last_activity_at=?, resume_due=?, updated_at=? WHERE id=?",
-            (note, now, resume_due, now, args.id),
-        )
+        if waiting_state and status in {"TODO", "BLOCKED"}:
+            conn.execute(
+                """
+                UPDATE tasks
+                SET status='IN_PROGRESS', bucket='active', blocked_reason='', closed_by='',
+                    note=?, last_activity_at=?, resume_due=?, updated_at=?
+                WHERE id=?
+                """,
+                (note, now, resume_due, now, args.id),
+            )
+        else:
+            conn.execute(
+                "UPDATE tasks SET note=?, last_activity_at=?, resume_due=?, updated_at=? WHERE id=?",
+                (note, now, resume_due, now, args.id),
+            )
     print(f"phase-updated: {args.id} -> {args.phase}")
     return 0
 
@@ -833,7 +1003,7 @@ def cmd_list(args: argparse.Namespace) -> int:
         if b not in ALLOWED_BUCKET:
             print(f"invalid bucket filter: {b}", file=sys.stderr)
             return 1
-    sql = "SELECT id, status, bucket, priority, title, note FROM tasks"
+    sql = "SELECT id, status, bucket, priority, title, note, assigned_by, owner, assignee, review_status, resume_due, closed_by FROM tasks"
     conds: List[str] = []
     params: List[str] = []
     if statuses:
@@ -849,7 +1019,11 @@ def cmd_list(args: argparse.Namespace) -> int:
     for r in rows:
         p = r["priority"] if r["priority"] else "-"
         phase = extract_phase(r["note"])
-        print(f"{r['id']}\t{r['status']}\t{phase}\t{r['bucket']}\t{p}\t{r['title']}")
+        runtime_state = format_task_runtime_state(r)
+        line = f"{r['id']}\t{r['status']}\t{phase}\t{r['bucket']}\t{p}\t{r['title']}"
+        if runtime_state != "-":
+            line += f"\t{runtime_state}"
+        print(line)
     print(f"count={len(rows)}")
     return 0
 
@@ -862,7 +1036,7 @@ def cmd_summary(args: argparse.Namespace) -> int:
     init_schema(conn)
     counts = conn.execute("SELECT COUNT(*) AS total, SUM(CASE WHEN status='IN_PROGRESS' THEN 1 ELSE 0 END) AS in_progress, SUM(CASE WHEN status='TODO' THEN 1 ELSE 0 END) AS todo, SUM(CASE WHEN status='BLOCKED' THEN 1 ELSE 0 END) AS blocked, SUM(CASE WHEN status='DONE' THEN 1 ELSE 0 END) AS done FROM tasks").fetchone()
     assignment_counts = conn.execute("SELECT SUM(CASE WHEN status='IN_PROGRESS' AND assignee != '' AND review_status='PENDING' THEN 1 ELSE 0 END) AS assigned, SUM(CASE WHEN status='IN_PROGRESS' AND review_status='REWORK' THEN 1 ELSE 0 END) AS rework FROM tasks").fetchone()
-    active_rows = conn.execute("SELECT id, priority, status, title, note, assignee, assigned_run_id, review_status, resume_due FROM tasks WHERE bucket='active' ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 ELSE 3 END, sort_order, id LIMIT ?", (args.top,)).fetchall()
+    active_rows = conn.execute("SELECT id, priority, status, title, note, assigned_by, owner, assignee, assigned_run_id, review_status, resume_due, closed_by FROM tasks WHERE bucket='active' ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 ELSE 3 END, sort_order, id LIMIT ?", (args.top,)).fetchall()
     recent_rows = conn.execute("SELECT id, status, updated_at, title FROM tasks ORDER BY datetime(updated_at) DESC, id DESC LIMIT ?", (args.recent,)).fetchall()
     hygiene_rows = conn.execute(
         """
@@ -1005,6 +1179,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_add.add_argument("--scope", required=True)
     p_add.add_argument("--priority", default="", help="P0|P1|P2|P3")
     p_add.add_argument("--bucket", required=True, choices=sorted(ALLOWED_BUCKET))
+    p_add.add_argument("--assigned-by", default="")
+    p_add.add_argument("--owner", default="")
     p_start = sub.add_parser("start", help="Set ticket IN_PROGRESS")
     p_start.add_argument("--id", required=True)
     p_block = sub.add_parser("block", help="Set ticket BLOCKED")
@@ -1014,13 +1190,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_done = sub.add_parser("done", help="Set ticket DONE")
     p_done.add_argument("--id", required=True)
     p_done.add_argument("--proof", required=True)
+    p_done.add_argument("--closed-by", default="")
     sub.add_parser("pick-next", help="Pick next ticket by priority")
     p_assign_next = sub.add_parser("assign-next", help="Assign next ticket by priority")
     p_assign_next.add_argument("--assignee", required=True)
     p_assign_next.add_argument("--run-id", default="")
+    p_assign_next.add_argument("--assigned-by", default="")
+    p_assign_pool = sub.add_parser("assign-pool", help="Assign multiple idle workers from the task pool")
+    p_assign_pool.add_argument("--worker", nargs="+", required=True)
+    p_assign_pool.add_argument("--run-id", default="")
+    p_assign_pool.add_argument("--assigned-by", default="")
     p_review_pass = sub.add_parser("review-pass", help="Mark review pass and close ticket")
     p_review_pass.add_argument("--id", required=True)
     p_review_pass.add_argument("--proof", required=True)
+    p_review_pass.add_argument("--closed-by", default="")
     p_review_rework = sub.add_parser("review-rework", help="Mark review rework")
     p_review_rework.add_argument("--id", required=True)
     p_review_rework.add_argument("--note", required=True)
@@ -1066,6 +1249,8 @@ def main() -> int:
         return cmd_pick_next(args)
     if args.command == "assign-next":
         return cmd_assign_next(args)
+    if args.command == "assign-pool":
+        return cmd_assign_pool(args)
     if args.command == "review-pass":
         return cmd_review_pass(args)
     if args.command == "review-rework":

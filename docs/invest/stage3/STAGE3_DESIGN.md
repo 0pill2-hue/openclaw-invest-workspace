@@ -26,6 +26,16 @@
 
 링크메타 전용 premium 문서(`STARTALE PREMIUM LINK`)는 제외.
 원칙: Stage3 본입력은 Stage1 raw를 직접 읽지 않고, Stage2 clean/Stage3 reference만 사용한다.
+또한 builder는 모든 입력 row에 아래 semantic contract를 공통 부여한다.
+- `target_levels`
+- `macro_tags`
+- `industry_tags`
+- `stock_tags`
+- `event_tags`
+- `impact_direction`
+- `horizon`
+- `region_tags`
+계약 부여는 deterministic keyword/name-match 규칙으로 수행하고, 기존 `record_id/published_at/symbols/text/source/source_family/content_fingerprint`는 그대로 유지한다.
 
 ---
 

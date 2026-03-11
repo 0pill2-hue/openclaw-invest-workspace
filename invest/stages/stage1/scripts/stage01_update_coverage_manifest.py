@@ -23,6 +23,7 @@ US_OHLCV_DIR = RAW_ROOT / "signal/us/ohlcv"
 RSS_DIR = RAW_ROOT / "qualitative/market/rss"
 NEWS_URL_INDEX_DIR = RAW_ROOT / "qualitative/market/news/url_index"
 NEWS_SELECTED_DIR = RAW_ROOT / "qualitative/market/news/selected_articles"
+NEWS_SELECTED_SUMMARY_PATH = NEWS_SELECTED_DIR / "selected_articles_merged_summary.json"
 TELEGRAM_DIR = RAW_ROOT / "qualitative/text/telegram"
 TELEGRAM_ATTACHMENT_DIR = RAW_ROOT / "qualitative/attachments/telegram"
 BLOG_DIR = RAW_ROOT / "qualitative/text/blog"
@@ -86,6 +87,13 @@ def _normalize_iso_date(raw: str) -> str | None:
     if len(s) >= 10 and s[4] == "-" and s[7] == "-":
         return s[:10].replace("-", "")
     return _normalize_yyyymmdd(s)
+
+
+def _yyyymmdd_to_iso(raw: str | None) -> str | None:
+    s = str(raw or "").strip()
+    if len(s) == 8 and s.isdigit():
+        return f"{s[:4]}-{s[4:6]}-{s[6:8]}"
+    return None
 
 
 def _years_ago_yyyymmdd(years: int) -> str:
@@ -262,12 +270,12 @@ def _text_source_summary(*, name: str, kind: str, source_dir: Path, pattern: str
     )
 
 
-def _jsonl_source_summary(*, name: str, kind: str, source_dir: Path, pattern: str, date_fields: list[str]) -> dict[str, Any]:
-    files = sorted(source_dir.glob(pattern)) if source_dir.exists() else []
+def _jsonl_source_summary(*, name: str, kind: str, source_dir: Path, pattern: str, date_fields: list[str], files: list[Path] | None = None) -> dict[str, Any]:
+    jsonl_files = list(files) if files is not None else (sorted(source_dir.glob(pattern)) if source_dir.exists() else [])
     dates: list[str] = []
     rows_seen = 0
 
-    for path in files:
+    for path in jsonl_files:
         try:
             with path.open("r", encoding="utf-8", errors="ignore") as f:
                 for line in f:
@@ -294,9 +302,121 @@ def _jsonl_source_summary(*, name: str, kind: str, source_dir: Path, pattern: st
         kind=kind,
         source_dir=source_dir,
         dates=dates,
-        files_scanned=len(files),
+        files_scanned=len(jsonl_files),
         rows_seen=rows_seen,
     )
+
+
+def _selected_articles_live_files() -> list[Path]:
+    if not NEWS_SELECTED_DIR.exists():
+        return []
+    files: list[Path] = []
+    for path in sorted(NEWS_SELECTED_DIR.glob("selected_articles_*.jsonl")):
+        if not path.is_file() or path.name == "selected_articles_merged.jsonl":
+            continue
+        files.append(path)
+    return files
+
+
+def _selected_articles_live_summary(files: list[Path]) -> dict[str, Any]:
+    dates: list[str] = []
+    rows_seen = 0
+    unique_urls: set[str] = set()
+    source_domains: Counter[str] = Counter()
+    source_kinds: Counter[str] = Counter()
+    row_counts_by_file: dict[str, int] = {}
+
+    for path in files:
+        local_rows = 0
+        try:
+            with path.open("r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        obj = json.loads(line)
+                    except Exception:
+                        continue
+                    if not isinstance(obj, dict):
+                        continue
+                    rows_seen += 1
+                    local_rows += 1
+                    url = str(obj.get("url", "")).strip()
+                    if url:
+                        unique_urls.add(url)
+                    source_domain = str(obj.get("source_domain", "")).strip()
+                    if source_domain:
+                        source_domains[source_domain] += 1
+                    source_kind = str(obj.get("source_kind", "")).strip()
+                    if source_kind:
+                        source_kinds[source_kind] += 1
+                    for field in ("published_date", "published_at", "collected_at"):
+                        dt = _normalize_iso_date(obj.get(field, ""))
+                        if dt is not None:
+                            dates.append(dt)
+                            break
+        except Exception:
+            continue
+        row_counts_by_file[path.name] = local_rows
+
+    recent_files = files[-2:]
+    date_min = min(dates) if dates else None
+    date_max = max(dates) if dates else None
+    latest_file = files[-1] if files else None
+    latest_mtime = latest_file.stat().st_mtime if latest_file and latest_file.exists() else None
+
+    return {
+        "summary_mode": "directory_jsonl_summary",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "source_dir": _rel(NEWS_SELECTED_DIR),
+        "source_files": len(files),
+        "source_files_list": [_rel(path) for path in files],
+        "merged_count": rows_seen,
+        "total_rows": rows_seen,
+        "unique_url_count": len(unique_urls),
+        "date_min": _yyyymmdd_to_iso(date_min),
+        "date_max": _yyyymmdd_to_iso(date_max),
+        "output_file": "",
+        "latest_file": _rel(latest_file) if latest_file else None,
+        "latest_file_mtime_utc": datetime.fromtimestamp(latest_mtime, tz=timezone.utc).isoformat() if latest_mtime else None,
+        "recent_backfill_files": [_rel(path) for path in recent_files],
+        "recent_backfill_added_rows": sum(row_counts_by_file.get(path.name, 0) for path in recent_files),
+        "row_counts_by_file": {key: row_counts_by_file[key] for key in sorted(row_counts_by_file)},
+        "source_domains": {key: source_domains[key] for key in sorted(source_domains)},
+        "source_kinds": {key: source_kinds[key] for key in sorted(source_kinds)},
+        "contract_note": "Canonical selected_articles corpus is the live selected_articles_*.jsonl set in this directory. This file is a directory summary only.",
+    }
+
+
+def _validate_selected_articles_live_summary(summary: Any, files: list[Path]) -> list[str]:
+    if not isinstance(summary, dict):
+        return ["summary_missing_or_invalid"]
+    expected = _selected_articles_live_summary(files)
+    issues: list[str] = []
+    for key in (
+        "summary_mode",
+        "source_dir",
+        "source_files",
+        "source_files_list",
+        "merged_count",
+        "total_rows",
+        "unique_url_count",
+        "date_min",
+        "date_max",
+        "output_file",
+        "latest_file",
+        "latest_file_mtime_utc",
+        "recent_backfill_files",
+        "recent_backfill_added_rows",
+        "row_counts_by_file",
+        "source_domains",
+        "source_kinds",
+        "contract_note",
+    ):
+        if summary.get(key) != expected.get(key):
+            issues.append(f"{key}_mismatch")
+    return issues
 
 
 def _rss_summary() -> dict[str, Any]:
@@ -623,17 +743,26 @@ def _us_scope() -> dict[str, Any]:
     }
 
 
-def _news_scope() -> dict[str, Any]:
+def _news_scope(selected_files: list[Path] | None = None) -> dict[str, Any]:
     cfg = _load_json(NEWS_SOURCES_CONFIG_PATH) or {}
     feeds = cfg.get("feeds", {}) if isinstance(cfg, dict) else {}
     latest_index = sorted(NEWS_URL_INDEX_DIR.glob("*.jsonl"))[-1] if NEWS_URL_INDEX_DIR.exists() and list(NEWS_URL_INDEX_DIR.glob("*.jsonl")) else None
-    latest_selected = sorted(NEWS_SELECTED_DIR.glob("*.jsonl"))[-1] if NEWS_SELECTED_DIR.exists() and list(NEWS_SELECTED_DIR.glob("*.jsonl")) else None
+    live_selected_files = list(selected_files) if selected_files is not None else _selected_articles_live_files()
+    latest_selected = live_selected_files[-1] if live_selected_files else None
+    summary_payload = _load_json(NEWS_SELECTED_SUMMARY_PATH) if NEWS_SELECTED_SUMMARY_PATH.exists() else None
+    summary_issues = _validate_selected_articles_live_summary(summary_payload, live_selected_files)
+    summary_valid = NEWS_SELECTED_SUMMARY_PATH.exists() and not summary_issues
     return {
-        "coverage_basis": "configured_news_feeds + observed url_index/selected_articles",
+        "coverage_basis": "configured_news_feeds + live selected_articles_*.jsonl",
         "configured_feed_count": len(feeds) if isinstance(feeds, dict) else 0,
         "config_path": _rel(NEWS_SOURCES_CONFIG_PATH),
         "latest_url_index_file": _rel(latest_index) if latest_index else None,
         "latest_selected_articles_file": _rel(latest_selected) if latest_selected else None,
+        "selected_articles_summary_file": _rel(NEWS_SELECTED_SUMMARY_PATH) if summary_valid else None,
+        "selected_articles_summary_status": "validated_live_directory_summary" if summary_valid else ("missing" if not NEWS_SELECTED_SUMMARY_PATH.exists() else "stale_or_invalid"),
+        "selected_articles_summary_issues": summary_issues,
+        "selected_articles_live_file_count": len(live_selected_files),
+        "selected_articles_contract": "selected_articles_*.jsonl files are canonical; selected_articles_merged_summary.json is a derived directory summary.",
     }
 
 
@@ -746,6 +875,12 @@ def update_index() -> dict[str, Any]:
     _write_json(DART_MANIFEST_PATH, dart)
 
     blog_min_date = BLOG_FIXED_START_DATE
+    selected_article_files = _selected_articles_live_files()
+    selected_articles_summary = _selected_articles_live_summary(selected_article_files)
+    selected_articles_summary_issues = _validate_selected_articles_live_summary(selected_articles_summary, selected_article_files)
+    if selected_articles_summary_issues:
+        raise RuntimeError(f"selected_articles_live_summary_invalid:{','.join(selected_articles_summary_issues)}")
+    _write_json(NEWS_SELECTED_SUMMARY_PATH, selected_articles_summary)
 
     db_summaries = {
         "dart": dart,
@@ -758,7 +893,7 @@ def update_index() -> dict[str, Any]:
     source_summaries = {
         "rss": _rss_summary(),
         "news_url_index": _jsonl_source_summary(name="news_url_index", kind="qualitative.market.news", source_dir=NEWS_URL_INDEX_DIR, pattern="*.jsonl", date_fields=["published_date", "published_at"]),
-        "news_selected_articles": _jsonl_source_summary(name="news_selected_articles", kind="qualitative.market.news", source_dir=NEWS_SELECTED_DIR, pattern="*.jsonl", date_fields=["published_date", "published_at", "collected_at"]),
+        "news_selected_articles": _jsonl_source_summary(name="news_selected_articles", kind="qualitative.market.news", source_dir=NEWS_SELECTED_DIR, pattern="selected_articles_*.jsonl", date_fields=["published_date", "published_at", "collected_at"], files=selected_article_files),
         "telegram": _text_source_summary(name="telegram", kind="qualitative.text", source_dir=TELEGRAM_DIR, pattern="*.md", regexes=[r"(?m)^PostDate:\s*([^\n]+)", r"(?m)^Date:\s*([^\n]+)"]),
         "blog": _text_source_summary(name="blog", kind="qualitative.text", source_dir=BLOG_DIR, pattern="*.md", regexes=[r"(?m)^PublishedDate:\s*([^\n]+)"], min_date=blog_min_date),
         "premium": _text_source_summary(name="premium", kind="qualitative.text", source_dir=PREMIUM_DIR, pattern="*.md", regexes=[r"(?m)^PublishedDate:\s*([^\n]+)", r"(?m)^PostDate:\s*([^\n]+)", r"(?m)^Date:\s*([^\n]+)"]),
@@ -777,8 +912,8 @@ def update_index() -> dict[str, Any]:
     dbs["us_ohlcv"]["scope"] = _us_scope()
     sources["telegram"]["scope"] = _telegram_scope()
     sources["blog"]["scope"] = _blog_scope()
-    sources["news_url_index"]["scope"] = _news_scope()
-    sources["news_selected_articles"]["scope"] = _news_scope()
+    sources["news_url_index"]["scope"] = _news_scope(selected_files=selected_article_files)
+    sources["news_selected_articles"]["scope"] = _news_scope(selected_files=selected_article_files)
     sources["premium"]["scope"] = _premium_scope()
 
     taxonomy = {

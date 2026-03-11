@@ -12,6 +12,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from lib.runtime_env import TASKS_DB
+from lib.task_runtime import is_nonterminal_wait_phase, normalize_phase_name
 
 NOW = datetime.now()
 STALE_MINUTES = 30
@@ -48,22 +49,26 @@ else:
         tid = row['id']
         status = (row['status'] or '').upper()
         review_status = (row['review_status'] or '').upper()
+        phase = extract_phase(row['note'])
+        normalized_phase = normalize_phase_name(phase)
+        waiting_state = is_nonterminal_wait_phase(phase)
         if status == 'IN_PROGRESS':
             started = parse_dt(row['started_at'])
             last_act = parse_dt(row['last_activity_at']) or started
             resume_due = parse_dt(row['resume_due'])
-            phase = extract_phase(row['note'])
             if started is None:
                 issues.append(f'IN_PROGRESS started_at 누락: {tid}')
             if last_act is None:
                 issues.append(f'IN_PROGRESS last_activity_at 누락: {tid}')
-            elif NOW - last_act > timedelta(minutes=STALE_MINUTES):
+            elif not waiting_state and NOW - last_act > timedelta(minutes=STALE_MINUTES):
                 issues.append(f'IN_PROGRESS 무활동 {STALE_MINUTES}분 초과: {tid}')
-            if phase in {'subagent_running', 'awaiting_callback'} and resume_due and NOW > resume_due:
-                issues.append(f'{phase} callback deadline 초과: {tid}')
+            if waiting_state and resume_due and NOW > resume_due:
+                issues.append(f"{normalized_phase or 'waiting'} callback deadline 초과: {tid}")
         if status == 'BLOCKED':
             resume_due = parse_dt(row['resume_due'])
-            if resume_due and NOW > resume_due:
+            if waiting_state and resume_due and NOW > resume_due:
+                issues.append(f"{normalized_phase or 'waiting'} callback deadline 초과: {tid}")
+            elif resume_due and NOW > resume_due:
                 issues.append(f'BLOCKED resume_due 초과: {tid}')
         if review_status == 'REJECTED':
             issues.append(f'review_status=REJECTED: {tid}')

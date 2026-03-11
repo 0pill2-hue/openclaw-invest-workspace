@@ -64,7 +64,7 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - US OHLCV: `invest/stages/stage1/outputs/raw/signal/us/ohlcv/*.csv`
   - 매크로: `invest/stages/stage1/outputs/raw/signal/market/macro/*.csv`
 - 정성 raw: `invest/stages/stage1/outputs/raw/qualitative/`
-  - Telegram attachment PDF는 `attachments/telegram/<channel>/bucket_<nn>/msg_<id>__*` bucketed flat 구조(meta/original/extracted/page_text/page_render/bundle)로 저장
+  - Telegram attachment PDF는 `attachments/telegram/<channel>/bucket_<nn>/msg_<id>__*` bucketed flat 구조(meta/original/extracted/page_text/page_render/bundle)로 저장하며, durable extracted text는 가능하면 `[PAGE 001]` 형식 page marker를 포함한다.
   - RSS: `invest/stages/stage1/outputs/raw/qualitative/market/rss/*.json`
   - 뉴스 URL 인덱스: `invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/*.jsonl`
   - 선별 뉴스 본문: `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl`
@@ -109,8 +109,8 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
 - Telegram collector 진입 스크립트: `invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py`
   - 인증 환경변수가 있으면 `stage01_scrape_telegram_highspeed.py` 우선 실행
   - canonical launchd 경로는 highspeed 실행 시 `TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC>=600`, `TELEGRAM_TIMEOUT_RETRY_COUNT>=1`, `TELEGRAM_TIMEOUT_RETRY_SEC>=1800`을 강제해 과도한 timeout 축소를 막는다.
-  - highspeed 성공 실행 뒤에는 `stage01_telegram_attachment_extract_backfill.py`를 이어서 실행해 기존 attachment artifact의 `extracted.txt`/`meta.json`을 후처리로 보강한다.
-  - PDF attachment 후처리의 canonical single-writer는 bucketed meta(`bucket_<nn>/msg_<id>__meta.json`) 기준이다. 레거시 `msg_<id>/meta.json`은 호환 shadow로만 취급하며 DB index/count 입력에서 별도 문서로 중복 집계하지 않는다.
+  - highspeed 성공 실행 뒤에는 `stage01_telegram_attachment_extract_backfill.py`를 이어서 실행해 기존 attachment artifact의 `extracted.txt`/`meta.json`을 후처리로 보강한다. PDF는 원본 bytes가 있으면 page-marked extracted text로 재생성하고, 원본이 사라졌더라도 existing manifest page text가 있으면 그 범위까지만 bounded backfill을 허용한다.
+  - PDF attachment 후처리의 canonical single-writer는 bucketed meta(`bucket_<nn>/msg_<id>__meta.json`) 기준이다. 레거시 `msg_<id>/meta.json`은 호환 shadow로만 취급하며 DB index/count 입력에서 별도 문서로 중복 집계하지 않는다. 원본 PDF는 decomposed/page-mapped 상태가 확보되면 영구 보관 대상이 아니며, meta의 `pdf_page_marked`/`pdf_page_mapping_status`가 남은 backfill 가능 범위를 설명한다.
   - 실패하거나 인증 정보가 없으면 `stage01_scrape_telegram_public_fallback.py`로 전환
   - 실행 결과/실사용 collector는 `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`에 기록하고, attachment 후처리 상태는 `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`에 기록한다.
 - 체인 fail-close 위치: `invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh`

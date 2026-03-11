@@ -5,6 +5,7 @@ import json
 import os
 import re
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -12,16 +13,50 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
+WORKSPACE_VENV_PY = ROOT / ".venv/bin/python3"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from invest.stages.common.stage_pdf_artifacts import ensure_pdf_support_artifacts
+from invest.stages.common.stage_pdf_artifacts import (
+    PAGE_MARKER_FORMAT,
+    build_pdf_page_marked_text_from_manifest,
+    count_pdf_page_markers,
+    ensure_pdf_support_artifacts,
+    extract_pdf_text_with_page_markers,
+    has_pdf_page_markers,
+)
+from invest.stages.common.stage_raw_db import index_pdf_artifacts_from_raw
 from pipeline_logger import append_pipeline_event
 
 STAGE1_DIR = ROOT / "invest/stages/stage1"
 ATTACH_ARTIFACT_ROOT = STAGE1_DIR / "outputs/raw/qualitative/attachments/telegram"
 TELEGRAM_TEXT_ROOT = STAGE1_DIR / "outputs/raw/qualitative/text/telegram"
+RAW_OUTPUT_ROOT = STAGE1_DIR / "outputs/raw"
+DB_PATH = STAGE1_DIR / "outputs/db/stage1_raw_archive.sqlite3"
 STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_attachment_extract_backfill_status.json"
+ENV_PATHS = [
+    STAGE1_DIR / ".env",
+    Path.home() / ".config/invest/invest_autocollect.env",
+]
+
+
+def _bootstrap_stage1_env() -> None:
+    for env_path in ENV_PATHS:
+        if not env_path.exists():
+            continue
+        for line in env_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[len("export ") :].strip()
+            if "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip())
+
+
+_bootstrap_stage1_env()
 
 ATTACH_BUCKET_COUNT = max(1, int(os.environ.get("TELEGRAM_ATTACH_BUCKET_COUNT", "128")))
 ATTACH_MAX_FILE_BYTES = int(os.environ.get("TELEGRAM_ATTACH_MAX_FILE_BYTES", str(15 * 1024 * 1024)))
@@ -29,6 +64,14 @@ ATTACH_MAX_TEXT_CHARS = int(os.environ.get("TELEGRAM_ATTACH_MAX_TEXT_CHARS", "60
 ATTACH_PDF_MAX_PAGES = int(os.environ.get("TELEGRAM_ATTACH_PDF_MAX_PAGES", "25"))
 ATTACH_RENDER_MAX_WIDTH = int(os.environ.get("TELEGRAM_ATTACH_RENDER_MAX_WIDTH", "1200"))
 ATTACH_HOT_WINDOW_DAYS = int(os.environ.get("TELEGRAM_ATTACH_HOT_WINDOW_DAYS", "31"))
+ATTACH_RECOVER_ENABLED = str(os.environ.get("TELEGRAM_ATTACH_RECOVER_MISSING_ORIGINALS", "0")).strip().lower() in {"1", "true", "yes", "on"}
+ATTACH_RECOVER_LIMIT = max(0, int(os.environ.get("TELEGRAM_ATTACH_RECOVER_LIMIT", "0") or "0"))
+ATTACH_RECOVER_MAX_FILE_BYTES = int(os.environ.get("TELEGRAM_ATTACH_RECOVER_MAX_FILE_BYTES", str(50 * 1024 * 1024)))
+if ATTACH_RECOVER_ENABLED and WORKSPACE_VENV_PY.exists() and os.path.realpath(sys.executable) != os.path.realpath(str(WORKSPACE_VENV_PY)):
+    try:
+        import telethon  # type: ignore  # noqa: F401
+    except ModuleNotFoundError:
+        os.execv(str(WORKSPACE_VENV_PY), [str(WORKSPACE_VENV_PY)] + sys.argv)
 MACOS_SWIFT_BIN = "/usr/bin/swift"
 SUPPORTED_KINDS = {"pdf", "docx", "text_doc"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff"}
@@ -177,6 +220,276 @@ def _attachment_original_candidates(channel_slug: str, msg_id: int, original_nam
             _add(candidate)
 
     return out
+
+
+def _pdf_doc_identity(meta: dict) -> tuple[str, int]:
+    channel_slug = str(meta.get("channel_slug") or "").strip()
+    try:
+        msg_id = int(meta.get("message_id") or 0)
+    except Exception:
+        msg_id = 0
+    return channel_slug, msg_id
+
+
+def _stage1_rel_exists(rel_path: str | None) -> bool:
+    path = _resolve_stage1_path(rel_path, fallback=None)
+    return path is not None and str(path) not in {"", "."} and path.exists() and path.is_file()
+
+
+def _pdf_meta_rank(meta_path: Path, meta: dict) -> tuple[int, int, int, int, int, int, int]:
+    schema_version = int(meta.get("artifact_schema_version") or 0)
+    extract_ok = 1 if str(meta.get("extraction_status") or "").strip().lower() == "ok" else 0
+    extract_exists = 1 if _stage1_rel_exists(str(meta.get("extract_path") or "")) else 0
+    original_exists = 1 if _stage1_rel_exists(str(meta.get("original_path") or "")) else 0
+    manifest_exists = 1 if _stage1_rel_exists(str(meta.get("pdf_manifest_path") or "")) else 0
+    bucket_meta = 1 if meta_path.name.endswith("__meta.json") else 0
+    richness = sum(1 for key in ("extract_path", "original_path", "pdf_manifest_path", "pdf_quality_grade") if str(meta.get(key) or "").strip())
+    return (extract_ok, extract_exists, original_exists, manifest_exists, schema_version, richness, bucket_meta)
+
+
+def _canonical_pdf_meta_path_set() -> set[Path]:
+    grouped: dict[tuple[str, int], list[tuple[Path, dict]]] = {}
+    for meta_path in _iter_attachment_meta_paths():
+        meta = _read_json(meta_path)
+        if str(meta.get("kind") or "").strip().lower() != "pdf":
+            continue
+        key = _pdf_doc_identity(meta)
+        if not key[0] or key[1] <= 0:
+            continue
+        grouped.setdefault(key, []).append((meta_path, meta))
+
+    out: set[Path] = set()
+    for entries in grouped.values():
+        ranked = sorted(entries, key=lambda item: _pdf_meta_rank(item[0], item[1]))
+        if ranked:
+            out.add(ranked[-1][0])
+    return out
+
+
+def _load_stage1_env() -> None:
+    _bootstrap_stage1_env()
+
+
+def _collect_missing_original_meta_records() -> tuple[list[dict], int]:
+    best: dict[tuple[str, int], tuple[tuple[int, int, int], dict]] = {}
+    total_missing = 0
+    canonical_pdf_meta_paths = _canonical_pdf_meta_path_set()
+
+    for meta_path in _iter_attachment_meta_paths():
+        meta = _read_json(meta_path)
+        channel_slug = str(meta.get("channel_slug") or "").strip()
+        try:
+            msg_id = int(meta.get("message_id") or 0)
+        except Exception:
+            msg_id = 0
+        if not channel_slug or msg_id <= 0:
+            continue
+        kind = str(meta.get("kind") or "").strip().lower()
+        if kind not in SUPPORTED_KINDS:
+            continue
+        if kind == "pdf":
+            key = _pdf_doc_identity(meta)
+            if key[0] and key[1] > 0 and meta_path not in canonical_pdf_meta_paths:
+                continue
+            if _pdf_manifest_ready(meta) or _is_deleted_after_decompose(meta):
+                continue
+        original_path = _infer_original_path(meta, meta_path)
+        if original_path.exists() and original_path.is_file():
+            continue
+        total_missing += 1
+        rank = (
+            int(meta.get("artifact_schema_version") or 0),
+            1 if meta_path.name.endswith("__meta.json") else 0,
+            int(meta_path.stat().st_mtime_ns),
+        )
+        key = (channel_slug, msg_id)
+        prev = best.get(key)
+        if prev is None or rank > prev[0]:
+            best[key] = (rank, {"meta_path": meta_path, "meta": meta, "channel_slug": channel_slug, "message_id": msg_id})
+
+    records = [payload for _, payload in best.values()]
+    records.sort(key=lambda row: (row["message_id"], row["channel_slug"]), reverse=True)
+    return records, total_missing
+
+
+def _dialog_aliases(dialog) -> set[str]:
+    entity = getattr(dialog, "entity", None)
+    if entity is None:
+        return set()
+    title = str(getattr(entity, "title", "") or getattr(dialog, "name", "") or "").strip()
+    username = str(getattr(entity, "username", "") or "").strip()
+    entity_id = getattr(entity, "id", None)
+
+    safe_title = _safe_component(title, "") if title else ""
+    safe_username = _safe_component(username, "") if username else ""
+    aliases: set[str] = set()
+    if safe_title:
+        aliases.add(safe_title.casefold())
+    if safe_username:
+        aliases.add(safe_username.casefold())
+    if safe_title and safe_username:
+        aliases.add(f"{safe_title}_{safe_username}".casefold())
+    if entity_id:
+        aliases.add(str(int(entity_id)).casefold())
+        if safe_title:
+            aliases.add(f"{safe_title}_{int(entity_id)}".casefold())
+    return aliases
+
+
+async def _recover_missing_originals_async(records: list[dict], stats: dict) -> None:
+    if not records:
+        return
+
+    try:
+        from telethon import TelegramClient  # type: ignore
+    except ModuleNotFoundError:
+        stats["telegram_recovery_skipped"] += len(records)
+        _bump_reason(stats, "telegram_recovery_telethon_unavailable")
+        return
+
+    _load_stage1_env()
+    try:
+        api_id = int(os.environ.get("TELEGRAM_API_ID", "0") or "0")
+    except Exception:
+        api_id = 0
+    api_hash = str(os.environ.get("TELEGRAM_API_HASH", "") or "").strip()
+    if not api_id or not api_hash:
+        stats["telegram_recovery_skipped"] += len(records)
+        _bump_reason(stats, "telegram_recovery_missing_credentials")
+        return
+
+    session_name = str(STAGE1_DIR / "scripts/jobis_mtproto_session")
+    client = TelegramClient(session_name, api_id, api_hash)
+    try:
+        await client.connect()
+        if not await client.is_user_authorized():
+            stats["telegram_recovery_skipped"] += len(records)
+            _bump_reason(stats, "telegram_recovery_unauthorized")
+            return
+
+        alias_map: dict[str, object] = {}
+        async for dialog in client.iter_dialogs():
+            input_entity = getattr(dialog, "input_entity", None) or getattr(dialog, "entity", None)
+            if input_entity is None:
+                continue
+            stats["telegram_recovery_dialogs_scanned"] += 1
+            for alias in _dialog_aliases(dialog):
+                alias_map.setdefault(alias, input_entity)
+
+        for rec in records:
+            channel_slug = str(rec.get("channel_slug") or "").strip()
+            msg_id = int(rec.get("message_id") or 0)
+            meta_path = rec.get("meta_path")
+            meta = dict(rec.get("meta") or {})
+            stats["telegram_recovery_attempted"] += 1
+
+            entity = alias_map.get(channel_slug.casefold())
+            if entity is None and "_" in channel_slug:
+                suffix = channel_slug.rsplit("_", 1)[-1].strip()
+                if suffix.isdigit():
+                    entity = alias_map.get(suffix.casefold())
+            if entity is None:
+                stats["telegram_recovery_failed"] += 1
+                _bump_reason(stats, "telegram_recovery_entity_unresolved")
+                continue
+
+            try:
+                message = await client.get_messages(entity, ids=msg_id)
+            except Exception as e:
+                stats["telegram_recovery_failed"] += 1
+                _bump_reason(stats, f"telegram_recovery_get_messages_error:{type(e).__name__}")
+                continue
+            if not message or not getattr(message, "media", None):
+                stats["telegram_recovery_failed"] += 1
+                _bump_reason(stats, "telegram_recovery_media_missing")
+                continue
+
+            file_obj = getattr(message, "file", None)
+            try:
+                file_size = int(getattr(file_obj, "size", 0) or 0)
+            except Exception:
+                file_size = 0
+            if file_size > 0 and file_size > ATTACH_RECOVER_MAX_FILE_BYTES:
+                stats["telegram_recovery_failed"] += 1
+                _bump_reason(stats, "telegram_recovery_file_too_large")
+                continue
+
+            kind = str(meta.get("kind") or "").strip().lower()
+            file_name = str(meta.get("original_name") or getattr(file_obj, "name", "") or "").strip()
+            suffix = Path(file_name).suffix.lower()
+            if not suffix:
+                suffix = str(getattr(file_obj, "ext", "") or "").strip().lower()
+            if not suffix:
+                suffix = ".pdf" if kind == "pdf" else (".docx" if kind == "docx" else ".txt")
+            if not file_name:
+                file_name = f"msg_{msg_id}{suffix}"
+
+            target_name = _build_original_target_name(file_name, None, msg_id)
+            target_path = _attachment_original_path(channel_slug, msg_id, target_name)
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+
+            if not target_path.exists():
+                runtime_dir = STAGE1_DIR / "outputs/runtime"
+                runtime_dir.mkdir(parents=True, exist_ok=True)
+                tmp_dir = Path(tempfile.mkdtemp(prefix="tg_recover_", dir=str(runtime_dir)))
+                try:
+                    temp_target = tmp_dir / target_name
+                    downloaded = await client.download_media(message, file=str(temp_target))
+                    src = Path(str(downloaded or "")).resolve() if downloaded else Path("")
+                    if not src.exists() or not src.is_file():
+                        stats["telegram_recovery_failed"] += 1
+                        _bump_reason(stats, "telegram_recovery_download_failed")
+                        continue
+                    target_name = _build_original_target_name(file_name or src.name, src, msg_id)
+                    target_path = _attachment_original_path(channel_slug, msg_id, target_name)
+                    target_path.parent.mkdir(parents=True, exist_ok=True)
+                    if not target_path.exists():
+                        shutil.move(str(src), str(target_path))
+                finally:
+                    shutil.rmtree(tmp_dir, ignore_errors=True)
+
+            if not target_path.exists() or not target_path.is_file():
+                stats["telegram_recovery_failed"] += 1
+                _bump_reason(stats, "telegram_recovery_target_missing")
+                continue
+
+            now_iso = datetime.now(timezone.utc).isoformat()
+            meta["artifact_schema_version"] = max(2, int(meta.get("artifact_schema_version") or 0))
+            meta["artifact_layout"] = str(meta.get("artifact_layout") or "bucketed_v2")
+            meta["channel_slug"] = channel_slug
+            meta["message_id"] = msg_id
+            meta["original_name"] = target_name
+            meta["original_path"] = _rel_stage1_path(target_path)
+            meta["original_store_status"] = "ok"
+            meta["original_store_reason"] = "ok"
+            meta["original_store_origin"] = "telegram_redownload"
+            meta["declared_size"] = int(meta.get("declared_size") or target_path.stat().st_size)
+            meta["original_recovered_at"] = now_iso
+            if meta_path:
+                _write_json(meta_path, meta)
+            stats["telegram_recovery_ok"] += 1
+            stats["telegram_recovery_bytes"] += int(target_path.stat().st_size)
+    finally:
+        await client.disconnect()
+
+
+def _recover_missing_originals(stats: dict) -> None:
+    records, total_missing = _collect_missing_original_meta_records()
+    stats["telegram_recovery_candidates_total"] = len(records)
+    stats["telegram_recovery_missing_meta_total"] = int(total_missing)
+    if not ATTACH_RECOVER_ENABLED:
+        return
+    if ATTACH_RECOVER_LIMIT > 0:
+        records = records[:ATTACH_RECOVER_LIMIT]
+    stats["telegram_recovery_candidates_selected"] = len(records)
+    if not records:
+        return
+    try:
+        import asyncio
+        asyncio.run(_recover_missing_originals_async(records, stats))
+    except Exception as e:
+        stats["telegram_recovery_failed"] += len(records)
+        _bump_reason(stats, f"telegram_recovery_runtime_error:{type(e).__name__}")
 
 
 def _telegram_channel_slug_from_log_path(path: Path) -> str:
@@ -351,7 +664,8 @@ def _reconcile_from_legacy_logs(stats: dict) -> None:
             inline_attach_text = _attach_text_block(block)
 
             canonical_original: Path | None = None
-            original_src = _resolve_marker_path(marker_original, log_path=log_path)
+            allow_original_restore = not (kind == "pdf" and (_pdf_manifest_ready(meta) or _is_deleted_after_decompose(meta)))
+            original_src = _resolve_marker_path(marker_original, log_path=log_path) if allow_original_restore else None
             if original_src and original_src.exists() and original_src.is_file():
                 target_name = _build_original_target_name(file_name, original_src, msg_id)
                 canonical_original = _attachment_original_path(channel_slug, msg_id, target_name)
@@ -627,8 +941,89 @@ def _infer_kind(meta: dict, original_path: Path) -> str:
     return kind
 
 
+def _pdf_manifest_ready(meta: dict) -> bool:
+    manifest_path = _resolve_stage1_path(meta.get("pdf_manifest_path"), fallback=None)
+    if manifest_path is None or str(manifest_path) in {"", "."} or not manifest_path.exists() or not manifest_path.is_file():
+        return False
+    try:
+        page_count = int(meta.get("pdf_page_count") or 0)
+    except Exception:
+        page_count = 0
+    if page_count > 0:
+        return True
+    manifest = _read_json(manifest_path)
+    try:
+        manifest_page_count = int(manifest.get("page_count") or 0)
+    except Exception:
+        manifest_page_count = 0
+    return manifest_page_count > 0
+
+
+def _is_deleted_after_decompose(meta: dict) -> bool:
+    status = str(meta.get("original_store_status") or "").strip().lower()
+    reason = str(meta.get("original_store_reason") or "").strip().lower()
+    return status == "deleted_after_decompose" or reason == "deleted_after_decompose" or bool(meta.get("original_deleted_after_decompose"))
+
+
+def _mark_original_deleted_after_decompose(meta: dict) -> bool:
+    now_iso = datetime.now(timezone.utc).isoformat()
+    changed = False
+    original_rel = str(meta.get("original_path") or "").strip()
+    deleted_rel = str(meta.get("original_deleted_rel_path") or "").strip()
+    if original_rel and deleted_rel != original_rel:
+        meta["original_deleted_rel_path"] = original_rel
+        changed = True
+    if original_rel:
+        meta["original_path"] = ""
+        changed = True
+    if meta.get("original_store_status") != "deleted_after_decompose":
+        meta["original_store_status"] = "deleted_after_decompose"
+        changed = True
+    if meta.get("original_store_reason") != "deleted_after_decompose":
+        meta["original_store_reason"] = "deleted_after_decompose"
+        changed = True
+    if meta.get("original_deleted_after_decompose") is not True:
+        meta["original_deleted_after_decompose"] = True
+        changed = True
+    if not str(meta.get("original_deleted_at") or "").strip():
+        meta["original_deleted_at"] = now_iso
+        changed = True
+    return changed
+
+
 def _bump_reason(stats: dict, reason: str) -> None:
     stats["reason_counts"][reason] = int(stats["reason_counts"].get(reason, 0)) + 1
+
+
+def _set_pdf_extract_contract(meta: dict, *, page_marked: bool, marker_count: int, mapping_status: str, extract_format: str) -> bool:
+    desired = {
+        "extract_format": str(extract_format or ""),
+        "pdf_page_marked": bool(page_marked),
+        "pdf_page_marker_format": PAGE_MARKER_FORMAT,
+        "pdf_page_marker_count": int(marker_count if page_marked else 0),
+        "pdf_page_mapping_status": str(mapping_status or ""),
+    }
+    changed = False
+    for key, value in desired.items():
+        if meta.get(key) != value:
+            meta[key] = value
+            changed = True
+    return changed
+
+
+def _build_page_marked_text_from_manifest(meta: dict) -> dict:
+    manifest_path = _resolve_stage1_path(meta.get("pdf_manifest_path"), fallback=None)
+    if manifest_path is None or str(manifest_path) in {"", "."} or not manifest_path.exists() or not manifest_path.is_file():
+        return {
+            "text": "",
+            "reason": "missing_manifest",
+            "page_marked": False,
+            "page_marker_count": 0,
+            "page_marker_format": PAGE_MARKER_FORMAT,
+            "page_mapping_status": "missing_original_and_page_artifacts",
+        }
+    manifest = _read_json(manifest_path)
+    return build_pdf_page_marked_text_from_manifest(stage1_dir=STAGE1_DIR, manifest=manifest, max_text_chars=ATTACH_MAX_TEXT_CHARS)
 
 
 def _clear_pdf_support_fields(meta: dict) -> bool:
@@ -730,6 +1125,69 @@ def _collect_pdf_totals() -> tuple[int, int]:
     return total, ok
 
 
+def _collect_pdf_db_totals(db_path: Path) -> dict:
+    payload = {
+        "pdf_db_status": "missing",
+        "pdf_db_error": "",
+        "pdf_db_documents_total": 0,
+        "pdf_db_extract_ok_total": 0,
+        "pdf_db_decomposed_total": 0,
+        "pdf_db_text_ready_total": 0,
+        "pdf_db_render_ready_total": 0,
+        "pdf_db_pages_total": 0,
+        "pdf_db_quality_a_total": 0,
+        "pdf_db_missing_original_total": 0,
+        "pdf_db_page_marked_total": 0,
+        "pdf_db_page_mapping_missing_total": 0,
+    }
+    if not db_path.exists():
+        return payload
+
+    queries = {
+        "pdf_db_documents_total": "SELECT COUNT(*) FROM pdf_documents",
+        "pdf_db_extract_ok_total": "SELECT COUNT(*) FROM pdf_documents WHERE extraction_status = 'ok'",
+        "pdf_db_decomposed_total": "SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(manifest_rel_path, '') <> ''",
+        "pdf_db_text_ready_total": "SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(text_pages, 0) > 0",
+        "pdf_db_render_ready_total": "SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(rendered_pages, 0) > 0",
+        "pdf_db_pages_total": "SELECT COUNT(*) FROM pdf_pages",
+        "pdf_db_quality_a_total": "SELECT COUNT(*) FROM pdf_documents WHERE quality_grade = 'A'",
+        "pdf_db_missing_original_total": "SELECT COUNT(*) FROM pdf_documents WHERE extraction_reason = 'missing_original'",
+        "pdf_db_page_marked_total": "SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(page_marked, 0) = 1",
+        "pdf_db_page_mapping_missing_total": "SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(page_mapping_status, '') LIKE 'missing%'",
+    }
+    try:
+        with sqlite3.connect(str(db_path)) as conn:
+            for key, sql in queries.items():
+                row = conn.execute(sql).fetchone()
+                payload[key] = int(row[0] or 0) if row else 0
+    except Exception as e:
+        payload["pdf_db_status"] = "error"
+        payload["pdf_db_error"] = type(e).__name__
+        return payload
+
+    payload["pdf_db_status"] = "ok"
+    return payload
+
+
+def _sync_pdf_db(stats: dict) -> dict:
+    stats["pdf_db_reindex_attempted"] += 1
+    try:
+        summary = index_pdf_artifacts_from_raw(raw_root=RAW_OUTPUT_ROOT, db_path=DB_PATH)
+    except Exception as e:
+        stats["pdf_db_reindex_failed"] += 1
+        _bump_reason(stats, f"pdf_db_index_error:{type(e).__name__}")
+        out = _collect_pdf_db_totals(DB_PATH)
+        out["pdf_db_status"] = "error"
+        out["pdf_db_error"] = type(e).__name__
+        out["pdf_db_index_summary"] = {}
+        return out
+
+    stats["pdf_db_reindex_ok"] += 1
+    out = _collect_pdf_db_totals(DB_PATH)
+    out["pdf_db_index_summary"] = summary.as_dict()
+    return out
+
+
 def main() -> int:
     started_at = datetime.now(timezone.utc)
     stats = {
@@ -742,6 +1200,15 @@ def main() -> int:
         "legacy_original_copied": 0,
         "legacy_extract_backfilled_inline": 0,
         "legacy_extract_backfilled_path": 0,
+        "telegram_recovery_candidates_total": 0,
+        "telegram_recovery_missing_meta_total": 0,
+        "telegram_recovery_candidates_selected": 0,
+        "telegram_recovery_dialogs_scanned": 0,
+        "telegram_recovery_attempted": 0,
+        "telegram_recovery_ok": 0,
+        "telegram_recovery_failed": 0,
+        "telegram_recovery_skipped": 0,
+        "telegram_recovery_bytes": 0,
         "meta_scanned": 0,
         "supported_candidates": 0,
         "attempted": 0,
@@ -755,12 +1222,20 @@ def main() -> int:
         "pdf_page_render_files_written": 0,
         "pdf_bundle_ok": 0,
         "pdf_bundle_failed": 0,
+        "pdf_page_marked_written": 0,
+        "pdf_page_marked_rebuilt_from_manifest": 0,
+        "pdf_plaintext_preserved_missing_mapping": 0,
+        "pdf_db_reindex_attempted": 0,
+        "pdf_db_reindex_ok": 0,
+        "pdf_db_reindex_failed": 0,
         "reason_counts": {},
     }
 
     ATTACH_ARTIFACT_ROOT.mkdir(parents=True, exist_ok=True)
 
     _reconcile_from_legacy_logs(stats)
+    _recover_missing_originals(stats)
+    canonical_pdf_meta_paths = _canonical_pdf_meta_path_set()
 
     for meta_path in _iter_attachment_meta_paths():
         stats["meta_scanned"] += 1
@@ -772,12 +1247,21 @@ def main() -> int:
         kind = _infer_kind(meta, original_path)
         if kind not in SUPPORTED_KINDS:
             continue
+        if kind == "pdf":
+            key = _pdf_doc_identity(meta)
+            if key[0] and key[1] > 0 and meta_path not in canonical_pdf_meta_paths:
+                continue
 
         original_ready = bool(original_path and original_path.exists() and original_path.is_file())
+        manifest_ready = kind == "pdf" and _pdf_manifest_ready(meta)
         stats["supported_candidates"] += 1
         extract_path = _resolve_stage1_path(meta.get("extract_path"), fallback=meta_path.parent / "extracted.txt")
         if extract_path and extract_path.exists() and extract_path.stat().st_size > 0:
             changed = False
+            try:
+                current_text = extract_path.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                current_text = ""
             if meta.get("extraction_status") != "ok":
                 meta["extraction_status"] = "ok"
                 changed = True
@@ -789,9 +1273,75 @@ def main() -> int:
                 meta["extract_path"] = rel_extract
                 changed = True
             if kind == "pdf":
+                if has_pdf_page_markers(current_text):
+                    changed |= _set_pdf_extract_contract(
+                        meta,
+                        page_marked=True,
+                        marker_count=count_pdf_page_markers(current_text),
+                        mapping_status=(
+                            "available_from_original"
+                            if original_ready
+                            else ("available_from_manifest_pages" if manifest_ready else "available_from_extract_text")
+                        ),
+                        extract_format="pdf_page_marked_text_v1",
+                    )
+                else:
+                    rebuilt_text = ""
+                    rebuilt_marker_count = 0
+                    rebuilt_mapping_status = ""
+                    if original_ready and original_path.stat().st_size <= ATTACH_MAX_FILE_BYTES:
+                        pdf_extract = extract_pdf_text_with_page_markers(
+                            path=original_path,
+                            max_pages=ATTACH_PDF_MAX_PAGES,
+                            max_text_chars=ATTACH_MAX_TEXT_CHARS,
+                        )
+                        rebuilt_text = str(pdf_extract.get("text") or "")
+                        rebuilt_marker_count = int(pdf_extract.get("page_marker_count") or 0)
+                        rebuilt_mapping_status = "available_from_original"
+                    elif manifest_ready:
+                        manifest_extract = _build_page_marked_text_from_manifest(meta)
+                        rebuilt_text = str(manifest_extract.get("text") or "")
+                        rebuilt_marker_count = int(manifest_extract.get("page_marker_count") or 0)
+                        rebuilt_mapping_status = str(manifest_extract.get("page_mapping_status") or "available_from_manifest_pages")
+                    else:
+                        rebuilt_mapping_status = "missing_original_and_page_artifacts"
+
+                    if rebuilt_text:
+                        extract_path.write_text(rebuilt_text, encoding="utf-8")
+                        changed = True
+                        changed |= _set_pdf_extract_contract(
+                            meta,
+                            page_marked=True,
+                            marker_count=rebuilt_marker_count or count_pdf_page_markers(rebuilt_text),
+                            mapping_status=rebuilt_mapping_status or "available_from_extract_text",
+                            extract_format="pdf_page_marked_text_v1",
+                        )
+                        stats["pdf_page_marked_written"] += 1
+                        if rebuilt_mapping_status == "available_from_manifest_pages":
+                            stats["pdf_page_marked_rebuilt_from_manifest"] += 1
+                    else:
+                        changed |= _set_pdf_extract_contract(
+                            meta,
+                            page_marked=False,
+                            marker_count=0,
+                            mapping_status=(
+                                "available_from_original"
+                                if original_ready
+                                else (
+                                    rebuilt_mapping_status
+                                    or ("missing_manifest_text_pages" if manifest_ready else "missing_original_and_page_artifacts")
+                                )
+                            ),
+                            extract_format="plain_text_legacy",
+                        )
+                        if not original_ready:
+                            stats["pdf_plaintext_preserved_missing_mapping"] += 1
                 if original_ready:
                     _apply_pdf_support_artifacts(meta, meta_path, original_path, extract_path, stats)
                     changed = True
+                elif manifest_ready:
+                    if _mark_original_deleted_after_decompose(meta):
+                        changed = True
                 elif _clear_pdf_support_fields(meta):
                     changed = True
             if changed:
@@ -802,10 +1352,62 @@ def main() -> int:
             continue
 
         if not original_ready:
+            if kind == "pdf" and manifest_ready:
+                manifest_extract = _build_page_marked_text_from_manifest(meta)
+                manifest_text = str(manifest_extract.get("text") or "")
+                changed = False
+                if manifest_text:
+                    extract_path.parent.mkdir(parents=True, exist_ok=True)
+                    extract_path.write_text(manifest_text, encoding="utf-8")
+                    meta["extract_path"] = _rel_stage1_path(extract_path)
+                    meta["extraction_status"] = "ok"
+                    meta["extraction_reason"] = "ok"
+                    meta["extraction_updated_at"] = datetime.now(timezone.utc).isoformat()
+                    meta["extraction_origin"] = "stage01_telegram_attachment_extract_backfill"
+                    changed = True
+                    changed |= _set_pdf_extract_contract(
+                        meta,
+                        page_marked=True,
+                        marker_count=int(manifest_extract.get("page_marker_count") or count_pdf_page_markers(manifest_text)),
+                        mapping_status=str(manifest_extract.get("page_mapping_status") or "available_from_manifest_pages"),
+                        extract_format="pdf_page_marked_text_v1",
+                    )
+                    stats["pdf_page_marked_written"] += 1
+                    stats["pdf_page_marked_rebuilt_from_manifest"] += 1
+                    stats["extracted_ok"] += 1
+                else:
+                    fail_reason = str(manifest_extract.get("reason") or "missing_original")
+                    meta["extraction_status"] = "failed"
+                    meta["extraction_reason"] = fail_reason
+                    meta["extraction_updated_at"] = datetime.now(timezone.utc).isoformat()
+                    changed = True
+                    changed |= _set_pdf_extract_contract(
+                        meta,
+                        page_marked=False,
+                        marker_count=0,
+                        mapping_status=str(manifest_extract.get("page_mapping_status") or "missing_manifest_text_pages"),
+                        extract_format="",
+                    )
+                    stats["failed"] += 1
+                    stats["skipped_missing_original"] += 1
+                    _bump_reason(stats, fail_reason)
+                if _mark_original_deleted_after_decompose(meta):
+                    changed = True
+                if changed:
+                    _write_json(meta_path, meta)
+                    stats["updated_meta"] += 1
+                continue
             meta["extraction_status"] = "failed"
             meta["extraction_reason"] = "missing_original"
             if kind == "pdf":
                 _clear_pdf_support_fields(meta)
+                _set_pdf_extract_contract(
+                    meta,
+                    page_marked=False,
+                    marker_count=0,
+                    mapping_status="missing_original_and_page_artifacts",
+                    extract_format="",
+                )
             meta["extraction_updated_at"] = datetime.now(timezone.utc).isoformat()
             _write_json(meta_path, meta)
             stats["updated_meta"] += 1
@@ -815,10 +1417,17 @@ def main() -> int:
             continue
 
         stats["attempted"] += 1
+        pdf_extract: dict = {}
         if original_path.stat().st_size > ATTACH_MAX_FILE_BYTES:
             text, reason = "", f"file_too_large:{kind}"
         elif kind == "pdf":
-            text, reason = _extract_pdf_text(str(original_path))
+            pdf_extract = extract_pdf_text_with_page_markers(
+                path=original_path,
+                max_pages=ATTACH_PDF_MAX_PAGES,
+                max_text_chars=ATTACH_MAX_TEXT_CHARS,
+            )
+            text = str(pdf_extract.get("text") or "")
+            reason = str(pdf_extract.get("reason") or "")
         elif kind == "docx":
             text, reason = _extract_docx_text(str(original_path))
         else:
@@ -834,7 +1443,15 @@ def main() -> int:
             meta["extraction_updated_at"] = datetime.now(timezone.utc).isoformat()
             meta["extraction_origin"] = "stage01_telegram_attachment_extract_backfill"
             if kind == "pdf":
+                _set_pdf_extract_contract(
+                    meta,
+                    page_marked=True,
+                    marker_count=int(pdf_extract.get("page_marker_count") or count_pdf_page_markers(text)),
+                    mapping_status="available_from_original",
+                    extract_format="pdf_page_marked_text_v1",
+                )
                 _apply_pdf_support_artifacts(meta, meta_path, original_path, extract_path, stats)
+                stats["pdf_page_marked_written"] += 1
             _write_json(meta_path, meta)
             stats["updated_meta"] += 1
             stats["extracted_ok"] += 1
@@ -846,20 +1463,36 @@ def main() -> int:
         meta["extraction_updated_at"] = datetime.now(timezone.utc).isoformat()
         meta["extraction_origin"] = "stage01_telegram_attachment_extract_backfill"
         if kind == "pdf":
+            _set_pdf_extract_contract(
+                meta,
+                page_marked=False,
+                marker_count=0,
+                mapping_status="available_from_original",
+                extract_format="",
+            )
             _apply_pdf_support_artifacts(meta, meta_path, original_path, extract_path, stats)
         _write_json(meta_path, meta)
         stats["updated_meta"] += 1
         stats["failed"] += 1
         _bump_reason(stats, fail_reason)
 
-    pdf_total, pdf_ok = _collect_pdf_totals()
+    pdf_local_total, pdf_local_ok = _collect_pdf_totals()
+    pdf_db = _sync_pdf_db(stats)
 
     finished_at = datetime.now(timezone.utc)
-    status = "OK" if stats["failed"] == 0 else "WARN"
+    status = "OK" if stats["failed"] == 0 and pdf_db.get("pdf_db_status") == "ok" else "WARN"
     payload = {
         **stats,
-        "pdf_meta_total": int(pdf_total),
-        "pdf_extract_ok_total": int(pdf_ok),
+        **pdf_db,
+        "pdf_progress_basis": "db.pdf_documents/pdf_pages",
+        "pdf_local_meta_total": int(pdf_local_total),
+        "pdf_local_extract_ok_total": int(pdf_local_ok),
+        "pdf_meta_total": int(pdf_db.get("pdf_db_documents_total") or pdf_local_total),
+        "pdf_extract_ok_total": int(pdf_db.get("pdf_db_extract_ok_total") or pdf_local_ok),
+        "pdf_decompose_ok_total": int(pdf_db.get("pdf_db_decomposed_total") or 0),
+        "pdf_pages_total": int(pdf_db.get("pdf_db_pages_total") or 0),
+        "pdf_page_marked_total": int(pdf_db.get("pdf_db_page_marked_total") or 0),
+        "pdf_page_mapping_missing_total": int(pdf_db.get("pdf_db_page_mapping_missing_total") or 0),
         "finished_at": finished_at.isoformat(),
         "duration_sec": round((finished_at - started_at).total_seconds(), 3),
         "status": status,
@@ -870,11 +1503,13 @@ def main() -> int:
     append_pipeline_event(
         source="telegram_attachment_extract_backfill",
         status=status,
-        count=int(stats["extracted_ok"]),
+        count=int(payload["pdf_decompose_ok_total"]),
         errors=error_summary,
         note=(
-            f"legacy_candidates={stats['legacy_supported_candidates']} supported={stats['supported_candidates']} "
-            f"attempted={stats['attempted']} reused={stats['reused_existing']} ok={stats['extracted_ok']} failed={stats['failed']}"
+            f"progress_basis={payload['pdf_progress_basis']} db_docs={payload['pdf_meta_total']} "
+            f"db_extract_ok={payload['pdf_extract_ok_total']} db_manifest={payload['pdf_decompose_ok_total']} db_pages={payload['pdf_pages_total']} "
+            f"recover_ok={stats['telegram_recovery_ok']} recover_failed={stats['telegram_recovery_failed']} "
+            f"attempted={stats['attempted']} reused={stats['reused_existing']} failed={stats['failed']}"
         ),
     )
     return 0

@@ -138,22 +138,8 @@ def main() -> int:
                 },
             )
         )
-        steps.append(
-            _run_step(
-                "news_selected_articles",
-                [PY, "invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py"],
-                {
-                    "NEWS_SELECTED_MAX_ARTICLES": str(max(1, args.news_selected_max_articles)),
-                    "NEWS_SELECTED_MIN_KEYWORD_HITS": str(max(0, args.news_selected_min_keyword_hits)),
-                    "NEWS_SELECTED_MAX_ATTEMPTS": os.environ.get("NEWS_SELECTED_MAX_ATTEMPTS", "5000"),
-                    "NEWS_SELECTED_TARGET_DATE": target_date,
-                    "NEWS_SELECTED_YEARLY_QUOTA": os.environ.get("NEWS_SELECTED_YEARLY_QUOTA", "50"),
-                    "NEWS_SELECTED_SKIP_EXISTING": os.environ.get("NEWS_SELECTED_SKIP_EXISTING", "1"),
-                    "NEWS_SELECTED_EXCLUDED_DOMAINS": os.environ.get("NEWS_SELECTED_EXCLUDED_DOMAINS", "bloomberg.com,wsj.com"),
-                    "NEWS_SELECTED_EXCLUDED_URL_PATTERNS": os.environ.get("NEWS_SELECTED_EXCLUDED_URL_PATTERNS", "/graphics/,/video/"),
-                },
-            )
-        )
+        # selected_articles is handled on a separate verifiable lane (e.g. Naver-only wrapper),
+        # so the 10y news backfill must not repopulate the live selected_articles directory.
 
     if not args.skip_telegram:
         steps.append(
