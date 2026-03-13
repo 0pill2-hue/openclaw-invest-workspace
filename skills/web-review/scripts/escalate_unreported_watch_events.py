@@ -12,8 +12,11 @@ WORKSPACE = Path('/Users/jobiseu/.openclaw/workspace')
 DEFAULT_QUEUE_FILE = WORKSPACE / 'runtime' / 'watch' / 'unreported_watch_events.json'
 
 
+SUCCESS_APPLY_STATUSES = {'success'}
+
+
 def main() -> int:
-    ap = argparse.ArgumentParser(description='Backfill queued watch events into taskdb and create fallback tasks when needed.')
+    ap = argparse.ArgumentParser(description='Retry queued watch event task/callback application and create fallback tasks when needed.')
     ap.add_argument('--queue-file', default=str(DEFAULT_QUEUE_FILE))
     ap.add_argument('--older-than-seconds', type=int, default=90)
     ap.add_argument('--dry-run', action='store_true')
@@ -27,28 +30,44 @@ def main() -> int:
     for event in queue.get('events', []):
         if event.get('acked_at'):
             continue
-        if str(event.get('task_sync_status') or '') in {'updated_existing', 'created_new'} and str(event.get('task_id') or '').strip():
-            continue
 
         observed = parse_iso(str(event.get('observed_at') or ''))
         if observed is None:
             continue
         age_seconds = int((now - observed).total_seconds())
-        allow_create = bool(event.get('follow_up_required')) or age_seconds >= args.older_than_seconds
+        apply_status = str(event.get('task_apply_status') or '').strip().lower()
+        needs_retry = apply_status not in SUCCESS_APPLY_STATUSES
+        if not needs_retry and not bool(event.get('follow_up_required')):
+            continue
+        if age_seconds < args.older_than_seconds and not bool(event.get('follow_up_required')):
+            continue
 
+        allow_create = bool(event.get('follow_up_required')) or str(event.get('task_match_status') or '') in {'unmapped', 'error', ''}
         sync = sync_event_to_task(
             event,
             allow_create=allow_create,
             dry_run=args.dry_run,
+            prior_apply_attempts=int(event.get('task_apply_attempts') or 0),
         )
         if not args.dry_run:
             event['task_sync_status'] = sync['action']
             event['task_sync_at'] = sync['synced_at']
             event['task_sync_match'] = sync.get('matched_by', '')
+            event['task_match_status'] = sync.get('task_match_status', event.get('task_match_status', ''))
+            event['task_apply_status'] = sync.get('task_apply_status', event.get('task_apply_status', ''))
+            event['task_result_status'] = sync.get('task_result_status', event.get('task_result_status', ''))
+            event['task_apply_attempts'] = sync.get('task_apply_attempts', event.get('task_apply_attempts', 0))
+            event['retries'] = sync.get('retries', event.get('retries', 0))
+            event['task_apply_error'] = sync.get('task_apply_error', event.get('task_apply_error', ''))
+            event['callback_status'] = sync.get('callback_status', event.get('callback_status', 'pending'))
             if sync.get('task_id'):
                 event['task_id'] = sync['task_id']
             if sync.get('proof_path'):
                 event['proof_path'] = sync['proof_path']
+            errors = event.get('errors') if isinstance(event.get('errors'), list) else []
+            if sync.get('task_apply_error'):
+                errors.append(f"{sync['synced_at']} {sync['task_apply_error']}")
+                event['errors'] = errors[-10:]
             if sync['action'] == 'created_new':
                 event['escalated_at'] = sync['synced_at']
             event['updated_at'] = sync['synced_at']
@@ -59,6 +78,10 @@ def main() -> int:
             'allow_create': allow_create,
             'action': sync['action'],
             'task_id': sync.get('task_id', ''),
+            'task_match_status': sync.get('task_match_status', ''),
+            'task_apply_status': sync.get('task_apply_status', ''),
+            'task_result_status': sync.get('task_result_status', ''),
+            'task_apply_attempts': sync.get('task_apply_attempts', 0),
             'proof_path': sync.get('proof_path', ''),
             'matched_by': sync.get('matched_by', ''),
             'dry_run': bool(args.dry_run),
@@ -66,6 +89,7 @@ def main() -> int:
 
     if not args.dry_run:
         queue['updated_at'] = utc_now_iso()
+        queue['version'] = 2
         write_queue(queue_path, queue)
     print(json.dumps({'ok': True, 'queue_file': str(queue_path), 'synced': synced, 'count': len(synced)}, ensure_ascii=False, indent=2))
     return 0

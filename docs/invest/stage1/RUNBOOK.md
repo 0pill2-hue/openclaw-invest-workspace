@@ -1,40 +1,26 @@
 # RUNBOOK
 
-status: CANONICAL (operations)  
-updated_at: 2026-03-12 KST
+status: CANONICAL (operations)
+updated_at: 2026-03-13 KST
+contract source: `docs/invest/stage1/STAGE1_RULEBOOK_AND_REPRO.md`
 
 ## 문서 역할
-- Stage1 일상 운영/재현/실행 절차의 단일 SSOT다.
-- cross-stage 인덱스용 stage 계약 요약은 `STAGE1_RULEBOOK_AND_REPRO.md`가 맡는다.
-- 이 문서와 다른 Stage1 문서가 실행 명령/환경변수/폴백/coverage 보고에서 충돌하면 본 문서를 우선한다.
+- Stage1 실행 절차/명령/환경변수/스케줄/장애 대응의 단일 SSOT.
+- Stage 계약(범위/입출력/게이트 판정)을 여기서 중복 정의하지 않는다.
 
-## 목적
-Stage1은 외부 원천 데이터를 수집해 Stage2 이후가 사용할 raw/master/runtime 기준선을 만든다.
-운영 재현, 실행 명령, 출력 경로, 실패 시 처리 규칙은 본 문서가 단일 SSOT다.
+## 필수 환경변수
+- `INVEST_PYTHON_BIN` (선택)
+- `TELEGRAM_API_ID`, `TELEGRAM_API_HASH` (Telegram 인증 수집)
+- `DART_API_KEY` (선택)
+- `RUN_US_OHLCV_IN_DAILY=1|true|yes` (daily_full에서 US OHLCV 포함)
 
-## 입력 요약
-- 설정 파일: `invest/stages/stage1/inputs/config/news_sources.json`
-- 키 파일: `invest/stages/stage1/inputs/config/dart_api_key.txt`
-- 허용 목록: `invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt`
-- terminal registry: `invest/stages/stage1/inputs/config/telegram_terminal_status.json`, `invest/stages/stage1/inputs/config/blog_terminal_status.json`
-- 외부 원천: FDR, pykrx, yfinance, FRED, RSS, DART, Telegram, 웹 수집 대상
-
-## 필수 환경변수 / 키
-- `INVEST_PYTHON_BIN`: 선택. 유효한 실행 파일이면 하위 파이썬 호출에 사용하고, 없거나 무효면 기본 실행기(`sys.executable` 또는 `python3`)를 사용한다.
-- `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`: Telegram 인증 수집 경로 사용 시 필요. 없으면 공개 fallback 경로로 전환된다.
-- `DART_API_KEY`: DART 수집 스크립트가 파일 대신 환경변수로 읽을 때 사용 가능.
-- `RUN_US_OHLCV_IN_DAILY=1|true|yes`: `daily_full` 프로필에 US OHLCV를 추가 포함할 때만 사용한다.
-- `invest/stages/stage1/.env`: 현재 저장소 기준 파일 없음. 일부 스크립트에 optional load 경로는 남아 있으나 운영 표준은 환경변수/launchctl 주입이다.
-
-## 실행 커맨드
+## 실행 명령
 ```bash
-# 기본 일일 수집 프로필
+# 기본 프로필
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile daily_full
 
-# selected_articles live verified lane
+# cadence 분리 프로필
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile selected_articles_naver_only
-
-# 개별 cadence 프로필
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile rss_fast
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile telegram_fast
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile blog_fast
@@ -42,95 +28,39 @@ python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile kr_ohlcv_
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile kr_supply_intraday
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile us_ohlcv_daily
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile dart_fast
-
-# selected_articles 2016 coverage용 RSS/URL-index 백필 cadence
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile news_backfill
 
 # 게이트/보조
 python3 invest/stages/stage1/scripts/stage01_checkpoint_gate.py
 python3 invest/stages/stage1/scripts/stage01_post_collection_validate.py
-python3 invest/stages/stage1/scripts/stage01_build_news_url_index.py
-python3 invest/stages/stage1/scripts/stage01_collect_selected_news_articles_naver.py
-python3 invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py --input-index <verifiable_url_index.jsonl>  # manual/debug only
 python3 invest/stages/stage1/scripts/stage01_collect_link_sidecars.py
-python3 invest/stages/stage1/scripts/stage01_backfill_10y.py --years 10
-python3 invest/stages/stage1/scripts/stage01_update_coverage_manifest.py
-python3 invest/stages/stage1/scripts/stage01_rss_date_repair.py
-python3 invest/stages/stage1/scripts/stage01_telegram_undated_repair.py
+
+# 체인 실행(Stage1~4)
 bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
 ```
 
-## 출력 경로
-- 마스터: `invest/stages/stage1/outputs/master/kr_stock_list.csv`
-- 신호 raw: `invest/stages/stage1/outputs/raw/signal/`
-  - KR OHLCV: `invest/stages/stage1/outputs/raw/signal/kr/ohlcv/*.csv`
-  - KR 수급: `invest/stages/stage1/outputs/raw/signal/kr/supply/*_supply.csv`
-  - US OHLCV: `invest/stages/stage1/outputs/raw/signal/us/ohlcv/*.csv`
-  - 매크로: `invest/stages/stage1/outputs/raw/signal/market/macro/*.csv`
-- 정성 raw: `invest/stages/stage1/outputs/raw/qualitative/`
-  - Telegram attachment PDF는 `attachments/telegram/<channel>/bucket_<nn>/msg_<id>__*` bucketed flat 구조(meta/original/extracted/page_text/page_render/bundle)로 저장하며, durable extracted text는 가능하면 `[PAGE 001]` 형식 page marker를 포함한다.
-  - RSS: `invest/stages/stage1/outputs/raw/qualitative/market/rss/*.json`
-  - 뉴스 URL 인덱스: `invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/*.jsonl`
-  - 선별 뉴스 본문: `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl` (canonical live corpus는 `selected_articles_*.jsonl`, 현재 verified writer lane은 `daily_full`/`selected_articles_naver_only`의 Naver-only wrapper이며 `selected_articles_merged_summary.json`은 파생 summary다)
-  - DART: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/*.csv`
-  - DART coverage SSOT: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json`
-  - 텍스트/텔레그램/프리미엄/OCR: `invest/stages/stage1/outputs/raw/qualitative/text/`
-  - 링크 enrichment sidecar: `invest/stages/stage1/outputs/raw/qualitative/link_enrichment/text/{blog,telegram,premium/startale}/**/*.json`
-- 런타임 상태: `invest/stages/stage1/outputs/runtime/daily_update_status.json`, `invest/stages/stage1/outputs/runtime/post_collection_validate.json`, `invest/stages/stage1/outputs/runtime/link_enrich_sidecar_status.json`
-- 실행 이벤트 로그: `invest/stages/stage1/outputs/runtime/pipeline_events.jsonl`
-- coverage 인덱스: `invest/stages/stage1/outputs/raw/source_coverage_index.json`
-- 리포트/로그: `invest/stages/stage1/outputs/reports/data_quality/`, `invest/stages/stage1/outputs/reports/stage_updates/`, `invest/stages/stage1/outputs/logs/runtime/`
+## 운영 절차
+1. profile 실행
+2. checkpoint gate 실행
+3. post-collection gate 실행
+4. gate PASS 시에만 Stage2 이상 진행
 
-## provenance / 추적성 SSOT
-- Stage1 실행 provenance는 `daily_update_status.json` + `pipeline_events.jsonl` 조합으로 본다.
-- `daily_update_status.json`은 최소 `run_id`, `profile`, `scheduler_origin`, `host`, `python_bin`, `repo_root`, `started_at/finished_at`를 남긴다.
-- `pipeline_events.jsonl`은 collector 단위 이벤트와 함께 `failure_kind` 및 실행 provenance를 남겨 후속 디버깅 기준으로 사용한다.
-- markdown 기반 telegram/blog raw는 원문 보존을 우선하고, provenance/실행 상태는 runtime sidecar에서 먼저 관리한다.
+## 스케줄/용도
+- `daily_full`: Stage1 기본 수집
+- `selected_articles_naver_only`: live selected_articles 단독 갱신
+- `news_backfill`: RSS/URL-index backlog 보강
+- `launchd/run_stage1234_chain.sh`: Stage1~4 연쇄 자동화
 
-## coverage / 보고 SSOT
-- DB/source별 수집 범위 판단은 raw 파일 직접 육안 확인이 아니라 `coverage_summary.json` 기준으로 한다.
-- 현재 DART SSOT는 `invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json` 이다.
-- 전체 인덱스는 `invest/stages/stage1/outputs/raw/source_coverage_index.json` 이다.
-- 데이터가 추가로 모이면 해당 수집 스크립트가 coverage manifest를 즉시 갱신해야 한다.
-- 운영 보고 시에는 반드시 manifest 기준으로 아래를 같이 보고한다.
-  - earliest_date
-  - latest_date
-  - missing_months_between_range
-  - needs_incremental_update
-  - blog: `active_from=20160101`, `all_buddies_satisfied`, `terminal_registry_path`
-  - telegram: `all_channels_satisfied`, `missing_allowlist_entries`, `attachment_artifacts.pdf_files`, `attachment_artifacts.backfill_status`
-- blog raw/backfill 기준 시작일은 rolling 10y가 아니라 `2016-01-01` 고정이다.
+## 장애 대응
+- orchestrator 실패: 해당 profile 재실행 후 gate 재검증
+- fallback 사용 발생: `daily_update_<profile>_status.json`의 `fallbacks_used[]` 확인
+- Telegram 인증 경로 실패/미설정: 공개 fallback collector 경로로 전환 여부 확인
+- gate FAIL: Stage2~4 중단 후 원인(source freshness/zero-byte/coverage/runtime status) 수정
 
-## 실패 / 폴백 규칙
-- 메인 오케스트레이터 위치: `invest/stages/stage1/scripts/stage01_daily_update.py`
-- `stage01_daily_update.py`는 runtime 상태 파일을 저장소 루트 기준 `invest/stages/stage1/outputs/runtime/daily_update_<profile>_status.json`에 쓰고, `daily_full` 프로필은 canonical alias `daily_update_status.json`을 함께 사용한다.
-- `stage01_daily_update.py`가 하위 스크립트를 실행할 때는 저장소 루트(`cwd=$REPO_ROOT`)로 고정한다. 별도 per-script timeout은 두지 않고, 상위 체인 `run_stage1234_chain.sh`의 stage-level timeout을 권위 기준으로 사용한다.
-- `run_with_fallbacks()`는 아래 primary 실패 시 full fetch fallback을 시도한다.
-  - `stage01_fetch_ohlcv.py` → `stage01_full_fetch_ohlcv.py`
-  - `stage01_fetch_supply.py` → `stage01_full_fetch_supply.py`
-  - `stage01_fetch_us_ohlcv.py` → `stage01_full_fetch_us_ohlcv.py`
-  - `stage01_fetch_dart_disclosures.py` → `stage01_full_fetch_dart_disclosures.py`
-- Telegram collector 진입 스크립트: `invest/stages/stage1/scripts/stage01_scrape_telegram_launchd.py`
-  - 인증 환경변수가 있으면 `stage01_scrape_telegram_highspeed.py` 우선 실행
-  - canonical launchd 경로는 highspeed 실행 시 `TELEGRAM_SCRAPE_PER_CHANNEL_TIMEOUT_SEC>=600`, `TELEGRAM_TIMEOUT_RETRY_COUNT>=1`, `TELEGRAM_TIMEOUT_RETRY_SEC>=1800`을 강제해 과도한 timeout 축소를 막는다.
-  - highspeed 성공 실행 뒤에는 `stage01_telegram_attachment_extract_backfill.py`를 이어서 실행해 기존 attachment artifact의 `extracted.txt`/`meta.json`을 후처리로 보강한다. PDF는 원본 bytes가 있으면 page-marked extracted text로 재생성하고, 원본이 사라졌더라도 existing manifest page text가 있으면 그 범위까지만 bounded backfill을 허용한다.
-  - PDF attachment 후처리의 canonical single-writer는 bucketed meta(`bucket_<nn>/msg_<id>__meta.json`) 기준이다. 레거시 `msg_<id>/meta.json`은 호환 shadow로만 취급하며 DB index/count 입력에서 별도 문서로 중복 집계하지 않는다. 원본 PDF는 decomposed/page-mapped 상태가 확보되면 영구 보관 대상이 아니며, meta의 `pdf_page_marked`/`pdf_page_mapping_status`가 남은 backfill 가능 범위를 설명한다.
-  - 실패하거나 인증 정보가 없으면 `stage01_scrape_telegram_public_fallback.py`로 전환
-  - 실행 결과/실사용 collector는 `invest/stages/stage1/outputs/runtime/telegram_collector_status.json`에 기록하고, attachment 후처리 상태는 `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`에 기록한다.
-- 체인 fail-close 위치: `invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh`
-  - 체인은 `stage01_daily_update.py --profile daily_full` 뒤에 `stage01_checkpoint_gate.py`, `stage01_post_collection_validate.py`를 실행한다.
-  - 둘 중 하나라도 실패하면 Stage2 이후를 막고 종료한다.
-
-## 운영 주기 / 스케줄
-- Stage1 단일 진입점은 `stage01_daily_update.py --profile <name>` 이다.
-- Stage1~4 연쇄 자동화 진입점은 `run_stage1234_chain.sh`다.
-- `daily_full`은 stage1 core 수집(시장/뉴스/DART/프리미엄/OCR)용 기본 프로필이며, live `selected_articles/` 갱신은 이 프로필 안에서 `stage01_collect_selected_news_articles_naver.py`로 수행한다.
-- `selected_articles_naver_only`는 live `selected_articles/`만 별도로 갱신해야 할 때 쓰는 verified 단일-purpose 프로필이다.
-- `rss_fast`, `telegram_fast`, `blog_fast`, `kr_ohlcv_intraday`, `kr_supply_intraday`, `us_ohlcv_daily`, `dart_fast`는 cadence 분리를 위한 개별 프로필이다.
-- `news_backfill`은 `selected_articles` 2016 coverage를 위한 RSS/URL-index backlog를 메우는 전용 프로필이며, live `selected_articles/` writer는 포함하지 않는다.
-- `news_backfill`의 무료 보강 경로는 Guardian Open Platform(search api + Guardian business RSS)와 공식기관 RSS(Fed/ECB/SEC)다. 기본 backfill 범위는 `NEWS_INDEX_TARGET_DATE=2016-01-01`, `GUARDIAN_END_DATE=2019-12-31`이다.
-- live `selected_articles/`는 현재 Naver-only verified lane(`daily_full` 또는 `selected_articles_naver_only`)만 canonical이다. generic `stage01_collect_selected_news_articles.py` 직접 실행은 explicit `--input-index`가 있는 수동/debug 용도로만 본다.
-- `invest/stages/stage1/scripts/launchd/launchd_stage01_profile.sh`가 launchd용 canonical profile wrapper다.
-- `invest/ops/launchd/plists/com.jobiseu.invest.stage1.backfill.news.plist`는 `news_backfill`을 `StartInterval=1800`(30분) cadence로 실행한다.
-- `RUN_US_OHLCV_IN_DAILY=1|true|yes`일 때만 US OHLCV를 `daily_full`에 추가 포함한다.
-- blog/telegram 전용 cadence도 이제 동일 orchestrator의 profile 호출로 정리하며, 개별 raw collector 직접 호출은 canonical이 아니다.
+## 운영 보고 필수 항목
+- 실행 profile / run_id
+- gate 결과(`ok`, `failed_count`)
+- 핵심 proof 경로
+  - `invest/stages/stage1/outputs/runtime/daily_update_<profile>_status.json`
+  - `invest/stages/stage1/outputs/runtime/post_collection_validate.json`
+  - `invest/stages/stage1/outputs/reports/data_quality/stage01_checkpoint_status.json`

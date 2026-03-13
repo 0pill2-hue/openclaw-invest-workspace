@@ -11,7 +11,7 @@ import sqlite3
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
@@ -43,12 +43,20 @@ TASK_COLUMNS = [
     "note", "blocked_reason", "proof", "proof_pending", "proof_last",
     "assigned_by", "owner", "assignee", "assigned_run_id", "assigned_at", "review_status", "review_note", "closed_by",
     "started_at", "last_activity_at", "resume_due",
+    "callback_token", "callback_state", "detached_at", "job_ref", "child_session", "resource_keys", "heartbeat_at",
     "extra_lines", "sort_order", "created_at", "updated_at",
 ]
 CONTEXT_HYGIENE_TASK_ID = "WD-CONTEXT-HYGIENE"
 CONTEXT_HYGIENE_TASK_TITLE = "watchdog maintenance: context handoff/작업연속성 정리"
 CONTEXT_HYGIENE_TASK_SCOPE = "close guard/current-task mismatch/context-handoff 정리를 atomic하게 수행하고 후속 snapshot 전환을 마무리"
 CONTEXT_HYGIENE_TASK_PATHS = "runtime/current-task.md,runtime/context-handoff.md,runtime/tasks/tasks.db,scripts/tasks/db.py,scripts/context_policy.py"
+EVIDENCE_ROOT = ROOT / "runtime" / "tasks" / "evidence"
+EVIDENCE_CARDS_DIR = EVIDENCE_ROOT / "cards"
+EVIDENCE_PROOF_INDEX = EVIDENCE_ROOT / "proof-index.jsonl"
+EVIDENCE_RAW_HOT = EVIDENCE_ROOT / "raw-hot.jsonl"
+EVIDENCE_RAW_WARM = EVIDENCE_ROOT / "raw-warm.jsonl"
+EVIDENCE_RAW_COLD = EVIDENCE_ROOT / "raw-cold.jsonl"
+EVIDENCE_ARCHIVE_HOOKS = EVIDENCE_ROOT / "archive-hooks.jsonl"
 
 
 def now_ts() -> str:
@@ -57,6 +65,200 @@ def now_ts() -> str:
 
 def ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+
+
+def append_jsonl(path: Path, payload: dict[str, Any]) -> None:
+    ensure_parent(path)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n")
+
+
+def to_rel(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ROOT))
+    except Exception:
+        return str(path)
+
+
+def compact_text(value: str | None, limit: int = 220) -> str:
+    text = " ".join((value or "").split())
+    if not text:
+        return "-"
+    if len(text) <= limit:
+        return text
+    return text[: limit - 3].rstrip() + "..."
+
+
+def parse_csv_tokens(value: str | None) -> list[str]:
+    raw = (value or "").strip()
+    if not raw:
+        return []
+    return [item.strip(" `") for item in raw.split(",") if item.strip(" `")]
+
+
+def parse_path_tokens(value: str | None) -> list[str]:
+    text = value or ""
+    tokens = re.split(r"[,\s]+", text)
+    result: list[str] = []
+    for raw in tokens:
+        token = raw.strip(" `\"'")
+        if not token:
+            continue
+        if "/" not in token and "." not in token:
+            continue
+        if token.startswith("http://") or token.startswith("https://"):
+            continue
+        result.append(token)
+    return result
+
+
+def normalize_path_list(values: list[str], *, limit: int = 12) -> list[str]:
+    uniq: list[str] = []
+    seen: set[str] = set()
+    for item in values:
+        clean = item.strip()
+        if not clean or clean in seen:
+            continue
+        seen.add(clean)
+        uniq.append(clean)
+        if len(uniq) >= limit:
+            break
+    return uniq
+
+
+def path_temperature(path_text: str) -> str:
+    lower = (path_text or "").lower()
+    if "/tmp/" in lower or lower.startswith("tmp/") or "/logs/" in lower or "stdout" in lower or "stderr" in lower:
+        return "hot"
+    if "/raw/" in lower or lower.startswith("raw/"):
+        return "warm"
+    if "/archive/" in lower or lower.startswith("archive/"):
+        return "cold"
+    return ""
+
+
+def extract_runtime_touched_paths(row: sqlite3.Row, *, proof_text: str, blocked_reason: str) -> list[str]:
+    values: list[str] = []
+    values.extend(parse_csv_tokens(extract_note_value(row["note"] if "note" in row.keys() else "", "touched_paths")))
+    values.extend(parse_path_tokens(proof_text))
+    values.extend(parse_path_tokens(blocked_reason))
+    return normalize_path_list(values, limit=10)
+
+
+def ensure_evidence_dirs() -> None:
+    EVIDENCE_CARDS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def build_evidence_card(
+    row: sqlite3.Row,
+    *,
+    status: str,
+    proof_text: str,
+    blocked_reason: str,
+    closed_by: str,
+    closed_at: str,
+) -> tuple[dict[str, Any], list[str]]:
+    touched_paths = extract_runtime_touched_paths(row, proof_text=proof_text, blocked_reason=blocked_reason)
+    decisive_proof = touched_paths[0] if touched_paths else compact_text(proof_text or blocked_reason, 140)
+    proof_excerpt = compact_text(proof_text or blocked_reason, 240)
+    objective = compact_text((row["scope"] or "").strip() or (row["title"] or "").strip(), 240)
+    final_summary = compact_text(proof_text if status == "DONE" else (blocked_reason or proof_text), 280)
+    card = {
+        "schema_version": "evidence_card_v1",
+        "ticket_id": row["id"],
+        "status": status,
+        "objective": objective,
+        "result": status,
+        "final_summary": final_summary,
+        "touched_paths": touched_paths,
+        "decisive_proof": decisive_proof,
+        "proof_excerpt": proof_excerpt,
+        "index_pointer": f"{to_rel(EVIDENCE_PROOF_INDEX)}#ticket_id={row['id']}",
+        "timestamps": {
+            "created_at": row["created_at"] or "",
+            "updated_at": row["updated_at"] or "",
+            "closed_at": closed_at,
+        },
+        "closed_by": closed_by or "",
+    }
+    raw_refs: list[str] = []
+    for item in touched_paths:
+        if path_temperature(item):
+            raw_refs.append(item)
+    if not raw_refs:
+        for item in parse_path_tokens(proof_text):
+            if path_temperature(item):
+                raw_refs.append(item)
+    return card, normalize_path_list(raw_refs, limit=20)
+
+
+def write_evidence_artifacts(
+    row: sqlite3.Row,
+    *,
+    status: str,
+    proof_text: str,
+    blocked_reason: str,
+    closed_by: str,
+    closed_at: str,
+) -> tuple[str, list[Path]]:
+    ensure_evidence_dirs()
+    card, raw_refs = build_evidence_card(
+        row,
+        status=status,
+        proof_text=proof_text,
+        blocked_reason=blocked_reason,
+        closed_by=closed_by,
+        closed_at=closed_at,
+    )
+    created_paths: list[Path] = []
+    card_path = EVIDENCE_CARDS_DIR / f"{row['id']}.json"
+    atomic_write_text(card_path, json.dumps(card, ensure_ascii=False, indent=2) + "\n")
+    created_paths.append(card_path)
+    card_rel = to_rel(card_path)
+
+    proof_index_entry = {
+        "ts": closed_at,
+        "ticket_id": row["id"],
+        "status": status,
+        "canonical_summary": True,
+        "evidence_card": card_rel,
+        "objective": card["objective"],
+        "final_summary": card["final_summary"],
+        "decisive_proof": card["decisive_proof"],
+        "proof_excerpt": card["proof_excerpt"],
+        "touched_paths": card["touched_paths"],
+        "closed_by": closed_by or "",
+    }
+    append_jsonl(EVIDENCE_PROOF_INDEX, proof_index_entry)
+
+    for temp, path in (("hot", EVIDENCE_RAW_HOT), ("warm", EVIDENCE_RAW_WARM), ("cold", EVIDENCE_RAW_COLD)):
+        refs = [item for item in raw_refs if path_temperature(item) == temp]
+        if not refs:
+            continue
+        append_jsonl(
+            path,
+            {
+                "ts": closed_at,
+                "ticket_id": row["id"],
+                "status": status,
+                "refs": refs,
+                "source": card_rel,
+            },
+        )
+
+    append_jsonl(
+        EVIDENCE_ARCHIVE_HOOKS,
+        {
+            "ts": closed_at,
+            "ticket_id": row["id"],
+            "hook": "archive_compaction_candidate",
+            "policy": "non_destructive_metadata_only",
+            "proof_index": to_rel(EVIDENCE_PROOF_INDEX),
+            "evidence_card": card_rel,
+            "raw_ref_count": len(raw_refs),
+        },
+    )
+    return f"{card_rel}#canonical_summary", created_paths
 
 
 def connect(db_path: Path) -> sqlite3.Connection:
@@ -85,7 +287,21 @@ def _needs_rebuild(conn: sqlite3.Connection) -> bool:
     info = _task_columns(conn)
     if not info:
         return False
-    required = {"started_at", "last_activity_at", "resume_due", "assigned_by", "owner", "closed_by"}
+    required = {
+        "started_at",
+        "last_activity_at",
+        "resume_due",
+        "assigned_by",
+        "owner",
+        "closed_by",
+        "callback_token",
+        "callback_state",
+        "detached_at",
+        "job_ref",
+        "child_session",
+        "resource_keys",
+        "heartbeat_at",
+    }
     if not required.issubset(info):
         return True
     create_sql_row = conn.execute(
@@ -121,6 +337,13 @@ def init_schema(conn: sqlite3.Connection) -> None:
             started_at TEXT DEFAULT '',
             last_activity_at TEXT DEFAULT '',
             resume_due TEXT DEFAULT '',
+            callback_token TEXT DEFAULT '',
+            callback_state TEXT DEFAULT '',
+            detached_at TEXT DEFAULT '',
+            job_ref TEXT DEFAULT '',
+            child_session TEXT DEFAULT '',
+            resource_keys TEXT DEFAULT '',
+            heartbeat_at TEXT DEFAULT '',
             extra_lines TEXT DEFAULT '[]',
             sort_order INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
@@ -170,6 +393,13 @@ def init_schema(conn: sqlite3.Connection) -> None:
                     started_at TEXT DEFAULT '',
                     last_activity_at TEXT DEFAULT '',
                     resume_due TEXT DEFAULT '',
+                    callback_token TEXT DEFAULT '',
+                    callback_state TEXT DEFAULT '',
+                    detached_at TEXT DEFAULT '',
+                    job_ref TEXT DEFAULT '',
+                    child_session TEXT DEFAULT '',
+                    resource_keys TEXT DEFAULT '',
+                    heartbeat_at TEXT DEFAULT '',
                     extra_lines TEXT DEFAULT '[]',
                     sort_order INTEGER NOT NULL DEFAULT 0,
                     created_at TEXT NOT NULL,
@@ -194,6 +424,10 @@ def init_schema(conn: sqlite3.Connection) -> None:
     cols = _task_columns(conn)
     if "resume_due" in cols:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_resume_due ON tasks(resume_due)")
+    if "resource_keys" in cols:
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_resource_keys ON tasks(resource_keys)")
+    if "callback_state" in cols:
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_callback_state ON tasks(callback_state)")
 
     normalize_closed_runtime_metadata(conn)
     conn.commit()
@@ -218,6 +452,96 @@ def extract_note_value(note: str | None, key: str) -> str:
         if line.startswith(prefix):
             return line.split(":", 1)[1].strip()
     return ""
+
+
+def normalize_resource_keys(raw: str | None) -> str:
+    parts = [item.strip() for item in (raw or "").split(",") if item.strip()]
+    if not parts:
+        return "repo:global"
+    unique_sorted = sorted(set(parts))
+    return ",".join(unique_sorted)
+
+
+def parse_resource_keys(raw: str | None) -> set[str]:
+    normalized = normalize_resource_keys(raw)
+    return {item for item in normalized.split(",") if item}
+
+
+def note_with_runtime_fields(
+    existing_note: str | None,
+    *,
+    phase: str | None = None,
+    child_session: str | None = None,
+    append_note: str | None = None,
+) -> str:
+    clean_lines: list[str] = []
+    for line in (existing_note or "").splitlines():
+        if line.startswith("phase:") or line.startswith("child_session:"):
+            continue
+        clean_lines.append(line)
+    new_lines: list[str] = []
+    if phase:
+        new_lines.append(f"phase: {phase}")
+    if child_session:
+        new_lines.append(f"child_session: {child_session}")
+    if append_note:
+        new_lines.append(append_note)
+    if clean_lines:
+        new_lines.extend(clean_lines)
+    return "\n".join(line for line in new_lines if line.strip())
+
+
+def callback_state_of(row: sqlite3.Row) -> str:
+    return (row["callback_state"] or "").strip().lower() if "callback_state" in row.keys() else ""
+
+
+def is_detached_state(row: sqlite3.Row) -> bool:
+    return callback_state_of(row) == "detached"
+
+
+def validate_waiting_invariants(
+    *,
+    task_id: str,
+    note: str | None,
+    resume_due: str | None,
+    callback_state: str | None,
+    callback_token: str | None,
+) -> str | None:
+    phase = extract_phase(note)
+    waiting_state = is_nonterminal_wait_phase(phase)
+    resume_due_text = (resume_due or "").strip()
+    callback_state_text = (callback_state or "").strip().lower()
+    callback_token_text = (callback_token or "").strip()
+    if waiting_state and not resume_due_text:
+        return f"waiting phase requires --resume-due: {task_id} phase={phase}"
+    if callback_state_text == "detached" and not callback_token_text:
+        return f"detached state requires callback_token: {task_id}"
+    return None
+
+
+def resource_conflict_with_active(conn: sqlite3.Connection, ticket_id: str, resource_keys: str) -> tuple[str, list[str]]:
+    keys = parse_resource_keys(resource_keys)
+    if not keys:
+        return "", []
+    rows = conn.execute(
+        """
+        SELECT id, resource_keys
+        FROM tasks
+        WHERE status='IN_PROGRESS' AND id<>?
+        """,
+        (ticket_id,),
+    ).fetchall()
+    conflicts: list[str] = []
+    overlap_keys: set[str] = set()
+    for row in rows:
+        other_keys = parse_resource_keys(row["resource_keys"] if "resource_keys" in row.keys() else "")
+        overlap = keys.intersection(other_keys)
+        if overlap:
+            conflicts.append(row["id"])
+            overlap_keys.update(overlap)
+    if not conflicts:
+        return "", []
+    return ",".join(sorted(overlap_keys)), sorted(conflicts)
 
 
 def infer_worker_kind(assignee: str) -> str:
@@ -306,7 +630,13 @@ def format_task_runtime_state(row: sqlite3.Row) -> str:
     review_status = (row["review_status"] or "").strip() if "review_status" in row.keys() else ""
     closed_by = (row["closed_by"] or "").strip() if "closed_by" in row.keys() else ""
     resume_due = (row["resume_due"] or "").strip() if "resume_due" in row.keys() else ""
-    child_session = extract_note_value(row["note"] if "note" in row.keys() else "", "child_session")
+    child_session = (row["child_session"] or "").strip() if "child_session" in row.keys() else ""
+    if not child_session:
+        child_session = extract_note_value(row["note"] if "note" in row.keys() else "", "child_session")
+    callback_state = (row["callback_state"] or "").strip() if "callback_state" in row.keys() else ""
+    resource_keys = normalize_resource_keys(row["resource_keys"] if "resource_keys" in row.keys() else "")
+    callback_token = (row["callback_token"] or "").strip() if "callback_token" in row.keys() else ""
+    heartbeat_at = (row["heartbeat_at"] or "").strip() if "heartbeat_at" in row.keys() else ""
 
     if assigned_by:
         parts.append(f"assigned_by={assigned_by}")
@@ -324,6 +654,14 @@ def format_task_runtime_state(row: sqlite3.Row) -> str:
         parts.append(f"closed_by={closed_by}")
     if child_session:
         parts.append(f"child={child_session}")
+    if callback_state:
+        parts.append(f"callback={callback_state}")
+    if callback_token:
+        parts.append("callback_token=set")
+    if heartbeat_at:
+        parts.append(f"heartbeat_at={heartbeat_at}")
+    if resource_keys:
+        parts.append(f"resource_keys={resource_keys}")
     if resume_due:
         parts.append(f"resume_due={resume_due}")
     return " | ".join(parts) if parts else "-"
@@ -337,6 +675,10 @@ def normalize_closed_runtime_metadata(conn: sqlite3.Connection) -> None:
             SET blocked_reason='',
                 resume_due='',
                 proof_pending='',
+                callback_state=CASE
+                    WHEN LOWER(COALESCE(callback_state, ''))='detached' THEN 'completed'
+                    ELSE callback_state
+                END,
                 review_status=CASE
                     WHEN UPPER(COALESCE(review_status, ''))='PENDING' AND (COALESCE(assignee, '')!='' OR COALESCE(assigned_run_id, '')!='') THEN 'PASS'
                     WHEN UPPER(COALESCE(review_status, ''))='PENDING' THEN ''
@@ -647,6 +989,15 @@ def cmd_add(args: argparse.Namespace) -> int:
     started_at = existing["started_at"] if existing else (now if status == "IN_PROGRESS" else "")
     last_activity_at = existing["last_activity_at"] if existing else (now if status == "IN_PROGRESS" else "")
     resume_due = existing["resume_due"] if existing else ""
+    callback_token = existing["callback_token"] if existing and "callback_token" in existing.keys() else ""
+    callback_state = existing["callback_state"] if existing and "callback_state" in existing.keys() else ""
+    detached_at = existing["detached_at"] if existing and "detached_at" in existing.keys() else ""
+    job_ref = existing["job_ref"] if existing and "job_ref" in existing.keys() else ""
+    child_session = existing["child_session"] if existing and "child_session" in existing.keys() else ""
+    resource_keys = normalize_resource_keys(existing["resource_keys"] if existing and "resource_keys" in existing.keys() else "")
+    heartbeat_at = existing["heartbeat_at"] if existing and "heartbeat_at" in existing.keys() else ""
+    if args.resource_keys:
+        resource_keys = normalize_resource_keys(args.resource_keys)
     extra_lines = existing["extra_lines"] if existing else "[]"
     created_at = existing["created_at"] if existing else now
 
@@ -658,14 +1009,16 @@ def cmd_add(args: argparse.Namespace) -> int:
                 note, blocked_reason, proof, proof_pending, proof_last,
                 assigned_by, owner, assignee, assigned_run_id, assigned_at, review_status, review_note, closed_by,
                 started_at, last_activity_at, resume_due,
+                callback_token, callback_state, detached_at, job_ref, child_session, resource_keys, heartbeat_at,
                 extra_lines, sort_order, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 args.id, status, args.title, args.scope, priority, bucket,
                 note, blocked_reason, proof, proof_pending, proof_last,
                 assigned_by, owner, assignee, assigned_run_id, assigned_at, review_status, review_note, closed_by,
                 started_at, last_activity_at, resume_due,
+                callback_token, callback_state, detached_at, job_ref, child_session, resource_keys, heartbeat_at,
                 extra_lines, sort_order, created_at, now,
             ),
         )
@@ -986,10 +1339,13 @@ def close_status_with_context_guard(
     resume_due: str | None = None,
     closed_by: str | None = None,
     force_review_pass: bool = False,
+    allow_detached_terminal: bool = False,
 ) -> tuple[bool, str | None]:
     row = conn.execute("SELECT * FROM tasks WHERE id=?", (ticket_id,)).fetchone()
     if not row:
         return False, f"ticket not found: {ticket_id}"
+    if status in {"DONE", "BLOCKED"} and is_detached_state(row) and not allow_detached_terminal:
+        return False, f"detached ticket cannot be terminally closed without callback-complete/fail: {ticket_id}"
     payload = build_status_update_payload(
         row,
         status=status,
@@ -1000,6 +1356,23 @@ def close_status_with_context_guard(
         closed_by=closed_by,
         force_review_pass=force_review_pass,
     )
+    created_evidence_paths: list[Path] = []
+    if status in {"DONE", "BLOCKED"}:
+        proof_text = proof if proof is not None else (row["proof"] or "")
+        blocked_text = blocked_reason if blocked_reason is not None else (row["blocked_reason"] or "")
+        try:
+            canonical_proof, created_evidence_paths = write_evidence_artifacts(
+                row,
+                status=status,
+                proof_text=proof_text,
+                blocked_reason=blocked_text,
+                closed_by=payload["closed_by"],
+                closed_at=payload["updated_at"],
+            )
+        except Exception as exc:
+            return False, f"evidence artifact generation failed: {ticket_id} ({exc})"
+        payload["proof"] = canonical_proof
+        payload["proof_pending"] = ""
     refs = inspect_runtime_ticket_references(ticket_id)
     current_original = read_text(CURRENT_TASK)
     handoff_original = read_text(CONTEXT_HANDOFF)
@@ -1021,6 +1394,11 @@ def close_status_with_context_guard(
         return True, None
     except Exception as exc:
         conn.rollback()
+        for created in created_evidence_paths:
+            try:
+                created.unlink(missing_ok=True)
+            except Exception:
+                pass
         try:
             restore_runtime_file(CURRENT_TASK, current_original, current_existed)
             restore_runtime_file(CONTEXT_HANDOFF, handoff_original, handoff_existed)
@@ -1108,6 +1486,7 @@ def pick_next_assignable_task(conn: sqlite3.Connection, assignee: str) -> sqlite
     rows = conn.execute(
         """
         SELECT id, status, bucket, priority, title, scope, sort_order, note
+               , resource_keys
         FROM tasks
         WHERE status IN ('TODO', 'IN_PROGRESS') AND COALESCE(assignee, '')=''
         ORDER BY CASE status WHEN 'TODO' THEN 0 ELSE 1 END,
@@ -1120,6 +1499,13 @@ def pick_next_assignable_task(conn: sqlite3.Connection, assignee: str) -> sqlite
     for row in rows:
         note = row['note'] or ''
         if not is_task_ready_for_assignment(row['status'], note):
+            continue
+        overlap_keys, conflict_ids = resource_conflict_with_active(
+            conn,
+            ticket_id=row["id"],
+            resource_keys=row["resource_keys"] if "resource_keys" in row.keys() else "",
+        )
+        if conflict_ids:
             continue
         title = row['title'] or ''
         scope = row['scope'] or ''
@@ -1159,6 +1545,10 @@ def assign_next_task(conn: sqlite3.Connection, assignee: str, run_id: str, assig
         row = pick_next_assignable_task(conn, assignee=assignee)
         if not row:
             return None
+        resource_keys = normalize_resource_keys(row["resource_keys"] if "resource_keys" in row.keys() else "")
+        overlap_keys, conflict_ids = resource_conflict_with_active(conn, ticket_id=row["id"], resource_keys=resource_keys)
+        if conflict_ids:
+            continue
         now = now_ts()
         with conn:
             cur = conn.execute(
@@ -1166,11 +1556,12 @@ def assign_next_task(conn: sqlite3.Connection, assignee: str, run_id: str, assig
                 UPDATE tasks
                 SET status='IN_PROGRESS', bucket='active', assigned_by=?, owner=CASE WHEN COALESCE(owner,'')='' THEN ? ELSE owner END, assignee=?, assigned_run_id=?, assigned_at=?,
                     review_status='PENDING', review_note='', closed_by='',
+                    resource_keys=?,
                     started_at=CASE WHEN COALESCE(started_at,'')='' THEN ? ELSE started_at END,
                     last_activity_at=?, updated_at=?
                 WHERE id=? AND COALESCE(assignee, '')=''
                 """,
-                (assigned_by, assignee, assignee, run_id, now, now, now, now, row["id"]),
+                (assigned_by, assignee, assignee, run_id, now, resource_keys, now, now, now, row["id"]),
             )
         if cur.rowcount == 1:
             return row
@@ -1331,23 +1722,40 @@ def cmd_requeue_blocked(args: argparse.Namespace) -> int:
 def cmd_mark_phase(args: argparse.Namespace) -> int:
     conn = connect(Path(args.db).expanduser().resolve())
     init_schema(conn)
-    row = conn.execute("SELECT status, note FROM tasks WHERE id=?", (args.id,)).fetchone()
+    row = conn.execute(
+        "SELECT status, note, resume_due, callback_token, callback_state, child_session FROM tasks WHERE id=?",
+        (args.id,),
+    ).fetchone()
     if not row:
         print(f"ticket not found: {args.id}", file=sys.stderr)
         return 1
 
-    existing_lines = [line for line in (row["note"] or "").splitlines() if not line.startswith("phase:") and not line.startswith("child_session:")]
-    new_lines = [f"phase: {args.phase}"]
-    if args.child_session:
-        new_lines.append(f"child_session: {args.child_session}")
-    if args.note:
-        new_lines.append(args.note)
-    if existing_lines:
-        new_lines.extend(existing_lines)
-    note = "\n".join(line for line in new_lines if line.strip())
+    phase = (args.phase or "").strip()
+    child_session = (args.child_session or "").strip() or (row["child_session"] or "").strip()
+    note = note_with_runtime_fields(
+        row["note"],
+        phase=phase,
+        child_session=child_session,
+        append_note=args.note,
+    )
     now = now_ts()
     resume_due = args.resume_due or ""
-    waiting_state = is_nonterminal_wait_phase(args.phase)
+    waiting_state = is_nonterminal_wait_phase(phase)
+    callback_token = (row["callback_token"] or "").strip()
+    callback_state = (row["callback_state"] or "").strip()
+    error = validate_waiting_invariants(
+        task_id=args.id,
+        note=note,
+        resume_due=resume_due if waiting_state else row["resume_due"] if "resume_due" in row.keys() else "",
+        callback_state=callback_state,
+        callback_token=callback_token,
+    )
+    if error:
+        print(error, file=sys.stderr)
+        return 1
+    if waiting_state and not callback_token:
+        print(f"waiting phase requires callback_token (use db.py detach): {args.id}", file=sys.stderr)
+        return 1
     status = (row["status"] or "").upper()
     with conn:
         if waiting_state and status in {"TODO", "BLOCKED"}:
@@ -1355,17 +1763,391 @@ def cmd_mark_phase(args: argparse.Namespace) -> int:
                 """
                 UPDATE tasks
                 SET status='IN_PROGRESS', bucket='active', blocked_reason='', closed_by='',
-                    note=?, last_activity_at=?, resume_due=?, updated_at=?
+                    note=?, child_session=?, last_activity_at=?, resume_due=?, updated_at=?
                 WHERE id=?
                 """,
-                (note, now, resume_due, now, args.id),
+                (note, child_session, now, resume_due, now, args.id),
             )
         else:
             conn.execute(
-                "UPDATE tasks SET note=?, last_activity_at=?, resume_due=?, updated_at=? WHERE id=?",
-                (note, now, resume_due, now, args.id),
+                "UPDATE tasks SET note=?, child_session=?, last_activity_at=?, resume_due=?, updated_at=? WHERE id=?",
+                (note, child_session, now, resume_due, now, args.id),
             )
     print(f"phase-updated: {args.id} -> {args.phase}")
+    return 0
+
+
+def _assert_callback_token(row: sqlite3.Row, token: str, task_id: str) -> tuple[bool, str]:
+    expected = (row["callback_token"] or "").strip() if "callback_token" in row.keys() else ""
+    if not expected:
+        return False, f"callback_token missing on ticket: {task_id}"
+    if expected != token:
+        return False, f"callback_token mismatch: {task_id}"
+    return True, ""
+
+
+def _detach_task_row(
+    conn: sqlite3.Connection,
+    *,
+    ticket_id: str,
+    token: str,
+    resume_due: str,
+    job_ref: str,
+    child_session: str,
+    resource_keys: str,
+    note: str,
+    release_assignee: bool,
+) -> None:
+    now = now_ts()
+    row = conn.execute("SELECT * FROM tasks WHERE id=?", (ticket_id,)).fetchone()
+    if row is None:
+        raise RuntimeError(f"ticket not found: {ticket_id}")
+    detached_at = (row["detached_at"] or "").strip() if "detached_at" in row.keys() else ""
+    if not detached_at:
+        detached_at = now
+    assignee = '' if release_assignee else (row["assignee"] or "")
+    assigned_run_id = '' if release_assignee else (row["assigned_run_id"] or "")
+    assigned_at = '' if release_assignee else (row["assigned_at"] or "")
+    review_status = '' if release_assignee else (row["review_status"] or "")
+    review_note = '' if release_assignee else (row["review_note"] or "")
+    conn.execute(
+        """
+        UPDATE tasks
+        SET status='IN_PROGRESS', bucket='active', blocked_reason='', closed_by='',
+            note=?, resume_due=?, callback_token=?, callback_state='detached',
+            detached_at=?, job_ref=?, child_session=?, resource_keys=?, heartbeat_at=?,
+            assignee=?, assigned_run_id=?, assigned_at=?, review_status=?, review_note=?,
+            last_activity_at=?, updated_at=?
+        WHERE id=?
+        """,
+        (
+            note,
+            resume_due,
+            token,
+            detached_at,
+            job_ref,
+            child_session,
+            resource_keys,
+            now,
+            assignee,
+            assigned_run_id,
+            assigned_at,
+            review_status,
+            review_note,
+            now,
+            now,
+            ticket_id,
+        ),
+    )
+
+
+def cmd_detach(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    row = conn.execute("SELECT * FROM tasks WHERE id=?", (args.id,)).fetchone()
+    if not row:
+        print(f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
+    token = (args.callback_token or "").strip()
+    if not token:
+        print("--callback-token is required", file=sys.stderr)
+        return 1
+    resume_due = (args.resume_due or "").strip()
+    if not resume_due:
+        print("--resume-due is required", file=sys.stderr)
+        return 1
+    existing_token = (row["callback_token"] or "").strip() if "callback_token" in row.keys() else ""
+    if existing_token and existing_token != token:
+        print(f"detach token conflict: {args.id}", file=sys.stderr)
+        return 1
+
+    phase = "awaiting_callback"
+    child_session = (args.child_session or "").strip() or (row["child_session"] or "").strip()
+    note = note_with_runtime_fields(row["note"], phase=phase, child_session=child_session, append_note=args.note)
+    callback_state = "detached"
+    job_ref = (args.job_ref or "").strip() or (row["job_ref"] or "").strip()
+    resource_keys = normalize_resource_keys(args.resource_keys or row["resource_keys"] if "resource_keys" in row.keys() else "")
+    error = validate_waiting_invariants(
+        task_id=args.id,
+        note=note,
+        resume_due=resume_due,
+        callback_state=callback_state,
+        callback_token=token,
+    )
+    if error:
+        print(error, file=sys.stderr)
+        return 1
+
+    with conn:
+        _detach_task_row(
+            conn,
+            ticket_id=args.id,
+            token=token,
+            resume_due=resume_due,
+            job_ref=job_ref,
+            child_session=child_session,
+            resource_keys=resource_keys,
+            note=note,
+            release_assignee=False,
+        )
+    print(f"detached: {args.id}")
+    return 0
+
+
+def cmd_detach_watch(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    row = conn.execute("SELECT * FROM tasks WHERE id=?", (args.id,)).fetchone()
+    if not row:
+        print(f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
+    token = (args.callback_token or "").strip()
+    if not token:
+        print("--callback-token is required", file=sys.stderr)
+        return 1
+    event_id = (args.event_id or "").strip()
+    if not event_id:
+        print("--event-id is required", file=sys.stderr)
+        return 1
+    resume_due = (args.resume_due or "").strip()
+    if not resume_due:
+        print("--resume-due is required", file=sys.stderr)
+        return 1
+    existing_token = (row["callback_token"] or "").strip() if "callback_token" in row.keys() else ""
+    if existing_token and existing_token != token:
+        print(f"detach-watch token conflict: {args.id}", file=sys.stderr)
+        return 1
+
+    phase = "awaiting_callback"
+    child_session = (args.child_session or "").strip() or (row["child_session"] or "").strip()
+    appended_note = "\n".join(
+        item
+        for item in [
+            f"watch_event_id={event_id}",
+            f"watch_kind={((args.watch_kind or '').strip() or 'web-review')}",
+            args.note,
+        ]
+        if str(item or '').strip()
+    )
+    note = note_with_runtime_fields(row["note"], phase=phase, child_session=child_session, append_note=appended_note)
+    callback_state = "detached"
+    job_ref = (args.job_ref or "").strip() or f"watch:{event_id}"
+    resource_keys = normalize_resource_keys(args.resource_keys or row["resource_keys"] if "resource_keys" in row.keys() else "")
+    error = validate_waiting_invariants(
+        task_id=args.id,
+        note=note,
+        resume_due=resume_due,
+        callback_state=callback_state,
+        callback_token=token,
+    )
+    if error:
+        print(error, file=sys.stderr)
+        return 1
+
+    with conn:
+        _detach_task_row(
+            conn,
+            ticket_id=args.id,
+            token=token,
+            resume_due=resume_due,
+            job_ref=job_ref,
+            child_session=child_session,
+            resource_keys=resource_keys,
+            note=note,
+            release_assignee=True,
+        )
+    print(f"detached-watch: {args.id} event_id={event_id}")
+    return 0
+
+
+def cmd_callback_heartbeat(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    row = conn.execute("SELECT * FROM tasks WHERE id=?", (args.id,)).fetchone()
+    if not row:
+        print(f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
+    ok, token_error = _assert_callback_token(row, (args.callback_token or "").strip(), args.id)
+    if not ok:
+        print(token_error, file=sys.stderr)
+        return 1
+    state = callback_state_of(row)
+    if state in {"completed", "failed"}:
+        print(f"callback-heartbeat: already terminal callback state ({state}) {args.id}")
+        return 0
+    now = now_ts()
+    resume_due = (args.resume_due or "").strip() or (row["resume_due"] or "").strip()
+    note = row["note"] or ""
+    if args.note:
+        note = note_with_runtime_fields(
+            row["note"],
+            phase=extract_phase(row["note"]),
+            child_session=(row["child_session"] or "").strip() if "child_session" in row.keys() else "",
+            append_note=args.note,
+        )
+    error = validate_waiting_invariants(
+        task_id=args.id,
+        note=note,
+        resume_due=resume_due,
+        callback_state=row["callback_state"] if "callback_state" in row.keys() else "",
+        callback_token=row["callback_token"] if "callback_token" in row.keys() else "",
+    )
+    if error:
+        print(error, file=sys.stderr)
+        return 1
+    with conn:
+        conn.execute(
+            """
+            UPDATE tasks
+            SET note=?, resume_due=?, heartbeat_at=?, last_activity_at=?, updated_at=?
+            WHERE id=?
+            """,
+            (note, resume_due, now, now, now, args.id),
+        )
+    print(f"callback-heartbeat: {args.id}")
+    return 0
+
+
+def _callback_resume_update(conn: sqlite3.Connection, row: sqlite3.Row, args: argparse.Namespace) -> None:
+    now = now_ts()
+    proof = (args.proof or '').strip()
+    child_session = (args.child_session or '').strip() or (row["child_session"] or '').strip()
+    note = note_with_runtime_fields(
+        row["note"],
+        phase=(args.resume_phase or '').strip(),
+        child_session=child_session,
+        append_note=(args.resume_note or '').strip(),
+    )
+    error = validate_waiting_invariants(
+        task_id=args.id,
+        note=note,
+        resume_due='',
+        callback_state='completed',
+        callback_token=row["callback_token"] if "callback_token" in row.keys() else '',
+    )
+    if error:
+        raise RuntimeError(error)
+    conn.execute(
+        """
+        UPDATE tasks
+        SET status='IN_PROGRESS', bucket='active', blocked_reason='', closed_by='',
+            note=?, child_session=?, resume_due='', callback_state='completed',
+            proof_last=CASE WHEN ?!='' THEN ? ELSE proof_last END,
+            heartbeat_at=?, last_activity_at=?, updated_at=?
+        WHERE id=?
+        """,
+        (
+            note,
+            child_session,
+            proof,
+            proof,
+            now,
+            now,
+            now,
+            args.id,
+        ),
+    )
+
+
+def cmd_callback_complete(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    row = conn.execute("SELECT * FROM tasks WHERE id=?", (args.id,)).fetchone()
+    if not row:
+        print(f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
+    ok, token_error = _assert_callback_token(row, (args.callback_token or "").strip(), args.id)
+    if not ok:
+        print(token_error, file=sys.stderr)
+        return 1
+    resume_phase = (args.resume_phase or '').strip()
+    if resume_phase:
+        try:
+            with conn:
+                _callback_resume_update(conn, row, args)
+        except RuntimeError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(f"callback-complete-resume: {args.id} -> {resume_phase}")
+        return 0
+    if (row["status"] or "").upper() == "DONE" and callback_state_of(row) == "completed":
+        print(f"callback-complete: already completed {args.id}")
+        return 0
+    ok_close, error = close_status_with_context_guard(
+        conn,
+        args.id,
+        status="DONE",
+        bucket="done",
+        proof=args.proof,
+        closed_by=args.closed_by,
+        allow_detached_terminal=True,
+    )
+    if not ok_close:
+        print(error or f"callback-complete failed: {args.id}", file=sys.stderr)
+        return 1
+    now = now_ts()
+    terminal_note = note_with_runtime_fields(
+        row["note"],
+        phase='callback_completed',
+        child_session=(row["child_session"] or '').strip() if "child_session" in row.keys() else '',
+        append_note='',
+    )
+    with conn:
+        conn.execute(
+            """
+            UPDATE tasks
+            SET note=?, resume_due='', callback_state='completed', heartbeat_at=?, last_activity_at=?, updated_at=?
+            WHERE id=?
+            """,
+            (terminal_note, now, now, now, args.id),
+        )
+    print(f"callback-complete: {args.id}")
+    return 0
+
+
+def cmd_callback_fail(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    row = conn.execute("SELECT * FROM tasks WHERE id=?", (args.id,)).fetchone()
+    if not row:
+        print(f"ticket not found: {args.id}", file=sys.stderr)
+        return 1
+    ok, token_error = _assert_callback_token(row, (args.callback_token or "").strip(), args.id)
+    if not ok:
+        print(token_error, file=sys.stderr)
+        return 1
+    if (row["status"] or "").upper() == "BLOCKED" and callback_state_of(row) == "failed":
+        print(f"callback-fail: already failed {args.id}")
+        return 0
+    ok_close, error = close_status_with_context_guard(
+        conn,
+        args.id,
+        status="BLOCKED",
+        bucket="backlog",
+        blocked_reason=args.reason,
+        closed_by=args.closed_by or "callback",
+        allow_detached_terminal=True,
+    )
+    if not ok_close:
+        print(error or f"callback-fail failed: {args.id}", file=sys.stderr)
+        return 1
+    now = now_ts()
+    terminal_note = note_with_runtime_fields(
+        row["note"],
+        phase='callback_failed',
+        child_session=(row["child_session"] or '').strip() if "child_session" in row.keys() else '',
+        append_note=args.reason,
+    )
+    with conn:
+        conn.execute(
+            """
+            UPDATE tasks
+            SET note=?, resume_due='', callback_state='failed', heartbeat_at=?, last_activity_at=?, updated_at=?
+            WHERE id=?
+            """,
+            (terminal_note, now, now, now, args.id),
+        )
+    print(f"callback-fail: {args.id}")
     return 0
 
 
@@ -1394,7 +2176,7 @@ def cmd_list(args: argparse.Namespace) -> int:
         if b not in ALLOWED_BUCKET:
             print(f"invalid bucket filter: {b}", file=sys.stderr)
             return 1
-    sql = "SELECT id, status, bucket, priority, title, note, assigned_by, owner, assignee, review_status, resume_due, closed_by FROM tasks"
+    sql = "SELECT id, status, bucket, priority, title, note, assigned_by, owner, assignee, review_status, resume_due, closed_by, callback_state, callback_token, child_session, resource_keys, heartbeat_at FROM tasks"
     conds: List[str] = []
     params: List[str] = []
     if statuses:
@@ -1419,6 +2201,111 @@ def cmd_list(args: argparse.Namespace) -> int:
     return 0
 
 
+def _safe_read_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    rows: list[dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        text = line.strip()
+        if not text:
+            continue
+        try:
+            obj = json.loads(text)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(obj, dict):
+            rows.append(obj)
+    return rows
+
+
+def _match_text(value: str, query: str) -> bool:
+    if not query:
+        return True
+    return query in (value or "").lower()
+
+
+def cmd_evidence_search(args: argparse.Namespace) -> int:
+    query = (args.query or "").strip().lower()
+    ticket_filter = (args.ticket_id or "").strip()
+    limit = max(1, int(args.limit))
+    canonical_rows = _safe_read_jsonl(EVIDENCE_PROOF_INDEX)
+
+    results: list[dict[str, Any]] = []
+    for row in canonical_rows:
+        if ticket_filter and (row.get("ticket_id") or "") != ticket_filter:
+            continue
+        if not args.include_raw and not bool(row.get("canonical_summary")):
+            continue
+        haystack = " ".join(
+            [
+                str(row.get("ticket_id") or ""),
+                str(row.get("objective") or ""),
+                str(row.get("final_summary") or ""),
+                str(row.get("proof_excerpt") or ""),
+                str(row.get("decisive_proof") or ""),
+            ]
+        ).lower()
+        if not _match_text(haystack, query):
+            continue
+        results.append(
+            {
+                "ticket_id": row.get("ticket_id", ""),
+                "status": row.get("status", ""),
+                "closed_at": row.get("ts", ""),
+                "canonical_summary": bool(row.get("canonical_summary")),
+                "final_summary": row.get("final_summary", ""),
+                "decisive_proof": row.get("decisive_proof", ""),
+                "evidence_card": row.get("evidence_card", ""),
+            }
+        )
+        if len(results) >= limit:
+            break
+
+    raw_hits: list[dict[str, Any]] = []
+    if args.include_raw:
+        conn = connect(Path(args.db).expanduser().resolve())
+        init_schema(conn)
+        rows = conn.execute(
+            "SELECT id, status, updated_at, proof, proof_last, blocked_reason FROM tasks ORDER BY datetime(updated_at) DESC, id DESC"
+        ).fetchall()
+        for row in rows:
+            if ticket_filter and row["id"] != ticket_filter:
+                continue
+            text = " ".join(
+                [
+                    row["proof"] or "",
+                    row["proof_last"] or "",
+                    row["blocked_reason"] or "",
+                ]
+            ).lower()
+            if not _match_text(text, query):
+                continue
+            raw_hits.append(
+                {
+                    "ticket_id": row["id"],
+                    "status": row["status"],
+                    "updated_at": row["updated_at"],
+                    "proof": compact_text(row["proof"], 200),
+                    "proof_last": compact_text(row["proof_last"], 200),
+                    "blocked_reason": compact_text(row["blocked_reason"], 200),
+                }
+            )
+            if len(raw_hits) >= limit:
+                break
+
+    payload = {
+        "ok": True,
+        "query": args.query or "",
+        "ticket_id": ticket_filter,
+        "canonical_only": not args.include_raw,
+        "proof_index": to_rel(EVIDENCE_PROOF_INDEX),
+        "results": results,
+        "raw_hits": raw_hits,
+    }
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_summary(args: argparse.Namespace) -> int:
     if args.top < 0 or args.recent < 0:
         print("--top/--recent must be >= 0", file=sys.stderr)
@@ -1427,7 +2314,7 @@ def cmd_summary(args: argparse.Namespace) -> int:
     init_schema(conn)
     counts = conn.execute("SELECT COUNT(*) AS total, SUM(CASE WHEN status='IN_PROGRESS' THEN 1 ELSE 0 END) AS in_progress, SUM(CASE WHEN status='TODO' THEN 1 ELSE 0 END) AS todo, SUM(CASE WHEN status='BLOCKED' THEN 1 ELSE 0 END) AS blocked, SUM(CASE WHEN status='DONE' THEN 1 ELSE 0 END) AS done FROM tasks").fetchone()
     assignment_counts = conn.execute("SELECT SUM(CASE WHEN status='IN_PROGRESS' AND assignee != '' AND review_status='PENDING' THEN 1 ELSE 0 END) AS assigned, SUM(CASE WHEN status='IN_PROGRESS' AND review_status='REWORK' THEN 1 ELSE 0 END) AS rework FROM tasks").fetchone()
-    active_rows = conn.execute("SELECT id, priority, status, title, note, assigned_by, owner, assignee, assigned_run_id, review_status, resume_due, closed_by FROM tasks WHERE bucket='active' ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 ELSE 3 END, sort_order, id LIMIT ?", (args.top,)).fetchall()
+    active_rows = conn.execute("SELECT id, priority, status, title, note, assigned_by, owner, assignee, assigned_run_id, review_status, resume_due, closed_by, callback_state, callback_token, child_session, resource_keys, heartbeat_at FROM tasks WHERE bucket='active' ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 ELSE 3 END, sort_order, id LIMIT ?", (args.top,)).fetchall()
     recent_rows = conn.execute("SELECT id, status, updated_at, title FROM tasks ORDER BY datetime(updated_at) DESC, id DESC LIMIT ?", (args.recent,)).fetchall()
     hygiene_rows = conn.execute(
         """
@@ -1572,6 +2459,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_add.add_argument("--bucket", required=True, choices=sorted(ALLOWED_BUCKET))
     p_add.add_argument("--assigned-by", default="")
     p_add.add_argument("--owner", default="")
+    p_add.add_argument("--resource-keys", default="", help="Comma-separated resource lock keys (default: repo:global)")
     p_start = sub.add_parser("start", help="Set ticket IN_PROGRESS")
     p_start.add_argument("--id", required=True)
     p_block = sub.add_parser("block", help="Set ticket BLOCKED")
@@ -1607,6 +2495,42 @@ def build_parser() -> argparse.ArgumentParser:
     p_phase.add_argument("--child-session", default="")
     p_phase.add_argument("--resume-due", default="")
     p_phase.add_argument("--note", default="")
+    p_detach = sub.add_parser("detach", help="Detach running work and move task to awaiting callback state")
+    p_detach.add_argument("--id", required=True)
+    p_detach.add_argument("--callback-token", required=True)
+    p_detach.add_argument("--resume-due", required=True)
+    p_detach.add_argument("--job-ref", default="")
+    p_detach.add_argument("--child-session", default="")
+    p_detach.add_argument("--resource-keys", default="", help="Comma-separated resource lock keys")
+    p_detach.add_argument("--note", default="")
+    p_detach_watch = sub.add_parser("detach-watch", help="Create a formal watcher callback contract and release the worker slot")
+    p_detach_watch.add_argument("--id", required=True)
+    p_detach_watch.add_argument("--event-id", required=True)
+    p_detach_watch.add_argument("--callback-token", required=True)
+    p_detach_watch.add_argument("--resume-due", required=True)
+    p_detach_watch.add_argument("--job-ref", default="")
+    p_detach_watch.add_argument("--watch-kind", default="web-review")
+    p_detach_watch.add_argument("--child-session", default="")
+    p_detach_watch.add_argument("--resource-keys", default="", help="Comma-separated resource lock keys")
+    p_detach_watch.add_argument("--note", default="")
+    p_callback_heartbeat = sub.add_parser("callback-heartbeat", help="Refresh heartbeat for detached callback")
+    p_callback_heartbeat.add_argument("--id", required=True)
+    p_callback_heartbeat.add_argument("--callback-token", required=True)
+    p_callback_heartbeat.add_argument("--resume-due", default="")
+    p_callback_heartbeat.add_argument("--note", default="")
+    p_callback_complete = sub.add_parser("callback-complete", help="Complete detached callback success and optionally resume the task")
+    p_callback_complete.add_argument("--id", required=True)
+    p_callback_complete.add_argument("--callback-token", required=True)
+    p_callback_complete.add_argument("--proof", required=True)
+    p_callback_complete.add_argument("--closed-by", default="callback")
+    p_callback_complete.add_argument("--resume-phase", default="")
+    p_callback_complete.add_argument("--resume-note", default="")
+    p_callback_complete.add_argument("--child-session", default="")
+    p_callback_fail = sub.add_parser("callback-fail", help="Terminal close for detached callback failure")
+    p_callback_fail.add_argument("--id", required=True)
+    p_callback_fail.add_argument("--callback-token", required=True)
+    p_callback_fail.add_argument("--reason", required=True)
+    p_callback_fail.add_argument("--closed-by", default="callback")
     p_release = sub.add_parser("release", help="Clear task assignee/run metadata")
     p_release.add_argument("--id", required=True)
     p_remove = sub.add_parser("remove", help="Delete task from ledger")
@@ -1614,6 +2538,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_list = sub.add_parser("list", help="List tasks")
     p_list.add_argument("--status", nargs="*", help="Status filter(s)")
     p_list.add_argument("--bucket", nargs="*", help="Bucket filter(s)")
+    p_evidence_search = sub.add_parser("evidence-search", help="Search canonical evidence index (raw opt-in)")
+    p_evidence_search.add_argument("--query", default="", help="Substring match on canonical objective/summary/proof")
+    p_evidence_search.add_argument("--ticket-id", default="", help="Optional exact ticket filter")
+    p_evidence_search.add_argument("--include-raw", action="store_true", help="Include raw task proof fields")
+    p_evidence_search.add_argument("--limit", type=int, default=10)
     p_summary = sub.add_parser("summary", help="Human-friendly task summary")
     p_summary.add_argument("--top", type=int, default=5, help="Top N active tasks (default: 5)")
     p_summary.add_argument("--recent", type=int, default=5, help="Recent N updates (default: 5)")
@@ -1653,12 +2582,24 @@ def main() -> int:
         return cmd_requeue_blocked(args)
     if args.command == "mark-phase":
         return cmd_mark_phase(args)
+    if args.command == "detach":
+        return cmd_detach(args)
+    if args.command == "detach-watch":
+        return cmd_detach_watch(args)
+    if args.command == "callback-heartbeat":
+        return cmd_callback_heartbeat(args)
+    if args.command == "callback-complete":
+        return cmd_callback_complete(args)
+    if args.command == "callback-fail":
+        return cmd_callback_fail(args)
     if args.command == "release":
         return cmd_release(args)
     if args.command == "remove":
         return cmd_remove(args)
     if args.command == "list":
         return cmd_list(args)
+    if args.command == "evidence-search":
+        return cmd_evidence_search(args)
     if args.command == "summary":
         return cmd_summary(args)
     if args.command == "render-md":

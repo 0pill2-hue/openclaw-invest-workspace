@@ -1,6 +1,6 @@
 # NONIDLE ORCHESTRATION FLOW
 
-상위 인덱스: `docs/operations/orchestration/README.md`
+상위 인덱스: `docs/operations/OPERATIONS_BOOK.md`
 
 > status: diagram / explainer only
 > canonical rules live in `TASKS.md`

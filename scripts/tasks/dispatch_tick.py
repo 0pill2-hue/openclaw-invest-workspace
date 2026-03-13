@@ -377,10 +377,10 @@ def run_orchestrator(ticket_id: str, run_id: str, worker: str) -> tuple[bool, st
         "You are the main orchestrator.\n"
         "1) Read taskdb ticket details for the assigned ticket only.\n"
         "2) If lane=subagent, spawn a subagent and delegate execution. If lane=main, execute directly in main.\n"
-        "3) Terminal close is only for actual end states: DONE, BLOCKED(real blocker only), or REWORK. Do not close a ticket just because background/subagent/program work is still running.\n"
-        "4) If you launch or detach long-running work, do NOT idle-wait. Immediately record task-aware proof/phase, keep the ticket IN_PROGRESS, set a nonterminal waiting phase with resume_due (for example delegated_to_subagent, subagent_running, awaiting_callback, long_running_execution), and pass `--task-id <ticket>` into the background program so completion can update the same task.\n"
-        "5) When the worker is no longer actively executing because the task is detached and waiting, clear assignee/run metadata so auto-dispatch can keep the main brain non-idle (for example `python3 scripts/tasks/record_task_event.py --task-id <ticket> --source <program> --summary <started> --phase awaiting_callback --release-assignee`). Then end your turn.\n"
-        "6) Use BLOCKED only for real blockers like approval/dependency/failure, with explicit reason.\n"
+        "3) If you launch long-running/background work, call `python3 scripts/tasks/db.py detach --id <ticket> --callback-token <token> --resume-due <YYYY-MM-DD HH:MM:SS> [--job-ref ... --child-session ... --resource-keys ...]` before the worker exits.\n"
+        "4) Detached tasks must finish through callback APIs only: `db.py callback-complete` on success, `db.py callback-fail` on failure, and `db.py callback-heartbeat` for periodic liveness updates.\n"
+        "5) Do NOT lifecycle-wait for detached jobs. Launch and return.\n"
+        "6) Terminal close is only for real end states; never close detached work via plain done/block/review-pass.\n"
         "7) Reply concise progress to the user."
     )
 
@@ -484,7 +484,6 @@ def main() -> int:
 
         summaries: list[str] = []
         hard_errors: list[str] = []
-        waiting_any = False
         ticket_ids = [ticket_id for ticket_id, _, _ in assigned_rows]
 
         for ticket_id, worker, worker_run_id in assigned_rows:
@@ -518,33 +517,19 @@ def main() -> int:
                     err_msg = f"{err_msg} | {event_warn}"
                 hard_errors.append(err_msg)
                 continue
-
-            dispatch_state, close_detail, db_status, db_review_status = wait_for_dispatch_state(ticket_id)
+            db_status, db_review_status = read_ticket_db_state(ticket_id)
+            db_phase = read_ticket_phase(ticket_id)
             append_debug_log(
                 run_id=worker_run_id,
                 ticket_id=ticket_id,
-                phase="wait_for_close_result",
+                phase="orchestrator_launch_success",
                 db_status=db_status,
                 db_review_status=db_review_status,
-                status_write={"dispatch_state": dispatch_state, "detail": close_detail, "worker": worker},
+                status_write={"worker": worker, "db_phase": db_phase},
             )
-            if dispatch_state == "open":
-                msg = f"{ticket_id}@{worker}: spawned but not closed within {CLOSE_WAIT_SEC}s ({close_detail})"
-                if event_warn:
-                    msg = f"{msg} | {event_warn}"
-                db_phase = read_ticket_phase(ticket_id)
-                waiting_close = is_waiting_callback_state(db_status, db_phase) or (
-                    db_status == "IN_PROGRESS" and db_review_status in {"", "PENDING"}
-                )
-                waiting_any = waiting_any or waiting_close
-                if waiting_close:
-                    summaries.append(msg)
-                else:
-                    hard_errors.append(msg)
-                continue
-
-            state_label = "backgrounded" if dispatch_state == "backgrounded" else "closed"
-            close_msg = f"{state_label} {ticket_id}@{worker} ({close_detail})"
+            close_msg = f"launched {ticket_id}@{worker}"
+            if db_phase:
+                close_msg += f" phase={db_phase}"
             if event_warn:
                 close_msg = f"{close_msg} | {event_warn}"
             summaries.append(close_msg)
@@ -552,14 +537,14 @@ def main() -> int:
         joined = " | ".join(summaries + hard_errors)
         write_status(
             assigned_ticket=",".join(ticket_ids),
-            status="assigned" if (summaries or waiting_any) else "error",
+            status="assigned" if summaries else "error",
             error=joined,
             orchestrator="pool_dispatch",
             run_id=run_id,
             ticket_id=",".join(ticket_ids),
             phase="status_pool_dispatch",
         )
-        if hard_errors and not summaries and not waiting_any:
+        if hard_errors and not summaries:
             print(joined, file=sys.stderr)
             return 1
         print(joined or f"assigned {','.join(ticket_ids)}")
@@ -567,23 +552,6 @@ def main() -> int:
 
     combined = f"{stdout}\n{stderr}".lower()
     if "no assignable ticket" in combined:
-        transitioned, ticket_id, db_status, db_review_status = recent_run_transition(run_id)
-        if transitioned:
-            info = f"recent transition detected ticket={ticket_id} status={db_status} review_status={db_review_status}"
-            write_status(
-                assigned_ticket=ticket_id,
-                status="assigned",
-                error=info,
-                orchestrator="recent_transition",
-                run_id=run_id,
-                ticket_id=ticket_id,
-                phase="status_recent_transition",
-                db_status=db_status,
-                db_review_status=db_review_status,
-            )
-            print(info)
-            return 0
-
         write_status(
             assigned_ticket="",
             status="idle",

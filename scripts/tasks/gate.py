@@ -19,6 +19,13 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_PATH = ROOT / "runtime/tasks/tasks.db"
 
 
+def normalize_resource_keys(raw: str | None) -> set[str]:
+    parts = [item.strip() for item in (raw or "").split(",") if item.strip()]
+    if not parts:
+        return {"repo:global"}
+    return set(parts)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="TASK execution gate")
     parser.add_argument("--ticket", required=True, help="Ticket ID (JB-YYYYMMDD-###)")
@@ -100,6 +107,24 @@ def main() -> int:
         if review_status == "REJECTED":
             print("gate fail: review_status is REJECTED", file=sys.stderr)
             return 2
+        this_keys = normalize_resource_keys(row["resource_keys"] if "resource_keys" in row.keys() else "")
+        active_rows = conn.execute(
+            """
+            SELECT id, resource_keys
+            FROM tasks
+            WHERE status='IN_PROGRESS' AND id<>?
+            """,
+            (args.ticket,),
+        ).fetchall()
+        for active_row in active_rows:
+            other_keys = normalize_resource_keys(active_row["resource_keys"] if "resource_keys" in active_row.keys() else "")
+            overlap = sorted(this_keys.intersection(other_keys))
+            if overlap:
+                print(
+                    f"gate fail: resource_keys overlap (ticket={args.ticket}, conflict={active_row['id']}, keys={','.join(overlap)})",
+                    file=sys.stderr,
+                )
+                return 2
 
     print(f"gate pass: {args.ticket}")
     return 0

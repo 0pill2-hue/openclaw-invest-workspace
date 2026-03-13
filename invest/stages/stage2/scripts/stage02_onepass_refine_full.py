@@ -90,6 +90,10 @@ _STAGE2_DB_MIRROR_ROOT = os.environ.get(
     os.path.join(STAGE2_ROOT, 'outputs', 'runtime', 'upstream_stage1_db_mirror'),
 ).strip()
 _DB_PREFIXES = stage2_default_prefixes() if stage2_default_prefixes is not None else []
+STAGE2_ALLOW_RAW_FILES_FALLBACK = os.environ.get(
+    'STAGE2_ALLOW_RAW_FILES_FALLBACK',
+    '0',
+).strip().lower() in ('1', 'true', 'yes', 'on')
 RAW_BASE = (
     prepare_stage2_raw_input_root(
         db_path=_STAGE1_RAW_DB_PATH,
@@ -100,6 +104,12 @@ RAW_BASE = (
     else ''
 ) or _RAW_BASE_FALLBACK
 STAGE2_INPUT_SOURCE = 'stage1_raw_db_mirror' if RAW_BASE != _RAW_BASE_FALLBACK else 'stage1_raw_files'
+if STAGE2_INPUT_SOURCE == 'stage1_raw_db_mirror':
+    STAGE2_INPUT_SOURCE_STATUS = 'ok'
+elif STAGE2_ALLOW_RAW_FILES_FALLBACK:
+    STAGE2_INPUT_SOURCE_STATUS = 'degraded_opt_in'
+else:
+    STAGE2_INPUT_SOURCE_STATUS = 'blocked_raw_files_fallback_opt_in_required'
 CLEAN_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'clean')
 # Stage2가 유일한 검역(quarantine) 저장 단계다. Stage1은 raw/상태 파일만 저장한다.
 Q_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'quarantine')
@@ -231,6 +241,18 @@ def _new_link_runtime_stats() -> dict:
         'telegram_pdf_path_resolution_marker': 0,
         'telegram_pdf_path_resolution_fallback': 0,
         'telegram_pdf_orphan_artifacts': 0,
+        'telegram_pdf_status_promoted': 0,
+        'telegram_pdf_status_bounded_by_cap': 0,
+        'telegram_pdf_status_recoverable_missing_artifact': 0,
+        'telegram_pdf_status_extractor_unavailable': 0,
+        'telegram_pdf_status_parse_failed': 0,
+        'telegram_pdf_status_placeholder_only': 0,
+        'telegram_pdf_declared_page_count_total': 0,
+        'telegram_pdf_indexed_page_rows_total': 0,
+        'telegram_pdf_materialized_text_pages_total': 0,
+        'telegram_pdf_materialized_render_pages_total': 0,
+        'telegram_pdf_placeholder_page_rows_total': 0,
+        'telegram_pdf_bounded_by_cap_total': 0,
         'corpus_dedup_registered_items': 0,
         'corpus_dedup_duplicate_items': 0,
         'corpus_dedup_bootstrap_files': 0,
@@ -648,6 +670,26 @@ def _output_paths(base_dir: str, folder: str, rel_path: str) -> list[str]:
     return [os.path.join(base_dir, normalized, rel_path)]
 
 
+def _input_source_policy_payload() -> dict:
+    return {
+        'mode': STAGE2_INPUT_SOURCE,
+        'status': STAGE2_INPUT_SOURCE_STATUS,
+        'raw_base': RAW_BASE,
+        'db_path': _STAGE1_RAW_DB_PATH,
+        'mirror_root': _STAGE2_DB_MIRROR_ROOT,
+        'raw_files_fallback_opt_in': bool(STAGE2_ALLOW_RAW_FILES_FALLBACK),
+    }
+
+
+def _enforce_input_source_policy() -> None:
+    if STAGE2_INPUT_SOURCE_STATUS == 'blocked_raw_files_fallback_opt_in_required':
+        raise SystemExit(
+            'stage2_input_source_policy_violation: stage1_raw_db_mirror unavailable and '
+            'raw-files fallback is blocked by default. '
+            'Set STAGE2_ALLOW_RAW_FILES_FALLBACK=1 for explicit degraded opt-in.'
+        )
+
+
 def _current_index_meta() -> dict:
     return {
         'stage2_rule_version': STAGE2_RULE_VERSION,
@@ -657,6 +699,8 @@ def _current_index_meta() -> dict:
         'link_enrichment_enabled': bool(STAGE2_ENABLE_LINK_ENRICHMENT),
         'live_link_fetch_enabled': bool(STAGE2_ENABLE_LIVE_LINK_FETCH),
         'input_source': STAGE2_INPUT_SOURCE,
+        'input_source_status': STAGE2_INPUT_SOURCE_STATUS,
+        'input_source_raw_files_fallback_opt_in': bool(STAGE2_ALLOW_RAW_FILES_FALLBACK),
         'folders': list(FOLDERS),
     }
 
@@ -1340,6 +1384,193 @@ def _parse_telegram_message_id(block: str) -> str:
     return str(m.group(1)) if m else ''
 
 
+def _as_int(raw: object, default: int = 0) -> int:
+    try:
+        return int(raw)
+    except Exception:
+        return int(default)
+
+
+def _telegram_pdf_manifest_diag(meta: dict, *, fallback_manifest_path: str = '') -> dict:
+    manifest_rel = str(meta.get('pdf_manifest_path') or '').strip()
+    manifest_path = fallback_manifest_path or _telegram_rewrite_stage1_path(manifest_rel)
+    manifest = {}
+    if manifest_path and os.path.exists(manifest_path):
+        try:
+            with open(manifest_path, 'r', encoding='utf-8') as mf:
+                payload = json.load(mf)
+            if isinstance(payload, dict):
+                manifest = payload
+        except Exception:
+            manifest = {}
+
+    pages = manifest.get('pages', []) if isinstance(manifest.get('pages'), list) else []
+    indexed_page_rows = 0
+    materialized_text_pages = 0
+    materialized_render_pages = 0
+    placeholder_page_rows = 0
+    seen_page_nos: set[int] = set()
+    for page in pages:
+        if not isinstance(page, dict):
+            continue
+        page_no = _as_int(page.get('page_no'), 0)
+        if page_no <= 0 or page_no in seen_page_nos:
+            continue
+        seen_page_nos.add(page_no)
+        indexed_page_rows += 1
+        has_text = bool(str(page.get('text_rel_path') or '').strip())
+        has_render = bool(str(page.get('render_rel_path') or '').strip())
+        if has_text:
+            materialized_text_pages += 1
+        if has_render:
+            materialized_render_pages += 1
+        if not has_text and not has_render:
+            placeholder_page_rows += 1
+
+    declared_page_count = max(
+        0,
+        _as_int(
+            manifest.get('declared_page_count')
+            or manifest.get('page_count')
+            or meta.get('pdf_declared_page_count')
+            or meta.get('pdf_page_count')
+            or 0
+        ),
+    )
+    if not indexed_page_rows:
+        indexed_page_rows = max(0, _as_int(manifest.get('indexed_page_rows') or meta.get('pdf_indexed_page_rows') or 0))
+    if not materialized_text_pages:
+        materialized_text_pages = max(0, _as_int(manifest.get('materialized_text_pages') or manifest.get('text_pages_written') or meta.get('pdf_materialized_text_pages') or meta.get('pdf_text_pages') or 0))
+    if not materialized_render_pages:
+        materialized_render_pages = max(0, _as_int(manifest.get('materialized_render_pages') or manifest.get('rendered_pages_written') or meta.get('pdf_materialized_render_pages') or meta.get('pdf_render_pages') or 0))
+    if not placeholder_page_rows:
+        placeholder_page_rows = max(0, _as_int(manifest.get('placeholder_page_rows') or meta.get('pdf_placeholder_page_rows') or 0))
+    if declared_page_count > indexed_page_rows:
+        placeholder_page_rows += declared_page_count - indexed_page_rows
+        indexed_page_rows = declared_page_count
+
+    max_pages_applied = max(
+        0,
+        _as_int(manifest.get('max_pages_applied') or meta.get('pdf_max_pages_applied') or 0),
+    )
+    bounded_by_cap = bool(
+        declared_page_count > 0
+        and max_pages_applied > 0
+        and declared_page_count > max_pages_applied
+    ) or bool(manifest.get('bounded_by_cap') or meta.get('pdf_bounded_by_cap'))
+
+    return {
+        'manifest_path': manifest_path,
+        'manifest_exists': bool(manifest_path and os.path.exists(manifest_path)),
+        'declared_page_count': declared_page_count,
+        'indexed_page_rows': indexed_page_rows,
+        'materialized_text_pages': materialized_text_pages,
+        'materialized_render_pages': materialized_render_pages,
+        'placeholder_page_rows': placeholder_page_rows,
+        'bounded_by_cap': bounded_by_cap,
+    }
+
+
+def _is_extractor_unavailable_reason(reason: str) -> bool:
+    low = str(reason or '').strip().lower()
+    if not low:
+        return False
+    unavailable_tokens = (
+        'extractor_unavailable',
+        'pypdf_unavailable',
+        'pdfminer_unavailable',
+        'swift_unavailable',
+        'swift_pdfkit_unavailable',
+        'swift_pdfkit_non_darwin',
+    )
+    return any(token in low for token in unavailable_tokens)
+
+
+def _pick_telegram_pdf_status(*, promoted: bool, bounded_by_cap: bool, recoverable_missing_artifact: bool, extractor_unavailable: bool, placeholder_only: bool) -> str:
+    if promoted:
+        return 'promoted'
+    if bounded_by_cap:
+        return 'bounded_by_cap'
+    if recoverable_missing_artifact:
+        return 'recoverable_missing_artifact'
+    if extractor_unavailable:
+        return 'extractor_unavailable'
+    if placeholder_only:
+        return 'placeholder_only'
+    return 'parse_failed'
+
+
+def _record_telegram_pdf_diag_stats(diag: dict) -> None:
+    status = str(diag.get('pdf_status') or 'parse_failed').strip() or 'parse_failed'
+    status_key = f'telegram_pdf_status_{status}'
+    if status_key in LINK_RUNTIME_STATS:
+        LINK_RUNTIME_STATS[status_key] += 1
+    LINK_RUNTIME_STATS['telegram_pdf_declared_page_count_total'] += _as_int(diag.get('declared_page_count'), 0)
+    LINK_RUNTIME_STATS['telegram_pdf_indexed_page_rows_total'] += _as_int(diag.get('indexed_page_rows'), 0)
+    LINK_RUNTIME_STATS['telegram_pdf_materialized_text_pages_total'] += _as_int(diag.get('materialized_text_pages'), 0)
+    LINK_RUNTIME_STATS['telegram_pdf_materialized_render_pages_total'] += _as_int(diag.get('materialized_render_pages'), 0)
+    LINK_RUNTIME_STATS['telegram_pdf_placeholder_page_rows_total'] += _as_int(diag.get('placeholder_page_rows'), 0)
+    if bool(diag.get('bounded_by_cap')):
+        LINK_RUNTIME_STATS['telegram_pdf_bounded_by_cap_total'] += 1
+
+
+def _collect_telegram_pdf_diag(
+    *,
+    meta: dict,
+    meta_path: str,
+    original_path: str,
+    extract_path: str,
+    extract_failure_reason: str,
+    promoted: bool,
+    text_source: str,
+    cleaned_pdf: str,
+) -> dict:
+    manifest_diag = _telegram_pdf_manifest_diag(meta)
+    extract_exists = bool(extract_path and os.path.exists(extract_path))
+    original_exists = bool(original_path and os.path.exists(original_path))
+    extraction_reason = str(
+        extract_failure_reason
+        or meta.get('extraction_reason')
+        or ''
+    ).strip()
+    recoverable_missing_artifact = bool(
+        (not original_exists)
+        and (manifest_diag.get('manifest_exists') or extract_exists)
+    )
+    placeholder_only = bool(
+        manifest_diag.get('declared_page_count', 0) > 0
+        and manifest_diag.get('materialized_text_pages', 0) == 0
+        and manifest_diag.get('materialized_render_pages', 0) == 0
+        and manifest_diag.get('placeholder_page_rows', 0) > 0
+    )
+    extractor_unavailable = _is_extractor_unavailable_reason(extraction_reason)
+    pdf_status = _pick_telegram_pdf_status(
+        promoted=promoted,
+        bounded_by_cap=bool(manifest_diag.get('bounded_by_cap')),
+        recoverable_missing_artifact=recoverable_missing_artifact,
+        extractor_unavailable=extractor_unavailable,
+        placeholder_only=placeholder_only,
+    )
+    return {
+        'pdf_status': pdf_status,
+        'pdf_status_reason': extraction_reason or ('ok' if promoted else ''),
+        'pdf_promoted': bool(promoted),
+        'pdf_source': text_source,
+        'declared_page_count': int(manifest_diag.get('declared_page_count') or 0),
+        'indexed_page_rows': int(manifest_diag.get('indexed_page_rows') or 0),
+        'materialized_text_pages': int(manifest_diag.get('materialized_text_pages') or 0),
+        'materialized_render_pages': int(manifest_diag.get('materialized_render_pages') or 0),
+        'placeholder_page_rows': int(manifest_diag.get('placeholder_page_rows') or 0),
+        'bounded_by_cap': bool(manifest_diag.get('bounded_by_cap')),
+        'recoverable_missing_artifact': recoverable_missing_artifact,
+        'extractor_unavailable': extractor_unavailable,
+        'placeholder_only': placeholder_only,
+        'pdf_text_present': bool((cleaned_pdf or '').strip()),
+        'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/') if meta_path else '',
+        'attachment_original_rel_path': os.path.relpath(original_path, UPSTREAM_STAGE1).replace('\\', '/') if original_path and original_path.startswith(UPSTREAM_STAGE1) else original_path,
+    }
+
+
 def _resolve_telegram_pdf_artifact(block: str, log_path: str) -> tuple[dict | None, dict]:
     message_id = _parse_telegram_message_id(block)
     channel_slug = _telegram_channel_slug_from_log_path(log_path)
@@ -1373,12 +1604,16 @@ def _resolve_telegram_pdf_artifact(block: str, log_path: str) -> tuple[dict | No
 
     if not meta_path:
         LINK_RUNTIME_STATS['telegram_pdf_orphan_artifacts'] += 1
-        return None, {
+        diag = {
+            'pdf_status': 'parse_failed',
             'pdf_promoted': False,
             'pdf_extract_failure_reason': 'telegram_pdf_meta_missing',
+            'pdf_status_reason': 'telegram_pdf_meta_missing',
             'pdf_message_id': message_id,
             'pdf_channel_slug': channel_slug,
         }
+        _record_telegram_pdf_diag_stats(diag)
+        return None, diag
 
     if resolution_mode == 'marker':
         LINK_RUNTIME_STATS['telegram_pdf_path_resolution_marker'] += 1
@@ -1390,33 +1625,45 @@ def _resolve_telegram_pdf_artifact(block: str, log_path: str) -> tuple[dict | No
             meta = json.load(f)
     except Exception as e:
         LINK_RUNTIME_STATS['telegram_pdf_extract_failed'] += 1
-        return None, {
+        diag = {
+            'pdf_status': 'parse_failed',
             'pdf_promoted': False,
             'pdf_extract_failure_reason': f'telegram_pdf_meta_invalid:{type(e).__name__}',
+            'pdf_status_reason': f'telegram_pdf_meta_invalid:{type(e).__name__}',
             'pdf_message_id': message_id,
             'pdf_channel_slug': channel_slug,
             'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
         }
+        _record_telegram_pdf_diag_stats(diag)
+        return None, diag
 
     if str(meta.get('kind') or '').strip().lower() != 'pdf':
         LINK_RUNTIME_STATS['telegram_pdf_extract_failed'] += 1
-        return None, {
+        diag = {
+            'pdf_status': 'parse_failed',
             'pdf_promoted': False,
             'pdf_extract_failure_reason': 'telegram_pdf_kind_not_pdf',
+            'pdf_status_reason': 'telegram_pdf_kind_not_pdf',
             'pdf_message_id': message_id,
             'pdf_channel_slug': channel_slug,
             'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
         }
+        _record_telegram_pdf_diag_stats(diag)
+        return None, diag
 
     if str(meta.get('message_id') or '') != str(message_id):
         LINK_RUNTIME_STATS['telegram_pdf_extract_failed'] += 1
-        return None, {
+        diag = {
+            'pdf_status': 'parse_failed',
             'pdf_promoted': False,
             'pdf_extract_failure_reason': 'telegram_pdf_meta_message_mismatch',
+            'pdf_status_reason': 'telegram_pdf_meta_message_mismatch',
             'pdf_message_id': message_id,
             'pdf_channel_slug': channel_slug,
             'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
         }
+        _record_telegram_pdf_diag_stats(diag)
+        return None, diag
 
     bucket_dir = _telegram_attach_bucket_dir(channel_slug, message_id) if channel_slug else ''
     legacy_dir = _telegram_attach_legacy_dir(channel_slug, message_id) if channel_slug else ''
@@ -1463,21 +1710,47 @@ def _resolve_telegram_pdf_artifact(block: str, log_path: str) -> tuple[dict | No
 
     cleaned_pdf = _cleanup_pdf_text(pdf_text) if pdf_text else ''
     if not cleaned_pdf:
-        return None, {
-            'pdf_promoted': False,
+        diag = _collect_telegram_pdf_diag(
+            meta=meta,
+            meta_path=meta_path,
+            original_path=original_path,
+            extract_path=extract_path,
+            extract_failure_reason=extract_failure_reason or 'telegram_pdf_body_empty_after_normalize',
+            promoted=False,
+            text_source=text_source,
+            cleaned_pdf='',
+        )
+        diag.update({
             'pdf_extract_failure_reason': extract_failure_reason or 'telegram_pdf_body_empty_after_normalize',
-            'pdf_source': text_source,
             'pdf_message_id': message_id,
             'pdf_channel_slug': channel_slug,
-            'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
-            'attachment_original_rel_path': os.path.relpath(original_path, UPSTREAM_STAGE1).replace('\\', '/') if original_path and original_path.startswith(UPSTREAM_STAGE1) else original_path,
-        }
+        })
+        _record_telegram_pdf_diag_stats(diag)
+        return None, diag
 
     title = _normalize_pdf_title(str(meta.get('original_name') or ''), original_path)
     promoted_block = f'[ATTACHED_PDF] {title}\n{cleaned_pdf}'.strip()
     chars_added = len(cleaned_pdf)
     LINK_RUNTIME_STATS['telegram_pdf_messages_promoted_by_pdf'] += 1
     LINK_RUNTIME_STATS['telegram_pdf_chars_added_total'] += chars_added
+    diag = _collect_telegram_pdf_diag(
+        meta=meta,
+        meta_path=meta_path,
+        original_path=original_path,
+        extract_path=extract_path,
+        extract_failure_reason='',
+        promoted=True,
+        text_source=text_source,
+        cleaned_pdf=cleaned_pdf,
+    )
+    diag.update({
+        'pdf_chars_added': chars_added,
+        'pdf_nonempty_lines_added': len([line for line in cleaned_pdf.splitlines() if line.strip()]),
+        'pdf_message_id': message_id,
+        'pdf_channel_slug': channel_slug,
+        'pdf_title_normalized': title,
+    })
+    _record_telegram_pdf_diag_stats(diag)
     return {
         'promoted_block': promoted_block,
         'text_source': text_source,
@@ -1487,17 +1760,7 @@ def _resolve_telegram_pdf_artifact(block: str, log_path: str) -> tuple[dict | No
         'channel_slug': channel_slug,
         'meta_path': meta_path,
         'original_path': original_path,
-    }, {
-        'pdf_promoted': True,
-        'pdf_source': text_source,
-        'pdf_title_normalized': title,
-        'pdf_chars_added': chars_added,
-        'pdf_nonempty_lines_added': len([line for line in cleaned_pdf.splitlines() if line.strip()]),
-        'pdf_message_id': message_id,
-        'pdf_channel_slug': channel_slug,
-        'attachment_meta_rel_path': os.path.relpath(meta_path, UPSTREAM_STAGE1).replace('\\', '/'),
-        'attachment_original_rel_path': os.path.relpath(original_path, UPSTREAM_STAGE1).replace('\\', '/') if original_path and original_path.startswith(UPSTREAM_STAGE1) else original_path,
-    }
+    }, diag
 
 
 def _promote_telegram_pdf_content(raw_content: str, path: str) -> tuple[str, dict]:
@@ -1505,9 +1768,16 @@ def _promote_telegram_pdf_content(raw_content: str, path: str) -> tuple[str, dic
     if '[ATTACH_KIND] pdf' not in content:
         return content, {
             'pdf_promoted': False,
+            'pdf_status': 'parse_failed',
             'pdf_source': '',
             'pdf_chars_added': 0,
             'pdf_nonempty_lines_added': 0,
+            'declared_page_count': 0,
+            'indexed_page_rows': 0,
+            'materialized_text_pages': 0,
+            'materialized_render_pages': 0,
+            'placeholder_page_rows': 0,
+            'bounded_by_cap': False,
         }
 
     parts = re.split(r'(?mi)^---\s*$', content)
@@ -1515,9 +1785,16 @@ def _promote_telegram_pdf_content(raw_content: str, path: str) -> tuple[str, dic
     promoted_any = False
     aggregate_meta = {
         'pdf_promoted': False,
+        'pdf_status': 'parse_failed',
         'pdf_source': '',
         'pdf_chars_added': 0,
         'pdf_nonempty_lines_added': 0,
+        'declared_page_count': 0,
+        'indexed_page_rows': 0,
+        'materialized_text_pages': 0,
+        'materialized_render_pages': 0,
+        'placeholder_page_rows': 0,
+        'bounded_by_cap': False,
     }
 
     for part in parts:
@@ -1530,9 +1807,16 @@ def _promote_telegram_pdf_content(raw_content: str, path: str) -> tuple[str, dic
             promoted_any = True
             aggregate_meta.update(meta)
             aggregate_meta['pdf_promoted'] = True
+            aggregate_meta['pdf_status'] = 'promoted'
             aggregate_meta['pdf_source'] = meta.get('pdf_source', aggregate_meta.get('pdf_source', ''))
             aggregate_meta['pdf_chars_added'] = int(aggregate_meta.get('pdf_chars_added', 0)) + int(meta.get('pdf_chars_added', 0))
             aggregate_meta['pdf_nonempty_lines_added'] = int(aggregate_meta.get('pdf_nonempty_lines_added', 0)) + int(meta.get('pdf_nonempty_lines_added', 0))
+            aggregate_meta['declared_page_count'] = int(aggregate_meta.get('declared_page_count', 0)) + int(meta.get('declared_page_count', 0))
+            aggregate_meta['indexed_page_rows'] = int(aggregate_meta.get('indexed_page_rows', 0)) + int(meta.get('indexed_page_rows', 0))
+            aggregate_meta['materialized_text_pages'] = int(aggregate_meta.get('materialized_text_pages', 0)) + int(meta.get('materialized_text_pages', 0))
+            aggregate_meta['materialized_render_pages'] = int(aggregate_meta.get('materialized_render_pages', 0)) + int(meta.get('materialized_render_pages', 0))
+            aggregate_meta['placeholder_page_rows'] = int(aggregate_meta.get('placeholder_page_rows', 0)) + int(meta.get('placeholder_page_rows', 0))
+            aggregate_meta['bounded_by_cap'] = bool(aggregate_meta.get('bounded_by_cap')) or bool(meta.get('bounded_by_cap'))
             aggregate_meta.pop('pdf_extract_failure_reason', None)
             if not segment.rstrip().endswith(promoted['promoted_block']):
                 segment = segment.rstrip() + '\n\n' + promoted['promoted_block'] + '\n'
@@ -2143,9 +2427,16 @@ def sanitize_text(path: str, folder: str = ''):
         text_for_clean = raw_content
         pdf_meta = {
             'pdf_promoted': False,
+            'pdf_status': 'parse_failed',
             'pdf_source': '',
             'pdf_chars_added': 0,
             'pdf_nonempty_lines_added': 0,
+            'declared_page_count': 0,
+            'indexed_page_rows': 0,
+            'materialized_text_pages': 0,
+            'materialized_render_pages': 0,
+            'placeholder_page_rows': 0,
+            'bounded_by_cap': False,
         }
         if normalized_folder == 'text/telegram':
             text_for_clean, pdf_meta = _promote_telegram_pdf_content(raw_content, path)
@@ -2967,6 +3258,7 @@ def _bootstrap_corpus_dedup_registry(registry: dict, clean_base: str, target_fol
 def run_full_refine(force_rebuild: bool = False, folders: list[str] | None = None):
     global LINK_FETCH_CACHE, LINK_RUNTIME_STATS
 
+    _enforce_input_source_policy()
     LINK_FETCH_CACHE = {}
     LINK_RUNTIME_STATS = _new_link_runtime_stats()
 
@@ -3228,6 +3520,8 @@ def run_full_refine(force_rebuild: bool = False, folders: list[str] | None = Non
         f.write(f"- Runtime Config: {STAGE2_CONFIG_PROVENANCE['runtime_config_path']} ({STAGE2_CONFIG_PROVENANCE['runtime_config_sha1']})\n")
         f.write(f"- Reason Config: {STAGE2_CONFIG_PROVENANCE['reason_config_path']} ({STAGE2_CONFIG_PROVENANCE['reason_config_sha1']})\n")
         f.write(f"- Input Source: {STAGE2_INPUT_SOURCE}\n")
+        f.write(f"- Input Source Status: {STAGE2_INPUT_SOURCE_STATUS}\n")
+        f.write(f"- Raw-files fallback opt-in: {STAGE2_ALLOW_RAW_FILES_FALLBACK}\n")
         f.write(f"- Raw Base: {RAW_BASE}\n")
         f.write(f"- Clean Base: {final_clean_base}\n")
         f.write(f"- Quarantine Base: {final_q_base}\n")
@@ -3293,6 +3587,18 @@ def run_full_refine(force_rebuild: bool = False, folders: list[str] | None = Non
         f.write(f"- telegram_pdf_path_resolution_marker={int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_marker', 0))}\n")
         f.write(f"- telegram_pdf_path_resolution_fallback={int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_fallback', 0))}\n")
         f.write(f"- telegram_pdf_orphan_artifacts={int(LINK_RUNTIME_STATS.get('telegram_pdf_orphan_artifacts', 0))}\n")
+        f.write(f"- telegram_pdf_status_promoted={int(LINK_RUNTIME_STATS.get('telegram_pdf_status_promoted', 0))}\n")
+        f.write(f"- telegram_pdf_status_bounded_by_cap={int(LINK_RUNTIME_STATS.get('telegram_pdf_status_bounded_by_cap', 0))}\n")
+        f.write(f"- telegram_pdf_status_recoverable_missing_artifact={int(LINK_RUNTIME_STATS.get('telegram_pdf_status_recoverable_missing_artifact', 0))}\n")
+        f.write(f"- telegram_pdf_status_extractor_unavailable={int(LINK_RUNTIME_STATS.get('telegram_pdf_status_extractor_unavailable', 0))}\n")
+        f.write(f"- telegram_pdf_status_parse_failed={int(LINK_RUNTIME_STATS.get('telegram_pdf_status_parse_failed', 0))}\n")
+        f.write(f"- telegram_pdf_status_placeholder_only={int(LINK_RUNTIME_STATS.get('telegram_pdf_status_placeholder_only', 0))}\n")
+        f.write(f"- telegram_pdf_declared_page_count_total={int(LINK_RUNTIME_STATS.get('telegram_pdf_declared_page_count_total', 0))}\n")
+        f.write(f"- telegram_pdf_indexed_page_rows_total={int(LINK_RUNTIME_STATS.get('telegram_pdf_indexed_page_rows_total', 0))}\n")
+        f.write(f"- telegram_pdf_materialized_text_pages_total={int(LINK_RUNTIME_STATS.get('telegram_pdf_materialized_text_pages_total', 0))}\n")
+        f.write(f"- telegram_pdf_materialized_render_pages_total={int(LINK_RUNTIME_STATS.get('telegram_pdf_materialized_render_pages_total', 0))}\n")
+        f.write(f"- telegram_pdf_placeholder_page_rows_total={int(LINK_RUNTIME_STATS.get('telegram_pdf_placeholder_page_rows_total', 0))}\n")
+        f.write(f"- telegram_pdf_bounded_by_cap_total={int(LINK_RUNTIME_STATS.get('telegram_pdf_bounded_by_cap_total', 0))}\n")
         f.write("\n## Industry / Stock Classification\n\n")
         f.write(f"- classification_version={CLASSIFICATION_VERSION}\n")
         f.write(f"- documents_classified={int(CLASSIFICATION_RUNTIME_STATS.get('documents_classified', 0))}\n")
@@ -3336,12 +3642,7 @@ def run_full_refine(force_rebuild: bool = False, folders: list[str] | None = Non
             'strategy': 'size+mtime+path+rule_version+config_bundle_sha1+link_enrichment_flag+live_link_fetch_flag+telegram_attachment_subtree_for_text_telegram+stage1_link_sidecar_sig',
         },
         'config_provenance': STAGE2_CONFIG_PROVENANCE,
-        'input_source': {
-            'mode': STAGE2_INPUT_SOURCE,
-            'raw_base': RAW_BASE,
-            'db_path': _STAGE1_RAW_DB_PATH,
-            'mirror_root': _STAGE2_DB_MIRROR_ROOT,
-        },
+        'input_source': _input_source_policy_payload(),
         'clean_base': final_clean_base,
         'quarantine_base': final_q_base,
         'writer_policy': {
@@ -3389,6 +3690,22 @@ def run_full_refine(force_rebuild: bool = False, folders: list[str] | None = Non
             'telegram_pdf_path_resolution_marker': int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_marker', 0)),
             'telegram_pdf_path_resolution_fallback': int(LINK_RUNTIME_STATS.get('telegram_pdf_path_resolution_fallback', 0)),
             'telegram_pdf_orphan_artifacts': int(LINK_RUNTIME_STATS.get('telegram_pdf_orphan_artifacts', 0)),
+            'status_counts': {
+                'promoted': int(LINK_RUNTIME_STATS.get('telegram_pdf_status_promoted', 0)),
+                'bounded_by_cap': int(LINK_RUNTIME_STATS.get('telegram_pdf_status_bounded_by_cap', 0)),
+                'recoverable_missing_artifact': int(LINK_RUNTIME_STATS.get('telegram_pdf_status_recoverable_missing_artifact', 0)),
+                'extractor_unavailable': int(LINK_RUNTIME_STATS.get('telegram_pdf_status_extractor_unavailable', 0)),
+                'parse_failed': int(LINK_RUNTIME_STATS.get('telegram_pdf_status_parse_failed', 0)),
+                'placeholder_only': int(LINK_RUNTIME_STATS.get('telegram_pdf_status_placeholder_only', 0)),
+            },
+            'page_counters': {
+                'declared_page_count_total': int(LINK_RUNTIME_STATS.get('telegram_pdf_declared_page_count_total', 0)),
+                'indexed_page_rows_total': int(LINK_RUNTIME_STATS.get('telegram_pdf_indexed_page_rows_total', 0)),
+                'materialized_text_pages_total': int(LINK_RUNTIME_STATS.get('telegram_pdf_materialized_text_pages_total', 0)),
+                'materialized_render_pages_total': int(LINK_RUNTIME_STATS.get('telegram_pdf_materialized_render_pages_total', 0)),
+                'placeholder_page_rows_total': int(LINK_RUNTIME_STATS.get('telegram_pdf_placeholder_page_rows_total', 0)),
+                'bounded_by_cap_total': int(LINK_RUNTIME_STATS.get('telegram_pdf_bounded_by_cap_total', 0)),
+            },
         },
         'classification': {
             'classification_version': CLASSIFICATION_VERSION,

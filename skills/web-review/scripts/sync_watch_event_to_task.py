@@ -19,6 +19,8 @@ RUNTIME_TASKS_DIR = WORKSPACE / 'runtime' / 'tasks'
 PROOF_DIR = RUNTIME_TASKS_DIR / 'proofs' / 'watch-events'
 TASK_ID_PATTERN = re.compile(r'\b(?:JB-\d{8}-[A-Z0-9-]+|WD-[A-Z0-9-]+)\b', re.I)
 SPLIT_PROOF_PATTERN = re.compile(r'[\n,]+')
+WATCH_SUCCESS_STATUSES = {'complete', 'complete_json', 'complete_jsonish', 'complete_no_verdict'}
+WATCH_FAILURE_STATUSES = {'timeout', 'no_cookies', 'unknown'}
 
 
 def utc_now_iso() -> str:
@@ -39,16 +41,16 @@ def connect_tasks_db() -> sqlite3.Connection:
 
 def load_queue(path: Path) -> dict[str, Any]:
     if not path.exists():
-        return {'version': 1, 'events': []}
+        return {'version': 2, 'events': []}
     try:
         data = json.loads(path.read_text(encoding='utf-8'))
     except Exception:
-        return {'version': 1, 'events': []}
+        return {'version': 2, 'events': []}
     if not isinstance(data, dict):
-        return {'version': 1, 'events': []}
+        return {'version': 2, 'events': []}
     if not isinstance(data.get('events'), list):
         data['events'] = []
-    data.setdefault('version', 1)
+    data.setdefault('version', 2)
     return data
 
 
@@ -82,6 +84,13 @@ def compact_text(value: Any, *, limit: int = 200) -> str:
 def task_exists(conn: sqlite3.Connection, task_id: str) -> bool:
     row = conn.execute('SELECT 1 FROM tasks WHERE id=?', (task_id,)).fetchone()
     return row is not None
+
+
+def task_row(conn: sqlite3.Connection, task_id: str) -> sqlite3.Row | None:
+    return conn.execute(
+        'SELECT id, status, note, proof, proof_last, callback_token, callback_state, child_session FROM tasks WHERE id=?',
+        (task_id,),
+    ).fetchone()
 
 
 def extract_phase(note: str | None) -> str:
@@ -144,13 +153,13 @@ def unique_proof_csv(existing: str, new_path: str) -> str:
     return ','.join(parts)
 
 
-def append_note_line(existing_note: str, line: str, *, event_id: str) -> str:
+def append_note_lines(existing_note: str, lines: list[str]) -> str:
     stripped = (existing_note or '').rstrip()
-    if event_id and event_id in stripped:
-        return stripped
-    if not stripped:
-        return line
-    return stripped + '\n' + line
+    for line in lines:
+        if line and line in stripped:
+            continue
+        stripped = f'{stripped}\n{line}'.strip() if stripped else line
+    return stripped
 
 
 def stable_new_task_id(event: dict[str, Any]) -> str:
@@ -172,9 +181,11 @@ def build_status_note(*, event: dict[str, Any], proof_path: str, matched_by: str
     status = str(event.get('status') or '-').strip() or '-'
     event_id = str(event.get('id') or '-')
     source = str(event.get('source') or '-')
+    callback_status = str(event.get('callback_status') or '-').strip() or '-'
     return (
-        f"watch_event: {utc_now_iso()} | action={action} | event_id={event_id} | "
-        f"source={source} | status={status} | verdict={verdict} | matched_by={matched_by} | proof={proof_path}"
+        f'watch_event: {utc_now_iso()} | action={action} | event_id={event_id} | '
+        f'source={source} | status={status} | verdict={verdict} | callback={callback_status} | '
+        f'matched_by={matched_by} | proof={proof_path}'
     )
 
 
@@ -187,6 +198,7 @@ def proof_target_path(task_id: str, event: dict[str, Any], *, create_task_file: 
 
 def write_proof(path: Path, *, task_id: str, event: dict[str, Any], matched_by: str, action: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    debug = event.get('debug') if isinstance(event.get('debug'), dict) else {}
     lines = [
         f'# {task_id}',
         '',
@@ -202,7 +214,22 @@ def write_proof(path: Path, *, task_id: str, event: dict[str, Any], matched_by: 
         f"- title: {event.get('title', '')}",
         f"- url: {event.get('url', '')}",
         f"- result_json_path: {event.get('result_json_path', '')}",
+        f"- source_task_id: {event.get('source_task_id', '')}",
+        f"- parent_task_id: {event.get('parent_task_id', '')}",
+        f"- callback_token: {'set' if event.get('callback_token') else ''}",
+        f"- callback_status: {event.get('callback_status', '')}",
+        f"- report_status: {event.get('report_status', '')}",
+        f"- task_match_status: {event.get('task_match_status', '')}",
+        f"- task_apply_status: {event.get('task_apply_status', '')}",
+        f"- task_result_status: {event.get('task_result_status', '')}",
         f"- follow_up_required: {bool(event.get('follow_up_required', False))}",
+        '',
+        '## Detection debug',
+        f"- assistant_selector_path: {debug.get('assistant_selector_path', '')}",
+        f"- assistant_chars: {debug.get('assistant_chars', '')}",
+        f"- assistant_sha1: {debug.get('assistant_sha1', '')}",
+        f"- generation_indicator: {debug.get('generation_indicator', '')}",
+        f"- pending_reason: {debug.get('pending_reason', '')}",
         '',
         '## Note',
         '- Watcher completion was synced into task tracking automatically.',
@@ -221,13 +248,14 @@ def extract_candidate_task_ids(*, event: dict[str, Any], result: dict[str, Any] 
         seen.add(task_id)
         candidates.append((task_id, source))
 
-    explicit = (explicit_task_id or '').strip().upper()
-    if explicit:
-        push(explicit, 'explicit_task_id')
-
-    event_task_id = str(event.get('task_id') or '').strip().upper()
-    if event_task_id:
-        push(event_task_id, 'event.task_id')
+    for raw, source in [
+        (explicit_task_id, 'explicit_task_id'),
+        (str(event.get('task_id') or ''), 'event.task_id'),
+        (str(event.get('source_task_id') or ''), 'event.source_task_id'),
+        (str(event.get('parent_task_id') or ''), 'event.parent_task_id'),
+    ]:
+        if raw:
+            push(raw, source)
 
     texts: list[tuple[str, str]] = [
         (str(event.get('id') or ''), 'event.id'),
@@ -282,12 +310,17 @@ def add_and_start_task(task_id: str, *, title: str, scope: str, priority: str = 
     subprocess.run(start_cmd, cwd=str(WORKSPACE), check=True, capture_output=True, text=True)
 
 
+def run_cli(*parts: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run([sys.executable, str(TASKS_DB_CLI), *parts], cwd=str(WORKSPACE), capture_output=True, text=True)
+
+
 def record_task_event(task_id: str, *, event: dict[str, Any], proof_path: str, summary: str, matched_by: str, phase: str = '', dry_run: bool = False) -> dict[str, Any]:
     payload = {
         'ok': True,
         'skipped': bool(dry_run),
         'stdout': '',
         'stderr': '',
+        'returncode': 0,
     }
     if dry_run:
         return payload
@@ -299,6 +332,7 @@ def record_task_event(task_id: str, *, event: dict[str, Any], proof_path: str, s
         '--summary', summary,
         '--event-id', str(event.get('id') or ''),
         '--detail', f"status={event.get('status') or '-'} verdict={event.get('verdict') or '-'} matched_by={matched_by}",
+        '--detail', f"callback_status={event.get('callback_status') or '-'} report_status={event.get('report_status') or '-'}",
         '--detail', f"url={event.get('url') or ''}",
         '--proof-path', proof_path,
     ]
@@ -314,50 +348,139 @@ def record_task_event(task_id: str, *, event: dict[str, Any], proof_path: str, s
     return payload
 
 
-def update_existing_task(task_id: str, *, event: dict[str, Any], matched_by: str, dry_run: bool = False) -> dict[str, Any]:
+def watch_outcome(event: dict[str, Any], result: dict[str, Any] | None = None) -> tuple[str, str]:
+    payload = result or event
+    status = str(payload.get('status') or '').strip()
+    if status in WATCH_SUCCESS_STATUSES:
+        return 'complete', 'callback_completed'
+    if status in WATCH_FAILURE_STATUSES:
+        return 'fail', f'callback_failed_{status or "unknown"}'
+    if bool(payload.get('ok')):
+        return 'complete', 'callback_completed'
+    return 'fail', f'callback_failed_{status or "unknown"}'
+
+
+def build_failure_reason(event: dict[str, Any]) -> str:
+    status = str(event.get('status') or 'unknown').strip() or 'unknown'
+    pending_reason = str((event.get('debug') or {}).get('pending_reason') or '').strip()
+    message = f'web-review watcher failed: status={status}'
+    if pending_reason:
+        message += f' pending_reason={compact_text(pending_reason, limit=120)}'
+    error = compact_text(event.get('task_apply_error') or event.get('body_sample') or '', limit=160)
+    if error:
+        message += f' detail={error}'
+    return message
+
+
+def apply_existing_task(task_id: str, *, event: dict[str, Any], matched_by: str, dry_run: bool = False) -> dict[str, Any]:
+    with connect_tasks_db() as conn:
+        row = task_row(conn, task_id)
+    if row is None:
+        raise RuntimeError(f'task_not_found:{task_id}')
+
+    callback_token = str(event.get('callback_token') or '').strip()
+    if not callback_token:
+        return {
+            'action': 'existing_callback_missing_token',
+            'task_id': task_id,
+            'proof_path': '',
+            'matched_by': matched_by,
+            'task_event': {'ok': False, 'skipped': True},
+            'callback_status': 'pending',
+            'task_match_status': 'matched_existing',
+            'task_apply_status': 'error',
+            'task_result_status': 'callback_token_missing',
+            'task_apply_error': 'callback_token_missing',
+            'resume_phase': '',
+            'dry_run': bool(dry_run),
+            'apply_attempted': True,
+        }
+
+    expected_token = str(row['callback_token'] or '').strip() if 'callback_token' in row.keys() else ''
+    if expected_token and expected_token != callback_token:
+        return {
+            'action': 'existing_callback_token_mismatch',
+            'task_id': task_id,
+            'proof_path': '',
+            'matched_by': matched_by,
+            'task_event': {'ok': False, 'skipped': True},
+            'callback_status': 'pending',
+            'task_match_status': 'matched_existing',
+            'task_apply_status': 'error',
+            'task_result_status': 'callback_token_mismatch',
+            'task_apply_error': 'callback_token_mismatch',
+            'resume_phase': '',
+            'dry_run': bool(dry_run),
+            'apply_attempted': True,
+        }
+
     proof_path = proof_target_path(task_id, event, create_task_file=False)
-    note_line = build_status_note(event=event, proof_path=str(proof_path), matched_by=matched_by, action='updated_existing')
-    phase = task_resume_phase(task_id)
-    task_event = {
-        'ok': True,
-        'skipped': bool(dry_run),
-    }
+    resume_phase = task_resume_phase(task_id)
+    callback_action, task_result_status = watch_outcome(event)
+    callback_status = 'completed' if callback_action == 'complete' else 'failed'
+    summary = compact_text(
+        f"watcher {callback_status} status={event.get('status') or '-'} verdict={event.get('verdict') or '-'}",
+        limit=180,
+    )
+    task_event = {'ok': True, 'skipped': bool(dry_run)}
+    action = 'updated_existing'
+    task_apply_status = 'success'
+    task_apply_error = ''
+
     if not dry_run:
-        write_proof(proof_path, task_id=task_id, event=event, matched_by=matched_by, action='updated_existing')
-        with connect_tasks_db() as conn:
-            row = conn.execute('SELECT note, proof FROM tasks WHERE id=?', (task_id,)).fetchone()
-            if row is None:
-                raise RuntimeError(f'task_not_found:{task_id}')
-            note = append_note_line(row['note'] or '', note_line, event_id=str(event.get('id') or ''))
-            proof = unique_proof_csv(row['proof'] or '', str(proof_path))
-            now = now_local_ts()
-            conn.execute(
-                'UPDATE tasks SET note=?, proof=?, last_activity_at=?, updated_at=? WHERE id=?',
-                (note, proof, now, now, task_id),
+        write_proof(proof_path, task_id=task_id, event=event, matched_by=matched_by, action=f'callback_{callback_status}')
+        if callback_action == 'complete':
+            proc = run_cli(
+                'callback-complete',
+                '--id', task_id,
+                '--callback-token', callback_token,
+                '--proof', str(proof_path),
+                '--resume-phase', resume_phase or 'main_resume',
+                '--resume-note', f"watch callback complete event_id={event.get('id') or '-'} status={event.get('status') or '-'}",
             )
-            conn.commit()
-        summary = compact_text(
-            f"watcher synced completion status={event.get('status') or '-'} verdict={event.get('verdict') or '-'}",
-            limit=180,
-        )
-        task_event = record_task_event(
-            task_id,
-            event=event,
-            proof_path=str(proof_path),
-            summary=summary,
-            matched_by=matched_by,
-            phase=phase,
-            dry_run=False,
-        )
+            action = 'updated_existing_callback_complete'
+            event_phase = resume_phase or 'main_resume'
+        else:
+            proc = run_cli(
+                'callback-fail',
+                '--id', task_id,
+                '--callback-token', callback_token,
+                '--reason', build_failure_reason(event),
+            )
+            action = 'updated_existing_callback_fail'
+            event_phase = ''
+
+        if proc.returncode != 0:
+            task_apply_status = 'error'
+            task_apply_error = compact_text(proc.stderr or proc.stdout or 'callback_apply_failed', limit=240)
+        else:
+            task_event = record_task_event(
+                task_id,
+                event=event,
+                proof_path=str(proof_path),
+                summary=summary,
+                matched_by=matched_by,
+                phase=event_phase,
+                dry_run=False,
+            )
+            if not task_event.get('ok'):
+                task_apply_status = 'partial'
+                task_apply_error = compact_text(task_event.get('stderr') or task_event.get('stdout') or 'task_event_record_failed', limit=240)
+                task_result_status = f'{task_result_status}_task_event_partial'
     return {
-        'action': 'updated_existing',
+        'action': action,
         'task_id': task_id,
         'proof_path': str(proof_path),
         'matched_by': matched_by,
-        'note_line': note_line,
-        'resume_phase': phase if not dry_run else task_resume_phase(task_id),
+        'resume_phase': resume_phase or 'main_resume' if callback_action == 'complete' else '',
         'task_event': task_event,
+        'callback_status': callback_status,
+        'task_match_status': 'matched_existing',
+        'task_apply_status': task_apply_status,
+        'task_result_status': task_result_status,
+        'task_apply_error': task_apply_error,
         'dry_run': bool(dry_run),
+        'apply_attempted': True,
     }
 
 
@@ -371,7 +494,14 @@ def create_new_task(*, event: dict[str, Any], dry_run: bool = False) -> dict[str
         f"source={event.get('source', '')} status={event.get('status', '')} verdict={event.get('verdict', '-') or '-'} url={event.get('url', '')}",
         limit=220,
     )
-    note_line = build_status_note(event=event, proof_path=str(proof_path), matched_by='new_task_fallback', action='created_new')
+    note_lines = [
+        build_status_note(event=event, proof_path=str(proof_path), matched_by='new_task_fallback', action='created_new'),
+        f"watch_event_id: {event.get('id', '')}",
+        f"source_task_id: {event.get('source_task_id', '')}",
+        f"parent_task_id: {event.get('parent_task_id', '')}",
+        f"callback_token: {'set' if event.get('callback_token') else ''}",
+        f"callback_status: {event.get('callback_status', '')}",
+    ]
     if not dry_run:
         write_proof(proof_path, task_id=task_id, event=event, matched_by='new_task_fallback', action='created_new')
         add_and_start_task(task_id, title=title, scope=scope, priority='P1')
@@ -379,21 +509,43 @@ def create_new_task(*, event: dict[str, Any], dry_run: bool = False) -> dict[str
             row = conn.execute('SELECT note, proof FROM tasks WHERE id=?', (task_id,)).fetchone()
             if row is None:
                 raise RuntimeError(f'task_not_found_after_create:{task_id}')
-            note = append_note_line(row['note'] or '', note_line, event_id=str(event.get('id') or ''))
+            note = append_note_lines(row['note'] or '', note_lines)
             proof = unique_proof_csv(row['proof'] or '', str(proof_path))
             now = now_local_ts()
             conn.execute(
-                'UPDATE tasks SET note=?, proof=?, last_activity_at=?, updated_at=? WHERE id=?',
-                (note, proof, now, now, task_id),
+                'UPDATE tasks SET note=?, proof=?, proof_last=?, last_activity_at=?, updated_at=? WHERE id=?',
+                (note, proof, str(proof_path), now, now, task_id),
             )
             conn.commit()
+        task_event = record_task_event(
+            task_id,
+            event=event,
+            proof_path=str(proof_path),
+            summary=compact_text('fallback watcher task created for unmapped callback/report event', limit=180),
+            matched_by='new_task_fallback',
+            phase='main_resume',
+            dry_run=False,
+        )
+        apply_status = 'success' if task_event.get('ok') else 'partial'
+        apply_error = '' if task_event.get('ok') else compact_text(task_event.get('stderr') or task_event.get('stdout') or 'fallback_task_event_record_failed', limit=240)
+    else:
+        task_event = {'ok': True, 'skipped': True}
+        apply_status = 'success'
+        apply_error = ''
     return {
         'action': 'created_new',
         'task_id': task_id,
         'proof_path': str(proof_path),
         'matched_by': 'new_task_fallback',
-        'note_line': note_line,
+        'resume_phase': 'main_resume',
+        'task_event': task_event,
+        'callback_status': 'fallback_created',
+        'task_match_status': 'fallback_created',
+        'task_apply_status': apply_status,
+        'task_result_status': 'fallback_task_created',
+        'task_apply_error': apply_error,
         'dry_run': bool(dry_run),
+        'apply_attempted': True,
     }
 
 
@@ -404,10 +556,11 @@ def sync_event_to_task(
     explicit_task_id: str = '',
     allow_create: bool = False,
     dry_run: bool = False,
+    prior_apply_attempts: int = 0,
 ) -> dict[str, Any]:
     mapped_task_id, matched_by = resolve_existing_task(event=event, result=result, explicit_task_id=explicit_task_id)
     if mapped_task_id:
-        sync = update_existing_task(mapped_task_id, event=event, matched_by=matched_by or 'existing_task', dry_run=dry_run)
+        sync = apply_existing_task(mapped_task_id, event=event, matched_by=matched_by or 'existing_task', dry_run=dry_run)
     elif allow_create:
         sync = create_new_task(event=event, dry_run=dry_run)
     else:
@@ -416,9 +569,19 @@ def sync_event_to_task(
             'task_id': '',
             'proof_path': '',
             'matched_by': 'none',
-            'note_line': '',
+            'resume_phase': '',
+            'task_event': {'ok': True, 'skipped': True},
+            'callback_status': 'pending',
+            'task_match_status': 'unmapped',
+            'task_apply_status': 'pending',
+            'task_result_status': 'pending_unmapped',
+            'task_apply_error': '',
             'dry_run': bool(dry_run),
+            'apply_attempted': False,
         }
+    attempts = int(prior_apply_attempts or 0) + (1 if sync.get('apply_attempted') else 0)
+    sync['task_apply_attempts'] = attempts
+    sync['retries'] = max(0, attempts - 1)
     sync['synced_at'] = utc_now_iso()
     return sync
 
@@ -445,15 +608,27 @@ def sync_queue_event(
         explicit_task_id=explicit_task_id,
         allow_create=allow_create,
         dry_run=dry_run,
+        prior_apply_attempts=int(target.get('task_apply_attempts') or 0),
     )
     if not dry_run:
         target['task_sync_status'] = sync['action']
         target['task_sync_at'] = sync['synced_at']
         target['task_sync_match'] = sync['matched_by']
+        target['task_match_status'] = sync['task_match_status']
+        target['task_apply_status'] = sync['task_apply_status']
+        target['task_result_status'] = sync['task_result_status']
+        target['task_apply_attempts'] = sync['task_apply_attempts']
+        target['retries'] = sync['retries']
+        target['task_apply_error'] = sync.get('task_apply_error', '')
+        target['callback_status'] = sync.get('callback_status', target.get('callback_status', 'pending'))
         if sync.get('task_id'):
             target['task_id'] = sync['task_id']
         if sync.get('proof_path'):
             target['proof_path'] = sync['proof_path']
+        errors = target.get('errors') if isinstance(target.get('errors'), list) else []
+        if sync.get('task_apply_error'):
+            errors.append(f"{sync['synced_at']} {sync['task_apply_error']}")
+            target['errors'] = errors[-10:]
         queue['updated_at'] = utc_now_iso()
         write_queue(queue_file, queue)
     return {

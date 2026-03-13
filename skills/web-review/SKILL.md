@@ -129,15 +129,17 @@ No prose outside the code block.
    - Use anchor files only as entry points, not as the whole review boundary.
 4. Send the prompt in a fresh ChatGPT new chat. Use the bundled sender script if browser automation is available.
 5. Do **not** wait in-place for long responses. Start/trigger a DOM watcher and continue other tasks.
-6. When the response is captured, write the watcher JSON and record the completion into `runtime/watch/unreported_watch_events.json` first.
-7. After you actually report the result to 주인님, immediately ack that queue item.
-8. If the queue item is still unacked after the policy window (default 90 seconds), escalate it into taskdb.
-9. Use `scripts/watch_chatgpt_response.py` to poll the chat DOM until the response finishes or a verdict token appears.
-10. When DOM watcher is available, do **not** use periodic 5-minute reminder checks as the default path.
-11. Parse the returned code block only.
-12. Summarize the review result for 주인님 first, in a short actionable form.
-13. Only after that ack the queued watch event.
-14. Decide:
+6. On the normal task-bound path, watcher start must create a formal callback contract first: pass `--task-id`, `--event-id`, and `--callback-token` together so the watcher can call taskdb `detach-watch` before it begins waiting.
+7. When the response is captured, write the watcher JSON and record the completion into `runtime/watch/unreported_watch_events.json` first. Treat that queue as a callback/report ledger, not a simple note queue.
+8. Watcher completion must sync through taskdb callback APIs (`callback-complete` / `callback-fail`) and must not be treated as success merely because a task match was found.
+9. After you actually report the result to 주인님, ack that queue item with `--report-delivered`. Ack is valid only after apply success + report delivery.
+10. If the queue item is still unacked after the policy window (default 90 seconds), escalate/retry it; retries are required whenever `task_apply_status != success`.
+11. Use `scripts/watch_chatgpt_response.py` to poll the chat DOM until the response satisfies the stricter completion checks.
+12. When DOM watcher is available, do **not** use periodic 5-minute reminder checks as the default path.
+13. Parse the returned code block only.
+14. Summarize the review result for 주인님 first, in a short actionable form.
+15. Only after that ack the queued watch event.
+16. Decide:
    - `APPLY`: a change is truly needed and should be implemented
    - `REJECT`: low value / unsafe / off-target / no change needed
    - `NEED_MORE_CONTEXT`: collect the smallest missing context and retry
@@ -195,6 +197,7 @@ python3 scripts/watch_chatgpt_response.py \
   --record-unreported-queue \
   --task-id JB-20260312-EXAMPLE \
   --event-id web-review-batch-01 \
+  --callback-token cb-web-review-batch-01 \
   --screenshot runtime/browser-profiles/web-review-watch.png
 ```
 
@@ -202,16 +205,18 @@ Behavior:
 - reads Chrome ChatGPT cookies
 - opens the target conversation URL
 - checks DOM every few seconds
-- returns JSON with `status` and optional `verdict`
+- uses stricter completion detection with assistant-text stability, pending/generation checks, and debug fields such as selector path / assistant chars / assistant hash / generation indicator / pending reason
+- returns JSON with `status`, optional `verdict`, and watcher debug metadata
 - can also write the watcher JSON to disk and append a durable unreported-completion queue entry
-- when `--task-id` (or another embedded ticket id) is available, watcher start immediately marks `awaiting_callback` + releases the worker slot by default, and completion syncs back into that task with concise note/proof plus a recognizable resume phase (`main_resume`) when appropriate
+- when `--task-id` is supplied on the normal path, `--event-id` and `--callback-token` are also required; watcher start creates the formal callback contract via taskdb `detach-watch` and releases the worker slot by default
+- completion sync must go through taskdb callback APIs (`callback-complete` / `callback-fail`) before the ledger item can be considered successfully applied
 - if no existing ticket can be resolved, it creates a fallback watcher task immediately instead of silently dropping the event
 - can delete the chat after response capture
 - lets the agent do other work while waiting
 
 Queue helpers:
-- Ack after user report: `python3 scripts/ack_watch_event.py --event-id <stable-id>`
-- Escalate stale unacked events: `python3 scripts/escalate_unreported_watch_events.py --older-than-seconds 90`
+- Ack after user report delivery: `python3 scripts/ack_watch_event.py --event-id <stable-id> --report-delivered`
+- Retry/escalate stale or failed-apply events: `python3 scripts/escalate_unreported_watch_events.py --older-than-seconds 90`
 
 ## Output discipline
 - Keep prompts short.

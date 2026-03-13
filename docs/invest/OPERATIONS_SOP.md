@@ -52,8 +52,16 @@
 ## 5) Reporting Rules
 
 - 실행 중심 문장 사용(현재 진행/완료/다음 액션 명시)
-- 완료 보고에는 proof 경로 1개 이상 포함
+- 완료 보고에는 canonical evidence card 경로 1개 이상 포함 (`runtime/tasks/evidence/cards/<ticket>.json`)
+- proof index는 `runtime/tasks/evidence/proof-index.jsonl`를 기준으로 조회하며 `canonical_summary=true`가 기본 참조값이다.
+- raw/tmp/log proof는 보존하되 기본 읽기층에서 제외하고, 필요 시에만 opt-in 조회한다.
 - 보고 cadence/SLA canonical은 `docs/operations/governance/OPERATING_GOVERNANCE.md`를 따른다.
+
+## 5.1) Evidence Runtime Tier
+
+- L0 runtime pointer: current-task/context-handoff/TASKS-DIRECTIVES summary
+- L1 canonical evidence: evidence card + proof index (`canonical_summary=true`)
+- L2 cold raw artifacts: raw/log/tmp/stdout/stderr/full output (default non-load)
 
 ## 6) Timezone Policy
 

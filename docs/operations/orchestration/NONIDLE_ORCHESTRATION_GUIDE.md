@@ -1,6 +1,6 @@
 # NONIDLE ORCHESTRATION GUIDE
 
-상위 인덱스: `docs/operations/orchestration/README.md`
+상위 인덱스: `docs/operations/OPERATIONS_BOOK.md`
 
 > status: human-facing explainer only
 > canonical rules live in `TASKS.md`, `scripts/README.md`, `docs/operations/runtime/MAIN_BRAIN_GUARD.md`

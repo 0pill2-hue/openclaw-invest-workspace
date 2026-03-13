@@ -16,6 +16,9 @@ from lib.task_runtime import is_nonterminal_wait_phase, normalize_phase_name
 
 NOW = datetime.now()
 STALE_MINUTES = 30
+EVIDENCE_REFORM_CUTOFF = datetime.strptime('2026-03-13 00:00:00', '%Y-%m-%d %H:%M:%S')
+REPO_ROOT = Path(__file__).resolve().parents[2]
+EVIDENCE_CARD_PREFIX = 'runtime/tasks/evidence/cards/'
 
 
 def parse_dt(v: str | None):
@@ -36,6 +39,40 @@ def extract_phase(note: str | None) -> str:
     return '-'
 
 
+def is_raw_only_proof(text: str | None) -> bool:
+    lower = (text or '').lower()
+    if not lower.strip():
+        return False
+    has_raw = '/raw/' in lower or '/logs/' in lower or '/tmp/' in lower or 'stdout' in lower or 'stderr' in lower
+    has_canonical = EVIDENCE_CARD_PREFIX in lower
+    return has_raw and not has_canonical
+
+
+def parse_updated_at(value: str | None):
+    v = (value or '').strip()
+    if not v:
+        return None
+    try:
+        return datetime.strptime(v, '%Y-%m-%d %H:%M:%S')
+    except Exception:
+        return None
+
+
+def has_valid_evidence_card(proof: str | None) -> bool:
+    text = (proof or '').strip()
+    idx = text.find(EVIDENCE_CARD_PREFIX)
+    if idx < 0:
+        return False
+    end = len(text)
+    for sep in (' ', ',', ';', '#'):
+        pos = text.find(sep, idx)
+        if pos > idx:
+            end = min(end, pos)
+    rel = text[idx:end]
+    path = REPO_ROOT / rel
+    return path.exists()
+
+
 issues: list[str] = []
 if not TASKS_DB.exists():
     issues.append(f'tasks db not found: {TASKS_DB}')
@@ -43,7 +80,7 @@ else:
     conn = sqlite3.connect(str(TASKS_DB))
     conn.row_factory = sqlite3.Row
     rows = conn.execute(
-        "SELECT id, status, started_at, last_activity_at, resume_due, review_status, note FROM tasks"
+        "SELECT id, status, started_at, last_activity_at, resume_due, review_status, note, proof, updated_at FROM tasks"
     ).fetchall()
     for row in rows:
         tid = row['id']
@@ -72,6 +109,12 @@ else:
                 issues.append(f'BLOCKED resume_due 초과: {tid}')
         if review_status == 'REJECTED':
             issues.append(f'review_status=REJECTED: {tid}')
+        updated_at = parse_updated_at(row['updated_at'])
+        if status in {'DONE', 'BLOCKED'} and updated_at and updated_at >= EVIDENCE_REFORM_CUTOFF:
+            if not has_valid_evidence_card(row['proof']):
+                issues.append(f'closed task evidence card missing/invalid: {tid}')
+            if is_raw_only_proof(row['proof']):
+                issues.append(f'closed task raw-only proof detected: {tid}')
 
 result = {
     'ok': len(issues) == 0,

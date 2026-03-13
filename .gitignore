@@ -71,4 +71,5 @@ runtime/**/*.db-shm
 runtime/**/*.db-wal
 runtime/**/*.db-journal
 runtime/tasks/proofs/
+runtime/tasks/evidence/
 review_repo/

@@ -40,7 +40,7 @@ parent: `docs/operations/OPERATIONS_BOOK.md`
 - 주 입력: `runtime/tasks/tasks.db`, task phase/assignee 상태, context lock
 - 주 출력: `runtime/tasks/auto_dispatch_status.json`, `runtime/tasks/auto_dispatch_debug.log`
 - 실패 시: non-zero 반환, launchd/status에서 error 확인
-- 관련 문서: `TASKS.md`, `docs/operations/orchestration/README.md`, `docs/operations/runtime/MAIN_BRAIN_GUARD.md`
+- 관련 문서: `TASKS.md`, `docs/operations/orchestration/NONIDLE_ORCHESTRATION_GUIDE.md`, `docs/operations/runtime/MAIN_BRAIN_GUARD.md`
 
 ### `scripts/tasks/record_task_event.py`
 - 역할: background program 시작/진행/완료를 mapped task의 proof/task md/taskdb phase로 기록하고 필요 시 assignee release까지 수행

@@ -14,6 +14,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from lib.runtime_env import ROOT, TASKS_DB
+from lib.task_runtime import is_nonterminal_wait_phase
 
 TASK_DOC_DIR = ROOT / 'runtime' / 'tasks'
 TASKS_DB_CLI = ROOT / 'scripts' / 'tasks' / 'db.py'
@@ -33,6 +34,18 @@ def one_line(text: str, limit: int = 240) -> str:
     if len(compact) <= limit:
         return compact
     return compact[: limit - 3].rstrip() + '...'
+
+
+def format_event_proof_paths(paths: list[str]) -> list[str]:
+    cleaned = [item.strip() for item in (paths or []) if item and item.strip()]
+    if not cleaned:
+        return []
+    canonical = [p for p in cleaned if 'runtime/tasks/evidence/cards/' in p or 'runtime/tasks/evidence/proof-index.jsonl' in p]
+    if canonical:
+        return canonical[:4]
+    if len(cleaned) > 6:
+        return ['runtime/tasks/evidence/proof-index.jsonl (canonical_summary=true; raw=opt_in)']
+    return cleaned[:6]
 
 
 def task_row(task_id: str) -> sqlite3.Row | None:
@@ -83,9 +96,10 @@ def append_event_block(path: Path, *, event_id: str, source: str, summary: str, 
     for detail in details:
         if detail.strip():
             parts.append(f'- detail: {detail.strip()}')
-    if proof_paths:
+    formatted_proofs = format_event_proof_paths(proof_paths)
+    if formatted_proofs:
         parts.append('- proof:')
-        for proof in proof_paths:
+        for proof in formatted_proofs:
             parts.append(f'  - `{proof}`')
     block = '\n'.join(parts) + '\n'
 
@@ -138,6 +152,16 @@ def main() -> int:
     ap.add_argument('--allow-missing-task', action='store_true')
     ap.add_argument('--release-assignee', action='store_true', help='Clear assignee/run metadata after recording the event (use for detached background waits).')
     args = ap.parse_args()
+    phase = (args.phase or '').strip()
+    if phase and is_nonterminal_wait_phase(phase):
+        print(json.dumps({
+            'ok': False,
+            'error': 'deprecated_waiting_phase_record',
+            'task_id': args.task_id,
+            'message': 'Waiting/detached phase must be created via db.py detach (requires callback_token and resume_due).',
+            'phase': phase,
+        }, ensure_ascii=False, indent=2))
+        return 4
 
     row = task_row(args.task_id)
     if row is None and not args.allow_missing_task:
@@ -153,7 +177,7 @@ def main() -> int:
         event_id=(args.event_id or '').strip(),
         source=one_line(args.source, limit=80) or 'event',
         summary=one_line(args.summary, limit=300) or '-',
-        phase=(args.phase or '').strip(),
+        phase=phase,
         details=[one_line(item, limit=400) for item in (args.detail or []) if item.strip()],
         proof_paths=[item.strip() for item in (args.proof_path or []) if item.strip()],
     )
@@ -163,7 +187,7 @@ def main() -> int:
     if row is not None:
         runtime_update = update_task_runtime(
             args.task_id,
-            phase=(args.phase or '').strip(),
+            phase=phase,
             source=args.source,
             summary=args.summary,
         )

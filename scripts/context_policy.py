@@ -32,6 +32,8 @@ from lib.task_runtime import is_nonterminal_wait_phase
 ROOT = repo_root()
 CURRENT_TASK = current_task_path()
 CONTEXT_HANDOFF = context_handoff_path()
+CANONICAL_PROOF_INDEX = 'runtime/tasks/evidence/proof-index.jsonl'
+CANONICAL_EVIDENCE_CARD_PREFIX = 'runtime/tasks/evidence/cards/'
 FILES = {
     'soul': soul_path(),
     'user': user_path(),
@@ -105,6 +107,55 @@ def parse_context_handoff(text: str) -> dict[str, str]:
 def _clean(value: str) -> str:
     text = (value or '').strip()
     return text if text else '미정'
+
+
+def _compact_pointer(value: str | None, *, limit: int = 220) -> str:
+    text = ' '.join((value or '').split())
+    if not text:
+        return '미정'
+    if len(text) <= limit:
+        return text
+    return text[: limit - 3].rstrip() + '...'
+
+
+def _has_raw_like_payload(value: str | None) -> bool:
+    lower = (value or '').lower()
+    return '/raw/' in lower or '/logs/' in lower or '/tmp/' in lower or 'stdout' in lower or 'stderr' in lower
+
+
+def slim_touched_paths(value: str | None) -> str:
+    text = (value or '').strip()
+    if not text:
+        return '미정'
+    tokens = [item.strip() for item in text.split(',') if item.strip()]
+    if len(tokens) > 6 or len(text) > 260:
+        return f'index_pointer: {CANONICAL_PROOF_INDEX} (canonical_summary=true)'
+    return _compact_pointer(text, limit=220)
+
+
+def slim_latest_proof(value: str | None) -> str:
+    text = (value or '').strip()
+    if not text:
+        return '미정'
+    if _has_raw_like_payload(text) or len(text) > 260:
+        return f'index_pointer: {CANONICAL_PROOF_INDEX} (canonical_summary=true; raw=opt_in)'
+    return _compact_pointer(text, limit=220)
+
+
+def extract_evidence_card_pointer(value: str | None) -> str:
+    text = (value or '').strip()
+    if not text:
+        return '미정'
+    marker = CANONICAL_EVIDENCE_CARD_PREFIX
+    idx = text.find(marker)
+    if idx < 0:
+        return '미정'
+    end = len(text)
+    for sep in (' ', ',', ';'):
+        pos = text.find(sep, idx)
+        if pos > idx:
+            end = min(end, pos)
+    return text[idx:end]
 
 
 def extract_note_value(note: str | None, key: str) -> str:
@@ -225,6 +276,9 @@ def render_current_task_content(
     task_state_override: dict[str, str] | None = None,
 ) -> str:
     task_state = merged_task_state(ticket_id, task_state_override)
+    slim_paths = slim_touched_paths(touched_paths)
+    slim_proof = slim_latest_proof(latest_proof)
+    evidence_card = extract_evidence_card_pointer(latest_proof)
     return (
         '# current-task\n\n'
         f'- ticket_id: {_clean(ticket_id)}\n'
@@ -244,8 +298,10 @@ def render_current_task_content(
         f'- current_goal: {_clean(goal)}\n'
         f'- last_completed_step: {_clean(last)}\n'
         f'- next_action: {_clean(next_action)}\n'
-        f'- touched_paths: {_clean(touched_paths)}\n'
-        f'- latest_proof: {_clean(latest_proof)}\n'
+        f'- touched_paths: {_clean(slim_paths)}\n'
+        f'- latest_proof: {_clean(slim_proof)}\n'
+        f'- evidence_card: {_clean(evidence_card)}\n'
+        f'- proof_index: {CANONICAL_PROOF_INDEX}\n'
         f'- required_paths_or_params: {_clean(paths)}\n'
         f"- notes: {_clean(notes) if notes.strip() else '-'}\n"
     )
@@ -271,6 +327,9 @@ def render_context_handoff_content(
     task_state_override: dict[str, str] | None = None,
 ) -> str:
     task_state = merged_task_state(ticket_id, task_state_override)
+    slim_paths = slim_touched_paths(touched_paths)
+    slim_proof = slim_latest_proof(latest_proof)
+    evidence_card = extract_evidence_card_pointer(latest_proof)
     return (
         '# context-handoff\n\n'
         f'- handoff_version: v1\n'
@@ -292,8 +351,10 @@ def render_context_handoff_content(
         f'- business_goal: {_clean(goal)}\n'
         f'- last_completed_step: {_clean(last)}\n'
         f'- next_action: {_clean(next_action)}\n'
-        f'- latest_proof: {_clean(latest_proof)}\n'
-        f'- touched_paths: {_clean(touched_paths)}\n'
+        f'- latest_proof: {_clean(slim_proof)}\n'
+        f'- touched_paths: {_clean(slim_paths)}\n'
+        f'- evidence_card: {_clean(evidence_card)}\n'
+        f'- proof_index: {CANONICAL_PROOF_INDEX}\n'
         f'- required_paths_or_params: {_clean(paths)}\n'
         f'- reset_guard: {_clean(reset_guard)}\n'
         f"- notes: {_clean(notes) if notes.strip() else '-'}\n"

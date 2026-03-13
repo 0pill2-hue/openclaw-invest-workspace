@@ -1,8 +1,8 @@
 # JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION
 
 - ticket: JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION
-- status: IN_PROGRESS
-- checked_at: 2026-03-12 09:54 KST
+- status: BLOCKED
+- checked_at: 2026-03-13 13:17 KST
 
 ## Goal
 산업/종목/매크로를 섞고 블로그/텔레그램/애널리스트 보고서 등 다양한 source를 섞은 100건 샘플로 local / main / external(ChatGPT Pro web) 삼각비교를 수행한다.
@@ -194,3 +194,97 @@
 - detail: timeout_seconds=1800 poll_seconds=5
 - proof:
   - `/Users/jobiseu/.openclaw/workspace/runtime/tmp/stage3_external_batch_01a_t54_20260313113617_01_watch_resume_result.json`
+
+### 2026-03-13 11:43:22 KST | stage3 external watcher
+- summary: Stage3 ChatGPT DOM watcher started; main should continue other non-conflicting backlog while waiting.
+- phase: awaiting_callback
+- detail: url=https://chatgpt.com/
+- detail: timeout_seconds=1800 poll_seconds=5
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tmp/stage3_external_batch_01b_t54_20260313113617_02_watch_resume_result.json`
+
+### 2026-03-13 11:49:30 KST | stage3 external watcher
+- summary: Stage3 ChatGPT DOM watcher started; main should continue other non-conflicting backlog while waiting.
+- phase: awaiting_callback
+- detail: url=https://chatgpt.com/
+- detail: timeout_seconds=1800 poll_seconds=5
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tmp/stage3_external_batch_02b_t54_20260313113617_03_watch_resume_result.json`
+
+### 2026-03-13 12:30:45 KST | watcher
+<!-- task_event_id: stage3-batch_01a_directfix_check-complete -->
+- summary: watcher synced completion status=complete verdict=-
+- phase: main_resume
+- detail: status=complete verdict=- matched_by=explicit_task_id
+- detail: url=https://chatgpt.com/c/69b38341-42f4-83a9-ba8b-1a839a54f524
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/watch-events/JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION--stage3-batch-01a-directfix-check-complete.md`
+
+### 2026-03-13 12:44:00 KST | watcher
+<!-- task_event_id: stage3-batch_01b-metaenterfix-20260313124017-01 -->
+- summary: watcher synced completion status=complete verdict=-
+- detail: status=complete verdict=- matched_by=explicit_task_id
+- detail: url=https://chatgpt.com/c/69b38731-62a4-83a9-91cc-913b05b09ead
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/watch-events/JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION--stage3-batch-01b-metaenterfix-20260313124017-01.md`
+
+### 2026-03-13 12:45:21 KST | watcher
+<!-- task_event_id: stage3-batch_04b-metaenterfix-20260313124017-03 -->
+- summary: watcher synced completion status=complete verdict=-
+- detail: status=complete verdict=- matched_by=explicit_task_id
+- detail: url=https://chatgpt.com/c/69b387a8-6cb8-83a7-8289-4d355fb0c233
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/watch-events/JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION--stage3-batch-04b-metaenterfix-20260313124017-03.md`
+
+### 2026-03-13 12:59:02 KST | web_review_resume
+- summary: Resumed remaining external web-review batches (04a,05a,05b) with Thinking 5.4 sender + detached watchers
+- phase: awaiting_callback
+- detail: pending_batches=batch_04a,batch_05a,batch_05b session=rapid-valley
+
+### 2026-03-13 13:00:16 KST | watcher
+<!-- task_event_id: stage3-batch_05a-metaenterfix-20260313124017-04 -->
+- summary: watcher synced completion status=complete verdict=-
+- phase: main_resume
+- detail: status=complete verdict=- matched_by=explicit_task_id
+- detail: url=https://chatgpt.com/c/69b387cd-1938-83aa-b11f-958bf5fc2161
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/watch-events/JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION--stage3-batch-05a-metaenterfix-20260313124017-04.md`
+
+### 2026-03-13 13:00:41 KST | watcher
+<!-- task_event_id: stage3-batch_05b-metaenterfix-20260313124017-05 -->
+- summary: watcher synced completion status=complete verdict=-
+- detail: status=complete verdict=- matched_by=explicit_task_id
+- detail: url=https://chatgpt.com/c/69b38941-60fc-83a3-b3e9-58a443cdd330
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/watch-events/JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION--stage3-batch-05b-metaenterfix-20260313124017-05.md`
+
+### 2026-03-13 13:08:32 KST | watcher
+<!-- task_event_id: stage3-batch_05b-resume-20260313125857-03 -->
+- summary: watcher synced completion status=complete verdict=-
+- detail: status=complete verdict=- matched_by=explicit_task_id
+- detail: url=https://chatgpt.com/c/69b38c28-bec8-83a4-9dc2-92fa531fcfa2
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/watch-events/JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION--stage3-batch-05b-resume-20260313125857-03.md`
+
+### 2026-03-13 13:16:16 KST | auto_orchestrate
+- summary: Delegated Stage3 external triage refresh to subagent run f4d726ac-155c-41a1-880b-5f5f371660f3
+- phase: delegated_to_subagent
+- detail: child_session=agent:main:subagent:ceab8ce1-0485-4d33-b390-09a8dc33fd69 focus=04a single retry verification
+
+### 2026-03-13 13:17:50 KST | stage3 external triage refresh
+- summary: Unique external/web batch coverage remains 9/10 complete; only batch_04a is still unresolved after the latest single retry.
+- phase: blocked
+- detail: complete_batches=batch_01a,batch_01b,batch_02a,batch_02b,batch_03a,batch_03b,batch_04b,batch_05a,batch_05b incomplete=batch_04a
+- detail: `runtime/tmp/stage3_external_batch_04a_single_retry_20260313131352.json` shows `send_not_confirmed` with `conversation_url=https://chatgpt.com/`; detached watcher/completion proof for 04a 미확인.
+- detail: prior retry summaries at `runtime/tmp/stage3_external_metaenterfix_send_summary_20260313124017.json` and `runtime/tmp/stage3_external_resume_send_summary_20260313125857.json` also show `batch_04a sent=false`.
+- proof:
+  - `runtime/tasks/proofs/JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION_04a_triage_refresh_20260313_1317.md`
+
+### 2026-03-13 13:31:44 KST | watcher
+<!-- task_event_id: stage3-batch_05a-resume-20260313125857-02 -->
+- summary: watcher synced completion status=timeout verdict=-
+- phase: main_resume
+- detail: status=timeout verdict=- matched_by=explicit_task_id
+- detail: url=https://chatgpt.com/c/69b38bf5-131c-83a6-8b05-355b24a0913b
+- proof:
+  - `/Users/jobiseu/.openclaw/workspace/runtime/tasks/proofs/watch-events/JB-20260312-STAGE3-EXTERNAL100-TRIANGULATION--stage3-batch-05a-resume-20260313125857-02.md`

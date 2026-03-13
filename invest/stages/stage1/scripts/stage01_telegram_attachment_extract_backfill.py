@@ -343,7 +343,7 @@ def _pdf_meta_rank(meta_path: Path, meta: dict) -> tuple[int, int, int, int, int
     return (extract_ok, extract_exists, original_exists, manifest_exists, schema_version, richness, bucket_meta)
 
 
-def _canonical_pdf_meta_path_set() -> set[Path]:
+def _iter_canonical_pdf_meta_entries() -> list[tuple[Path, dict]]:
     grouped: dict[tuple[str, int], list[tuple[Path, dict]]] = {}
     for meta_path in _iter_attachment_meta_paths():
         meta = _read_json(meta_path)
@@ -354,12 +354,39 @@ def _canonical_pdf_meta_path_set() -> set[Path]:
             continue
         grouped.setdefault(key, []).append((meta_path, meta))
 
-    out: set[Path] = set()
-    for entries in grouped.values():
+    out: list[tuple[Path, dict]] = []
+    for key, entries in grouped.items():
         ranked = sorted(entries, key=lambda item: _pdf_meta_rank(item[0], item[1]))
-        if ranked:
-            out.add(ranked[-1][0])
+        if not ranked:
+            continue
+        merged: dict = {}
+        for _, meta in ranked:
+            for one_key, value in meta.items():
+                if value not in (None, "", [], {}):
+                    merged[one_key] = value
+                elif one_key not in merged:
+                    merged[one_key] = value
+        best_path, best_meta = ranked[-1]
+        deleted_after_decompose = (
+            _is_deleted_after_decompose(merged)
+            or _is_deleted_after_decompose(best_meta)
+        )
+        if deleted_after_decompose:
+            original_rel = str(merged.get("original_path") or "").strip()
+            if original_rel and not str(merged.get("original_deleted_rel_path") or "").strip():
+                merged["original_deleted_rel_path"] = original_rel
+            merged["original_path"] = ""
+        merged["channel_slug"] = key[0]
+        merged["message_id"] = key[1]
+        merged["kind"] = "pdf"
+        out.append((best_path, merged))
+    out.sort(key=lambda item: item[0].as_posix())
     return out
+
+
+
+def _canonical_pdf_meta_path_set() -> set[Path]:
+    return {meta_path for meta_path, _ in _iter_canonical_pdf_meta_entries()}
 
 
 def _load_stage1_env() -> None:
@@ -446,6 +473,39 @@ def _dialog_aliases(dialog) -> set[str]:
     return aliases
 
 
+
+def _channel_slug_resolution_candidates(channel_slug: str) -> list[str]:
+    raw = str(channel_slug or "").strip()
+    if not raw:
+        return []
+    tokens = [part.strip() for part in raw.split("_") if part.strip()]
+    out: list[str] = []
+    seen: set[str] = set()
+
+    def _add(value: str) -> None:
+        key = str(value or "").strip().casefold()
+        if not key or key in seen:
+            return
+        seen.add(key)
+        out.append(key)
+
+    _add(raw)
+    for idx in range(1, len(tokens)):
+        _add("_".join(tokens[idx:]))
+    if tokens:
+        _add(tokens[-1])
+    return out
+
+
+
+def _resolve_recovery_entity(channel_slug: str, alias_map: dict[str, object]) -> object | None:
+    for candidate in _channel_slug_resolution_candidates(channel_slug):
+        entity = alias_map.get(candidate)
+        if entity is not None:
+            return entity
+    return None
+
+
 async def _recover_missing_originals_async(records: list[dict], stats: dict) -> None:
     if not records:
         return
@@ -493,11 +553,7 @@ async def _recover_missing_originals_async(records: list[dict], stats: dict) -> 
             meta = dict(rec.get("meta") or {})
             stats["telegram_recovery_attempted"] += 1
 
-            entity = alias_map.get(channel_slug.casefold())
-            if entity is None and "_" in channel_slug:
-                suffix = channel_slug.rsplit("_", 1)[-1].strip()
-                if suffix.isdigit():
-                    entity = alias_map.get(suffix.casefold())
+            entity = _resolve_recovery_entity(channel_slug, alias_map)
             if entity is None:
                 stats["telegram_recovery_failed"] += 1
                 _bump_reason(stats, "telegram_recovery_entity_unresolved")
@@ -538,25 +594,30 @@ async def _recover_missing_originals_async(records: list[dict], stats: dict) -> 
             target_path = _attachment_original_path(channel_slug, msg_id, target_name)
             target_path.parent.mkdir(parents=True, exist_ok=True)
 
-            if not target_path.exists():
-                runtime_dir = STAGE1_DIR / "outputs/runtime"
-                runtime_dir.mkdir(parents=True, exist_ok=True)
-                tmp_dir = Path(tempfile.mkdtemp(prefix="tg_recover_", dir=str(runtime_dir)))
-                try:
-                    temp_target = tmp_dir / target_name
-                    downloaded = await client.download_media(message, file=str(temp_target))
-                    src = Path(str(downloaded or "")).resolve() if downloaded else Path("")
-                    if not src.exists() or not src.is_file():
-                        stats["telegram_recovery_failed"] += 1
-                        _bump_reason(stats, "telegram_recovery_download_failed")
-                        continue
-                    target_name = _build_original_target_name(file_name or src.name, src, msg_id)
-                    target_path = _attachment_original_path(channel_slug, msg_id, target_name)
-                    target_path.parent.mkdir(parents=True, exist_ok=True)
-                    if not target_path.exists():
-                        shutil.move(str(src), str(target_path))
-                finally:
-                    shutil.rmtree(tmp_dir, ignore_errors=True)
+            try:
+                if not target_path.exists():
+                    runtime_dir = STAGE1_DIR / "outputs/runtime"
+                    runtime_dir.mkdir(parents=True, exist_ok=True)
+                    tmp_dir = Path(tempfile.mkdtemp(prefix="tg_recover_", dir=str(runtime_dir)))
+                    try:
+                        temp_target = tmp_dir / target_name
+                        downloaded = await client.download_media(message, file=str(temp_target))
+                        src = Path(str(downloaded or "")).resolve() if downloaded else Path("")
+                        if not src.exists() or not src.is_file():
+                            stats["telegram_recovery_failed"] += 1
+                            _bump_reason(stats, "telegram_recovery_download_failed")
+                            continue
+                        target_name = _build_original_target_name(file_name or src.name, src, msg_id)
+                        target_path = _attachment_original_path(channel_slug, msg_id, target_name)
+                        target_path.parent.mkdir(parents=True, exist_ok=True)
+                        if not target_path.exists():
+                            shutil.move(str(src), str(target_path))
+                    finally:
+                        shutil.rmtree(tmp_dir, ignore_errors=True)
+            except Exception as e:
+                stats["telegram_recovery_failed"] += 1
+                _bump_reason(stats, f"telegram_recovery_runtime_error:{type(e).__name__}")
+                continue
 
             if not target_path.exists() or not target_path.is_file():
                 stats["telegram_recovery_failed"] += 1
@@ -595,11 +656,14 @@ def _recover_missing_originals(stats: dict) -> None:
         stats["telegram_recovery_skipped"] += len(selected_records)
         _bump_reason(stats, _telegram_recovery_disabled_reason())
         return
+    attempted_before = int(stats.get("telegram_recovery_attempted") or 0)
     try:
         import asyncio
         asyncio.run(_recover_missing_originals_async(selected_records, stats))
     except Exception as e:
-        stats["telegram_recovery_failed"] += len(selected_records)
+        attempted_now = max(0, int(stats.get("telegram_recovery_attempted") or 0) - attempted_before)
+        remaining = max(0, len(selected_records) - attempted_now)
+        stats["telegram_recovery_failed"] += remaining
         _bump_reason(stats, f"telegram_recovery_runtime_error:{type(e).__name__}")
 
 
@@ -1134,6 +1198,49 @@ def _set_pdf_extract_contract(meta: dict, *, page_marked: bool, marker_count: in
     return changed
 
 
+def _is_pdf_extractor_unavailable_reason(reason: str) -> bool:
+    low = str(reason or "").strip().lower()
+    if not low:
+        return False
+    unavailable_tokens = (
+        "extractor_unavailable",
+        "pypdf_unavailable",
+        "pdfminer_unavailable",
+        "swift_unavailable",
+        "swift_pdfkit_unavailable",
+        "swift_pdfkit_non_darwin",
+    )
+    return any(token in low for token in unavailable_tokens)
+
+
+def _pdf_status_taxonomy_from_meta(meta: dict) -> str:
+    extraction_status = str(meta.get("extraction_status") or "").strip().lower()
+    extraction_reason = str(meta.get("extraction_reason") or "").strip()
+    declared_page_count = int(meta.get("pdf_declared_page_count") or meta.get("pdf_page_count") or 0)
+    indexed_page_rows = int(meta.get("pdf_indexed_page_rows") or 0)
+    materialized_text_pages = int(meta.get("pdf_materialized_text_pages") or meta.get("pdf_text_pages") or 0)
+    materialized_render_pages = int(meta.get("pdf_materialized_render_pages") or meta.get("pdf_render_pages") or 0)
+    placeholder_page_rows = int(meta.get("pdf_placeholder_page_rows") or 0)
+    bounded_by_cap = bool(meta.get("pdf_bounded_by_cap"))
+    original_missing = not bool(str(meta.get("original_path") or "").strip())
+    manifest_present = bool(str(meta.get("pdf_manifest_path") or "").strip())
+    extract_present = bool(str(meta.get("extract_path") or "").strip())
+
+    if extraction_status == "ok" and bool(extract_present):
+        return "promoted"
+    if bounded_by_cap:
+        return "bounded_by_cap"
+    if original_missing and (manifest_present or extract_present):
+        return "recoverable_missing_artifact"
+    if _is_pdf_extractor_unavailable_reason(extraction_reason):
+        return "extractor_unavailable"
+    if declared_page_count > 0 and materialized_text_pages == 0 and materialized_render_pages == 0 and placeholder_page_rows > 0:
+        return "placeholder_only"
+    if declared_page_count > indexed_page_rows and declared_page_count > 0:
+        return "bounded_by_cap"
+    return "parse_failed"
+
+
 def _build_page_marked_text_from_manifest(meta: dict) -> dict:
     manifest_path = _resolve_stage1_path(meta.get("pdf_manifest_path"), fallback=None)
     if manifest_path is None or str(manifest_path) in {"", "."} or not manifest_path.exists() or not manifest_path.is_file():
@@ -1166,6 +1273,12 @@ def _clear_pdf_support_fields(meta: dict) -> bool:
     reset_map = {
         "pdf_manifest_path": "",
         "pdf_page_count": 0,
+        "pdf_declared_page_count": 0,
+        "pdf_indexed_page_rows": 0,
+        "pdf_materialized_text_pages": 0,
+        "pdf_materialized_render_pages": 0,
+        "pdf_placeholder_page_rows": 0,
+        "pdf_bounded_by_cap": False,
         "pdf_text_pages": 0,
         "pdf_render_pages": 0,
         "pdf_page_text_status": "",
@@ -1214,6 +1327,12 @@ def _apply_pdf_support_artifacts(meta: dict, meta_path: Path, original_path: Pat
     meta["artifact_layout"] = "bucketed_v3_flat"
     meta["pdf_manifest_path"] = str(info.get("manifest_rel_path") or "")
     meta["pdf_page_count"] = int(info.get("page_count") or 0)
+    meta["pdf_declared_page_count"] = int(info.get("declared_page_count") or info.get("page_count") or 0)
+    meta["pdf_indexed_page_rows"] = int(info.get("indexed_page_rows") or 0)
+    meta["pdf_materialized_text_pages"] = int(info.get("materialized_text_pages") or info.get("text_pages_written") or 0)
+    meta["pdf_materialized_render_pages"] = int(info.get("materialized_render_pages") or info.get("rendered_pages_written") or 0)
+    meta["pdf_placeholder_page_rows"] = int(info.get("placeholder_page_rows") or 0)
+    meta["pdf_bounded_by_cap"] = bool(info.get("bounded_by_cap"))
     meta["pdf_text_pages"] = int(info.get("text_pages_written") or 0)
     meta["pdf_render_pages"] = int(info.get("rendered_pages_written") or 0)
     meta["pdf_page_text_status"] = str(info.get("text_status") or "")
@@ -1234,31 +1353,78 @@ def _apply_pdf_support_artifacts(meta: dict, meta_path: Path, original_path: Pat
 
 
 
-def _collect_pdf_totals() -> tuple[int, int]:
-    totals: dict[tuple[str, int], bool] = {}
+def _collect_pdf_meta_accounting() -> dict:
+    payload = {
+        "total_pdf": 0,
+        "extract_ok_total": 0,
+        "manifest_present_total": 0,
+        "canonical_ready_total": 0,
+        "original_present_total": 0,
+        "original_deleted_after_decompose_total": 0,
+        "missing_original_total": 0,
+        "page_marked_total": 0,
+        "page_mapping_missing_total": 0,
+        "bounded_by_cap_total": 0,
+        "recoverable_missing_artifact_total": 0,
+        "extractor_unavailable_total": 0,
+        "parse_failed_total": 0,
+        "placeholder_only_total": 0,
+        "orphan_original_total": 0,
+    }
     if not ATTACH_ARTIFACT_ROOT.exists():
-        return 0, 0
-    for meta_path in _iter_attachment_meta_paths():
-        meta = _read_json(meta_path)
-        if not meta:
+        return payload
+
+    referenced_originals: set[Path] = set()
+    for meta_path, meta in _iter_canonical_pdf_meta_entries():
+        payload["total_pdf"] += 1
+        if str(meta.get("extraction_status") or "").strip().lower() == "ok":
+            payload["extract_ok_total"] += 1
+        if _pdf_manifest_ready(meta):
+            payload["manifest_present_total"] += 1
+        if str(meta.get("extraction_status") or "").strip().lower() == "ok" or _pdf_manifest_ready(meta):
+            payload["canonical_ready_total"] += 1
+        if bool(meta.get("pdf_page_marked")):
+            payload["page_marked_total"] += 1
+        if str(meta.get("pdf_page_mapping_status") or "").strip().startswith("missing"):
+            payload["page_mapping_missing_total"] += 1
+        status_name = _pdf_status_taxonomy_from_meta(meta)
+        if status_name == "bounded_by_cap":
+            payload["bounded_by_cap_total"] += 1
+        elif status_name == "recoverable_missing_artifact":
+            payload["recoverable_missing_artifact_total"] += 1
+        elif status_name == "extractor_unavailable":
+            payload["extractor_unavailable_total"] += 1
+        elif status_name == "placeholder_only":
+            payload["placeholder_only_total"] += 1
+        elif status_name == "parse_failed":
+            payload["parse_failed_total"] += 1
+
+        original_path = _infer_original_path(meta, meta_path)
+        original_ready = bool(original_path and original_path.exists() and original_path.is_file())
+        deleted_after_decompose = _is_deleted_after_decompose(meta)
+        if original_ready:
+            payload["original_present_total"] += 1
+            try:
+                referenced_originals.add(original_path.resolve())
+            except Exception:
+                referenced_originals.add(original_path)
+        elif deleted_after_decompose:
+            payload["original_deleted_after_decompose_total"] += 1
+        else:
+            payload["missing_original_total"] += 1
+
+    orphan_count = 0
+    for original_path in ATTACH_ARTIFACT_ROOT.rglob("*__original__*"):
+        if not original_path.is_file() or original_path.suffix.lower() != ".pdf":
             continue
-        kind = str(meta.get("kind") or "").strip().lower()
-        if kind != "pdf":
-            continue
-        channel_slug = str(meta.get("channel_slug") or "").strip()
         try:
-            msg_id = int(meta.get("message_id") or 0)
+            resolved = original_path.resolve()
         except Exception:
-            msg_id = 0
-        if not channel_slug or msg_id <= 0:
-            continue
-        key = (channel_slug, msg_id)
-        prev_ok = bool(totals.get(key))
-        now_ok = str(meta.get("extraction_status") or "").strip().lower() == "ok"
-        totals[key] = prev_ok or now_ok
-    total = len(totals)
-    ok = sum(1 for is_ok in totals.values() if is_ok)
-    return total, ok
+            resolved = original_path
+        if resolved not in referenced_originals:
+            orphan_count += 1
+    payload["orphan_original_total"] = orphan_count
+    return payload
 
 
 def _collect_pdf_db_totals(db_path: Path) -> dict:
@@ -1268,21 +1434,33 @@ def _collect_pdf_db_totals(db_path: Path) -> dict:
         "pdf_db_documents_total": 0,
         "pdf_db_extract_ok_total": 0,
         "pdf_db_decomposed_total": 0,
+        "pdf_db_canonical_ready_total": 0,
         "pdf_db_text_ready_total": 0,
         "pdf_db_render_ready_total": 0,
         "pdf_db_pages_total": 0,
+        "pdf_db_declared_pages_total": 0,
+        "pdf_db_indexed_page_rows_total": 0,
+        "pdf_db_materialized_text_pages_total": 0,
+        "pdf_db_materialized_render_pages_total": 0,
+        "pdf_db_placeholder_page_rows_total": 0,
         "pdf_db_quality_a_total": 0,
         "pdf_db_missing_original_total": 0,
         "pdf_db_page_marked_total": 0,
         "pdf_db_page_mapping_missing_total": 0,
+        "pdf_db_bounded_by_cap_total": 0,
+        "pdf_db_recoverable_missing_artifact_total": 0,
+        "pdf_db_extractor_unavailable_total": 0,
+        "pdf_db_parse_failed_total": 0,
+        "pdf_db_placeholder_only_total": 0,
     }
     if not db_path.exists():
         return payload
 
-    queries = {
+    base_queries = {
         "pdf_db_documents_total": "SELECT COUNT(*) FROM pdf_documents",
         "pdf_db_extract_ok_total": "SELECT COUNT(*) FROM pdf_documents WHERE extraction_status = 'ok'",
         "pdf_db_decomposed_total": "SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(manifest_rel_path, '') <> ''",
+        "pdf_db_canonical_ready_total": "SELECT COUNT(*) FROM pdf_documents WHERE extraction_status = 'ok' OR COALESCE(manifest_rel_path, '') <> ''",
         "pdf_db_text_ready_total": "SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(text_pages, 0) > 0",
         "pdf_db_render_ready_total": "SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(rendered_pages, 0) > 0",
         "pdf_db_pages_total": "SELECT COUNT(*) FROM pdf_pages",
@@ -1293,9 +1471,26 @@ def _collect_pdf_db_totals(db_path: Path) -> dict:
     }
     try:
         with sqlite3.connect(str(db_path)) as conn:
-            for key, sql in queries.items():
+            for key, sql in base_queries.items():
                 row = conn.execute(sql).fetchone()
                 payload[key] = int(row[0] or 0) if row else 0
+            columns = {str(row[1]) for row in conn.execute("PRAGMA table_info(pdf_documents)").fetchall()}
+            if "declared_page_count" in columns:
+                payload["pdf_db_declared_pages_total"] = int((conn.execute("SELECT COALESCE(SUM(declared_page_count), 0) FROM pdf_documents").fetchone() or [0])[0] or 0)
+            if "indexed_page_rows" in columns:
+                payload["pdf_db_indexed_page_rows_total"] = int((conn.execute("SELECT COALESCE(SUM(indexed_page_rows), 0) FROM pdf_documents").fetchone() or [0])[0] or 0)
+            if "materialized_text_pages" in columns:
+                payload["pdf_db_materialized_text_pages_total"] = int((conn.execute("SELECT COALESCE(SUM(materialized_text_pages), 0) FROM pdf_documents").fetchone() or [0])[0] or 0)
+            if "materialized_render_pages" in columns:
+                payload["pdf_db_materialized_render_pages_total"] = int((conn.execute("SELECT COALESCE(SUM(materialized_render_pages), 0) FROM pdf_documents").fetchone() or [0])[0] or 0)
+            if "placeholder_page_rows" in columns:
+                payload["pdf_db_placeholder_page_rows_total"] = int((conn.execute("SELECT COALESCE(SUM(placeholder_page_rows), 0) FROM pdf_documents").fetchone() or [0])[0] or 0)
+            if "bounded_by_cap" in columns:
+                payload["pdf_db_bounded_by_cap_total"] = int((conn.execute("SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(bounded_by_cap, 0) = 1").fetchone() or [0])[0] or 0)
+            if "pdf_status" in columns:
+                for status_name in ("recoverable_missing_artifact", "extractor_unavailable", "parse_failed", "placeholder_only"):
+                    key = f"pdf_db_{status_name}_total"
+                    payload[key] = int((conn.execute("SELECT COUNT(*) FROM pdf_documents WHERE COALESCE(pdf_status, '') = ?", (status_name,)).fetchone() or [0])[0] or 0)
     except Exception as e:
         payload["pdf_db_status"] = "error"
         payload["pdf_db_error"] = type(e).__name__
@@ -1634,8 +1829,9 @@ def main() -> int:
         stats["failed"] += 1
         _bump_reason(stats, fail_reason)
 
-    pdf_local_total, pdf_local_ok = _collect_pdf_totals()
+    pdf_meta_accounting = _collect_pdf_meta_accounting()
     pdf_db = _sync_pdf_db(stats)
+    pdf_accounting_basis = "db" if pdf_db.get("pdf_db_status") == "ok" else "canonical_meta_fallback"
 
     finished_at = datetime.now(timezone.utc)
     status = "OK" if stats["failed"] == 0 and pdf_db.get("pdf_db_status") == "ok" else "WARN"
@@ -1643,14 +1839,32 @@ def main() -> int:
         **stats,
         **pdf_db,
         "pdf_progress_basis": "db.pdf_documents/pdf_pages",
-        "pdf_local_meta_total": int(pdf_local_total),
-        "pdf_local_extract_ok_total": int(pdf_local_ok),
-        "pdf_meta_total": int(pdf_db.get("pdf_db_documents_total") or pdf_local_total),
-        "pdf_extract_ok_total": int(pdf_db.get("pdf_db_extract_ok_total") or pdf_local_ok),
-        "pdf_decompose_ok_total": int(pdf_db.get("pdf_db_decomposed_total") or 0),
+        "pdf_accounting_basis": pdf_accounting_basis,
+        "pdf_local_meta_total": int(pdf_meta_accounting["total_pdf"]),
+        "pdf_local_extract_ok_total": int(pdf_meta_accounting["extract_ok_total"]),
+        "pdf_local_canonical_ready_total": int(pdf_meta_accounting["canonical_ready_total"]),
+        "pdf_meta_total": int(pdf_db.get("pdf_db_documents_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["total_pdf"]),
+        "pdf_extract_ok_total": int(pdf_db.get("pdf_db_extract_ok_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["extract_ok_total"]),
+        "pdf_decompose_ok_total": int(pdf_db.get("pdf_db_decomposed_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["manifest_present_total"]),
+        "pdf_canonical_ready_total": int(pdf_db.get("pdf_db_canonical_ready_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["canonical_ready_total"]),
         "pdf_pages_total": int(pdf_db.get("pdf_db_pages_total") or 0),
-        "pdf_page_marked_total": int(pdf_db.get("pdf_db_page_marked_total") or 0),
-        "pdf_page_mapping_missing_total": int(pdf_db.get("pdf_db_page_mapping_missing_total") or 0),
+        "pdf_declared_pages_total": int(pdf_db.get("pdf_db_declared_pages_total") if pdf_db.get("pdf_db_status") == "ok" else 0),
+        "pdf_indexed_page_rows_total": int(pdf_db.get("pdf_db_indexed_page_rows_total") if pdf_db.get("pdf_db_status") == "ok" else 0),
+        "pdf_materialized_text_pages_total": int(pdf_db.get("pdf_db_materialized_text_pages_total") if pdf_db.get("pdf_db_status") == "ok" else 0),
+        "pdf_materialized_render_pages_total": int(pdf_db.get("pdf_db_materialized_render_pages_total") if pdf_db.get("pdf_db_status") == "ok" else 0),
+        "pdf_placeholder_page_rows_total": int(pdf_db.get("pdf_db_placeholder_page_rows_total") if pdf_db.get("pdf_db_status") == "ok" else 0),
+        "pdf_page_marked_total": int(pdf_db.get("pdf_db_page_marked_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["page_marked_total"]),
+        "pdf_page_mapping_missing_total": int(pdf_db.get("pdf_db_page_mapping_missing_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["page_mapping_missing_total"]),
+        "pdf_bounded_by_cap_total": int(pdf_db.get("pdf_db_bounded_by_cap_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["bounded_by_cap_total"]),
+        "pdf_recoverable_missing_artifact_total": int(pdf_db.get("pdf_db_recoverable_missing_artifact_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["recoverable_missing_artifact_total"]),
+        "pdf_extractor_unavailable_total": int(pdf_db.get("pdf_db_extractor_unavailable_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["extractor_unavailable_total"]),
+        "pdf_parse_failed_total": int(pdf_db.get("pdf_db_parse_failed_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["parse_failed_total"]),
+        "pdf_placeholder_only_total": int(pdf_db.get("pdf_db_placeholder_only_total") if pdf_db.get("pdf_db_status") == "ok" else pdf_meta_accounting["placeholder_only_total"]),
+        "pdf_original_present_total": int(pdf_meta_accounting["original_present_total"]),
+        "pdf_original_deleted_after_decompose_total": int(pdf_meta_accounting["original_deleted_after_decompose_total"]),
+        "pdf_missing_original_total": int(pdf_meta_accounting["missing_original_total"]),
+        "pdf_manifest_present_total": int(pdf_meta_accounting["manifest_present_total"]),
+        "pdf_orphan_original_total": int(pdf_meta_accounting["orphan_original_total"]),
         "finished_at": finished_at.isoformat(),
         "duration_sec": round((finished_at - started_at).total_seconds(), 3),
         "status": status,

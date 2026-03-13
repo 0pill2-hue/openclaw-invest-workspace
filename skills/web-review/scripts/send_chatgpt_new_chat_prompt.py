@@ -266,6 +266,53 @@ def wait_for_conversation_url(page, timeout_seconds):
 
 
 
+def try_send(page, wait_seconds):
+    attempts = []
+
+    def snapshot(label):
+        attempts.append({
+            'label': label,
+            'url': page.url,
+            'title': page.title(),
+        })
+
+    page.keyboard.press('Enter')
+    page.wait_for_timeout(wait_seconds * 1000)
+    snapshot('enter')
+    if '/c/' in page.url:
+        return True, attempts
+
+    page.keyboard.press('Meta+Enter')
+    page.wait_for_timeout(wait_seconds * 1000)
+    snapshot('meta_enter')
+    if '/c/' in page.url:
+        return True, attempts
+
+    send_selectors = [
+        'button[data-testid="send-button"]',
+        'button[aria-label="Send prompt"]',
+        'button[aria-label="메시지 보내기"]',
+        'button[type="submit"]',
+    ]
+    for sel in send_selectors:
+        loc = page.locator(sel)
+        if loc.count() <= 0:
+            continue
+        try:
+            btn = loc.first
+            if btn.is_visible() and btn.is_enabled():
+                btn.click(timeout=3000)
+                page.wait_for_timeout(wait_seconds * 1000)
+                snapshot(f'click:{sel}')
+                if '/c/' in page.url:
+                    return True, attempts
+        except Exception:
+            continue
+
+    return False, attempts
+
+
+
 def main():
     ap = argparse.ArgumentParser(description="Send a prompt in a fresh ChatGPT new chat.")
     ap.add_argument("--prompt-file", required=True)
@@ -366,13 +413,21 @@ def main():
             composer.fill(prompt, timeout=8000)
         except Exception:
             page.keyboard.type(prompt)
-        page.keyboard.press('Enter')
-        page.wait_for_timeout(max(args.post_send_wait_seconds, 1) * 1000)
-        wait_for_conversation_url(page, 15)
-
-        result["ok"] = True
+        sent, attempts = try_send(page, max(args.post_send_wait_seconds, 1))
+        result["send_attempts"] = attempts
         result["conversation_url"] = page.url
         result["title"] = page.title()
+        if not sent:
+            result["error"] = "send_not_confirmed"
+            if args.screenshot:
+                shot = Path(args.screenshot)
+                shot.parent.mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(shot), full_page=True)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            browser.close()
+            return 6
+
+        result["ok"] = True
         if args.screenshot:
             shot = Path(args.screenshot)
             shot.parent.mkdir(parents=True, exist_ok=True)

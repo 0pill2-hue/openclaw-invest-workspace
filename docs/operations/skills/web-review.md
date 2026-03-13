@@ -2,7 +2,7 @@
 
 역할: **ChatGPT Pro 웹 검토 스킬의 사람용 개요 문서**.
 
-상위 인덱스: `docs/operations/skills/README.md`
+상위 인덱스: `docs/operations/OPERATIONS_BOOK.md`
 
 ## 핵심
 `web-review`는 ChatGPT Pro 웹을 외부 검토 비교군으로 사용할 때 쓰는 스킬이다.

@@ -627,13 +627,19 @@ def ensure_pdf_support_artifacts(
     human_review_window_active, human_review_window_until = _window_info(message_date, hot_window_days)
     if not original_path.exists() or not original_path.is_file():
         return {
-            'artifact_schema_version': 3,
+            'artifact_schema_version': 4,
             'generated_at': datetime.now(timezone.utc).isoformat(),
             'generator': 'stage_pdf_artifacts.ensure_pdf_support_artifacts',
             'source_original_rel_path': '',
             'source_original_mtime_ns': 0,
             'manifest_rel_path': '',
             'page_count': 0,
+            'declared_page_count': 0,
+            'indexed_page_rows': 0,
+            'materialized_text_pages': 0,
+            'materialized_render_pages': 0,
+            'placeholder_page_rows': 0,
+            'bounded_by_cap': False,
             'text_pages_written': 0,
             'rendered_pages_written': 0,
             'text_status': 'failed',
@@ -655,6 +661,13 @@ def ensure_pdf_support_artifacts(
     existing = _read_json(manifest_path)
     if existing and int(existing.get('source_original_mtime_ns') or 0) == source_original_mtime_ns and str(existing.get('source_original_rel_path') or '') == source_original_rel_path and _all_manifest_files_exist(stage1_dir, existing):
         human_review_window_active, human_review_window_until = _window_info(message_date, hot_window_days)
+        existing['artifact_schema_version'] = max(4, int(existing.get('artifact_schema_version') or 0))
+        existing['declared_page_count'] = int(existing.get('declared_page_count') or existing.get('page_count') or 0)
+        existing['indexed_page_rows'] = int(existing.get('indexed_page_rows') or len(existing.get('pages', []) if isinstance(existing.get('pages'), list) else []) or 0)
+        existing['materialized_text_pages'] = int(existing.get('materialized_text_pages') or existing.get('text_pages_written') or 0)
+        existing['materialized_render_pages'] = int(existing.get('materialized_render_pages') or existing.get('rendered_pages_written') or 0)
+        existing['placeholder_page_rows'] = int(existing.get('placeholder_page_rows') or max(0, existing['declared_page_count'] - existing['indexed_page_rows']) or 0)
+        existing['bounded_by_cap'] = bool(existing.get('bounded_by_cap'))
         if keep_bundle:
             bundle_rel, bundle_reason = _bundle_files(
                 stage1_dir=stage1_dir,
@@ -690,13 +703,19 @@ def ensure_pdf_support_artifacts(
     if not run.get('ok'):
         human_review_window_active, human_review_window_until = _window_info(message_date, hot_window_days)
         payload = {
-            'artifact_schema_version': 3,
+            'artifact_schema_version': 4,
             'generated_at': datetime.now(timezone.utc).isoformat(),
             'generator': 'stage_pdf_artifacts.ensure_pdf_support_artifacts',
             'source_original_rel_path': source_original_rel_path,
             'source_original_mtime_ns': source_original_mtime_ns,
             'manifest_rel_path': _rel_path(stage1_dir, manifest_path),
             'page_count': 0,
+            'declared_page_count': 0,
+            'indexed_page_rows': 0,
+            'materialized_text_pages': 0,
+            'materialized_render_pages': 0,
+            'placeholder_page_rows': 0,
+            'bounded_by_cap': False,
             'text_pages_written': 0,
             'rendered_pages_written': 0,
             'text_status': 'failed',
@@ -753,19 +772,37 @@ def ensure_pdf_support_artifacts(
         })
 
     page_count = int(payload.get('page_count') or len(pages_out) or 0)
+    indexed_page_rows = len(pages_out)
+    materialized_text_pages = text_pages_written
+    materialized_render_pages = rendered_pages_written
+    placeholder_page_rows = 0
+    for page in pages_out:
+        if not isinstance(page, dict):
+            continue
+        if not str(page.get('text_rel_path') or '').strip() and not str(page.get('render_rel_path') or '').strip():
+            placeholder_page_rows += 1
+    if page_count > indexed_page_rows:
+        placeholder_page_rows += page_count - indexed_page_rows
+    bounded_by_cap = bool(page_count > max_pages and indexed_page_rows >= max_pages)
     text_status = 'ok' if page_count > 0 and text_pages_written >= min(page_count, max_pages) else ('partial' if text_pages_written > 0 else 'failed')
     render_status = 'ok' if page_count > 0 and rendered_pages_written >= min(page_count, max_pages) else ('partial' if rendered_pages_written > 0 else 'failed')
     quality_grade = 'A' if text_status == 'ok' and render_status == 'ok' else ('B' if text_status == 'ok' or render_status == 'ok' else ('C' if text_pages_written > 0 or rendered_pages_written > 0 else 'F'))
     human_review_window_active, human_review_window_until = _window_info(message_date, hot_window_days)
 
     manifest = {
-        'artifact_schema_version': 3,
+        'artifact_schema_version': 4,
         'generated_at': datetime.now(timezone.utc).isoformat(),
         'generator': 'stage_pdf_artifacts.ensure_pdf_support_artifacts',
         'source_original_rel_path': source_original_rel_path,
         'source_original_mtime_ns': source_original_mtime_ns,
         'manifest_rel_path': _rel_path(stage1_dir, manifest_path),
         'page_count': page_count,
+        'declared_page_count': page_count,
+        'indexed_page_rows': indexed_page_rows,
+        'materialized_text_pages': materialized_text_pages,
+        'materialized_render_pages': materialized_render_pages,
+        'placeholder_page_rows': placeholder_page_rows,
+        'bounded_by_cap': bounded_by_cap,
         'max_pages_applied': max_pages,
         'max_text_chars_applied': max_text_chars,
         'max_width_applied': max_width,

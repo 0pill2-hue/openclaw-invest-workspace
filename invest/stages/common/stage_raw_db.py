@@ -20,7 +20,7 @@ STAGE1_OUTPUTS_DIR = ROOT_PATH / 'invest/stages/stage1/outputs'
 DEFAULT_RAW_ROOT = STAGE1_OUTPUTS_DIR / 'raw'
 DEFAULT_DB_DIR = STAGE1_OUTPUTS_DIR / 'db'
 DEFAULT_DB_PATH = DEFAULT_DB_DIR / 'stage1_raw_archive.sqlite3'
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 
 @dataclass(frozen=True)
@@ -53,6 +53,11 @@ class RawSyncSummary:
 class PdfIndexSummary:
     indexed_documents: int
     indexed_pages: int
+    declared_pages: int
+    indexed_page_rows: int
+    materialized_text_pages: int
+    materialized_render_pages: int
+    placeholder_page_rows: int
     documents_with_manifest: int
     documents_with_text: int
     documents_with_renders: int
@@ -72,6 +77,11 @@ class PdfIndexSummary:
         return {
             'indexed_documents': self.indexed_documents,
             'indexed_pages': self.indexed_pages,
+            'declared_pages': self.declared_pages,
+            'indexed_page_rows': self.indexed_page_rows,
+            'materialized_text_pages': self.materialized_text_pages,
+            'materialized_render_pages': self.materialized_render_pages,
+            'placeholder_page_rows': self.placeholder_page_rows,
             'documents_with_manifest': self.documents_with_manifest,
             'documents_with_text': self.documents_with_text,
             'documents_with_renders': self.documents_with_renders,
@@ -190,12 +200,19 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             bundle_rel_path TEXT,
             original_size_bytes INTEGER NOT NULL DEFAULT 0,
             page_count INTEGER NOT NULL DEFAULT 0,
+            declared_page_count INTEGER NOT NULL DEFAULT 0,
+            indexed_page_rows INTEGER NOT NULL DEFAULT 0,
+            materialized_text_pages INTEGER NOT NULL DEFAULT 0,
+            materialized_render_pages INTEGER NOT NULL DEFAULT 0,
+            placeholder_page_rows INTEGER NOT NULL DEFAULT 0,
             text_pages INTEGER NOT NULL DEFAULT 0,
             rendered_pages INTEGER NOT NULL DEFAULT 0,
+            bounded_by_cap INTEGER NOT NULL DEFAULT 0,
             extraction_status TEXT,
             extraction_reason TEXT,
             render_status TEXT,
             render_reason TEXT,
+            pdf_status TEXT,
             quality_grade TEXT,
             page_marked INTEGER NOT NULL DEFAULT 0,
             page_marker_count INTEGER NOT NULL DEFAULT 0,
@@ -228,6 +245,13 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_column(conn, 'pdf_documents', 'page_marker_count', 'INTEGER NOT NULL DEFAULT 0')
     _ensure_column(conn, 'pdf_documents', 'page_mapping_status', 'TEXT')
     _ensure_column(conn, 'pdf_documents', 'extract_format', 'TEXT')
+    _ensure_column(conn, 'pdf_documents', 'declared_page_count', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(conn, 'pdf_documents', 'indexed_page_rows', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(conn, 'pdf_documents', 'materialized_text_pages', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(conn, 'pdf_documents', 'materialized_render_pages', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(conn, 'pdf_documents', 'placeholder_page_rows', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(conn, 'pdf_documents', 'bounded_by_cap', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(conn, 'pdf_documents', 'pdf_status', 'TEXT')
     _set_meta(conn, 'schema_version', str(SCHEMA_VERSION))
     conn.commit()
 
@@ -676,6 +700,48 @@ def _pdf_quality_grade(page_count: int, text_pages: int, rendered_pages: int) ->
     return 'F'
 
 
+def _is_extractor_unavailable_reason(reason: str) -> bool:
+    low = str(reason or '').strip().lower()
+    if not low:
+        return False
+    tokens = (
+        'extractor_unavailable',
+        'pypdf_unavailable',
+        'pdfminer_unavailable',
+        'swift_unavailable',
+        'swift_pdfkit_unavailable',
+        'swift_pdfkit_non_darwin',
+    )
+    return any(tok in low for tok in tokens)
+
+
+def _pdf_status_taxonomy(
+    *,
+    extraction_status: str,
+    extraction_reason: str,
+    declared_page_count: int,
+    indexed_page_rows: int,
+    materialized_text_pages: int,
+    materialized_render_pages: int,
+    placeholder_page_rows: int,
+    bounded_by_cap: bool,
+    original_exists: bool,
+    manifest_exists: bool,
+    extract_exists: bool,
+) -> str:
+    if str(extraction_status).strip().lower() == 'ok' and materialized_text_pages > 0:
+        return 'promoted'
+    if bounded_by_cap:
+        return 'bounded_by_cap'
+    if (not original_exists) and (manifest_exists or extract_exists):
+        return 'recoverable_missing_artifact'
+    if _is_extractor_unavailable_reason(extraction_reason):
+        return 'extractor_unavailable'
+    if declared_page_count > 0 and materialized_text_pages == 0 and materialized_render_pages == 0 and placeholder_page_rows > 0:
+        return 'placeholder_only'
+    return 'parse_failed'
+
+
 def _resolve_stage1_or_raw_path(raw_root: Path, rel_path: str) -> Path:
     raw = str(rel_path or '').strip()
     if not raw:
@@ -792,6 +858,11 @@ def index_pdf_artifacts_from_raw(
 
     indexed_documents = 0
     indexed_pages = 0
+    declared_pages = 0
+    indexed_page_rows_total = 0
+    materialized_text_pages_total = 0
+    materialized_render_pages_total = 0
+    placeholder_page_rows_total = 0
     documents_with_manifest = 0
     documents_with_text = 0
     documents_with_renders = 0
@@ -840,16 +911,18 @@ def index_pdf_artifacts_from_raw(
             manifest_path = _resolve_stage1_or_raw_path(raw_root_path, manifest_rel) if manifest_rel else None
             manifest = _read_json(manifest_path) if manifest_path is not None and manifest_path.exists() else {}
             pages = manifest.get('pages', []) if isinstance(manifest.get('pages'), list) else []
-            page_count = int(manifest.get('page_count') or meta.get('pdf_page_count') or 0)
-            text_pages = int(manifest.get('text_pages_written') or meta.get('pdf_text_pages') or 0)
-            rendered_pages = int(manifest.get('rendered_pages_written') or meta.get('pdf_render_pages') or 0)
+            page_count = int(manifest.get('page_count') or manifest.get('declared_page_count') or meta.get('pdf_page_count') or meta.get('pdf_declared_page_count') or 0)
+            declared_page_count = int(manifest.get('declared_page_count') or page_count or 0)
+            materialized_text_pages = int(manifest.get('materialized_text_pages') or manifest.get('text_pages_written') or meta.get('pdf_materialized_text_pages') or meta.get('pdf_text_pages') or 0)
+            materialized_render_pages = int(manifest.get('materialized_render_pages') or manifest.get('rendered_pages_written') or meta.get('pdf_materialized_render_pages') or meta.get('pdf_render_pages') or 0)
+            bounded_by_cap = bool(manifest.get('bounded_by_cap') or meta.get('pdf_bounded_by_cap'))
             if manifest:
                 documents_with_manifest += 1
-            if text_pages > 0:
+            if materialized_text_pages > 0:
                 documents_with_text += 1
-            if rendered_pages > 0:
+            if materialized_render_pages > 0:
                 documents_with_renders += 1
-            quality_grade = str(manifest.get('quality_grade') or meta.get('pdf_quality_grade') or _pdf_quality_grade(page_count, text_pages, rendered_pages)).strip() or 'F'
+            quality_grade = str(manifest.get('quality_grade') or meta.get('pdf_quality_grade') or _pdf_quality_grade(declared_page_count, materialized_text_pages, materialized_render_pages)).strip() or 'F'
             grade_counts[quality_grade] = int(grade_counts.get(quality_grade, 0)) + 1
             page_marked = 1 if bool(meta.get('pdf_page_marked')) else 0
             try:
@@ -871,18 +944,56 @@ def index_pdf_artifacts_from_raw(
             render_reason = str(manifest.get('render_reason') or meta.get('pdf_render_reason') or '').strip()
             human_review_window_active = 1 if bool(meta.get('human_review_window_active')) else 0
             artifact_bucket = str(meta.get('attachment_bucket') or '').strip()
+            extract_exists = bool(_resolve_stage1_or_raw_path(raw_root_path, extract_rel).exists()) if extract_rel else False
+            manifest_exists = bool(manifest_path is not None and manifest_path.exists())
+            original_exists = bool(original_path is not None and original_path.exists() and original_path.is_file())
+
+            page_rows_seen: set[int] = set()
+            indexed_page_rows = 0
+            placeholder_page_rows = 0
+            for page in pages:
+                if not isinstance(page, dict):
+                    continue
+                try:
+                    page_no = int(page.get('page_no') or 0)
+                except Exception:
+                    page_no = 0
+                if page_no <= 0 or page_no in page_rows_seen:
+                    continue
+                page_rows_seen.add(page_no)
+                indexed_page_rows += 1
+                if not str(page.get('text_rel_path') or '').strip() and not str(page.get('render_rel_path') or '').strip():
+                    placeholder_page_rows += 1
+            if declared_page_count > indexed_page_rows:
+                placeholder_page_rows += declared_page_count - indexed_page_rows
+                indexed_page_rows = declared_page_count
+
+            pdf_status = _pdf_status_taxonomy(
+                extraction_status=extraction_status,
+                extraction_reason=extraction_reason,
+                declared_page_count=declared_page_count,
+                indexed_page_rows=indexed_page_rows,
+                materialized_text_pages=materialized_text_pages,
+                materialized_render_pages=materialized_render_pages,
+                placeholder_page_rows=placeholder_page_rows,
+                bounded_by_cap=bounded_by_cap,
+                original_exists=original_exists,
+                manifest_exists=manifest_exists,
+                extract_exists=extract_exists,
+            )
 
             conn.execute(
                 '''
                 INSERT INTO pdf_documents(
                     doc_key, source_family, channel_slug, message_id, message_date, month_key, kind,
                     artifact_bucket, meta_rel_path, original_rel_path, extract_rel_path,
-                    manifest_rel_path, bundle_rel_path, original_size_bytes, page_count,
-                    text_pages, rendered_pages, extraction_status, extraction_reason,
-                    render_status, render_reason, quality_grade,
+                    manifest_rel_path, bundle_rel_path, original_size_bytes, page_count, declared_page_count,
+                    indexed_page_rows, materialized_text_pages, materialized_render_pages, placeholder_page_rows,
+                    text_pages, rendered_pages, bounded_by_cap, extraction_status, extraction_reason,
+                    render_status, render_reason, pdf_status, quality_grade,
                     page_marked, page_marker_count, page_mapping_status, extract_format,
                     human_review_window_active, db_synced_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(doc_key) DO UPDATE SET
                     source_family=excluded.source_family,
                     channel_slug=excluded.channel_slug,
@@ -898,12 +1009,19 @@ def index_pdf_artifacts_from_raw(
                     bundle_rel_path=excluded.bundle_rel_path,
                     original_size_bytes=excluded.original_size_bytes,
                     page_count=excluded.page_count,
+                    declared_page_count=excluded.declared_page_count,
+                    indexed_page_rows=excluded.indexed_page_rows,
+                    materialized_text_pages=excluded.materialized_text_pages,
+                    materialized_render_pages=excluded.materialized_render_pages,
+                    placeholder_page_rows=excluded.placeholder_page_rows,
                     text_pages=excluded.text_pages,
                     rendered_pages=excluded.rendered_pages,
+                    bounded_by_cap=excluded.bounded_by_cap,
                     extraction_status=excluded.extraction_status,
                     extraction_reason=excluded.extraction_reason,
                     render_status=excluded.render_status,
                     render_reason=excluded.render_reason,
+                    pdf_status=excluded.pdf_status,
                     quality_grade=excluded.quality_grade,
                     page_marked=excluded.page_marked,
                     page_marker_count=excluded.page_marker_count,
@@ -927,13 +1045,20 @@ def index_pdf_artifacts_from_raw(
                     _posix_rel_path(manifest_path, raw_root_path) if manifest_path is not None and manifest_path.exists() else manifest_rel,
                     bundle_rel,
                     original_size_bytes,
-                    page_count,
-                    text_pages,
-                    rendered_pages,
+                    declared_page_count,
+                    declared_page_count,
+                    indexed_page_rows,
+                    materialized_text_pages,
+                    materialized_render_pages,
+                    placeholder_page_rows,
+                    materialized_text_pages,
+                    materialized_render_pages,
+                    1 if bounded_by_cap else 0,
                     extraction_status,
                     extraction_reason,
                     render_status,
                     render_reason,
+                    pdf_status,
                     quality_grade,
                     page_marked,
                     page_marker_count,
@@ -972,8 +1097,8 @@ def index_pdf_artifacts_from_raw(
                 inserted_page_nos.add(page_no)
                 indexed_pages += 1
 
-            if page_count > len(inserted_page_nos):
-                for page_no in range(1, page_count + 1):
+            if declared_page_count > len(inserted_page_nos):
+                for page_no in range(1, declared_page_count + 1):
                     if page_no in inserted_page_nos:
                         continue
                     conn.execute(
@@ -985,6 +1110,11 @@ def index_pdf_artifacts_from_raw(
                     )
                     indexed_pages += 1
 
+            declared_pages += declared_page_count
+            indexed_page_rows_total += indexed_page_rows
+            materialized_text_pages_total += materialized_text_pages
+            materialized_render_pages_total += materialized_render_pages
+            placeholder_page_rows_total += placeholder_page_rows
             indexed_documents += 1
 
         conn.execute(
@@ -994,6 +1124,11 @@ def index_pdf_artifacts_from_raw(
         _set_meta(conn, 'last_pdf_index_summary', json.dumps({
             'indexed_documents': indexed_documents,
             'indexed_pages': indexed_pages,
+            'declared_pages': declared_pages,
+            'indexed_page_rows': indexed_page_rows_total,
+            'materialized_text_pages': materialized_text_pages_total,
+            'materialized_render_pages': materialized_render_pages_total,
+            'placeholder_page_rows': placeholder_page_rows_total,
             'documents_with_manifest': documents_with_manifest,
             'documents_with_text': documents_with_text,
             'documents_with_renders': documents_with_renders,
@@ -1012,6 +1147,11 @@ def index_pdf_artifacts_from_raw(
     return PdfIndexSummary(
         indexed_documents=indexed_documents,
         indexed_pages=indexed_pages,
+        declared_pages=declared_pages,
+        indexed_page_rows=indexed_page_rows_total,
+        materialized_text_pages=materialized_text_pages_total,
+        materialized_render_pages=materialized_render_pages_total,
+        placeholder_page_rows=placeholder_page_rows_total,
         documents_with_manifest=documents_with_manifest,
         documents_with_text=documents_with_text,
         documents_with_renders=documents_with_renders,

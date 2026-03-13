@@ -6,6 +6,7 @@ from pathlib import Path
 
 WORKSPACE = Path('/Users/jobiseu/.openclaw/workspace')
 DEFAULT_QUEUE_FILE = WORKSPACE / 'runtime' / 'watch' / 'unreported_watch_events.json'
+SUCCESS_APPLY_STATUSES = {'success'}
 
 
 def utc_now_iso() -> str:
@@ -14,16 +15,16 @@ def utc_now_iso() -> str:
 
 def load_queue(path: Path) -> dict:
     if not path.exists():
-        return {'version': 1, 'events': []}
+        return {'version': 2, 'events': []}
     try:
         data = json.loads(path.read_text(encoding='utf-8'))
     except Exception:
-        return {'version': 1, 'events': []}
+        return {'version': 2, 'events': []}
     if not isinstance(data, dict):
-        return {'version': 1, 'events': []}
+        return {'version': 2, 'events': []}
     if not isinstance(data.get('events'), list):
         data['events'] = []
-    data.setdefault('version', 1)
+    data.setdefault('version', 2)
     return data
 
 
@@ -33,10 +34,11 @@ def write_queue(path: Path, payload: dict) -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description='Acknowledge a queued watch event after reporting it.')
+    ap = argparse.ArgumentParser(description='Acknowledge a queued watch event after apply success and report delivery.')
     ap.add_argument('--event-id', required=True)
     ap.add_argument('--queue-file', default=str(DEFAULT_QUEUE_FILE))
     ap.add_argument('--ack-note', default='')
+    ap.add_argument('--report-delivered', action='store_true', help='Mark the result as actually reported before acking it.')
     args = ap.parse_args()
 
     queue_path = Path(args.queue_file)
@@ -52,13 +54,45 @@ def main() -> int:
         print(json.dumps({'ok': False, 'error': 'event_not_found', 'event_id': args.event_id}, ensure_ascii=False))
         return 1
 
+    apply_status = str(target.get('task_apply_status') or '').strip().lower()
+    if apply_status not in SUCCESS_APPLY_STATUSES:
+        print(json.dumps({
+            'ok': False,
+            'error': 'apply_not_success',
+            'event_id': args.event_id,
+            'task_apply_status': target.get('task_apply_status', ''),
+            'task_result_status': target.get('task_result_status', ''),
+        }, ensure_ascii=False))
+        return 2
+
+    report_status = str(target.get('report_status') or 'pending').strip().lower()
+    if not args.report_delivered and report_status not in {'delivered', 'acked'}:
+        print(json.dumps({
+            'ok': False,
+            'error': 'report_not_marked_delivered',
+            'event_id': args.event_id,
+            'report_status': target.get('report_status', ''),
+            'message': 'Pass --report-delivered when the result has actually been reported.',
+        }, ensure_ascii=False))
+        return 3
+
+    if args.report_delivered and not target.get('report_delivered_at'):
+        target['report_delivered_at'] = now
+    target['report_status'] = 'acked'
     target['acked_at'] = now
     if args.ack_note:
         target['ack_note'] = args.ack_note
     target['updated_at'] = now
     queue['updated_at'] = now
+    queue['version'] = 2
     write_queue(queue_path, queue)
-    print(json.dumps({'ok': True, 'event_id': args.event_id, 'queue_file': str(queue_path), 'acked_at': now}, ensure_ascii=False))
+    print(json.dumps({
+        'ok': True,
+        'event_id': args.event_id,
+        'queue_file': str(queue_path),
+        'report_status': target['report_status'],
+        'acked_at': now,
+    }, ensure_ascii=False))
     return 0
 
 

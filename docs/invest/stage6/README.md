@@ -2,6 +2,7 @@
 
 ## Canonical 문서
 - `docs/invest/stage6/STAGE6_RULEBOOK_AND_REPRO.md`
+- `docs/invest/stage6/STAGE6_KPI_RUNTIME_SPEC.md` (KPI 현재값/UI/버전별 구현 상세)
 
 ## 입력 (Inputs)
 - `invest/stages/stage6/inputs/upstream_stage1/`
@@ -26,4 +27,3 @@ python3 invest/stages/stage6/scripts/stage06_full_recompute_v4_6_kr.py
 
 ## 실패 정책
 - validation/parity FAIL 시 결과는 운영 불가(DRAFT 유지)
-

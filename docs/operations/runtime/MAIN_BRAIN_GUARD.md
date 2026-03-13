@@ -40,7 +40,7 @@
 - `python3 scripts/heartbeat/main_brain_guard.py`
 
 ## 문서 경계
-- non-idle 흐름 설명/다이어그램: `docs/operations/orchestration/README.md`
+- non-idle 흐름 설명/다이어그램: `docs/operations/orchestration/NONIDLE_ORCHESTRATION_GUIDE.md`
 - task contract: `TASKS.md`
 - 프로그램별 역할: `docs/operations/runtime/PROGRAMS.md`
 
