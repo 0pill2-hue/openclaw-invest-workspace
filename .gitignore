@@ -70,6 +70,7 @@ runtime/tasks/watchdog_notify_state.json
 runtime/**/*.db-shm
 runtime/**/*.db-wal
 runtime/**/*.db-journal
+runtime/stage3_*
 runtime/tasks/proofs/
 runtime/tasks/evidence/
 review_repo/

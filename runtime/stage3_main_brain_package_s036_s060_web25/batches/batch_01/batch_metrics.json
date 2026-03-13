@@ -1,8 +1,0 @@
-{
-  "batch_id": "batch_01",
-  "rows_expected": 32,
-  "run_wall_time_sec": null,
-  "main_model_ref": null,
-  "status": "pending_manual_fill",
-  "notes": "Prepared from web-usable S036-S060 local rerun package; fill after actual main run."
-}

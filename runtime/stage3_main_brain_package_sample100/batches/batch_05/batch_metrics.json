@@ -1,7 +1,0 @@
-{
-  "batch_id": "batch_05",
-  "rows_processed": 119,
-  "run_wall_time_sec": 333.2,
-  "main_model_ref": "openai-codex/gpt-5.4",
-  "notes": "Premium text batch with repeated multi-symbol rows; per-row runtime estimated uniformly at 2800ms."
-}

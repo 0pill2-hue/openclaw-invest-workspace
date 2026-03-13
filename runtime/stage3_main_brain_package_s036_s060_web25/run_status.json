@@ -1,8 +1,0 @@
-{
-  "package_status": "prepared_for_actual_main_run",
-  "rows_total": 95,
-  "batches_manifest": "runtime/stage3_main_brain_package_s036_s060_web25/batches/manifest.json",
-  "actual_results_path": "runtime/stage3_main_brain_package_s036_s060_web25/main_brain_results_actual.jsonl",
-  "next_callback_point": "when batch_01 results_template.jsonl receives first non-pending filled rows or when merged main_brain_results_actual.jsonl is created",
-  "blocker": "repo has prepare/compare adapter but no automated main_brain executor in-tree; actual scoring still requires manual/main-brain fill of prepared batch templates"
-}
