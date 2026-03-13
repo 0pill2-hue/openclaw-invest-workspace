@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "web_review_review_mode_v1",
+  "title": "Web Review Review Mode Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision",
+    "must_fix",
+    "improvements",
+    "risks",
+    "token_cost",
+    "questions"
+  ],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": [
+        "APPLY",
+        "REJECT",
+        "NEED_MORE_CONTEXT"
+      ]
+    },
+    "must_fix": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "improvements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "token_cost": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ]
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

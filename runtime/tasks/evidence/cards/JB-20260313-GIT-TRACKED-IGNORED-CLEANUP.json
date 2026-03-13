@@ -1,0 +1,20 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "JB-20260313-GIT-TRACKED-IGNORED-CLEANUP",
+  "status": "DONE",
+  "objective": "gitignore 대상인데 이미 Git에 올라간 tracked 파일을 식별해 index에서 제거하고 정리 방안을 반영",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/JB-20260313-GIT-TRACKED-IGNORED-CLEANUP.md;.gitignore;git:index_cleanup:runtime/stage3_*",
+  "touched_paths": [
+    "runtime/tasks/JB-20260313-GIT-TRACKED-IGNORED-CLEANUP.md;.gitignore;git:index_cleanup:runtime/stage3_*"
+  ],
+  "decisive_proof": "runtime/tasks/JB-20260313-GIT-TRACKED-IGNORED-CLEANUP.md;.gitignore;git:index_cleanup:runtime/stage3_*",
+  "proof_excerpt": "runtime/tasks/JB-20260313-GIT-TRACKED-IGNORED-CLEANUP.md;.gitignore;git:index_cleanup:runtime/stage3_*",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=JB-20260313-GIT-TRACKED-IGNORED-CLEANUP",
+  "timestamps": {
+    "created_at": "2026-03-13 16:14:51",
+    "updated_at": "2026-03-13 16:14:51",
+    "closed_at": "2026-03-13 16:16:52"
+  },
+  "closed_by": ""
+}

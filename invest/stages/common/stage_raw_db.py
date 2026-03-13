@@ -964,9 +964,6 @@ def index_pdf_artifacts_from_raw(
                 indexed_page_rows += 1
                 if not str(page.get('text_rel_path') or '').strip() and not str(page.get('render_rel_path') or '').strip():
                     placeholder_page_rows += 1
-            if declared_page_count > indexed_page_rows:
-                placeholder_page_rows += declared_page_count - indexed_page_rows
-                indexed_page_rows = declared_page_count
 
             pdf_status = _pdf_status_taxonomy(
                 extraction_status=extraction_status,

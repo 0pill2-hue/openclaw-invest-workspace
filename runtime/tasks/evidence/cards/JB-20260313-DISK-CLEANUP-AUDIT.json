@@ -1,0 +1,22 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "JB-20260313-DISK-CLEANUP-AUDIT",
+  "status": "DONE",
+  "objective": "PDF backfill 실패 원인 관련으로 workspace 내 삭제 우선순위 후보를 식별하고 보고",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/JB-20260313-DISK-CLEANUP-AUDIT.md;df -h .;runtime/tasks/proofs size audit;invest/stages/stage1/outputs size audit",
+  "touched_paths": [
+    "runtime/tasks/JB-20260313-DISK-CLEANUP-AUDIT.md;df",
+    ".;runtime/tasks/proofs",
+    "audit;invest/stages/stage1/outputs"
+  ],
+  "decisive_proof": "runtime/tasks/JB-20260313-DISK-CLEANUP-AUDIT.md;df",
+  "proof_excerpt": "runtime/tasks/JB-20260313-DISK-CLEANUP-AUDIT.md;df -h .;runtime/tasks/proofs size audit;invest/stages/stage1/outputs size audit",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=JB-20260313-DISK-CLEANUP-AUDIT",
+  "timestamps": {
+    "created_at": "2026-03-13 16:18:56",
+    "updated_at": "2026-03-13 16:18:56",
+    "closed_at": "2026-03-13 16:24:09"
+  },
+  "closed_by": ""
+}

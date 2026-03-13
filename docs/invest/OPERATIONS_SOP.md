@@ -62,6 +62,9 @@
 - L0 runtime pointer: current-task/context-handoff/TASKS-DIRECTIVES summary
 - L1 canonical evidence: evidence card + proof index (`canonical_summary=true`)
 - L2 cold raw artifacts: raw/log/tmp/stdout/stderr/full output (default non-load)
+- hot layer 허용 경로는 `runtime/current-task.md`, `runtime/context-handoff.md`, `runtime/tasks/evidence/cards/*`, `runtime/tasks/evidence/proof-index.jsonl`만 쓴다.
+- 탐색 기본값은 `python3 scripts/tasks/db.py evidence-search` canonical-only이며, `grep -R`로 raw/log/tmp 계층을 직접 뒤지지 않는다.
+- ad-hoc 검색 검사는 `python3 scripts/tasks/canonical_search_guard.py -- <command...>`로 선검사할 수 있다.
 
 ## 6) Timezone Policy
 

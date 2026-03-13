@@ -1445,19 +1445,20 @@ def _telegram_pdf_manifest_diag(meta: dict, *, fallback_manifest_path: str = '')
         materialized_render_pages = max(0, _as_int(manifest.get('materialized_render_pages') or manifest.get('rendered_pages_written') or meta.get('pdf_materialized_render_pages') or meta.get('pdf_render_pages') or 0))
     if not placeholder_page_rows:
         placeholder_page_rows = max(0, _as_int(manifest.get('placeholder_page_rows') or meta.get('pdf_placeholder_page_rows') or 0))
-    if declared_page_count > indexed_page_rows:
-        placeholder_page_rows += declared_page_count - indexed_page_rows
-        indexed_page_rows = declared_page_count
 
     max_pages_applied = max(
         0,
         _as_int(manifest.get('max_pages_applied') or meta.get('pdf_max_pages_applied') or 0),
     )
     bounded_by_cap = bool(
-        declared_page_count > 0
-        and max_pages_applied > 0
-        and declared_page_count > max_pages_applied
-    ) or bool(manifest.get('bounded_by_cap') or meta.get('pdf_bounded_by_cap'))
+        (
+            declared_page_count > indexed_page_rows
+            and max_pages_applied > 0
+            and indexed_page_rows >= max_pages_applied
+        )
+        or manifest.get('bounded_by_cap')
+        or meta.get('pdf_bounded_by_cap')
+    )
 
     return {
         'manifest_path': manifest_path,
@@ -1805,7 +1806,22 @@ def _promote_telegram_pdf_content(raw_content: str, path: str) -> tuple[str, dic
         promoted, meta = _resolve_telegram_pdf_artifact(segment, path)
         if promoted and promoted.get('promoted_block'):
             promoted_any = True
-            aggregate_meta.update(meta)
+            for key, value in meta.items():
+                if key in {
+                    'pdf_promoted',
+                    'pdf_status',
+                    'pdf_source',
+                    'pdf_chars_added',
+                    'pdf_nonempty_lines_added',
+                    'declared_page_count',
+                    'indexed_page_rows',
+                    'materialized_text_pages',
+                    'materialized_render_pages',
+                    'placeholder_page_rows',
+                    'bounded_by_cap',
+                }:
+                    continue
+                aggregate_meta[key] = value
             aggregate_meta['pdf_promoted'] = True
             aggregate_meta['pdf_status'] = 'promoted'
             aggregate_meta['pdf_source'] = meta.get('pdf_source', aggregate_meta.get('pdf_source', ''))
@@ -1817,6 +1833,10 @@ def _promote_telegram_pdf_content(raw_content: str, path: str) -> tuple[str, dic
             aggregate_meta['materialized_render_pages'] = int(aggregate_meta.get('materialized_render_pages', 0)) + int(meta.get('materialized_render_pages', 0))
             aggregate_meta['placeholder_page_rows'] = int(aggregate_meta.get('placeholder_page_rows', 0)) + int(meta.get('placeholder_page_rows', 0))
             aggregate_meta['bounded_by_cap'] = bool(aggregate_meta.get('bounded_by_cap')) or bool(meta.get('bounded_by_cap'))
+            aggregate_meta['recoverable_missing_artifact'] = bool(aggregate_meta.get('recoverable_missing_artifact')) or bool(meta.get('recoverable_missing_artifact'))
+            aggregate_meta['extractor_unavailable'] = bool(aggregate_meta.get('extractor_unavailable')) or bool(meta.get('extractor_unavailable'))
+            aggregate_meta['placeholder_only'] = bool(aggregate_meta.get('placeholder_only')) or bool(meta.get('placeholder_only'))
+            aggregate_meta['pdf_text_present'] = bool(aggregate_meta.get('pdf_text_present')) or bool(meta.get('pdf_text_present'))
             aggregate_meta.pop('pdf_extract_failure_reason', None)
             if not segment.rstrip().endswith(promoted['promoted_block']):
                 segment = segment.rstrip() + '\n\n' + promoted['promoted_block'] + '\n'

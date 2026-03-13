@@ -1,0 +1,21 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "JB-20260313-PDF-ORIGINAL-RENDER-CLEANUP",
+  "status": "DONE",
+  "objective": "페이지 캡처(render)와 원본 PDF 저장 상태를 점검하고, DB화/분해 완료본은 삭제 정리한다",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/JB-20260313-PDF-ORIGINAL-RENDER-CLEANUP.md;stage1_raw_archive.sqlite3(pdf_pages/raw_artifacts);df -h .",
+  "touched_paths": [
+    "runtime/tasks/JB-20260313-PDF-ORIGINAL-RENDER-CLEANUP.md;stage1_raw_archive.sqlite3(pdf_pages/raw_artifacts);df",
+    "."
+  ],
+  "decisive_proof": "runtime/tasks/JB-20260313-PDF-ORIGINAL-RENDER-CLEANUP.md;stage1_raw_archive.sqlite3(pdf_pages/raw_artifacts);df",
+  "proof_excerpt": "runtime/tasks/JB-20260313-PDF-ORIGINAL-RENDER-CLEANUP.md;stage1_raw_archive.sqlite3(pdf_pages/raw_artifacts);df -h .",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=JB-20260313-PDF-ORIGINAL-RENDER-CLEANUP",
+  "timestamps": {
+    "created_at": "2026-03-13 16:25:14",
+    "updated_at": "2026-03-13 16:25:14",
+    "closed_at": "2026-03-13 16:36:01"
+  },
+  "closed_by": ""
+}

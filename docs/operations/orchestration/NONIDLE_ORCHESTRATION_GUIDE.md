@@ -3,7 +3,7 @@
 상위 인덱스: `docs/operations/OPERATIONS_BOOK.md`
 
 > status: human-facing explainer only
-> canonical rules live in `TASKS.md`, `scripts/README.md`, `docs/operations/runtime/MAIN_BRAIN_GUARD.md`
+> canonical rules live in `AGENTS.md`, `TASKS.md`, `scripts/README.md`, `docs/operations/runtime/MAIN_BRAIN_GUARD.md`
 
 ## 1. 목적
 메인 뇌가 background program/subagent/watcher를 띄운 뒤
@@ -36,6 +36,8 @@
    - background work launch 후 task-aware proof/phase 기록 + detached waiting 전환
 4. background work는 진행/완료 시 같은 `task_id`로 event/proof를 남긴다.
 5. task가 resume-ready가 되면 메인이 다시 집어 review/close 한다.
+6. task를 완료 보고할 때는 바로 다음에 시작할 작업 1개를 함께 적는다. 없으면 blocker/대기 이유를 남긴다.
+7. 그 다음 작업에 실제 착수하는 턴에는 다른 탐색/실행보다 먼저 1줄 시작 보고를 보낸다.
 
 ## 5. 관련 파일 역할 맵
 - `scripts/tasks/db.py`

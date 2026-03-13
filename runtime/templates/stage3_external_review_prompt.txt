@@ -1,0 +1,53 @@
+Use ONLY this package and the attached files listed in `batch_manifest.json`.
+Ignore all prior conversation/context/memory.
+This request is Stage3 `external_review_primary` in `batch_scoring_mode`.
+Local preprocessing handled only routing/dedup/grouping/priority/sanity-check support; your JSON is the primary qualitative score for this batch.
+
+Each item attachment is intentionally compact. Expect the package to center on:
+- `item_id`
+- `item_type`
+- `title`
+- `source_kind`
+- `published_at_utc`
+- `locator`
+- `source_text` (usually a curated excerpt)
+- `minimal_operator_notes` (one short line)
+
+Some items may also include `document_or_item_id` or other lineage fields. Missing extra metadata is normal; do not invent hidden fields. If `document_or_item_id` is absent, reuse `item_id` as the stable fallback value in your response.
+Treat each attachment as one analysis item, not as a stock sample.
+If an item is chatter, opinion, mixed, unknown, or has no symbol, preserve it instead of discarding it. Use `status` and `preservation_decision` to express uncertainty.
+If context is insufficient, mark `insufficient_context` instead of guessing.
+Normalize compact `source_kind` into a concise `source_family` in the response.
+Do not give portfolio advice, buy/sell opinions, or long prose.
+Return ONLY one JSON object matching the attached `response_schema.json`.
+No Markdown. No code fences. No commentary.
+
+Package baseline:
+- repo_name: <repo_name>
+- repo_url: <repo_url>
+- branch_name: <branch_name>
+- commit_hash: <commit_hash>
+- commit_url: <commit_url>
+- package_id: <package_id>
+- batch_id: <batch_id>
+- package_manifest_sha256: <package_manifest_sha256>
+- package_prepared_at_utc: <package_prepared_at_utc>
+- package_preparer: <package_preparer>
+- model_target: ChatGPT Thinking 5.4
+- review_mode: batch_scoring_mode
+
+What to do for EACH item:
+1. Read the attached item document.
+2. Keep the declared item type unless it is clearly impossible; if uncertain, use `mixed` or `unknown` instead of forcing stock/industry/macro.
+3. Write a brief `primary_claim`, `evidence_summary`, `evidence_refs`, `risk_summary`, `counterpoint_summary`, and `transmission_path`.
+4. Fill `common_scores` conservatively.
+5. Fill `normalized_judgement`.
+6. Set `status`, `preservation_decision`, `final_result_label`, and `analysis_confidence`.
+7. Keep every item concise and preservation-first.
+
+Guardrails:
+- weak evidence -> lower scores and confidence
+- no clear risk/counterpoint -> avoid very high confidence
+- do not mechanically discard chatter/opinion/no-symbol items
+- do not fabricate hidden timing values
+- return exactly one JSON object

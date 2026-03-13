@@ -15,6 +15,7 @@
 - L0 (항상): `runtime/current-task.md`, `runtime/context-handoff.md`, TASKS/DIRECTIVES summary
 - L1 (기본 증거층): `runtime/tasks/evidence/cards/<ticket>.json`, `runtime/tasks/evidence/proof-index.jsonl` (`canonical_summary=true`)
 - L2 (cold raw): `raw/tmp/log/stdout/stderr/full exec artifacts` 전체 원문. 기본 로드 금지, 필요 시 명시 opt-in.
+- hot layer 허용 경로는 `runtime/current-task.md`, `runtime/context-handoff.md`, `runtime/tasks/evidence/cards/*`, `runtime/tasks/evidence/proof-index.jsonl`로 제한한다.
 
 ## 기본 로드
 - `SOUL.md`
@@ -59,5 +60,8 @@
 
 ## 금지/주의
 - usage index만 읽고 복구를 끝내지 않는다.
+- `grep -R`로 `runtime/tasks/evidence/raw-*`, `runtime/watch/raw`, `runtime/tmp`, `stdout/stderr/log` 계층을 뒤지는 방식은 금지한다.
+- 기본 탐색은 `python3 scripts/tasks/db.py evidence-search --limit <n>`로 시작하고, raw 검색은 `--include-raw`를 명시한 경우에만 허용한다.
+- automation에서 ad-hoc 검색 커맨드를 검증해야 하면 `python3 scripts/tasks/canonical_search_guard.py -- <command...>`를 먼저 통과시킨다.
 - 닫힌 ticket을 current-task가 가리키는 상태를 방치하지 않는다.
 - clean reset/cutover는 유효한 handoff 확인 전에는 하지 않는다.

@@ -1,225 +1,79 @@
 ---
 name: web-review
-description: Prepare and use a ChatGPT web review flow for code changes. Default to ChatGPT Thinking 5.4 unless the user explicitly requires another model. Use when the user wants an external ChatGPT-on-the-web review of a repo/change before applying it. Before every use, require git commit + git push so GitHub is current, capture branch + commit hash, tell the reviewer to ignore prior context and use only that commit as the baseline, and request a tiny code-block/JSON answer only. Prefer the local Playwright + Chrome cookie-injected automation path when available. The assistant must review the returned answer before applying anything.
+description: Prepare and use ChatGPT web review flows for (a) repo/code/doc change review and (b) Stage3 external-primary batch scoring packages for mixed analysis items. Default to ChatGPT Thinking 5.4 unless the user explicitly requires another model. For review_mode, require git commit + git push and use the commit as baseline. For batch_scoring_mode, use the attached package/manifest as baseline, preserve mixed/chatter/opinion/no-symbol items, and request exactly one JSON object matching the runtime schema. Prefer the local Playwright + Chrome cookie-injected automation path when available.
 ---
 
 # Web Review
 
-Use this skill when 주인님 wants an external **ChatGPT web review** before deciding whether to apply a change. Default model target is **Thinking 5.4** unless 주인님 explicitly asks for another tier/model.
+Use this skill when 주인님 wants an external **ChatGPT web flow**. Default model target is **Thinking 5.4** unless 주인님 explicitly asks for another tier/model.
+
+## Choose exactly one mode
+
+### `review_mode`
+- use for repo/code/doc change review
+- baseline = pushed git commit only
+- canonical prompt = `runtime/templates/web_review_review_mode_prompt.txt`
+- canonical response schema = `runtime/templates/web_review_review_mode_response_schema.json`
+
+### `batch_scoring_mode`
+- use for Stage3 external-primary scoring
+- baseline = attached package + `batch_manifest.json`
+- package data contract = `docs/invest/stage3/STAGE3_EXTERNAL_WEB_PACKAGE_SPEC.md`
+- canonical prompt = `runtime/templates/stage3_external_review_prompt.txt`
+- canonical response schema = `runtime/templates/stage3_response_schema.json`
+- preserve mixed/chatter/opinion/no-symbol items; the unit is an **analysis item**, not a stock sample
 
 ## Source-of-truth and deployment
 - Edit the tracked source at `/Users/jobiseu/.openclaw/workspace/skills/web-review`.
 - Treat `~/.agents/skills/web-review` as the deployed runtime copy that OpenClaw loads.
-- After source edits, run `bash /Users/jobiseu/.openclaw/workspace/scripts/skills/sync_web_review_skill.sh` to refresh the deployed copy.
-- Keep script references relative (for example `scripts/watch_chatgpt_response.py`) so the same SKILL works from either location.
+- After source edits, run `bash /Users/jobiseu/.openclaw/workspace/scripts/skills/sync_web_review_skill.sh`.
+- Keep script references relative so the same SKILL works from either location.
 
-## Hard rules
-- Before asking ChatGPT on the web, always make the repo current on GitHub:
-  1. `git status`
-  2. `git add -A && git commit ...` (or confirm clean tree)
-  3. `git push`
-  4. `git rev-parse HEAD`
-  5. `git branch --show-current`
-- Treat `<commit_hash>` as the only baseline. In the prompt, explicitly say: **ignore previous conversation/context; use only this commit as baseline**.
-- Ask for a **short code block only**. No long prose.
-- Do not apply the web answer blindly. Review it first, then decide APPLY / REJECT / NEED_MORE_CONTEXT.
-- Even when a review answer arrives, do **not** auto-create improvements or start implementation immediately.
-- First, report the review result back to 주인님 in a concise summary.
-- The assistant must judge whether modification is actually needed.
-- If modification is needed, the assistant should automatically open the proper task/directive/proof flow and then proceed.
-- If the repo is private or the commit alone is insufficient, include only the minimum extra context needed: goal, touched files, and a tiny diff/snippet.
+## Common orchestration rules
 - Prefer the local Playwright + Chrome cookie-injected session path first.
-- Use a fresh ChatGPT new chat for each web-review request.
-- After the answer is captured, delete that chat so review threads do not accumulate.
-- Do not depend on a specific ChatGPT project/workspace for web-review.
-- Default model target for this environment is **Thinking 5.4**. Verify/select it via the model selector before sending unless 주인님 explicitly asked for another model/tier.
-- When 주인님 explicitly requires **ChatGPT Pro model selection**, verify/select that exact model instead of the default.
-- Do not misread the first `+` menu as attachment-only and stop early when the UI exposes model choices there; inspect the visible model selector path that actually appears in the current session.
-- For multi-batch review workloads, do **not** wait for one chat to finish before sending the next. Send each batch in a fresh chat, capture the conversation URL, start a watcher, then continue to the next fresh chat.
-- When 주인님 explicitly requires **direct file attachment**, attach the real files themselves in ChatGPT. Do **not** replace the primary document set with a compiled surrogate file unless 주인님 explicitly allows that fallback.
-- Before sending, verify the attachment chips/list are visible in the composer so the real files are actually queued.
-- In this ChatGPT UI, direct attachment may effectively top out around **20 files per fresh chat**; if a larger set causes `파일 추가 불가능` or stalls attachment, split the package into fresh-chat batches of **20 files or fewer** instead of reverting to compiled surrogate files.
-- In this ChatGPT UI, send may require keyboard fallback. After attachments are visible and the prompt is filled, try **`Enter` then `Meta+Enter`** before concluding that send failed.
-- For benchmark/review watches, do not rely only on `APPLY|REJECT|NEED_MORE_CONTEXT` verdict tokens. Large assistant replies may arrive as raw JSON without verdict words, so watcher/completion handling must treat JSON or clearly JSON-shaped replies as successful capture.
+- Use a fresh ChatGPT new chat for each request.
+- After capture, delete that chat so review threads do not accumulate.
+- Verify/select **Thinking 5.4** before sending unless 주인님 explicitly asked for another model.
+- When 주인님 explicitly requires direct file attachment, attach the real files themselves.
+- Before sending, verify the attachment chips/list are visible in the composer.
+- In this UI, direct attachment may effectively top out around **20 files per fresh chat**. Keep attachment count below that ceiling, and for Stage3 mixed-item runs target **20-40 items per batch** (default target = 30) via compact packages/partitions rather than prompt/template duplication.
+- After attachments are visible and the prompt is filled, try **`Enter` then `Meta+Enter`** before concluding send failed.
+- For completion handling, treat JSON or clearly JSON-shaped replies as successful capture; do not rely only on verdict tokens.
+- Raw watcher text save is **OFF by default**. Only use `--debug-save-raw` when cold forensic capture is explicitly needed.
+- Do not use `grep -R` against runtime raw/log/tmp trees. Use `python3 scripts/tasks/db.py evidence-search` first; add `--include-raw` only with explicit justification.
 
-## Fixed question format
-Use this exact structure by default when asking ChatGPT web:
+## `review_mode` workflow
+1. Make the repo current on GitHub: `git status`, commit if needed, `git push`, `git rev-parse HEAD`, `git branch --show-current`.
+2. Treat `<commit_hash>` as the only baseline; include extra context only when the commit alone is insufficient.
+3. Fill the prompt from `runtime/templates/web_review_review_mode_prompt.txt` and use the matching response schema.
+4. Capture exactly one short JSON object.
+5. Review the answer before applying anything. Decide `APPLY` / `REJECT` / `NEED_MORE_CONTEXT` yourself.
+6. Report the review result briefly to 주인님 first; do not auto-create follow-up improvements just because a web answer arrived.
 
-```txt
-Use ONLY this baseline:
-- repo: <repo_name>
-- repo_url: <github_repo_url>
-- branch: <branch_name>
-- commit: <commit_hash>
-- commit_url: <github_commit_url_if_available>
+## `batch_scoring_mode` workflow
+1. Build or inspect the package per `docs/invest/stage3/STAGE3_EXTERNAL_WEB_PACKAGE_SPEC.md`.
+2. Keep package expression compact: `item_id`, `item_type`, `title`, `source_kind`, `published_at_utc`, `locator`, curated `source_text`, and one-line `minimal_operator_notes` are the center of gravity.
+3. Keep one canonical prompt/schema template in `runtime/templates/`; do **not** create per-run full prompt copies or `results_template` copies unless a debug exception is explicitly required.
+4. Use `runtime/templates/stage3_external_review_prompt.txt` and `runtime/templates/stage3_response_schema.json`; package attachments are the baseline, repo commit is provenance only.
+5. Partition mixed-item batches at **20-40 items** (default target = 30) and carry `partition_index`, `partition_count`, and `partial_failure.failed_item_ids` metadata so failed subsets can be repartitioned without rerunning the full package.
+6. Send via fresh chat with direct attachments and Thinking 5.4.
+7. Start the watcher instead of waiting in place.
+8. Capture JSON only and validate against the runtime schema.
+9. After capture, compact runtime outputs with `python3 scripts/stage3/compact_runtime_outputs.py <run_dir>` and keep only manifest/result/summary/card/proof-index as hot artifacts.
+10. Route malformed, partial, or high-ambiguity batches to Stage3 adjudication / exception review.
 
-Ignore all prior conversation/context/memory.
-If the commit alone is not enough, return NEED_MORE_CONTEXT instead of guessing.
+## Queue / watcher discipline
+- On the normal task-bound path, watcher start must create a formal callback contract first: pass `--task-id`, `--event-id`, and `--callback-token` together.
+- When the response is captured, write the watcher JSON and record completion into `runtime/watch/unreported_watch_events.json` first.
+- Completion sync must go through taskdb callback APIs (`callback-complete` / `callback-fail`).
+- Ack after result delivery only: `python3 scripts/ack_watch_event.py --event-id <stable-id> --report-delivered`.
+- Retry/escalate stale or failed-apply events: `python3 scripts/escalate_unreported_watch_events.py --older-than-seconds 90`.
 
-Goal:
-<1-3 short lines>
+## Browser scripts
+- sender: `python3 scripts/send_chatgpt_new_chat_prompt.py --prompt-file <prompt.txt> [--attach-list-file <paths.txt>] --headful --screenshot <png>`
+- watcher: `python3 scripts/watch_chatgpt_response.py --url '<chat-url>' --poll-seconds 15 --timeout-seconds 900 --headful --delete-after --output-json <result.json> --record-unreported-queue --task-id <ticket> --event-id <stable-id> --callback-token <token> --screenshot <png>`
+- cold raw debug opt-in only: append `--debug-save-raw` when a forensic copy is required; raw text will be written under `runtime/watch/raw/` instead of the hot watcher JSON.
 
-Scope:
-- area: <folder / subsystem / docset>
-- read: <read all relevant docs/code under this scope>
-- focus: <must-fix issues / contradictions / best improvements>
-
-Optional minimal context (only if needed):
-- anchor files: <a few representative paths>
-- tiny diff/snippet: <minimum only>
-
-Return ONLY one JSON code block.
-No prose.
-```
-
-## Fixed answer format
-Preferred response format (slightly richer but still concise):
-
-```json
-{"decision":"APPLY|REJECT|NEED_MORE_CONTEXT","must_fix":["..."],"improvements":["..."],"risks":["..."],"token_cost":"LOW|MEDIUM|HIGH","questions":["..."]}
-```
-
-Ultra-short fallback:
-
-```txt
-APPLY|REJECT|NEED_MORE_CONTEXT
-- must_fix: <none or short item>
-- improvement: <short item>
-- token_cost: LOW|MEDIUM|HIGH - <short reason>
-```
-
-## Prompt template
-Fill this in with the current repo/task and give it to ChatGPT web:
-
-```txt
-Use ONLY this baseline:
-- repo: <repo_name>
-- repo_url: <github_repo_url>
-- branch: <branch_name>
-- commit: <commit_hash>
-- commit_url: <github_commit_url_if_available>
-
-Ignore all prior conversation/context/memory.
-If the commit alone is insufficient, answer NEED_MORE_CONTEXT instead of guessing.
-
-Goal:
-<1-3 short lines>
-
-Scope:
-- area: <folder / subsystem / docset>
-- read: <read all relevant docs/code under this scope>
-- focus: <must-fix issues / contradictions / best improvements>
-
-Optional minimal context (only if needed):
-- anchor files: <a few representative paths>
-- tiny diff/snippet: <minimum only>
-
-Return ONLY one JSON code block in this schema:
-{"decision":"APPLY|REJECT|NEED_MORE_CONTEXT","must_fix":["..."],"improvements":["..."],"risks":["..."],"token_cost":"LOW|MEDIUM|HIGH","questions":["..."]}
-
-No prose outside the code block.
-```
-
-## Assistant workflow
-1. Verify repo state is committed and pushed.
-2. Capture `branch`, `commit_hash`, and `github_repo_url` (plus `commit_url` when available).
-3. Build the prompt above.
-   - Default to **area/folder-level review**, not a tiny file list.
-   - Ask the reviewer to read the relevant docs/code under that scope.
-   - Use anchor files only as entry points, not as the whole review boundary.
-4. Send the prompt in a fresh ChatGPT new chat. Use the bundled sender script if browser automation is available.
-5. Do **not** wait in-place for long responses. Start/trigger a DOM watcher and continue other tasks.
-6. On the normal task-bound path, watcher start must create a formal callback contract first: pass `--task-id`, `--event-id`, and `--callback-token` together so the watcher can call taskdb `detach-watch` before it begins waiting.
-7. When the response is captured, write the watcher JSON and record the completion into `runtime/watch/unreported_watch_events.json` first. Treat that queue as a callback/report ledger, not a simple note queue.
-8. Watcher completion must sync through taskdb callback APIs (`callback-complete` / `callback-fail`) and must not be treated as success merely because a task match was found.
-9. After you actually report the result to 주인님, ack that queue item with `--report-delivered`. Ack is valid only after apply success + report delivery.
-10. If the queue item is still unacked after the policy window (default 90 seconds), escalate/retry it; retries are required whenever `task_apply_status != success`.
-11. Use `scripts/watch_chatgpt_response.py` to poll the chat DOM until the response satisfies the stricter completion checks.
-12. When DOM watcher is available, do **not** use periodic 5-minute reminder checks as the default path.
-13. Parse the returned code block only.
-14. Summarize the review result for 주인님 first, in a short actionable form.
-15. Only after that ack the queued watch event.
-16. Decide:
-   - `APPLY`: a change is truly needed and should be implemented
-   - `REJECT`: low value / unsafe / off-target / no change needed
-   - `NEED_MORE_CONTEXT`: collect the smallest missing context and retry
-15. If the decision implies a real change, automatically open the appropriate task/directive/proof path before implementation.
-16. After applying, verify locally.
-
-## New-chat sender
-Browser automation is expected to be available here via the proven Playwright + live Chrome cookie-injected session path. Prefer the bundled sender script so each review starts in a fresh chat, and do not claim the path is unavailable unless it has been rechecked and actually failed.
-
-Example:
-
-```bash
-python3 scripts/send_chatgpt_new_chat_prompt.py \
-  --prompt-file runtime/tmp/web_review_prompt.txt \
-  --headful \
-  --screenshot runtime/browser-profiles/web-review-send.png
-```
-
-For direct file attachment work, prefer `--attach-list-file` with the real files that must be uploaded to ChatGPT:
-
-```bash
-python3 scripts/send_chatgpt_new_chat_prompt.py \
-  --prompt-file runtime/tmp/web_review_prompt.txt \
-  --attach-list-file runtime/tmp/chatgpt_attach_list.txt \
-  --headful \
-  --screenshot runtime/browser-profiles/web-review-send.png
-```
-
-`runtime/tmp/chatgpt_attach_list.txt` should contain one real file path per line. Use this for batch docs/manifests instead of collapsing the primary source set into one compiled surrogate file, unless 주인님 explicitly asked for that fallback.
-
-Behavior:
-- opens ChatGPT home
-- creates a fresh new chat
-- uploads the listed real files when attachment flags are supplied
-- sends the prompt there
-- returns the created conversation URL for watcher use
-
-Verification anchor if the path is questioned:
-- `runtime/tasks/JB-20260311-CHROME-SESSION-REUSE.md`
-- `runtime/browser-profiles/cookie_injected_chatgpt.png`
-
-## DOM watcher
-When browser automation is available, prefer the bundled watcher script instead of waiting manually.
-
-Example:
-
-```bash
-python3 scripts/watch_chatgpt_response.py \
-  --url '<chatgpt-conversation-url>' \
-  --poll-seconds 15 \
-  --timeout-seconds 900 \
-  --headful \
-  --delete-after \
-  --output-json runtime/tmp/web-review-watch-result.json \
-  --record-unreported-queue \
-  --task-id JB-20260312-EXAMPLE \
-  --event-id web-review-batch-01 \
-  --callback-token cb-web-review-batch-01 \
-  --screenshot runtime/browser-profiles/web-review-watch.png
-```
-
-Behavior:
-- reads Chrome ChatGPT cookies
-- opens the target conversation URL
-- checks DOM every few seconds
-- uses stricter completion detection with assistant-text stability, pending/generation checks, and debug fields such as selector path / assistant chars / assistant hash / generation indicator / pending reason
-- returns JSON with `status`, optional `verdict`, and watcher debug metadata
-- can also write the watcher JSON to disk and append a durable unreported-completion queue entry
-- when `--task-id` is supplied on the normal path, `--event-id` and `--callback-token` are also required; watcher start creates the formal callback contract via taskdb `detach-watch` and releases the worker slot by default
-- completion sync must go through taskdb callback APIs (`callback-complete` / `callback-fail`) before the ledger item can be considered successfully applied
-- if no existing ticket can be resolved, it creates a fallback watcher task immediately instead of silently dropping the event
-- can delete the chat after response capture
-- lets the agent do other work while waiting
-
-Queue helpers:
-- Ack after user report delivery: `python3 scripts/ack_watch_event.py --event-id <stable-id> --report-delivered`
-- Retry/escalate stale or failed-apply events: `python3 scripts/escalate_unreported_watch_events.py --older-than-seconds 90`
-
-## Output discipline
-- Keep prompts short.
-- Keep expected answers shorter.
-- Prefer structured bullets/JSON over narrative text.
-- If token pressure is high, reduce context before reducing the schema.
+## Human-facing overview docs
+- `docs/operations/skills/web-review.md`
+- `docs/operations/skills/web-review-templates.md`

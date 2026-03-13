@@ -262,6 +262,16 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding='utf-8')
 
 
+def maybe_write_debug_raw(*, enabled: bool, raw_dir: Path, event_id: str, assistant_text: str) -> str:
+    if not enabled or not assistant_text.strip():
+        return ''
+    safe_id = re.sub(r'[^A-Za-z0-9._-]+', '-', (event_id or 'watch')).strip('-') or 'watch'
+    target = raw_dir / f'{safe_id}.txt'
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(assistant_text, encoding='utf-8')
+    return str(target)
+
+
 def derive_event_id(result: dict, explicit_event_id: str = '', output_json: str = '') -> str:
     explicit = (explicit_event_id or '').strip()
     if explicit:
@@ -440,6 +450,8 @@ def main():
     ap.add_argument("--task-id", default="", help="Known task/ticket id to sync this watcher completion back into")
     ap.add_argument("--callback-token", default="", help="Mandatory on the normal task-bound watcher path")
     ap.add_argument("--skip-task-start-sync", action="store_true", help="Do not create the detach-watch callback contract at watcher start")
+    ap.add_argument("--debug-save-raw", action="store_true", help="Opt-in only: write the final assistant raw text into runtime/watch/raw")
+    ap.add_argument("--debug-raw-dir", default=str(WORKSPACE / 'runtime' / 'watch' / 'raw'), help="Cold raw output directory used only with --debug-save-raw")
     args = ap.parse_args()
 
     contract_ok, contract_error = ensure_task_callback_contract(args)
@@ -513,6 +525,7 @@ def main():
 
         last_hash = ''
         stable_hash_polls = 0
+        last_assistant_text = ''
         debug_history = []
         while time.time() < deadline:
             page.wait_for_timeout(int(args.poll_seconds * 1000))
@@ -522,6 +535,8 @@ def main():
                 body = ""
             assistant = locate_last_assistant(page)
             last_assistant = assistant['text'] or ''
+            if last_assistant:
+                last_assistant_text = last_assistant
             assistant_hash = hashlib.sha1(last_assistant.encode('utf-8')).hexdigest() if last_assistant else ''
             if assistant_hash and assistant_hash == last_hash:
                 stable_hash_polls += 1
@@ -625,9 +640,16 @@ def main():
         browser.close()
 
     output_json = (args.output_json or '').strip()
-    event_id = ''
+    event_id = derive_event_id(result, explicit_event_id=args.event_id, output_json=output_json)
+    debug_raw_path = maybe_write_debug_raw(
+        enabled=bool(args.debug_save_raw),
+        raw_dir=Path(args.debug_raw_dir),
+        event_id=event_id,
+        assistant_text=last_assistant_text,
+    )
+    if debug_raw_path:
+        result['debug_raw_path'] = debug_raw_path
     if args.record_unreported_queue:
-        event_id = derive_event_id(result, explicit_event_id=args.event_id, output_json=output_json)
         queue_event = record_unreported_event(
             result=result,
             queue_file=Path(args.queue_file),

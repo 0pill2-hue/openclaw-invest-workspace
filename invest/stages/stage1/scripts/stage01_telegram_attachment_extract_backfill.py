@@ -1323,7 +1323,7 @@ def _apply_pdf_support_artifacts(meta: dict, meta_path: Path, original_path: Pat
         keep_bundle=ATTACH_PDF_KEEP_BUNDLE,
     )
     pages = info.get("pages", []) if isinstance(info.get("pages"), list) else []
-    meta["artifact_schema_version"] = max(3, int(meta.get("artifact_schema_version") or 0))
+    meta["artifact_schema_version"] = max(4, int(meta.get("artifact_schema_version") or 0))
     meta["artifact_layout"] = "bucketed_v3_flat"
     meta["pdf_manifest_path"] = str(info.get("manifest_rel_path") or "")
     meta["pdf_page_count"] = int(info.get("page_count") or 0)
