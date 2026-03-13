@@ -1,0 +1,7 @@
+{
+  "batch_id": "batch_03",
+  "rows_processed": 123,
+  "run_wall_time_sec": 236.6,
+  "main_model_ref": "openai-codex/gpt-5.4",
+  "notes": "Filled all main_* fields with legacy scorecard judgments; low-fit generic essays were kept as ok with low weight/fit."
+}

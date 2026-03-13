@@ -1,7 +1,7 @@
 # stage01_data_collection
 
 status: CANONICAL_COLLECTION_APPENDIX  
-updated_at: 2026-03-10 KST
+updated_at: 2026-03-12 KST
 
 ## 문서 역할
 - 이 문서는 Stage1 collector ↔ output path/source map과 **DB archive 기준 최소 artifact 스키마**를 고정한다.
@@ -163,7 +163,8 @@ KR universe 필터는 `Market` 또는 `MarketId`로 수행한다.
   - Stage1 selected_articles 생성 보조 인덱스다
 
 ### 4.4 Selected articles
-- script: `stage01_collect_selected_news_articles.py`
+- canonical live writer: `stage01_collect_selected_news_articles_naver.py`
+- helper collector: `stage01_collect_selected_news_articles.py` (`--input-index` 명시가 필요한 manual/debug helper; direct live write canonical 아님)
 - output: `outputs/raw/qualitative/market/news/selected_articles/*.jsonl`
 - 최소 row contract:
 ```json
@@ -174,7 +175,8 @@ KR universe 필터는 `Market` 또는 `MarketId`로 수행한다.
   "published_at": "optional ISO datetime",
   "summary": "optional",
   "body": "optional but one of summary/body should carry usable text",
-  "source_domain": "optional"
+  "source_domain": "optional",
+  "source_kind": "optional but recommended for verified lanes"
 }
 ```
 - 구현 메모:
@@ -182,8 +184,10 @@ KR universe 필터는 `Market` 또는 `MarketId`로 수행한다.
   - Stage3는 `title + summary + body`를 이어 붙여 본문으로 사용한다.
   - canonical corpus는 항상 `selected_articles_*.jsonl` live 파일셋이다.
   - `selected_articles_merged_summary.json`은 파생 directory summary이며, live 파일셋과 불일치하면 stale/invalid로 간주하고 소비자는 fail-close(요약 비신뢰)해야 한다.
-  - `news_backfill` / `stage01_backfill_10y.py`는 generic `stage01_collect_selected_news_articles.py`를 더 이상 live `selected_articles/`에 직접 쓰지 않는다.
-  - 검증 가능한 selected_articles 갱신은 별도 verifiable lane(예: Naver-only wrapper/전용 collector)에서만 수행해야 하며, mixed-source backfill이 live 디렉터리를 다시 오염시키면 계약 위반으로 본다.
+  - `daily_full`과 `selected_articles_naver_only`는 `stage01_collect_selected_news_articles_naver.py`를 통해 live `selected_articles/`를 갱신한다. 이 wrapper는 검증된 Naver finance index를 먼저 만들고 generic collector를 explicit `--input-index`로 호출한다.
+  - `news_backfill` / `stage01_backfill_10y.py`는 live `selected_articles/` writer가 아니다. 역할은 RSS 및 URL index coverage/backfill 쪽으로 제한한다.
+  - 검증 가능한 selected_articles 갱신은 별도 verifiable lane에서만 수행해야 하며, 현재 documented canonical lane은 Naver-only다.
+  - 따라서 현재 live corpus에서 `source_domain=n.news.naver.com`, `source_kind=naver_finance_list`가 아닌 값이 관찰되면 contamination 또는 새 lane 미문서화 상태로 본다.
 
 ### 4.5 Blog markdown
 - script: `stage01_scrape_all_posts_v2.py`

@@ -55,3 +55,20 @@ __pycache__/
 # Local virtual env
 .venv/
 invest/venv/
+
+# Runtime local-only/generated artifacts
+runtime/backups/
+runtime/browser-profiles/
+runtime/dashboard/
+runtime/tmp/
+runtime/watch/
+runtime/current-task.md
+runtime/context-handoff.md
+runtime/context-handoff-*.md
+runtime/tasks/auto_dispatch_status.json
+runtime/tasks/watchdog_notify_state.json
+runtime/**/*.db-shm
+runtime/**/*.db-wal
+runtime/**/*.db-journal
+runtime/tasks/proofs/
+review_repo/

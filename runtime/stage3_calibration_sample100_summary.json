@@ -1,0 +1,95 @@
+{
+  "stage": "stage3_qualitative_axes_gate_local_brain",
+  "local_brain_enforced": true,
+  "backend": "llama_local",
+  "local_endpoint": "http://127.0.0.1:11434",
+  "input_jsonl": "runtime/stage3_calibration_sample100.jsonl",
+  "claim_card_jsonl": "runtime/stage3_calibration_sample100_claim_cards.jsonl",
+  "output_csv": "runtime/stage3_calibration_sample100_features.csv",
+  "dart_signal_csv": "runtime/stage3_calibration_sample100_dart.csv",
+  "macro_forecast_csv": "runtime/stage3_calibration_sample100_macro.csv",
+  "canonical_intermediate_corpus": "runtime/stage3_calibration_sample100.jsonl",
+  "units": {
+    "storage_unit": "stage2_text_meta_records.jsonl row",
+    "model_evaluation_unit": "(record_id, chunk_id, focus_symbol)",
+    "aggregation_unit": "(symbol, date, issue_cluster_id) -> (symbol, date)"
+  },
+  "records_loaded": 100,
+  "records_scanned": 100,
+  "records_dedup_dropped": 0,
+  "records_macro_only": 0,
+  "records_skipped_nosymbol": 23,
+  "source_docs": {
+    "dart": 0,
+    "news_rss": 0,
+    "news_rss_macro": 0,
+    "market_selected_articles": 0,
+    "text_telegram": 25,
+    "text_blog": 50,
+    "text_premium": 25,
+    "text_image_map": 0,
+    "text_images_ocr": 0,
+    "other": 0
+  },
+  "claim_cards_generated": 611,
+  "issue_clusters_generated": 610,
+  "mentions_loaded": 611,
+  "news_docs_loaded": 0,
+  "rss_docs_loaded": 0,
+  "selected_articles_docs_loaded": 0,
+  "telegram_docs_loaded": 17,
+  "blog_docs_loaded": 35,
+  "premium_docs_loaded": 25,
+  "image_map_docs_loaded": 0,
+  "images_ocr_docs_loaded": 0,
+  "macro_news_docs_loaded": 0,
+  "symbols_output": 73,
+  "rows_output": 158,
+  "dart_signal_rows": 0,
+  "macro_forecast_rows": 0,
+  "apply_macro_to_stock_axes": true,
+  "axes": {
+    "upside_score": "0~100 (higher is better)",
+    "downside_risk_score": "0~100 (higher is riskier)",
+    "risk_score": "0~100 (alias of downside_risk_score)",
+    "bm_sector_fit_score": "0~100 (higher is better fit)",
+    "persistence_score": "0~100 (higher is more persistent)"
+  },
+  "duplication_guard": {
+    "rules_enabled": [
+      "axis_representative_one",
+      "cross_axis_corr_drop_if_abs_rho_gt_0_7",
+      "single_axis_weight_cap_0_25"
+    ],
+    "corr_threshold": 0.7,
+    "axis_cap": 0.25,
+    "axis_weights": {
+      "upside": 0.0,
+      "downside": 0.25,
+      "bm": 0.25,
+      "persistence": 0.25
+    },
+    "pre_high_corr_pair_count": 1,
+    "post_high_corr_pair_count": 0,
+    "actions": [
+      {
+        "action": "drop_axis",
+        "axis": "upside",
+        "reason": {
+          "axis_a": "dup_axis_upside_rep",
+          "axis_b": "dup_axis_downside_rep",
+          "rho": -0.9624627969120082
+        }
+      }
+    ],
+    "pre_high_corr_pairs": [
+      {
+        "axis_a": "dup_axis_upside_rep",
+        "axis_b": "dup_axis_downside_rep",
+        "rho": -0.9624627969120082
+      }
+    ],
+    "post_high_corr_pairs": []
+  },
+  "bootstrap_empty_ok": false
+}

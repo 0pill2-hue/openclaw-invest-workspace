@@ -1,0 +1,163 @@
+{
+  "captured_at": "2026-03-07T19:14:38.672812",
+  "cwd": "/Users/jobiseu/.openclaw/workspace",
+  "env_INVEST_PYTHON_BIN": null,
+  "files": {
+    "invest/stages/stage1/outputs/runtime/daily_update_status.json": {
+      "exists": true,
+      "size": 1340,
+      "mtime": "2026-03-07T18:50:10.217396"
+    },
+    "invest/stages/stage1/outputs/runtime/telegram_collector_status.json": {
+      "exists": true,
+      "size": 409,
+      "mtime": "2026-03-07T19:00:04.541655"
+    },
+    "invest/stages/stage1/outputs/runtime/post_collection_validate.json": {
+      "exists": true,
+      "size": 177370,
+      "mtime": "2026-03-07T10:09:57.450936"
+    },
+    "invest/stages/stage1/outputs/runtime/stage01_ocr_postprocess_validate.json": {
+      "exists": true,
+      "size": 687,
+      "mtime": "2026-03-07T08:38:47.104474"
+    },
+    "invest/stages/stage1/outputs/reports/data_quality/stage01_checkpoint_status.json": {
+      "exists": true,
+      "size": 92772,
+      "mtime": "2026-03-07T10:09:55.494233"
+    },
+    "invest/stages/stage1/outputs/logs/runtime/launchd_stage01_daily.log": {
+      "exists": true,
+      "size": 233336,
+      "mtime": "2026-03-07T10:09:57.451480"
+    }
+  },
+  "patterns": {
+    "kr_ohlcv": {
+      "count": 2882,
+      "total_size": 1419370148,
+      "latest_file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/152550.csv",
+      "latest_mtime": "2026-03-06T15:10:40.179940",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/002410.csv",
+      "earliest_mtime": "2026-03-02T22:43:03"
+    },
+    "kr_supply": {
+      "count": 2882,
+      "total_size": 337877244,
+      "latest_file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000050_supply.csv",
+      "latest_mtime": "2026-03-02T22:43:09",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/signal/kr/supply/000020_supply.csv",
+      "earliest_mtime": "2026-03-02T22:43:08"
+    },
+    "us_ohlcv": {
+      "count": 508,
+      "total_size": 297309860,
+      "latest_file": "invest/stages/stage1/outputs/raw/signal/us/ohlcv/GIS.csv",
+      "latest_mtime": "2026-03-07T18:50:08.036756",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/signal/us/ohlcv/CZR.csv",
+      "earliest_mtime": "2026-03-02T22:43:03"
+    },
+    "macro": {
+      "count": 24,
+      "total_size": 1938778,
+      "latest_file": "invest/stages/stage1/outputs/raw/signal/market/macro/GDP.csv",
+      "latest_mtime": "2026-03-07T17:32:29.012769",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/signal/market/macro/VIX.csv",
+      "earliest_mtime": "2026-03-07T10:03:30.001156"
+    },
+    "dart": {
+      "count": 413,
+      "total_size": 413288210,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/kr/dart/dart_list_20260307_184345.csv",
+      "latest_mtime": "2026-03-07T18:43:45.933517",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/kr/dart/dart_list_20260214_022749.csv",
+      "earliest_mtime": "2026-03-02T22:43:07"
+    },
+    "rss": {
+      "count": 158,
+      "total_size": 9644479,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/market/rss/rss_20260307-100502.json",
+      "latest_mtime": "2026-03-07T19:10:35.449126",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/market/rss/rss_20260227-101519.json",
+      "earliest_mtime": "2026-03-02T22:43:09"
+    },
+    "url_index": {
+      "count": 9,
+      "total_size": 3031482631,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260307-083656.jsonl",
+      "latest_mtime": "2026-03-07T17:36:59.469967",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/url_index_20260305-113457.jsonl",
+      "earliest_mtime": "2026-03-05T20:34:58.472093"
+    },
+    "selected_articles": {
+      "count": 12,
+      "total_size": 32969722,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/selected_articles_20260307-091849.jsonl",
+      "latest_mtime": "2026-03-07T18:18:49.890237",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/selected_articles_20260305-113207.jsonl",
+      "earliest_mtime": "2026-03-05T20:32:07.778303"
+    },
+    "telegram_md": {
+      "count": 67,
+      "total_size": 176583186,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/text/telegram/earlystock1_public_fallback.md",
+      "latest_mtime": "2026-03-07T11:40:58.322281",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/text/telegram/스타테일_리서치_lstartalel_recovered.md",
+      "earliest_mtime": "2026-03-05T11:47:02.645000"
+    },
+    "blog_md": {
+      "count": 36062,
+      "total_size": 136538198,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/text/blog/dnjsrlid/224207954499.md",
+      "latest_mtime": "2026-03-07T19:10:34.083188",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/text/blog/gangnam_0208/224195585048.md",
+      "earliest_mtime": "2026-03-05T18:10:33.334127"
+    },
+    "premium": {
+      "count": 973,
+      "total_size": 3231470,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/_index.json",
+      "latest_mtime": "2026-03-07T18:49:26.270158",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/text/premium/startale/_stale_blocked_archive_20260305/260224141527490mw_d16eeca70f29.md",
+      "earliest_mtime": "2026-03-05T20:31:52.273345"
+    },
+    "image_map": {
+      "count": 25,
+      "total_size": 423695,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/text/image_map/image_map_20260307-094025.json",
+      "latest_mtime": "2026-03-07T18:40:26.111258",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/text/image_map/image_map_20260228-114212.json",
+      "earliest_mtime": "2026-03-02T22:43:09"
+    },
+    "images_ocr": {
+      "count": 17,
+      "total_size": 10212,
+      "latest_file": "invest/stages/stage1/outputs/raw/qualitative/text/images_ocr/seen_urls.json",
+      "latest_mtime": "2026-03-07T18:43:38.701770",
+      "earliest_file_by_mtime": "invest/stages/stage1/outputs/raw/qualitative/text/images_ocr/52c21f0519e8bee3.json",
+      "earliest_mtime": "2026-03-07T10:04:20.111461"
+    }
+  },
+  "dirs": {
+    "invest/stages/stage1/outputs/runtime": {
+      "exists": true,
+      "file_count": 871,
+      "total_size": 267249,
+      "latest_mtime": "2026-03-07T19:12:06.882138"
+    },
+    "invest/stages/stage1/outputs/reports": {
+      "exists": true,
+      "file_count": 113,
+      "total_size": 26456546,
+      "latest_mtime": "2026-03-07T18:49:26.270843"
+    },
+    "invest/stages/stage1/outputs/logs/runtime": {
+      "exists": true,
+      "file_count": 23,
+      "total_size": 2209688,
+      "latest_mtime": "2026-03-07T19:14:04.671922"
+    }
+  }
+}

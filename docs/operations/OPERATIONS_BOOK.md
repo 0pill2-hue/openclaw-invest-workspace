@@ -1,64 +1,40 @@
 # OPERATIONS BOOK
 
-역할: **운영 총괄 인덱스**.
+역할: **운영 문서 루트 인덱스**.
 
-세부 규칙은 각 canonical 문서로 위임하고,
-이 문서는 공개 tracked 운영 문서의 진입점만 담당한다.
+세부 규칙은 각 canonical 문서에 두고,
+이 문서는 **무엇을 어디서 읽는지**만 짧게 안내한다.
 
-## 1. 공개 tracked 문서
-### 핵심 운영 문서
-- `docs/operations/OPERATIONS_BOOK.md`
-- `docs/operations/PROGRAMS.md`
-- `docs/operations/DOCUMENT_STANDARD.md`
-- `docs/operations/OPERATING_GOVERNANCE.md`
-- `docs/operations/CONTEXT_POLICY.md`
-- `docs/operations/CONTEXT_LOAD_POLICY.md`
-- `docs/operations/CONTEXT_RESET_READLIST.md`
-- `docs/operations/CONTEXT_HANDOFF_FORMAT.md`
-- `docs/operations/WORKSPACE_STRUCTURE.md`
-- `docs/operations/MAIN_BRAIN_GUARD.md`
+## 핵심 canonical
+- `docs/operations/context/CONTEXT_LOAD_POLICY.md` — 무엇을 언제 읽는지
+- `docs/operations/context/CONTEXT_POLICY.md` — 컨텍스트 판단/복구 기준
+- `docs/operations/governance/DOCUMENT_STANDARD.md` — 문서 작성/배치 표준
+- `docs/operations/governance/OPERATING_GOVERNANCE.md` — 운영 원칙/SOP
+- `docs/operations/runtime/PROGRAMS.md` — 프로그램 총람
+- `docs/operations/runtime/MAIN_BRAIN_GUARD.md` — 상위 health/dispatch 가드
+- `runtime/current-task.md` — 현재 작업 재개 카드
+- `runtime/context-handoff.md` — reset/cutover 직후 인계 카드
 
-### 공개 저장소 루트 tracked 문서
+## 카테고리 인덱스 (기본 로드 제외)
+- `docs/operations/context/README.md`
+- `docs/operations/governance/README.md`
+- `docs/operations/runtime/README.md`
+- `docs/operations/orchestration/README.md`
+- `docs/operations/skills/README.md`
+
+## 공개 저장소 루트 tracked 문서
 - `AGENTS.md`
 - `DIRECTIVES.md`
-- `runtime/current-task.md`
-- `runtime/context-handoff.md`
+- `TASKS.md`
 
-## 2. 로컬 전용 문서 정책
-- 로컬 전용 문서는 공개 저장소 canonical 문서가 아니다.
-- 개별 파일명을 여기서 나열하지 않는다.
-- 기준은 `docs/operations/PRIVATE_LOCAL_DOCS_POLICY.md`를 따른다.
+## 필요 시 추가 참고
+- Git/PR 규칙: `docs/operations/governance/CONTRIBUTING.md`
+- 저장소 구조: `docs/operations/governance/WORKSPACE_STRUCTURE.md`
+- 2뇌 역할: `docs/operations/runtime/BRAINS.md`
+- OpenClaw/로컬뇌 보조 규칙: `docs/operations/runtime/OPENCLAW_RULES.md`
+- 로컬 전용 문서 정책: `docs/operations/governance/PRIVATE_LOCAL_DOCS_POLICY.md`
 
-## 3. 필수 운영 문서
-1. `docs/index.html` — 문서 루트 진입점
-2. `docs/operations/OPERATIONS_BOOK.md` — 운영 문서 지도
-3. `docs/operations/DOCUMENT_STANDARD.md` — 문서 작성/배치 표준
-4. `runtime/current-task.md` — 현재 작업 재개 카드(작업 재개 시)
-5. `runtime/context-handoff.md` — clean reset/cutover 직후 읽는 인계 카드
-
-## 4. 필요 시 읽을 것
-- `docs/operations/CONTEXT_POLICY.md` — 세션 컨텍스트 운용 기준
-- `docs/operations/CONTEXT_LOAD_POLICY.md` — 세션 컨텍스트 로딩 규칙
-- `docs/operations/CONTEXT_RESET_READLIST.md` — 리셋 직후 최소 재로딩 목록
-- `docs/operations/CONTEXT_HANDOFF_FORMAT.md` — context handoff 포맷
-- `docs/operations/OPERATING_GOVERNANCE.md` — 운영 거버넌스
-- `docs/operations/WORKSPACE_STRUCTURE.md` — 저장소 구조 설명
-- `docs/operations/BRAINS.md` — 2뇌 역할 분리
-- `docs/operations/MAIN_BRAIN_GUARD.md` — Gateway/채널/메인뇌/작업재기동 상위 가드 정의
-- `docs/operations/CONTRIBUTING.md` — Git/PR/커밋 규칙
-- `docs/operations/OPENCLAW_RULES.md` — OpenClaw/로컬뇌 보조 규칙
-- `docs/operations/OPENCLAW_SYSTEM_BASELINE.md` — 시스템 기준선/복구 보조 문서
-- `docs/operations/PRIVATE_LOCAL_DOCS_POLICY.md` — 로컬 전용 문서 정책
-
-## 5. 운영 프로그램
-- 프로그램 총람: `docs/operations/PROGRAMS.md`
-- `scripts/context_policy.py` — 메인 clean reset/cutover용 current-task + context-handoff snapshot / reload bundle / resume-check / handoff-validate / 토큰별 액션 판단
-- `scripts/tasks/db.py` — 태스크 등록/전이 SSOT 관리
-- `scripts/directives/db.py` — directive 등록/상태전이 SSOT 관리
-- `scripts/watchdog/*` — task watchdog / context hygiene / main notify cycle
-- `scripts/heartbeat/local_brain_guard.py` — 로컬뇌/OpenClaw 상태 점검 및 복구 흐름 연동
-
-## 6. 갱신 규칙
-- 운영 문서 추가/삭제 시 이 문서를 먼저 갱신한다.
-- 중복 인덱스는 보존하지 않는다.
-- canonical 문서와 index 문서를 분리한다.
+## 갱신 규칙
+- 운영 문서 경로가 바뀌면 먼저 이 문서를 갱신한다.
+- index는 링크만, 규칙은 canonical에 둔다.
+- 사람용 explainer/diagram 문서는 기본 로드에 넣지 않는다.

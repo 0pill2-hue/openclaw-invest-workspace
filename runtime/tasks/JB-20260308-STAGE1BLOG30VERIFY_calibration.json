@@ -1,0 +1,62 @@
+[
+  {
+    "id": "danechoi93",
+    "direct_status": 200,
+    "direct_url": "https://blog.naver.com/danechoi93",
+    "direct_title": "danechoi93님의블로그 : 네이버 블로그",
+    "iframe_src": "/PostList.naver?blogId=danechoi93&widgetTypeCall=true&noTrackingCode=true&directAccess=true",
+    "frame_postview_link_count": 0,
+    "frame_logno_query_count": 0,
+    "rss_item_count": 0
+  },
+  {
+    "id": "assistant-m",
+    "direct_status": 200,
+    "direct_url": "https://blog.naver.com/assistant-m",
+    "direct_title": "좀 치는 주식이야기 feat. 조력자M : 네이버 블로그",
+    "iframe_src": "/PostList.naver?blogId=assistant-m&widgetTypeCall=true&noTrackingCode=true&directAccess=true",
+    "frame_postview_link_count": 0,
+    "frame_logno_query_count": 0,
+    "rss_item_count": 0
+  },
+  {
+    "id": "luckyguydb",
+    "direct_status": 200,
+    "direct_url": "https://blog.naver.com/luckyguydb",
+    "direct_title": "행복한 투자 : 네이버 블로그",
+    "iframe_src": "/PostList.naver?blogId=luckyguydb&widgetTypeCall=true&noTrackingCode=true&directAccess=true",
+    "frame_postview_link_count": 0,
+    "frame_logno_query_count": 0,
+    "rss_item_count": 0
+  },
+  {
+    "id": "gaunyu",
+    "direct_status": 200,
+    "direct_url": "https://blog.naver.com/gaunyu",
+    "direct_title": "낙민동 추노 : 네이버 블로그",
+    "iframe_src": "https://blog.naver.com/prologue/PrologueList.naver?blogId=gaunyu&noTrackingCode=true&directAccess=true",
+    "frame_postview_link_count": 54,
+    "frame_logno_query_count": 54,
+    "rss_item_count": 50
+  },
+  {
+    "id": "foreconomy",
+    "direct_status": 200,
+    "direct_url": "https://blog.naver.com/foreconomy",
+    "direct_title": "알파카 이코노미아&#39;s 투자이야기 : 네이버 블로그",
+    "iframe_src": "/PostList.naver?blogId=foreconomy&widgetTypeCall=true&noTrackingCode=true&directAccess=true",
+    "frame_postview_link_count": 12,
+    "frame_logno_query_count": 21,
+    "rss_item_count": 50
+  },
+  {
+    "id": "investing1004",
+    "direct_status": 200,
+    "direct_url": "https://blog.naver.com/investing1004",
+    "direct_title": "투자의 숲 : 네이버 블로그",
+    "iframe_src": "/PostList.naver?blogId=investing1004&widgetTypeCall=true&parentCategoryNo=1&noTrackingCode=true&directAccess=true",
+    "frame_postview_link_count": 3,
+    "frame_logno_query_count": 6,
+    "rss_item_count": 50
+  }
+]

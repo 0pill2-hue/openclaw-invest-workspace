@@ -1,0 +1,7 @@
+{
+  "batch_id": "batch_02",
+  "rows_processed": 123,
+  "run_wall_time_sec": 1021,
+  "main_model_ref": "openai-codex/gpt-5.4",
+  "notes": "Many rows were philosophy/behavioral snippets with weak symbol linkage; strongest explicit stock calls were HYBE/APR, Doosan, Samsung Electronics, Samsung Electro-Mechanics, and Hanwha Ocean."
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "stage3_main_brain_package_v1",
+  "generated_at_utc": "2026-03-11T23:47:43.934468+00:00",
+  "sample_jsonl": "runtime/stage3_calibration_sample100.jsonl",
+  "local_claim_cards_jsonl": "runtime/stage3_calibration_sample100_claim_cards.jsonl",
+  "local_summary_json": "runtime/stage3_calibration_sample100_summary.json",
+  "local_rows_count": 611,
+  "sample_rows_count": 100,
+  "summary_records_loaded": 100,
+  "summary_claim_cards_generated": 611,
+  "summary_rows_output": 158,
+  "estimated_local_runtime_ms_per_unit": 1.4402618657937807,
+  "prepare_elapsed_ms": 23.957540999999992,
+  "files": [
+    "local_benchmark_rows.jsonl",
+    "main_brain_input_rows.jsonl",
+    "main_brain_results_template.jsonl",
+    "main_brain_prompt.md",
+    "main_brain_run_metrics_template.json"
+  ]
+}

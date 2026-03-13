@@ -268,43 +268,59 @@ def transition_source(status: str, review_status: str) -> str:
     return "unclosed"
 
 
-def ticket_closure_state(ticket_id: str) -> tuple[bool, str, str, str]:
+def ticket_dispatch_state(ticket_id: str) -> tuple[str, str, str, str]:
     if not TASK_DB_PATH.exists():
-        return False, "tasks.db missing", "", ""
+        return "open", "tasks.db missing", "", ""
 
     conn = sqlite3.connect(TASK_DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
         row = conn.execute(
-            "SELECT status, review_status, note FROM tasks WHERE id=?",
+            "SELECT status, review_status, note, assignee FROM tasks WHERE id=?",
             (ticket_id,),
         ).fetchone()
     finally:
         conn.close()
 
     if not row:
-        return False, "ticket missing", "", ""
+        return "open", "ticket missing", "", ""
 
     status = (row["status"] or "").upper()
     review = (row["review_status"] or "").upper()
     phase = extract_phase(row["note"])
+    assignee = (row["assignee"] or "").strip()
     waiting_callback = is_waiting_callback_state(status, phase)
     closed = (status == "DONE") or (status == "BLOCKED" and not waiting_callback) or review in {"PASS", "REWORK"}
+    if closed:
+        source = transition_source(status, review)
+        detail = f"status={status} review_status={review} source={source}"
+        if phase:
+            detail += f" phase={phase}"
+        return "closed", detail, status, review
+
+    if waiting_callback and not assignee:
+        detail = f"status={status} review_status={review} source=background_wait"
+        if phase:
+            detail += f" phase={phase}"
+        detail += " worker_slot=released"
+        return "backgrounded", detail, status, review
+
     source = transition_source(status, review)
     detail = f"status={status} review_status={review} source={source}"
     if phase:
         detail += f" phase={phase}"
-    return closed, detail, status, review
+    if assignee:
+        detail += f" assignee={assignee}"
+    return "open", detail, status, review
 
 
-def wait_for_close(ticket_id: str, seconds: int = CLOSE_WAIT_SEC) -> tuple[bool, str, str, str]:
+def wait_for_dispatch_state(ticket_id: str, seconds: int = CLOSE_WAIT_SEC) -> tuple[str, str, str, str]:
     for _ in range(max(1, seconds)):
-        closed, detail, db_status, db_review_status = ticket_closure_state(ticket_id)
-        if closed:
-            return True, detail, db_status, db_review_status
+        dispatch_state, detail, db_status, db_review_status = ticket_dispatch_state(ticket_id)
+        if dispatch_state != "open":
+            return dispatch_state, detail, db_status, db_review_status
         time.sleep(1)
-    closed, detail, db_status, db_review_status = ticket_closure_state(ticket_id)
-    return closed, detail, db_status, db_review_status
+    return ticket_dispatch_state(ticket_id)
 
 
 def recent_run_transition(run_id: str) -> tuple[bool, str, str, str]:
@@ -361,9 +377,11 @@ def run_orchestrator(ticket_id: str, run_id: str, worker: str) -> tuple[bool, st
         "You are the main orchestrator.\n"
         "1) Read taskdb ticket details for the assigned ticket only.\n"
         "2) If lane=subagent, spawn a subagent and delegate execution. If lane=main, execute directly in main.\n"
-        "3) Update task status/proof in taskdb and CLOSE the ticket with one of: DONE/BLOCKED/REWORK.\n"
-        "4) If close is not possible now, set BLOCKED with explicit reason.\n"
-        "5) Reply concise progress to the user."
+        "3) Terminal close is only for actual end states: DONE, BLOCKED(real blocker only), or REWORK. Do not close a ticket just because background/subagent/program work is still running.\n"
+        "4) If you launch or detach long-running work, do NOT idle-wait. Immediately record task-aware proof/phase, keep the ticket IN_PROGRESS, set a nonterminal waiting phase with resume_due (for example delegated_to_subagent, subagent_running, awaiting_callback, long_running_execution), and pass `--task-id <ticket>` into the background program so completion can update the same task.\n"
+        "5) When the worker is no longer actively executing because the task is detached and waiting, clear assignee/run metadata so auto-dispatch can keep the main brain non-idle (for example `python3 scripts/tasks/record_task_event.py --task-id <ticket> --source <program> --summary <started> --phase awaiting_callback --release-assignee`). Then end your turn.\n"
+        "6) Use BLOCKED only for real blockers like approval/dependency/failure, with explicit reason.\n"
+        "7) Reply concise progress to the user."
     )
 
     cmd = [
@@ -501,16 +519,16 @@ def main() -> int:
                 hard_errors.append(err_msg)
                 continue
 
-            closed, close_detail, db_status, db_review_status = wait_for_close(ticket_id)
+            dispatch_state, close_detail, db_status, db_review_status = wait_for_dispatch_state(ticket_id)
             append_debug_log(
                 run_id=worker_run_id,
                 ticket_id=ticket_id,
                 phase="wait_for_close_result",
                 db_status=db_status,
                 db_review_status=db_review_status,
-                status_write={"closed": closed, "detail": close_detail, "worker": worker},
+                status_write={"dispatch_state": dispatch_state, "detail": close_detail, "worker": worker},
             )
-            if not closed:
+            if dispatch_state == "open":
                 msg = f"{ticket_id}@{worker}: spawned but not closed within {CLOSE_WAIT_SEC}s ({close_detail})"
                 if event_warn:
                     msg = f"{msg} | {event_warn}"
@@ -525,7 +543,8 @@ def main() -> int:
                     hard_errors.append(msg)
                 continue
 
-            close_msg = f"closed {ticket_id}@{worker} ({close_detail})"
+            state_label = "backgrounded" if dispatch_state == "backgrounded" else "closed"
+            close_msg = f"{state_label} {ticket_id}@{worker} ({close_detail})"
             if event_warn:
                 close_msg = f"{close_msg} | {event_warn}"
             summaries.append(close_msg)

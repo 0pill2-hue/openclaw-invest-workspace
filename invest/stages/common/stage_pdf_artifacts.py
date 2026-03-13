@@ -621,6 +621,7 @@ def ensure_pdf_support_artifacts(
     max_text_chars: int,
     max_width: int,
     hot_window_days: int,
+    keep_bundle: bool = False,
 ) -> dict:
     manifest_path = _manifest_path(artifact_dir, message_id)
     human_review_window_active, human_review_window_until = _window_info(message_date, hot_window_days)
@@ -653,21 +654,26 @@ def ensure_pdf_support_artifacts(
 
     existing = _read_json(manifest_path)
     if existing and int(existing.get('source_original_mtime_ns') or 0) == source_original_mtime_ns and str(existing.get('source_original_rel_path') or '') == source_original_rel_path and _all_manifest_files_exist(stage1_dir, existing):
-        bundle_rel, bundle_reason = _bundle_files(
-            stage1_dir=stage1_dir,
-            artifact_dir=artifact_dir,
-            message_id=message_id,
-            meta_path=meta_path,
-            original_path=original_path,
-            extract_path=extract_path,
-            manifest_path=manifest_path,
-            pages=existing.get('pages', []) if isinstance(existing.get('pages'), list) else [],
-        )
         human_review_window_active, human_review_window_until = _window_info(message_date, hot_window_days)
-        if bundle_rel:
-            existing['compressed_bundle_path'] = bundle_rel
-            existing['compressed_bundle_status'] = 'ok'
-            existing['compressed_bundle_reason'] = bundle_reason
+        if keep_bundle:
+            bundle_rel, bundle_reason = _bundle_files(
+                stage1_dir=stage1_dir,
+                artifact_dir=artifact_dir,
+                message_id=message_id,
+                meta_path=meta_path,
+                original_path=original_path,
+                extract_path=extract_path,
+                manifest_path=manifest_path,
+                pages=existing.get('pages', []) if isinstance(existing.get('pages'), list) else [],
+            )
+            if bundle_rel:
+                existing['compressed_bundle_path'] = bundle_rel
+                existing['compressed_bundle_status'] = 'ok'
+                existing['compressed_bundle_reason'] = bundle_reason
+        else:
+            existing['compressed_bundle_path'] = ''
+            existing['compressed_bundle_status'] = 'disabled'
+            existing['compressed_bundle_reason'] = 'bundle_disabled'
         existing['human_review_window_active'] = human_review_window_active
         existing['human_review_window_until'] = human_review_window_until
         _write_json(manifest_path, existing)
@@ -776,18 +782,23 @@ def ensure_pdf_support_artifacts(
     }
     _write_json(manifest_path, manifest)
 
-    bundle_rel, bundle_reason = _bundle_files(
-        stage1_dir=stage1_dir,
-        artifact_dir=artifact_dir,
-        message_id=message_id,
-        meta_path=meta_path,
-        original_path=original_path,
-        extract_path=extract_path,
-        manifest_path=manifest_path,
-        pages=pages_out,
-    )
-    manifest['compressed_bundle_path'] = bundle_rel
-    manifest['compressed_bundle_status'] = 'ok' if bundle_rel else 'failed'
-    manifest['compressed_bundle_reason'] = bundle_reason if bundle_rel else bundle_reason
+    if keep_bundle:
+        bundle_rel, bundle_reason = _bundle_files(
+            stage1_dir=stage1_dir,
+            artifact_dir=artifact_dir,
+            message_id=message_id,
+            meta_path=meta_path,
+            original_path=original_path,
+            extract_path=extract_path,
+            manifest_path=manifest_path,
+            pages=pages_out,
+        )
+        manifest['compressed_bundle_path'] = bundle_rel
+        manifest['compressed_bundle_status'] = 'ok' if bundle_rel else 'failed'
+        manifest['compressed_bundle_reason'] = bundle_reason if bundle_rel else bundle_reason
+    else:
+        manifest['compressed_bundle_path'] = ''
+        manifest['compressed_bundle_status'] = 'disabled'
+        manifest['compressed_bundle_reason'] = 'bundle_disabled'
     _write_json(manifest_path, manifest)
     return manifest

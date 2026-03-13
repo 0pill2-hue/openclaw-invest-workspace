@@ -1,0 +1,7 @@
+{
+  "batch_id": "batch_04",
+  "rows_processed": 123,
+  "run_wall_time_sec": 540,
+  "main_model_ref": "openai-codex/gpt-5.4",
+  "notes": "Scored 30 unique record/chunk patterns across 123 rows; reused per-chunk judgments for repeated symbol-linked rows and copied concise input evidence_text."
+}

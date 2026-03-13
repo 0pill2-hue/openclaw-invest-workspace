@@ -1,0 +1,25 @@
+# JB-20260311-BLOG-TERMINAL-REGISTRY-HARDEN
+
+- requested_at: 2026-03-11 08:39 KST
+- status: VERIFIED
+- owner: main
+- goal: 블로그 buddy 무게시/터미널 상태를 지속 레지스트리로 남겨 재검증 때 반복 누락이 나지 않게 하고, KR/US/DART 후처리 여부를 확인/보강한다.
+- why: 주인님 지시대로 blog no-post 정상종결이 일회성 runtime 상태가 아니라 재사용 가능한 기록으로 남아야 하며, KR/US/DART 파이프라인 후처리 누락 여부도 함께 확인해야 한다.
+- initial_checks:
+  - invest/stages/stage1/inputs/config/blog_terminal_status.json 존재 확인
+  - invest/stages/stage1/outputs/runtime/post_collection_validate.json 에서 MAX_AVAILABLE_OK 검증 경로 확인
+  - invest/stages/stage1/outputs/runtime/daily_update_{kr_ohlcv_intraday,us_ohlcv_daily,dart_fast}_status.json 확인
+- actions_done:
+  - stage01_scrape_all_posts_v2.py 에 collector-observed empty-posts/404를 blog_terminal_status.json 에 자동 반영하는 persistence 로직 추가
+  - 기존 validated runtime에서 정상종결이었던 empty-posts buddy 6건(assistant-m, danechoi93, luckyguydb, psychojo26, tjdgus_sk, year100_200)을 persistent registry에 반영
+  - stage01_daily_update.py 및 daily_update_{kr_ohlcv_intraday,us_ohlcv_daily,dart_fast}_status.json 기준으로 KR/US/DART 모두 sync_raw_to_db + update_coverage_manifest 후처리 포함 확인
+- next:
+  - 필요 시 다음 blog run에서 auto-persist 동작이 자연스럽게 누적되는지만 관찰
+- verification:
+  - invest/stages/stage1/scripts/stage01_scrape_all_posts_v2.py 는 empty-posts/404를 _persist_terminal_registry_entries() 로 blog_terminal_status.json 에 자동 반영하고, run 종료 직전 buddy_results 전체에 대해 호출한다.
+  - invest/stages/stage1/inputs/config/blog_terminal_status.json 에 assistant-m, danechoi93, luckyguydb, psychojo26, tjdgus_sk, year100_200 6건이 collector-registry + MAX_AVAILABLE_OK 로 기록돼 있다.
+  - invest/stages/stage1/outputs/runtime/post_collection_validate.json 에서 terminal_registry_path=inputs/config/blog_terminal_status.json, terminal_missing_buddy_count=36, missing_buddy_count=0, all_buddies_satisfied=true 로 재검증 충족이 확인된다.
+  - invest/stages/stage1/outputs/runtime/daily_update_{kr_ohlcv_intraday,us_ohlcv_daily,dart_fast}_status.json 모두 fetch 후 invest/stages/stage1/scripts/stage01_sync_raw_to_db.py 와 invest/stages/stage1/scripts/stage01_update_coverage_manifest.py 를 실행했고 failed_count=0 이다.
+- memory:
+  - memory/2026-03-11.md 에 what/why/next + proof 기록이 이미 존재한다.
+- recommended_close: DONE

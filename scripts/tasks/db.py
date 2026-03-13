@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sqlite3
 import sys
@@ -27,6 +28,7 @@ from context_policy import (
 )
 from lib.runtime_env import TASKS_DB
 from lib.context_lock import format_lock_reason, is_blocking_context_lock, is_context_locked
+from lib.blocked_requeue import auto_requeue_blocked_tasks
 from lib.task_runtime import is_nonterminal_wait_phase
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -254,6 +256,45 @@ def infer_execution_lane(title: str | None, scope: str | None, note: str | None)
     if duration == "long":
         return "subagent"
     return "auto"
+
+
+def waiting_capacity_for_assignee(assignee: str) -> int:
+    worker_kind = infer_worker_kind(assignee)
+    env_key = "OPENCLAW_SUBAGENT_WAITING_CAP" if worker_kind == "subagent" else "OPENCLAW_MAIN_WAITING_CAP"
+    default_value = "2" if worker_kind == "subagent" else "4"
+    raw = os.environ.get(env_key, default_value).strip()
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        return int(default_value)
+
+
+def active_assignment_state(conn: sqlite3.Connection, assignee: str) -> tuple[list[str], list[str]]:
+    rows = conn.execute(
+        """
+        SELECT id, status, note
+        FROM tasks
+        WHERE assignee=? AND status IN ('IN_PROGRESS', 'BLOCKED')
+        ORDER BY updated_at DESC, id DESC
+        """,
+        (assignee,),
+    ).fetchall()
+    blocking_ids: list[str] = []
+    waiting_ids: list[str] = []
+    for row in rows:
+        phase = extract_phase(row["note"])
+        if is_nonterminal_wait_phase(phase):
+            waiting_ids.append(row["id"])
+        else:
+            blocking_ids.append(row["id"])
+    return blocking_ids, waiting_ids
+
+
+def is_task_ready_for_assignment(status: str | None, note: str | None) -> bool:
+    normalized_status = (status or "").strip().upper()
+    if normalized_status not in {"TODO", "IN_PROGRESS"}:
+        return False
+    return not is_nonterminal_wait_phase(extract_phase(note))
 
 
 def format_task_runtime_state(row: sqlite3.Row) -> str:
@@ -1036,17 +1077,20 @@ def cmd_done(args: argparse.Namespace) -> int:
 
 
 def pick_next_task(conn: sqlite3.Connection) -> sqlite3.Row | None:
-    return conn.execute(
+    rows = conn.execute(
         """
-        SELECT id, status, bucket, priority, title, scope, sort_order
+        SELECT id, status, bucket, priority, title, scope, sort_order, note
         FROM tasks
         WHERE status IN ('IN_PROGRESS', 'TODO')
         ORDER BY CASE UPPER(priority) WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 WHEN 'P3' THEN 3 ELSE 4 END,
                  CASE bucket WHEN 'active' THEN 0 WHEN 'backlog' THEN 1 WHEN 'done' THEN 2 ELSE 3 END,
                  sort_order, id
-        LIMIT 1
         """
-    ).fetchone()
+    ).fetchall()
+    for row in rows:
+        if is_task_ready_for_assignment(row['status'], row['note']):
+            return row
+    return None
 
 
 def task_priority_rank(priority: str) -> int:
@@ -1075,6 +1119,8 @@ def pick_next_assignable_task(conn: sqlite3.Connection, assignee: str) -> sqlite
     candidates: list[tuple[tuple[int, int, int, int, str], sqlite3.Row]] = []
     for row in rows:
         note = row['note'] or ''
+        if not is_task_ready_for_assignment(row['status'], note):
+            continue
         title = row['title'] or ''
         scope = row['scope'] or ''
         difficulty = infer_task_difficulty(title, scope, note)
@@ -1101,11 +1147,12 @@ def pick_next_assignable_task(conn: sqlite3.Connection, assignee: str) -> sqlite
 
 
 def assign_next_task(conn: sqlite3.Connection, assignee: str, run_id: str, assigned_by: str = "") -> sqlite3.Row | None:
-    in_progress = conn.execute(
-        "SELECT id FROM tasks WHERE assignee=? AND status='IN_PROGRESS' LIMIT 1",
-        (assignee,),
-    ).fetchone()
-    if in_progress:
+    with conn:
+        auto_requeue_blocked_tasks(conn)
+    blocking_ids, waiting_ids = active_assignment_state(conn, assignee)
+    if blocking_ids:
+        return None
+    if len(waiting_ids) >= waiting_capacity_for_assignee(assignee):
         return None
 
     for _ in range(5):
@@ -1262,6 +1309,22 @@ def cmd_release(args: argparse.Namespace) -> int:
         print(f"ticket not found: {args.id}", file=sys.stderr)
         return 1
     print(f"released: {args.id}")
+    return 0
+
+
+def cmd_requeue_blocked(args: argparse.Namespace) -> int:
+    conn = connect(Path(args.db).expanduser().resolve())
+    init_schema(conn)
+    with conn:
+        moved = auto_requeue_blocked_tasks(conn)
+    payload = {
+        "ok": True,
+        "changed": bool(moved),
+        "requeued": moved,
+        "count": len(moved),
+        "db": str(Path(args.db).expanduser().resolve()),
+    }
+    print(json.dumps(payload, ensure_ascii=False))
     return 0
 
 
@@ -1537,6 +1600,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_review_rework.add_argument("--note", required=True)
     p_touch = sub.add_parser("touch", help="Update last_activity_at for active ticket")
     p_touch.add_argument("--id", required=True)
+    sub.add_parser("requeue-blocked", help="Requeue retryable or auto-cleared BLOCKED tickets")
     p_phase = sub.add_parser("mark-phase", help="Mark orchestration phase on a ticket")
     p_phase.add_argument("--id", required=True)
     p_phase.add_argument("--phase", required=True)
@@ -1585,6 +1649,8 @@ def main() -> int:
         return cmd_review_rework(args)
     if args.command == "touch":
         return cmd_touch(args)
+    if args.command == "requeue-blocked":
+        return cmd_requeue_blocked(args)
     if args.command == "mark-phase":
         return cmd_mark_phase(args)
     if args.command == "release":

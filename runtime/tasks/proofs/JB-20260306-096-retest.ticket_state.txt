@@ -1,1 +1,0 @@
-{'id': 'JB-20260306-096', 'status': 'BLOCKED', 'bucket': 'backlog', 'assignee': 'main-orchestrator', 'assigned_run_id': '20260306110737', 'review_status': 'PENDING', 'blocked_reason': 'retest: status.json idle vs ticket BLOCKED consistency check', 'updated_at': '2026-03-06 11:09:21'}

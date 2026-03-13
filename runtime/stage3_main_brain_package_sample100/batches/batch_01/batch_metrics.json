@@ -1,0 +1,7 @@
+{
+  "batch_id": "batch_01",
+  "rows_processed": 123,
+  "run_wall_time_sec": 288.0,
+  "main_model_ref": "openai-codex/gpt-5.4",
+  "notes": "Manual-style subagent adjudication. Generic or weak-link rows were retained with low claim weight and low BM fit."
+}

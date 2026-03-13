@@ -11,6 +11,7 @@ SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
+from lib.blocked_requeue import auto_requeue_blocked_tasks
 from lib.runtime_env import TASKS_DB
 from lib.task_runtime import is_nonterminal_wait_phase, normalize_phase_name
 
@@ -83,7 +84,10 @@ def main():
             )
         moved.append({"id": tid, "reason": reason})
 
-    print(json.dumps({"ok": True, "changed": bool(moved), "moved": moved, "db": str(TASKS_DB)}, ensure_ascii=False))
+    with conn:
+        requeued = auto_requeue_blocked_tasks(conn, now=now)
+
+    print(json.dumps({"ok": True, "changed": bool(moved or requeued), "moved": moved, "requeued": requeued, "db": str(TASKS_DB)}, ensure_ascii=False))
 
 
 if __name__ == '__main__':

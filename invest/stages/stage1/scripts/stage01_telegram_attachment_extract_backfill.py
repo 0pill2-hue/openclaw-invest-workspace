@@ -41,6 +41,16 @@ ENV_PATHS = [
 
 
 def _bootstrap_stage1_env() -> None:
+    def _unquote(value: str) -> str:
+        text = value.strip()
+        if len(text) >= 2 and ((text[0] == '"' and text[-1] == '"') or (text[0] == "'" and text[-1] == "'")):
+            return text[1:-1]
+        return text
+
+    def _is_empty_like(value: str) -> bool:
+        norm = _unquote(value).strip().lower()
+        return norm in {"", "0", "none", "null"}
+
     for env_path in ENV_PATHS:
         if not env_path.exists():
             continue
@@ -53,7 +63,88 @@ def _bootstrap_stage1_env() -> None:
             if "=" not in line:
                 continue
             key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip())
+            env_key = key.strip()
+            env_value = _unquote(value.strip())
+            current = str(os.environ.get(env_key, "") or "")
+            if env_key not in os.environ or _is_empty_like(current):
+                os.environ[env_key] = env_value
+
+
+_bootstrap_stage1_env()
+
+
+def _env_truthy(value: str) -> bool:
+    return value.strip().lower() in {"1", "true", "yes", "on", "enabled"}
+
+
+def _env_falsey(value: str) -> bool:
+    return value.strip().lower() in {"0", "false", "no", "off", "disabled"}
+
+
+def _clean_yyyymmdd_env(name: str) -> str:
+    raw = re.sub(r"\D", "", str(os.environ.get(name, "") or "").strip())
+    return raw[:8] if len(raw) >= 8 else ""
+
+
+def _normalize_message_date(value: object) -> str:
+    raw = re.sub(r"\D", "", str(value or "").strip())
+    return raw[:8] if len(raw) >= 8 else ""
+
+
+def _parse_casefold_csv_env(name: str) -> set[str]:
+    raw = str(os.environ.get(name, "") or "").strip()
+    if not raw:
+        return set()
+    out: set[str] = set()
+    for part in raw.split(","):
+        token = part.strip()
+        if token:
+            out.add(token.casefold())
+    return out
+
+
+def _telegram_recovery_ready() -> bool:
+    try:
+        api_id = int(os.environ.get("TELEGRAM_API_ID", "0") or "0")
+    except Exception:
+        api_id = 0
+    api_hash = str(os.environ.get("TELEGRAM_API_HASH", "") or "").strip()
+    session_path = STAGE1_DIR / "scripts/jobis_mtproto_session.session"
+    return bool(api_id and api_hash and session_path.exists())
+
+
+def _resolve_attach_recover_enabled() -> bool:
+    raw = str(os.environ.get("TELEGRAM_ATTACH_RECOVER_MISSING_ORIGINALS", "auto") or "auto").strip()
+    if _env_truthy(raw):
+        return True
+    if _env_falsey(raw):
+        return False
+    return _telegram_recovery_ready()
+
+
+def _telegram_recovery_disabled_reason() -> str:
+    raw = str(os.environ.get("TELEGRAM_ATTACH_RECOVER_MISSING_ORIGINALS", "auto") or "auto").strip()
+    if _env_falsey(raw):
+        return "telegram_recovery_disabled_env"
+    try:
+        api_id = int(os.environ.get("TELEGRAM_API_ID", "0") or "0")
+    except Exception:
+        api_id = 0
+    api_hash = str(os.environ.get("TELEGRAM_API_HASH", "") or "").strip()
+    if not api_id or not api_hash:
+        return "telegram_recovery_missing_credentials"
+    session_path = STAGE1_DIR / "scripts/jobis_mtproto_session.session"
+    if not session_path.exists():
+        return "telegram_recovery_missing_session"
+    return "telegram_recovery_not_ready"
+
+
+def _resolve_attach_recover_limit() -> int:
+    raw = str(os.environ.get("TELEGRAM_ATTACH_RECOVER_LIMIT", "256") or "256").strip()
+    try:
+        return max(0, int(raw))
+    except Exception:
+        return 256
 
 
 _bootstrap_stage1_env()
@@ -64,8 +155,13 @@ ATTACH_MAX_TEXT_CHARS = int(os.environ.get("TELEGRAM_ATTACH_MAX_TEXT_CHARS", "60
 ATTACH_PDF_MAX_PAGES = int(os.environ.get("TELEGRAM_ATTACH_PDF_MAX_PAGES", "25"))
 ATTACH_RENDER_MAX_WIDTH = int(os.environ.get("TELEGRAM_ATTACH_RENDER_MAX_WIDTH", "1200"))
 ATTACH_HOT_WINDOW_DAYS = int(os.environ.get("TELEGRAM_ATTACH_HOT_WINDOW_DAYS", "31"))
-ATTACH_RECOVER_ENABLED = str(os.environ.get("TELEGRAM_ATTACH_RECOVER_MISSING_ORIGINALS", "0")).strip().lower() in {"1", "true", "yes", "on"}
-ATTACH_RECOVER_LIMIT = max(0, int(os.environ.get("TELEGRAM_ATTACH_RECOVER_LIMIT", "0") or "0"))
+ATTACH_PDF_KEEP_ORIGINAL = str(os.environ.get("TELEGRAM_ATTACH_PDF_KEEP_ORIGINAL", "0") or "0").strip().lower() in ("1", "true", "yes")
+ATTACH_PDF_KEEP_BUNDLE = str(os.environ.get("TELEGRAM_ATTACH_PDF_KEEP_BUNDLE", "0") or "0").strip().lower() in ("1", "true", "yes")
+ATTACH_RECOVER_ENABLED = _resolve_attach_recover_enabled()
+ATTACH_RECOVER_LIMIT = _resolve_attach_recover_limit()
+ATTACH_RECOVER_CHANNEL_SLUGS = _parse_casefold_csv_env("TELEGRAM_ATTACH_RECOVER_CHANNEL_SLUGS")
+ATTACH_RECOVER_DATE_FROM = _clean_yyyymmdd_env("TELEGRAM_ATTACH_RECOVER_DATE_FROM")
+ATTACH_RECOVER_DATE_TO = _clean_yyyymmdd_env("TELEGRAM_ATTACH_RECOVER_DATE_TO")
 ATTACH_RECOVER_MAX_FILE_BYTES = int(os.environ.get("TELEGRAM_ATTACH_RECOVER_MAX_FILE_BYTES", str(50 * 1024 * 1024)))
 if ATTACH_RECOVER_ENABLED and WORKSPACE_VENV_PY.exists() and os.path.realpath(sys.executable) != os.path.realpath(str(WORKSPACE_VENV_PY)):
     try:
@@ -282,7 +378,14 @@ def _collect_missing_original_meta_records() -> tuple[list[dict], int]:
             msg_id = int(meta.get("message_id") or 0)
         except Exception:
             msg_id = 0
+        message_date = _normalize_message_date(meta.get("message_date"))
         if not channel_slug or msg_id <= 0:
+            continue
+        if ATTACH_RECOVER_CHANNEL_SLUGS and channel_slug.casefold() not in ATTACH_RECOVER_CHANNEL_SLUGS:
+            continue
+        if ATTACH_RECOVER_DATE_FROM and (not message_date or message_date < ATTACH_RECOVER_DATE_FROM):
+            continue
+        if ATTACH_RECOVER_DATE_TO and (not message_date or message_date > ATTACH_RECOVER_DATE_TO):
             continue
         kind = str(meta.get("kind") or "").strip().lower()
         if kind not in SUPPORTED_KINDS:
@@ -308,7 +411,14 @@ def _collect_missing_original_meta_records() -> tuple[list[dict], int]:
             best[key] = (rank, {"meta_path": meta_path, "meta": meta, "channel_slug": channel_slug, "message_id": msg_id})
 
     records = [payload for _, payload in best.values()]
-    records.sort(key=lambda row: (row["message_id"], row["channel_slug"]), reverse=True)
+    records.sort(
+        key=lambda row: (
+            _normalize_message_date((row.get("meta") or {}).get("message_date")),
+            int(row.get("message_id") or 0),
+            str(row.get("channel_slug") or ""),
+        ),
+        reverse=True,
+    )
     return records, total_missing
 
 
@@ -477,18 +587,19 @@ def _recover_missing_originals(stats: dict) -> None:
     records, total_missing = _collect_missing_original_meta_records()
     stats["telegram_recovery_candidates_total"] = len(records)
     stats["telegram_recovery_missing_meta_total"] = int(total_missing)
-    if not ATTACH_RECOVER_ENABLED:
+    selected_records = records[:ATTACH_RECOVER_LIMIT] if ATTACH_RECOVER_LIMIT > 0 else records
+    stats["telegram_recovery_candidates_selected"] = len(selected_records)
+    if not selected_records:
         return
-    if ATTACH_RECOVER_LIMIT > 0:
-        records = records[:ATTACH_RECOVER_LIMIT]
-    stats["telegram_recovery_candidates_selected"] = len(records)
-    if not records:
+    if not ATTACH_RECOVER_ENABLED:
+        stats["telegram_recovery_skipped"] += len(selected_records)
+        _bump_reason(stats, _telegram_recovery_disabled_reason())
         return
     try:
         import asyncio
-        asyncio.run(_recover_missing_originals_async(records, stats))
+        asyncio.run(_recover_missing_originals_async(selected_records, stats))
     except Exception as e:
-        stats["telegram_recovery_failed"] += len(records)
+        stats["telegram_recovery_failed"] += len(selected_records)
         _bump_reason(stats, f"telegram_recovery_runtime_error:{type(e).__name__}")
 
 
@@ -991,6 +1102,18 @@ def _mark_original_deleted_after_decompose(meta: dict) -> bool:
     return changed
 
 
+def _delete_original_file(path: Path | None) -> bool:
+    if path is None:
+        return False
+    try:
+        if path.exists() and path.is_file():
+            path.unlink()
+            return True
+    except Exception:
+        return False
+    return False
+
+
 def _bump_reason(stats: dict, reason: str) -> None:
     stats["reason_counts"][reason] = int(stats["reason_counts"].get(reason, 0)) + 1
 
@@ -1024,6 +1147,18 @@ def _build_page_marked_text_from_manifest(meta: dict) -> dict:
         }
     manifest = _read_json(manifest_path)
     return build_pdf_page_marked_text_from_manifest(stage1_dir=STAGE1_DIR, manifest=manifest, max_text_chars=ATTACH_MAX_TEXT_CHARS)
+
+
+def _is_untrusted_shared_bucket_extract(meta_path: Path, extract_path: Path | None) -> bool:
+    if extract_path is None:
+        return False
+    if extract_path.name != "extracted.txt":
+        return False
+    if not meta_path.name.endswith("__meta.json"):
+        return False
+    if extract_path.parent != meta_path.parent:
+        return False
+    return extract_path.parent.name.startswith("bucket_")
 
 
 def _clear_pdf_support_fields(meta: dict) -> bool:
@@ -1072,6 +1207,7 @@ def _apply_pdf_support_artifacts(meta: dict, meta_path: Path, original_path: Pat
         max_text_chars=ATTACH_MAX_TEXT_CHARS,
         max_width=ATTACH_RENDER_MAX_WIDTH,
         hot_window_days=ATTACH_HOT_WINDOW_DAYS,
+        keep_bundle=ATTACH_PDF_KEEP_BUNDLE,
     )
     pages = info.get("pages", []) if isinstance(info.get("pages"), list) else []
     meta["artifact_schema_version"] = max(3, int(meta.get("artifact_schema_version") or 0))
@@ -1225,6 +1361,7 @@ def main() -> int:
         "pdf_page_marked_written": 0,
         "pdf_page_marked_rebuilt_from_manifest": 0,
         "pdf_plaintext_preserved_missing_mapping": 0,
+        "pdf_shared_legacy_extract_ignored": 0,
         "pdf_db_reindex_attempted": 0,
         "pdf_db_reindex_ok": 0,
         "pdf_db_reindex_failed": 0,
@@ -1256,6 +1393,16 @@ def main() -> int:
         manifest_ready = kind == "pdf" and _pdf_manifest_ready(meta)
         stats["supported_candidates"] += 1
         extract_path = _resolve_stage1_path(meta.get("extract_path"), fallback=meta_path.parent / "extracted.txt")
+        if kind == "pdf" and _is_untrusted_shared_bucket_extract(meta_path, extract_path):
+            if str(meta.get("extract_path") or "").strip():
+                meta["extract_path"] = ""
+            channel_slug = str(meta.get("channel_slug") or "").strip()
+            try:
+                msg_id = int(meta.get("message_id") or 0)
+            except Exception:
+                msg_id = 0
+            extract_path = _attachment_extract_path(channel_slug, msg_id) if channel_slug and msg_id > 0 else Path("")
+            stats["pdf_shared_legacy_extract_ignored"] += 1
         if extract_path and extract_path.exists() and extract_path.stat().st_size > 0:
             changed = False
             try:
@@ -1339,6 +1486,11 @@ def main() -> int:
                 if original_ready:
                     _apply_pdf_support_artifacts(meta, meta_path, original_path, extract_path, stats)
                     changed = True
+                    if not ATTACH_PDF_KEEP_ORIGINAL:
+                        if _delete_original_file(original_path):
+                            changed = True
+                        if _mark_original_deleted_after_decompose(meta):
+                            changed = True
                 elif manifest_ready:
                     if _mark_original_deleted_after_decompose(meta):
                         changed = True
@@ -1451,6 +1603,9 @@ def main() -> int:
                     extract_format="pdf_page_marked_text_v1",
                 )
                 _apply_pdf_support_artifacts(meta, meta_path, original_path, extract_path, stats)
+                if not ATTACH_PDF_KEEP_ORIGINAL:
+                    _delete_original_file(original_path)
+                    _mark_original_deleted_after_decompose(meta)
                 stats["pdf_page_marked_written"] += 1
             _write_json(meta_path, meta)
             stats["updated_meta"] += 1
@@ -1471,6 +1626,9 @@ def main() -> int:
                 extract_format="",
             )
             _apply_pdf_support_artifacts(meta, meta_path, original_path, extract_path, stats)
+            if not ATTACH_PDF_KEEP_ORIGINAL:
+                _delete_original_file(original_path)
+                _mark_original_deleted_after_decompose(meta)
         _write_json(meta_path, meta)
         stats["updated_meta"] += 1
         stats["failed"] += 1

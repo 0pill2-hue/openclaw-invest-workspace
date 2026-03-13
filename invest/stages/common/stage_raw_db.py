@@ -4,10 +4,16 @@ import hashlib
 import json
 import os
 import sqlite3
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Sequence
+
+try:
+    import fcntl
+except Exception:  # pragma: no cover - non-POSIX fallback
+    fcntl = None
 
 ROOT_PATH = Path(__file__).resolve().parents[3]
 STAGE1_OUTPUTS_DIR = ROOT_PATH / 'invest/stages/stage1/outputs'
@@ -490,6 +496,88 @@ def _safe_symlink_replace(target: Path, link_path: Path) -> None:
     os.symlink(target, link_path, target_is_directory=True)
 
 
+def _normalize_prefixes(prefixes: Sequence[str] | None = None) -> list[str]:
+    return [p.strip('/').replace('\\', '/') for p in (prefixes or []) if p]
+
+
+def _read_snapshot_meta(snapshot_root: Path) -> dict:
+    meta_path = snapshot_root / 'meta.json'
+    if not meta_path.exists():
+        return {}
+    try:
+        data = json.loads(meta_path.read_text(encoding='utf-8'))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+@contextmanager
+def _advisory_lock(lock_path: Path):
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open('a+', encoding='utf-8') as fh:
+        if fcntl is not None:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            if fcntl is not None:
+                fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+
+
+def _snapshot_is_complete(
+    snapshot_root: Path,
+    *,
+    expected_sync_id: str = '',
+    prefixes: Sequence[str] | None = None,
+) -> bool:
+    if not snapshot_root.exists() or not snapshot_root.is_dir():
+        return False
+    if not (snapshot_root / 'raw').is_dir():
+        return False
+    meta = _read_snapshot_meta(snapshot_root)
+    if not meta:
+        return False
+    if expected_sync_id and str(meta.get('sync_id', '')).strip() != expected_sync_id:
+        return False
+    expected_prefixes = _normalize_prefixes(prefixes)
+    if expected_prefixes and list(meta.get('prefixes') or []) != expected_prefixes:
+        return False
+    return True
+
+
+def _preserve_snapshot(snapshot_root: Path, *, reason: str) -> Path:
+    timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+    candidate = snapshot_root.parent / f'{snapshot_root.name}__preserved_{reason}_{timestamp}'
+    suffix = 0
+    while candidate.exists():
+        suffix += 1
+        candidate = snapshot_root.parent / f'{snapshot_root.name}__preserved_{reason}_{timestamp}_{suffix}'
+    snapshot_root.rename(candidate)
+    return candidate
+
+
+def _materialize_snapshot_atomically(
+    *,
+    db_path: str | os.PathLike[str] | None = None,
+    snapshot_root: Path,
+    expected_sync_id: str,
+    prefixes: Sequence[str] | None = None,
+) -> dict:
+    timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+    staging_root = snapshot_root.parent / f'.{snapshot_root.name}__building__{timestamp}__pid{os.getpid()}'
+    meta = materialize_snapshot_from_db(db_path=db_path, snapshot_root=staging_root, prefixes=prefixes)
+    actual_sync_id = str(meta.get('sync_id', '')).strip()
+    if expected_sync_id and actual_sync_id != expected_sync_id:
+        preserved = _preserve_snapshot(staging_root, reason=f'unexpected_sync_{actual_sync_id or "missing"}')
+        raise RuntimeError(
+            f'materialized snapshot sync_id mismatch: expected={expected_sync_id} actual={actual_sync_id} preserved={preserved}'
+        )
+    if snapshot_root.exists():
+        _preserve_snapshot(snapshot_root, reason='invalid')
+    staging_root.rename(snapshot_root)
+    return meta
+
+
 def prepare_stage2_raw_input_root(
     *,
     db_path: str | os.PathLike[str] | None = None,
@@ -503,19 +591,27 @@ def prepare_stage2_raw_input_root(
     mirror_root_path = Path(mirror_root)
     mirror_root_path.mkdir(parents=True, exist_ok=True)
     current_link = mirror_root_path / 'current'
+    lock_path = mirror_root_path / '.prepare.lock'
+    normalized_prefixes = _normalize_prefixes(prefixes)
 
-    with connect_raw_db(db_file, readonly=True) as conn:
-        sync_id = get_meta(conn, 'last_sync_id', '').strip()
-        if not sync_id:
-            return ''
+    with _advisory_lock(lock_path):
+        with connect_raw_db(db_file, readonly=True) as conn:
+            sync_id = get_meta(conn, 'last_sync_id', '').strip()
+            if not sync_id:
+                return ''
 
-    snapshot_root = mirror_root_path / 'snapshots' / sync_id
-    if not snapshot_root.exists():
-        materialize_snapshot_from_db(db_path=db_file, snapshot_root=snapshot_root, prefixes=prefixes)
+        snapshot_root = mirror_root_path / 'snapshots' / sync_id
+        if not _snapshot_is_complete(snapshot_root, expected_sync_id=sync_id, prefixes=normalized_prefixes):
+            _materialize_snapshot_atomically(
+                db_path=db_file,
+                snapshot_root=snapshot_root,
+                expected_sync_id=sync_id,
+                prefixes=normalized_prefixes,
+            )
 
-    if not current_link.is_symlink() or os.readlink(current_link) != str(snapshot_root):
-        current_link.parent.mkdir(parents=True, exist_ok=True)
-        _safe_symlink_replace(snapshot_root, current_link)
+        if not current_link.is_symlink() or os.readlink(current_link) != str(snapshot_root):
+            current_link.parent.mkdir(parents=True, exist_ok=True)
+            _safe_symlink_replace(snapshot_root, current_link)
 
     return str(current_link / 'raw')
 

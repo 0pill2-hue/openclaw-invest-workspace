@@ -17,9 +17,41 @@ HIGH_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_last_ru
 FALLBACK_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_public_fallback_status.json"
 ATTACH_BACKFILL_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json"
 ALLOWLIST_PATH = ROOT / "invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt"
+ENV_PATHS = [
+    ROOT / "invest/stages/stage1/.env",
+    Path.home() / ".config/invest/invest_autocollect.env",
+]
 MIN_PER_CHANNEL_TIMEOUT_SEC = 900
 MIN_TIMEOUT_RETRY_COUNT = 2
 MIN_TIMEOUT_RETRY_SEC = 2700
+
+
+def _bootstrap_env_from_files() -> None:
+    def _unquote(value: str) -> str:
+        text = value.strip()
+        if len(text) >= 2 and ((text[0] == '"' and text[-1] == '"') or (text[0] == "'" and text[-1] == "'")):
+            return text[1:-1]
+        return text
+
+    def _is_empty_like(value: str) -> bool:
+        return _unquote(value).strip().lower() in {"", "0", "none", "null"}
+
+    for env_path in ENV_PATHS:
+        if not env_path.exists():
+            continue
+        for line in env_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[len("export ") :].strip()
+            if "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            env_key = key.strip()
+            current = str(os.environ.get(env_key, "") or "")
+            if env_key not in os.environ or _is_empty_like(current):
+                os.environ[env_key] = _unquote(value.strip())
 
 
 def _python_bin() -> str:
@@ -91,6 +123,15 @@ def _load_json(path: Path) -> dict:
         return {}
 
 
+def _run_attachment_backfill(env: dict[str, str], postprocess_attempts: list[dict], payload: dict) -> int | None:
+    if not ATTACH_BACKFILL.exists():
+        return None
+    backfill_rc, backfill_attempt = _run("attachment_backfill", ATTACH_BACKFILL, env=env)
+    postprocess_attempts.append(backfill_attempt)
+    payload["attachment_backfill_ok"] = backfill_rc == 0
+    return backfill_rc
+
+
 def _allowlist_total() -> int:
     if not ALLOWLIST_PATH.exists():
         return 0
@@ -120,6 +161,7 @@ def _coverage_incomplete(high_status: dict) -> tuple[bool, str]:
 
 
 def main() -> int:
+    _bootstrap_env_from_files()
     has_secret_env = _has_secret_env()
     selected = "highspeed" if has_secret_env else "public_fallback"
     attempts: list[dict] = []
@@ -153,11 +195,11 @@ def main() -> int:
         attempts.append(attempt)
         high_status = _load_json(HIGH_STATUS_PATH)
         incomplete, reason = _coverage_incomplete(high_status)
+        backfill_ran = False
 
-        if rc == 0 and ATTACH_BACKFILL.exists():
-            backfill_rc, backfill_attempt = _run("attachment_backfill", ATTACH_BACKFILL, env=high_env)
-            postprocess_attempts.append(backfill_attempt)
-            payload["attachment_backfill_ok"] = backfill_rc == 0
+        if rc == 0:
+            _run_attachment_backfill(high_env, postprocess_attempts, payload)
+            backfill_ran = True
 
         if rc == 0 and not incomplete:
             payload.update({
@@ -173,6 +215,8 @@ def main() -> int:
         payload["fallback_used"] = True
         payload["fallback_reason"] = reason if rc == 0 else f"highspeed_returncode={rc}"
         if fb_rc == 0:
+            if not backfill_ran:
+                _run_attachment_backfill(os.environ.copy(), postprocess_attempts, payload)
             payload.update({
                 "successful_collector": "highspeed+public_fallback" if rc == 0 else "public_fallback",
                 "ok": True,
@@ -187,6 +231,8 @@ def main() -> int:
 
     rc, attempt = _run("public_fallback", FALLBACK)
     attempts.append(attempt)
+    if rc == 0:
+        _run_attachment_backfill(os.environ.copy(), postprocess_attempts, payload)
     payload.update({
         "successful_collector": "public_fallback" if rc == 0 else None,
         "ok": rc == 0,

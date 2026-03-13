@@ -1,7 +1,7 @@
 # RUNBOOK
 
 status: CANONICAL (operations)  
-updated_at: 2026-03-07 KST
+updated_at: 2026-03-12 KST
 
 ## 문서 역할
 - Stage1 일상 운영/재현/실행 절차의 단일 SSOT다.
@@ -31,6 +31,9 @@ Stage1은 외부 원천 데이터를 수집해 Stage2 이후가 사용할 raw/ma
 # 기본 일일 수집 프로필
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile daily_full
 
+# selected_articles live verified lane
+python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile selected_articles_naver_only
+
 # 개별 cadence 프로필
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile rss_fast
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile telegram_fast
@@ -40,14 +43,15 @@ python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile kr_supply
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile us_ohlcv_daily
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile dart_fast
 
-# selected articles 2016 coverage 백필 cadence
+# selected_articles 2016 coverage용 RSS/URL-index 백필 cadence
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile news_backfill
 
 # 게이트/보조
 python3 invest/stages/stage1/scripts/stage01_checkpoint_gate.py
 python3 invest/stages/stage1/scripts/stage01_post_collection_validate.py
 python3 invest/stages/stage1/scripts/stage01_build_news_url_index.py
-python3 invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py
+python3 invest/stages/stage1/scripts/stage01_collect_selected_news_articles_naver.py
+python3 invest/stages/stage1/scripts/stage01_collect_selected_news_articles.py --input-index <verifiable_url_index.jsonl>  # manual/debug only
 python3 invest/stages/stage1/scripts/stage01_collect_link_sidecars.py
 python3 invest/stages/stage1/scripts/stage01_backfill_10y.py --years 10
 python3 invest/stages/stage1/scripts/stage01_update_coverage_manifest.py
@@ -67,7 +71,7 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
   - Telegram attachment PDF는 `attachments/telegram/<channel>/bucket_<nn>/msg_<id>__*` bucketed flat 구조(meta/original/extracted/page_text/page_render/bundle)로 저장하며, durable extracted text는 가능하면 `[PAGE 001]` 형식 page marker를 포함한다.
   - RSS: `invest/stages/stage1/outputs/raw/qualitative/market/rss/*.json`
   - 뉴스 URL 인덱스: `invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/*.jsonl`
-  - 선별 뉴스 본문: `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl`
+  - 선별 뉴스 본문: `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl` (canonical live corpus는 `selected_articles_*.jsonl`, 현재 verified writer lane은 `daily_full`/`selected_articles_naver_only`의 Naver-only wrapper이며 `selected_articles_merged_summary.json`은 파생 summary다)
   - DART: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/*.csv`
   - DART coverage SSOT: `invest/stages/stage1/outputs/raw/qualitative/kr/dart/coverage_summary.json`
   - 텍스트/텔레그램/프리미엄/OCR: `invest/stages/stage1/outputs/raw/qualitative/text/`
@@ -120,11 +124,12 @@ bash invest/stages/stage1/scripts/launchd/run_stage1234_chain.sh
 ## 운영 주기 / 스케줄
 - Stage1 단일 진입점은 `stage01_daily_update.py --profile <name>` 이다.
 - Stage1~4 연쇄 자동화 진입점은 `run_stage1234_chain.sh`다.
-- `daily_full`은 stage1 core 수집(시장/뉴스/DART/프리미엄/OCR)용 기본 프로필이다.
+- `daily_full`은 stage1 core 수집(시장/뉴스/DART/프리미엄/OCR)용 기본 프로필이며, live `selected_articles/` 갱신은 이 프로필 안에서 `stage01_collect_selected_news_articles_naver.py`로 수행한다.
+- `selected_articles_naver_only`는 live `selected_articles/`만 별도로 갱신해야 할 때 쓰는 verified 단일-purpose 프로필이다.
 - `rss_fast`, `telegram_fast`, `blog_fast`, `kr_ohlcv_intraday`, `kr_supply_intraday`, `us_ohlcv_daily`, `dart_fast`는 cadence 분리를 위한 개별 프로필이다.
-- `news_backfill`은 `selected_articles`를 2016 coverage까지 끌어내리기 위한 전용 프로필이며, 완료 전까지 짧은 interval(권장 30분~60분)로 유지한다.
-- `news_backfill`은 `NEWS_SELECTED_SKIP_EXISTING=1`을 기본으로 사용해 이미 수집 성공한 URL은 건너뛰고 미수집 URL에 집중한다.
+- `news_backfill`은 `selected_articles` 2016 coverage를 위한 RSS/URL-index backlog를 메우는 전용 프로필이며, live `selected_articles/` writer는 포함하지 않는다.
 - `news_backfill`의 무료 보강 경로는 Guardian Open Platform(search api + Guardian business RSS)와 공식기관 RSS(Fed/ECB/SEC)다. 기본 backfill 범위는 `NEWS_INDEX_TARGET_DATE=2016-01-01`, `GUARDIAN_END_DATE=2019-12-31`이다.
+- live `selected_articles/`는 현재 Naver-only verified lane(`daily_full` 또는 `selected_articles_naver_only`)만 canonical이다. generic `stage01_collect_selected_news_articles.py` 직접 실행은 explicit `--input-index`가 있는 수동/debug 용도로만 본다.
 - `invest/stages/stage1/scripts/launchd/launchd_stage01_profile.sh`가 launchd용 canonical profile wrapper다.
 - `invest/ops/launchd/plists/com.jobiseu.invest.stage1.backfill.news.plist`는 `news_backfill`을 `StartInterval=1800`(30분) cadence로 실행한다.
 - `RUN_US_OHLCV_IN_DAILY=1|true|yes`일 때만 US OHLCV를 `daily_full`에 추가 포함한다.

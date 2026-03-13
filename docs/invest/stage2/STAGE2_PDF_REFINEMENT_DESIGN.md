@@ -2,7 +2,7 @@
 
 - Status: **VALIDATED / implemented in `invest/stages/stage2/scripts/stage02_onepass_refine_full.py` (`stage2-refine-20260308-r4`)**
 - Change type: **Rule**
-- Scope: Stage1 Telegram attachment artifact(`original/meta/extracted`)를 Stage2 refine 입력으로 승격하는 canonical 계약 + 구현 기준
+- Scope: Stage1에 **이미 존재하는 로컬** Telegram attachment artifact(`original/meta/extracted`)를 Stage2 refine 입력으로 승격하는 canonical 계약 + 구현 기준
 - Goal: Stage1이 저장한 Telegram PDF 원본/메타를 Stage2 clean corpus가 실제로 읽어 downstream(Stage3)까지 활용 가능하게 만든다.
 - Non-goal:
   - Stage1 책임을 clean/quarantine까지 확장하지 않는다.
@@ -28,8 +28,9 @@
 
 ### Stage1 저장 위치
 - Telegram raw log: `invest/stages/stage1/outputs/raw/qualitative/text/telegram/*.md`
-- Telegram attachment artifact root: `invest/stages/stage1/outputs/raw/qualitative/attachments/telegram/<channel_slug>/msg_<message_id>/`
-- artifact 구성: `meta.json`, `original file`, `extracted.txt(있을 때만)`
+- Telegram attachment artifact canonical root: `invest/stages/stage1/outputs/raw/qualitative/attachments/telegram/<channel_slug>/bucket_<nn>/`
+- canonical file family: `msg_<message_id>__{meta,original,extracted,pdf_manifest,page_XXX,bundle}.<ext>`
+- legacy compatibility shadow: `.../<channel_slug>/msg_<message_id>/meta.json` 디렉터리 구조가 historical data에 남을 수 있으나, current Stage1/Stage2 code에서는 **fallback only** 로 취급한다.
 
 ### Stage1 raw Telegram message marker
 Stage1 raw Telegram 로그에는 아래 marker가 관측된다.
@@ -64,9 +65,10 @@ Stage1 raw Telegram 로그에는 아래 marker가 관측된다.
 
 ### 현재 Stage2 처리 상태
 - `stage02_onepass_refine_full.py` 입력 루트는 `invest/stages/stage2/inputs/upstream_stage1`이다.
-- 구현본(`stage2-refine-20260308-r4`)은 `raw/qualitative/text/telegram/*.md`를 메시지 단위로 파싱하고, 같은 채널의 `attachments/telegram` sidecar를 marker 우선 + fallback 규칙으로 조인한다.
+- 구현본(`stage2-refine-20260308-r4`)은 `raw/qualitative/text/telegram/*.md`를 메시지 단위로 파싱하고, 같은 채널의 `attachments/telegram` sidecar를 **marker 우선 → bucketed flat canonical fallback → legacy dir fallback** 순으로 조인한다.
 - canonical clean 출력은 계속 `qualitative/text/telegram/*.md`이며, 승격 성공 시 `[ATTACHED_PDF] <normalized_title>` 블록으로 inline merge한다.
 - attachment marker/fallback이 모두 불충분한 historical 케이스는 clean 승격 대신 report diagnostics(`telegram_pdf_orphan_artifacts`)로 남긴다.
+- Stage2에서 말하는 recovery는 **로컬 artifact 경로 복구(path resolution) + local extract fallback** 까지다. Telegram에서 missing original을 다시 다운로드하는 upstream recovery는 Stage1 범위다.
 
 ### 현재 데이터 스냅샷(문서 작성 시점 관측)
 - historical raw log와 attachment tree는 항상 1:1로 완전 일치한다고 가정하면 안 된다.
@@ -152,12 +154,17 @@ Stage1 raw marker에는 Stage1 기준 경로가 남을 수 있다.
 ### 5.3 Secondary fallback discovery
 primary marker path가 없거나 resolve 실패하면 fallback을 허용한다.
 - telegram log stem이 `<channel_slug>_full.md`면 `_full` 제거 후 `channel_slug` 사용
-- fallback path:
-  - `raw/qualitative/attachments/telegram/<channel_slug>/msg_<message_id>/meta.json`
-  - 같은 디렉터리의 original PDF / extracted.txt
+- fallback order:
+  1. bucketed flat canonical path
+     - `raw/qualitative/attachments/telegram/<channel_slug>/bucket_<nn>/msg_<message_id>__meta.json`
+     - 같은 bucket의 `msg_<message_id>__original__*`, `msg_<message_id>__extracted.txt`
+  2. legacy compatibility dir
+     - `raw/qualitative/attachments/telegram/<channel_slug>/msg_<message_id>/meta.json`
+     - 같은 디렉터리의 original PDF / extracted.txt
 
 주의:
-- 이 fallback은 current highspeed naming 규칙에만 의존한다.
+- current Stage1/Stage2 contract에서 **bucketed flat path가 canonical** 이고, legacy dir는 historical shadow/fallback일 뿐이다.
+- `bucket_<nn>` 값은 `message_id`에서 결정적으로 계산되며, 문서에서는 bucket count 상수를 하드코딩하지 않는다.
 - 규칙이 맞지 않으면 추정하지 말고 `미확인`/quarantine 처리한다.
 
 ### 5.4 Orphan artifact policy
@@ -165,6 +172,20 @@ attachment tree에 file이 있어도 parent message block을 찾지 못하면 cl
 권장 disposition:
 - report/diagnostics에 orphan count 집계
 - candidate가 아니라 orphan artifact로 별도 diagnostics reason 처리
+
+### 5.5 Recovery boundary (canonical)
+이 문서에서 recovery는 아래까지만 뜻한다.
+1. marker path rewrite
+2. bucketed flat canonical fallback resolve
+3. legacy dir fallback resolve
+4. local original PDF가 있을 때 Stage2 extractor chain으로 본문 복구
+
+이 문서의 recovery에 **포함되지 않는 것**:
+- Telegram API/credential/session을 사용한 missing original 재다운로드
+- Stage1 attachment writer/backfill 정책 자체 변경
+- upstream artifact 재수집 orchestration
+
+즉, missing original을 다시 가져오는 upstream recovery의 SSOT는 Stage1 문서/코드이며, Stage2 문서는 그 결과로 **로컬에 존재하는 artifact를 어떻게 소비하는지**만 고정한다.
 
 ## 6) Promotion flow
 

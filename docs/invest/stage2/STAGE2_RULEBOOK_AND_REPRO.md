@@ -45,7 +45,8 @@ updated_at: 2026-03-11 KST
   - `raw/qualitative/market/news/selected_articles/*.jsonl`
   - `raw/qualitative/text/{blog,telegram,premium/startale}/**/*`
   - `raw/qualitative/link_enrichment/text/{blog,telegram,premium/startale}/**/*.json`
-  - Telegram attachment artifact: `raw/qualitative/attachments/telegram/**/{meta.json,*.pdf,extracted.txt}`
+  - Telegram attachment artifact canonical path: `raw/qualitative/attachments/telegram/<channel_slug>/bucket_<nn>/msg_<id>__{meta,original,extracted,pdf_manifest,page_XXX,bundle}.<ext>`
+  - legacy compatibility shadow: `raw/qualitative/attachments/telegram/<channel_slug>/msg_<id>/meta.json` (fallback only, non-canonical)
 - 제외 입력
   - `raw/qualitative/market/news/url_index/*`
   - image 계열 (`image_map`, `images_ocr`)
@@ -149,6 +150,8 @@ updated_at: 2026-03-11 KST
 ### 5.2-b classification sidecar
 - text/blog, text/telegram, text/premium/startale clean 파일은 같은 경로에 `*.classification.json` sidecar를 둔다.
 - selected_articles clean JSONL row는 `stage2_classification` 필드를 포함하고, 파일 단위 `*.classification.json` summary를 함께 둔다.
+- incremental skip은 qualitative clean 산출물에 필요한 classification sidecar/row payload가 이미 존재할 때만 허용된다. sidecar가 비어 있거나 빠졌으면 raw signature가 같아도 다시 물질화한다.
+- selected_articles는 body가 충분히 있으면 title+body를 우선 분류 입력으로 사용하고, summary는 body가 짧을 때만 보조 입력으로 사용한다. (요약 snippet 오염으로 인한 오탐 축소 목적)
 - classification은 deterministic 규칙 기반이며, Stage1 raw/page split을 바꾸지 않는다.
 - classification payload는 기존 `primary_* / mentioned_*` 필드를 유지하면서 아래 semantic contract를 추가한다.
   - `semantic_version`
@@ -275,10 +278,14 @@ updated_at: 2026-03-11 KST
 ```
 - path resolution
   - marker path 우선
-  - 실패 시 `<channel_slug>/msg_<message_id>/` fallback
+  - 실패 시 bucketed flat canonical fallback (`<channel_slug>/bucket_<nn>/msg_<message_id>__meta.json` 계열)
+  - 그 다음에만 legacy dir fallback (`<channel_slug>/msg_<message_id>/meta.json`)
 - text source precedence
   - `stage1 extracted.txt` 우선
   - 실패 시 Stage2 local PDF extraction (`pypdf` → `pdfminer`)
+- recovery boundary
+  - Stage2 recovery는 **로컬 artifact path resolution + local extract fallback** 까지만 포함한다.
+  - missing original 재다운로드/credentialed Telegram recovery는 Stage1 범위다.
 - attachment-specific 실패는 report/diagnostics에 집계한다.
 - 세부 설계/diagnostics 이름은 `STAGE2_PDF_REFINEMENT_DESIGN.md`를 따른다.
 
@@ -444,6 +451,12 @@ python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py --force-rebu
 # alias
 python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py --full-rerun
 
+# folder subset only
+python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py --folders market/news/selected_articles
+
+# backfill existing clean selected_articles classification/sidecars without upstream raw replay
+python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py --repair-selected-articles-clean
+
 # signal QC
 python3 invest/stages/stage2/scripts/stage02_qc_cleaning_full.py
 
@@ -455,6 +468,7 @@ STAGE2_ENABLE_LINK_ENRICHMENT=1 python3 invest/stages/stage2/scripts/stage02_one
 
 ## 14) rerun policy
 - 기본 실행은 incremental
+- selected_articles historical backlog처럼 upstream raw가 이미 축약/교체된 경우에는 `--repair-selected-articles-clean`로 clean JSONL row + summary sidecar를 재물질화할 수 있다.
 - 다음 조건이면 authoritative rebuild를 권장/요구한다.
   - rule version 변경
   - config bundle SHA1 변경

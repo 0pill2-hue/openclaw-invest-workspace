@@ -1,0 +1,6 @@
+STAGE3_DONE output=/Users/jobiseu/.openclaw/workspace/runtime/stage3_external_webusable_s036_s060_features.csv
+STAGE3_CLAIM_CARDS=/Users/jobiseu/.openclaw/workspace/runtime/stage3_external_webusable_s036_s060_claim_cards.jsonl
+STAGE3_DART_SIGNAL=/Users/jobiseu/.openclaw/workspace/runtime/stage3_external_webusable_s036_s060_dart.csv
+STAGE3_MACRO_FORECAST=/Users/jobiseu/.openclaw/workspace/runtime/stage3_external_webusable_s036_s060_macro.csv
+STAGE3_SUMMARY=/Users/jobiseu/.openclaw/workspace/runtime/stage3_external_webusable_s036_s060_summary.json
+STAGE3_MANIFEST=/Users/jobiseu/.openclaw/workspace/invest/stages/stage3/outputs/manifest_stage3_qual_axes_20260313_083227.json

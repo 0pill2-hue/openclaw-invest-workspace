@@ -1,5 +1,0 @@
-ticket_id: JB-20260306-099
-run_id: 20260306104409
-status: PASS
-timestamp: 2026-03-06 10:44:39 KST
-summary: E2E orchestration validation completed successfully with proof artifact generated.

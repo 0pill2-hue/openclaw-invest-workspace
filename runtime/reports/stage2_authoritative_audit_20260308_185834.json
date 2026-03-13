@@ -1,0 +1,313 @@
+{
+  "generated_at": "2026-03-08T18:58:34",
+  "ticket_id": "JB-20260308-STAGE2HANDOFF",
+  "authoritative_stage2_run": {
+    "refine_report_path": "invest/stages/stage2/outputs/reports/qc/FULL_REFINE_REPORT_20260308_185110.json",
+    "qc_report_path": "invest/stages/stage2/outputs/reports/QC_REPORT_20260308_185535.json",
+    "refine_verdict": "PASS",
+    "qc_validation_pass": true,
+    "refine_hard_fail_count": 0,
+    "qc_hard_failures": 0,
+    "refine_report_only_issues": [
+      {
+        "type": "missing_input_folder",
+        "folder": "market/google_trends",
+        "path": "/Users/jobiseu/.openclaw/workspace/invest/stages/stage2/inputs/upstream_stage1/raw/signal/market/google_trends",
+        "required": false,
+        "severity": "warn"
+      }
+    ],
+    "qc_total_anomalies": 3117
+  },
+  "stage1_raw_signal_duplicate_audit": {
+    "kr_ohlcv": {
+      "file_count": 2882,
+      "total_rows": 33539580,
+      "files_with_duplicate_dates": 2879,
+      "total_duplicate_dates": 27765798,
+      "sample_files": [
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000020.csv",
+          "rows": 14921,
+          "duplicate_dates": 12427,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000040.csv",
+          "rows": 14724,
+          "duplicate_dates": 12230,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000050.csv",
+          "rows": 14852,
+          "duplicate_dates": 12358,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000070.csv",
+          "rows": 14834,
+          "duplicate_dates": 12340,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000080.csv",
+          "rows": 14921,
+          "duplicate_dates": 12427,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000087.csv",
+          "rows": 14923,
+          "duplicate_dates": 12429,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000100.csv",
+          "rows": 14902,
+          "duplicate_dates": 12408,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000105.csv",
+          "rows": 14742,
+          "duplicate_dates": 12248,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000120.csv",
+          "rows": 14921,
+          "duplicate_dates": 12427,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000140.csv",
+          "rows": 14921,
+          "duplicate_dates": 12427,
+          "min_date": "2016-01-04",
+          "max_date": "2026-03-06"
+        }
+      ]
+    },
+    "kr_supply": {
+      "file_count": 2882,
+      "total_rows": 7214675,
+      "files_with_duplicate_dates": 2790,
+      "total_duplicate_dates": 1599137,
+      "sample_files": [
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000020_supply.csv",
+          "rows": 2472,
+          "duplicate_dates": 6,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000040_supply.csv",
+          "rows": 2433,
+          "duplicate_dates": 6,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000050_supply.csv",
+          "rows": 2459,
+          "duplicate_dates": 6,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000070_supply.csv",
+          "rows": 2455,
+          "duplicate_dates": 6,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000080_supply.csv",
+          "rows": 7374,
+          "duplicate_dates": 4908,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000087_supply.csv",
+          "rows": 2472,
+          "duplicate_dates": 6,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000100_supply.csv",
+          "rows": 7365,
+          "duplicate_dates": 4902,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000105_supply.csv",
+          "rows": 2469,
+          "duplicate_dates": 6,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000120_supply.csv",
+          "rows": 7374,
+          "duplicate_dates": 4908,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        },
+        {
+          "file": "invest/stages/stage1/outputs/raw/signal/kr/supply/000140_supply.csv",
+          "rows": 2472,
+          "duplicate_dates": 6,
+          "min_date": "2016-02-16",
+          "max_date": "2026-03-06"
+        }
+      ]
+    },
+    "us_ohlcv": {
+      "file_count": 508,
+      "total_rows": 1263071,
+      "files_with_duplicate_dates": 0,
+      "total_duplicate_dates": 0,
+      "sample_files": []
+    }
+  },
+  "stage2_signal_quarantine_reason_counts": {
+    "duplicate_date": 28745689,
+    "zero_candle": 94465,
+    "basic_invalid_or_low_liquidity": 34688,
+    "return_spike_gt_35pct": 131
+  },
+  "stage2_qualitative_quarantine_reason_counts_top10_by_folder": {
+    "kr/dart": {
+      "duplicate_rcept_no": 33
+    },
+    "market/news": {
+      "duplicate_canonical_url": 19493,
+      "duplicate_title_date": 1246,
+      "duplicate_content_fingerprint": 165,
+      "empty_jsonl": 3
+    },
+    "market/rss": {
+      "empty_json": 1
+    }
+  },
+  "sample_focus": {
+    "invest/stages/stage1/outputs/raw/signal/kr/ohlcv/000020.csv": {
+      "rows": 14921,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Change"
+      ],
+      "min_date": "2016-01-04",
+      "max_date": "2026-03-06",
+      "duplicate_dates": 12427
+    },
+    "invest/stages/stage2/outputs/clean/production/signal/kr/ohlcv/000020.csv": {
+      "rows": 2494,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Change"
+      ],
+      "min_date": "2016-01-04",
+      "max_date": "2026-03-06",
+      "duplicate_dates": 0
+    },
+    "invest/stages/stage2/outputs/quarantine/production/signal/kr/ohlcv/000020.csv": {
+      "rows": 12427,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Change",
+        "reason"
+      ],
+      "min_date": "2016-01-04",
+      "max_date": "2026-03-05",
+      "duplicate_dates": 9934,
+      "reason_counts": {
+        "duplicate_date": 12427
+      }
+    },
+    "invest/stages/stage1/outputs/raw/signal/kr/supply/000020_supply.csv": {
+      "rows": 2472,
+      "columns": [
+        "날짜",
+        "기관합계",
+        "기타법인",
+        "개인",
+        "외국인합계",
+        "전체"
+      ],
+      "min_date": "2016-02-16",
+      "max_date": "2026-03-06",
+      "duplicate_dates": 6
+    },
+    "invest/stages/stage2/outputs/clean/production/signal/kr/supply/000020_supply.csv": {
+      "rows": 2466,
+      "columns": [
+        "Date",
+        "Inst",
+        "Corp",
+        "Indiv",
+        "Foreign",
+        "Total"
+      ],
+      "min_date": "2016-02-16",
+      "max_date": "2026-03-06",
+      "duplicate_dates": 0
+    },
+    "invest/stages/stage2/outputs/quarantine/production/signal/kr/supply/000020_supply.csv": {
+      "rows": 6,
+      "columns": [
+        "Date",
+        "Inst",
+        "Corp",
+        "Indiv",
+        "Foreign",
+        "Total",
+        "reason"
+      ],
+      "min_date": "2026-02-19",
+      "max_date": "2026-02-26",
+      "duplicate_dates": 0,
+      "reason_counts": {
+        "duplicate_date": 6
+      }
+    }
+  },
+  "assessment": {
+    "actual_issue_detected": [
+      "Stage1 raw kr/ohlcv 전반에 duplicate_date 누적이 대규모로 존재함",
+      "Stage1 raw kr/supply 에도 최근 일부 duplicate_date 가 존재함",
+      "Stage2 authoritative rebuild 는 위 중복을 clean/quarantine 로 정상 분리했고 hard fail 없이 PASS 함",
+      "qualitative quarantine 는 중복/짧은 본문/프리미엄 blocked status/empty rss 등 계약상 정상 분류로 보임",
+      "market/google_trends 입력 폴더 부재는 optional warn 이며 hard fail 아님"
+    ]
+  }
+}

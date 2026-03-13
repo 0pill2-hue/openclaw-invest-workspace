@@ -1,0 +1,30 @@
+{
+  "rows_total": 95,
+  "batch_size": 32,
+  "batches": [
+    {
+      "batch": 1,
+      "batch_id": "batch_01",
+      "start": 1,
+      "end": 32,
+      "rows": 32,
+      "dir": "runtime/stage3_main_brain_package_s036_s060_web25/batches/batch_01"
+    },
+    {
+      "batch": 2,
+      "batch_id": "batch_02",
+      "start": 33,
+      "end": 64,
+      "rows": 32,
+      "dir": "runtime/stage3_main_brain_package_s036_s060_web25/batches/batch_02"
+    },
+    {
+      "batch": 3,
+      "batch_id": "batch_03",
+      "start": 65,
+      "end": 95,
+      "rows": 31,
+      "dir": "runtime/stage3_main_brain_package_s036_s060_web25/batches/batch_03"
+    }
+  ]
+}

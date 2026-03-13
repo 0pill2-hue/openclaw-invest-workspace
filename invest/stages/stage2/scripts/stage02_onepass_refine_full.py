@@ -105,9 +105,9 @@ CLEAN_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'clean')
 Q_BASE = os.path.join(STAGE2_ROOT, 'outputs', 'quarantine')
 REPORT_DIR = os.path.join(STAGE2_ROOT, 'outputs', 'reports', 'qc')
 MASTER_LIST_PATH = os.path.join(UPSTREAM_STAGE1, 'master', 'kr_stock_list.csv')
-STAGE2_RULE_VERSION = 'stage2-refine-20260308-r4'
-CLASSIFICATION_VERSION = 'stage2-classify-20260311-r2'
-SEMANTIC_SCHEMA_VERSION = 'stage-semantic-20260311-r1'
+STAGE2_RULE_VERSION = 'stage2-refine-20260311-r6'
+CLASSIFICATION_VERSION = 'stage2-classify-20260311-r5'
+SEMANTIC_SCHEMA_VERSION = 'stage-semantic-20260311-r4'
 FOLDERS = [
     'kr/dart',
     'market/news/rss', 'market/news/selected_articles', 'market/macro', 'market/google_trends',
@@ -252,17 +252,32 @@ INDUSTRY_KEYWORDS: dict[str, tuple[str, ...]] = {
     '자동차': ('자동차', '완성차', 'ev', '전기차', '하이브리드', '차량용'),
     '2차전지': ('2차전지', '배터리', '양극재', '음극재', '전해액', 'lfp'),
     '바이오/헬스케어': ('바이오', '헬스케어', '의약', '제약', '임상', '의료기기'),
-    '인터넷/플랫폼': ('플랫폼', '인터넷', '커머스', '포털', '핀테크', '광고'),
+    '인터넷/플랫폼': ('플랫폼', '인터넷', '커머스', '포털', '핀테크'),
     '게임/콘텐츠': ('게임', '콘텐츠', '엔터', '드라마', '웹툰', '음원'),
     '조선/해운': ('조선', '해운', '선박', 'lng선', '수주잔고'),
     '방산/우주': ('방산', '국방', '우주', '위성', '미사일', '항공우주'),
     '철강/소재': ('철강', '소재', '알루미늄', '구리', '니켈', '희토류'),
     '정유/화학': ('정유', '화학', '석유화학', '납사', '에틸렌', '정제마진'),
-    '은행/금융': ('은행', '보험', '증권', '카드', '여신', 'npl'),
+    '은행/금융': (
+        '금융', '금감원', '금융위', '금융위원회', '금융당국', '뱅크',
+        '보험사', '증권사', '투자증권', '카드사', '여신', 'npl',
+        '자산운용', '운용사', '연금', '기금운용', '의결권', '주주활동', '자사주',
+        'etf', '상장지수펀드', '펀드',
+    ),
     '건설/부동산': ('건설', '부동산', '분양', '재건축', 'pf', '플랜트'),
     '통신/네트워크': ('통신', '네트워크', '5g', '통신장비', '가입자'),
     '유통/소비재': ('유통', '소비재', '면세', '리테일', '백화점', '편의점'),
     '전력/유틸리티': ('전력', '유틸리티', '원전', '태양광', '풍력', '송배전'),
+}
+INDUSTRY_MIN_SCORE: dict[str, int] = {
+    '은행/금융': 2,
+}
+INDUSTRY_STRONG_KEYWORDS: dict[str, tuple[str, ...]] = {
+    '은행/금융': (
+        '금융', '금감원', '금융위', '금융위원회', '금융당국', '뱅크',
+        '자산운용', '운용사', '연금', '기금운용', '의결권', '주주활동', '자사주',
+        'etf', '상장지수펀드',
+    ),
 }
 EVENT_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
     'order': ('수주', '공급계약', '단일판매', '계약체결', '수주계약', '판매계약', 'order', 'contract'),
@@ -271,16 +286,20 @@ EVENT_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
     'guidance': ('가이던스', '실적전망', '전망치', '컨센서스', '잠정실적', '실적발표', 'guidance', 'earnings'),
 }
 MACRO_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
-    'risk_on': ('완화', '인하', '랠리', '상승', '회복', 'risk-on', 'risk on', 'soft landing', 'stimulus', 'easing'),
-    'risk_off': ('긴축', '인상', '침체', '전쟁', '관세', '하락', '위기', '리스크오프', 'risk-off', 'risk off', 'recession', 'conflict', 'sanction'),
-    'rates': ('금리', '기준금리', 'fed', 'fomc', 'ecb', 'boj', 'yield', '수익률', '국채'),
+    'risk_on': ('금리인하', '금리 인하', '랠리', 'risk-on', 'risk on', 'soft landing', 'stimulus', 'easing'),
+    'risk_off': ('긴축', '인상', '침체', '전쟁', '관세', '리스크오프', 'risk-off', 'risk off', 'recession', 'conflict', 'sanction'),
+    'rates': ('금리', '기준금리', 'fed', 'fomc', 'ecb', 'boj', 'yield', '국채', '채권수익률'),
     'inflation': ('인플레이션', 'cpi', 'ppi', '물가', 'inflation'),
-    'fx': ('환율', '원/달러', '원달러', '달러', 'dxy', 'fx', '외환', 'usdkrw'),
+    'fx': ('환율', '환전', '원/달러', '원달러', '엔화', 'dxy', 'fx', '외환', 'usdkrw'),
     'liquidity': ('유동성', '양적완화', '양적긴축', 'qe', 'qt', 'liquidity'),
-    'policy': ('정책', '재정', '부양책', 'stimulus', 'regulation', '규제', '관세', '제재'),
-    'energy': ('유가', 'wti', 'brent', '원유', '천연가스', 'lng'),
-    'recession_growth': ('침체', 'recession', '성장률', 'gdp', '경기', '회복', 'soft landing', '둔화'),
-    'geopolitics': ('전쟁', '분쟁', '중동', '러시아', '우크라이나', 'iran', 'china', 'taiwan', '제재'),
+    'policy': (
+        '정책', '재정', '부양책', 'stimulus', 'regulation', '규제', '관세', '제재',
+        '금융위', '금융위원회', '금감원', '금융감독원', '보건복지부', '산업통상부', '산업부',
+        '육성 방안', '기금운용위원회', '자본시장', '기관투자자',
+    ),
+    'energy': ('국제유가', '유가 상승', '유가 하락', 'wti', 'brent', '원유', '천연가스', 'lng'),
+    'recession_growth': ('침체', 'recession', '성장률', 'gdp', '경기', 'soft landing', '둔화'),
+    'geopolitics': ('전쟁', '분쟁', '중동', '러시아', '우크라이나', 'iran', '이란', 'china', 'taiwan', '제재', '무력 충돌'),
 }
 REGION_TAG_KEYWORDS: dict[str, tuple[str, ...]] = {
     'kr': ('한국', '국내', 'korea', 'kospi', 'kosdaq', 'krx', 'krw', '원/달러'),
@@ -296,18 +315,31 @@ LONG_HORIZON_KEYWORDS = ('장기', '중장기', '구조적', '연간', '다년',
 POSITIVE_DIRECTION_WORDS = {
     '성장', '개선', '확대', '수주', '계약', '흑자', '상향', '반등', '증가', '회복', '신제품', '점유율', '가이던스', '성공', '강세',
     'growth', 'improve', 'expand', 'order', 'beat', 'upgrade', 'strong', 'recovery', 'guidance', 'launch',
-    '완화', '인하', '랠리', 'risk-on', 'risk on', 'soft landing', 'stimulus', 'easing',
+    '인하', '랠리', 'risk-on', 'risk on', 'soft landing', 'stimulus', 'easing',
 }
 NEGATIVE_DIRECTION_WORDS = {
     '감소', '부진', '하락', '적자', '둔화', '악화', '소송', '분쟁', '유상증자', '리스크', '규제', '지연', '차질', '정정', '우려',
     'decline', 'weak', 'drop', 'loss', 'lawsuit', 'dispute', 'dilution', 'downgrade', 'risk', 'regulation', 'delay', 'concern',
-    '긴축', '인상', '침체', '전쟁', '관세', '위기', '리스크오프', 'risk-off', 'risk off', 'recession', 'conflict', 'sanction',
+    '긴축', '인상', '침체', '전쟁', '관세', '리스크오프', 'risk-off', 'risk off', 'recession', 'conflict', 'sanction',
 }
 
 _STOCK_REF_LOADED = False
 STOCK_NAME_TO_ENTRY: dict[str, dict] = {}
 STOCK_CODE_TO_ENTRY: dict[str, dict] = {}
 STOCK_NAME_PATTERN: re.Pattern[str] | None = None
+TOKEN_CHAR_RE = re.compile(r'[0-9A-Za-z가-힣]')
+ASCII_WORD_RE = re.compile(r'(?<![0-9a-z]){keyword}(?![0-9a-z])')
+KOREAN_POSTFIX_PREFIXES = tuple(
+    sorted(
+        {
+            '은', '는', '이', '가', '을', '를', '과', '와', '도', '만', '의', '에', '엔', '에서', '에게', '께', '으로', '로',
+            '부터', '까지', '처럼', '보다', '뿐', '뿐만', '이나', '나', '랑', '하고', '마다', '씩', '조차', '마저', '라도',
+            '이라', '라', '이며', '이다', '이었다', '였다', '으로는', '로는', '에는', '에서의', '에서도', '에는서', '와의', '과의',
+        },
+        key=len,
+        reverse=True,
+    )
+)
 
 
 def _load_stock_reference() -> None:
@@ -337,6 +369,48 @@ def _load_stock_reference() -> None:
         STOCK_NAME_PATTERN = re.compile('|'.join(re.escape(name) for name in names))
 
 
+def _is_token_char(ch: str) -> bool:
+    return bool(ch) and bool(TOKEN_CHAR_RE.match(ch))
+
+
+def _has_korean_postfix(text: str, start: int) -> bool:
+    tail = text[start:start + 6]
+    return any(tail.startswith(prefix) for prefix in KOREAN_POSTFIX_PREFIXES)
+
+
+def _is_valid_stock_name_match(text: str, start: int, end: int) -> bool:
+    if start > 0 and _is_token_char(text[start - 1]):
+        return False
+    if end < len(text) and _is_token_char(text[end]) and not _has_korean_postfix(text, end):
+        return False
+    return True
+
+
+ANALYST_ATTRIBUTION_SUFFIXES = (
+    ' 연구원',
+    ' 수석연구원',
+    ' 애널리스트',
+    ' 리서치센터',
+    ' 센터장',
+    ' 전략가',
+    ' 연구위원',
+)
+
+
+def _should_skip_stock_mention(text: str, start: int, end: int) -> bool:
+    tail = text[end:end + 16]
+    return any(tail.startswith(suffix) for suffix in ANALYST_ATTRIBUTION_SUFFIXES)
+
+
+def _count_keyword_occurrences(text_l: str, keyword: str) -> int:
+    normalized = str(keyword or '').strip().lower()
+    if not normalized:
+        return 0
+    if normalized.isascii() and normalized.isalnum():
+        return len(ASCII_WORD_RE.pattern) and len(re.findall(ASCII_WORD_RE.pattern.format(keyword=re.escape(normalized)), text_l))
+    return text_l.count(normalized)
+
+
 def _extract_stock_mentions(text: str) -> list[dict]:
     _load_stock_reference()
     raw = str(text or '').strip()
@@ -346,6 +420,10 @@ def _extract_stock_mentions(text: str) -> list[dict]:
     seen: set[str] = set()
     if STOCK_NAME_PATTERN is not None:
         for match in STOCK_NAME_PATTERN.finditer(raw):
+            if not _is_valid_stock_name_match(raw, match.start(), match.end()):
+                continue
+            if _should_skip_stock_mention(raw, match.start(), match.end()):
+                continue
             entry = STOCK_NAME_TO_ENTRY.get(match.group(0))
             if not entry:
                 continue
@@ -372,15 +450,21 @@ def _extract_industry_mentions(text: str) -> list[str]:
         return []
     scored: list[tuple[str, int]] = []
     for label, keywords in INDUSTRY_KEYWORDS.items():
-        score = sum(raw.count(keyword.lower()) for keyword in keywords if keyword)
-        if score > 0:
-            scored.append((label, score))
+        score = sum(_count_keyword_occurrences(raw, str(keyword)) for keyword in keywords if keyword)
+        if score <= 0:
+            continue
+        min_score = int(INDUSTRY_MIN_SCORE.get(label, 1))
+        strong_keywords = INDUSTRY_STRONG_KEYWORDS.get(label, ())
+        strong_score = sum(_count_keyword_occurrences(raw, str(keyword)) for keyword in strong_keywords if keyword)
+        if score < min_score and strong_score <= 0:
+            continue
+        scored.append((label, score))
     scored.sort(key=lambda item: (-item[1], item[0]))
     return [label for label, _ in scored]
 
 
 def _keyword_hit_count(text_l: str, keywords: tuple[str, ...] | set[str]) -> int:
-    return sum(text_l.count(str(keyword).lower()) for keyword in keywords if keyword)
+    return sum(_count_keyword_occurrences(text_l, str(keyword)) for keyword in keywords if keyword)
 
 
 def _ranked_tags_from_keywords(text: str, table: dict[str, tuple[str, ...]]) -> list[str]:
@@ -489,14 +573,18 @@ def _classification_output_path(base_dir: str, folder: str, rel_path: str) -> st
 
 
 def _build_selected_article_classification(row: dict) -> dict:
-    text = '\n'.join(
-        str(row.get(key) or '').strip()
-        for key in ('title', 'summary', 'body')
-        if str(row.get(key) or '').strip()
-    )
+    title = str(row.get('title') or '').strip()
+    body = str(row.get('body') or '').strip()
+    summary = str(row.get('summary') or '').strip()
+    text_parts = [title]
+    if body:
+        text_parts.append(body)
+    if summary and len(body) < SELECTED_ARTICLES_MIN_TEXT_LEN:
+        text_parts.append(summary)
+    text = '\n'.join(part for part in text_parts if part)
     classification = _classify_document_text(
         text,
-        title=str(row.get('title') or '').strip(),
+        title=title,
         folder='market/news/selected_articles',
         source_file=str(row.get('url') or ''),
     )
@@ -565,6 +653,7 @@ def _current_index_meta() -> dict:
         'stage2_rule_version': STAGE2_RULE_VERSION,
         'stage2_config_sha1': STAGE2_CONFIG_SHA1,
         'classification_version': CLASSIFICATION_VERSION,
+        'semantic_version': SEMANTIC_SCHEMA_VERSION,
         'link_enrichment_enabled': bool(STAGE2_ENABLE_LINK_ENRICHMENT),
         'live_link_fetch_enabled': bool(STAGE2_ENABLE_LIVE_LINK_FETCH),
         'input_source': STAGE2_INPUT_SOURCE,
@@ -594,6 +683,44 @@ def _save_processed_index(idx: dict):
     }
     with open(INDEX_PATH, 'w', encoding='utf-8') as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
+
+
+def _classification_sidecar_exists(ext: str, folder: str, clean_paths: list[str]) -> bool:
+    if not clean_paths:
+        return False
+    normalized_folder = _normalize_folder(folder)
+    if ext == '.jsonl' and normalized_folder == 'market/news/selected_articles':
+        clean_path = clean_paths[0]
+        sidecar_path = f'{clean_path}.classification.json'
+        if not (os.path.exists(clean_path) and os.path.exists(sidecar_path)):
+            return False
+        try:
+            with open(clean_path, 'r', encoding='utf-8') as f:
+                for raw in f:
+                    line = raw.strip()
+                    if not line:
+                        continue
+                    row = json.loads(line)
+                    if not isinstance(row, dict) or not isinstance(row.get('stage2_classification'), dict):
+                        return False
+        except Exception:
+            return False
+        return True
+    if _folder_bucket(folder) == 'qualitative' and ext in {'.md', '.txt'}:
+        return os.path.exists(f'{clean_paths[0]}.classification.json')
+    return True
+
+
+def _parse_folder_targets(raw_value: str | None) -> list[str] | None:
+    if not raw_value:
+        return None
+    requested = [item.strip() for item in str(raw_value).split(',') if item.strip()]
+    if not requested:
+        return None
+    invalid = [item for item in requested if item not in FOLDERS]
+    if invalid:
+        raise ValueError(f'unknown folders: {invalid}')
+    return requested
 
 
 def _reset_output_tree(base_dir: str):
@@ -2724,8 +2851,67 @@ def _write_jsonl(rows: list[dict], paths: list[str]):
             fout.write(json.dumps(row, ensure_ascii=False) + '\n')
 
 
-def _bootstrap_corpus_dedup_registry(registry: dict, clean_base: str):
-    for folder in sorted(DEDUP_TARGET_FOLDERS):
+def repair_selected_articles_clean_classification(clean_base: str | None = None) -> tuple[str, dict]:
+    base_dir = clean_base or os.path.join(CLEAN_BASE, 'production')
+    folder = 'market/news/selected_articles'
+    folder_dir = _output_paths(base_dir, folder, '')[0]
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    report_path = os.path.join(REPORT_DIR, f'SELECTED_ARTICLES_CLASSIFICATION_REPAIR_{timestamp}.json')
+    stats = {
+        'folder': folder,
+        'clean_base': base_dir,
+        'classification_version': CLASSIFICATION_VERSION,
+        'semantic_version': SEMANTIC_SCHEMA_VERSION,
+        'files_seen': 0,
+        'files_updated': 0,
+        'rows_reclassified': 0,
+        'sidecars_written': 0,
+        'parse_error_files': [],
+        'updated_files': [],
+        'sidecar_only_files': [],
+    }
+    if not os.path.isdir(folder_dir):
+        payload = {**stats, 'status': 'missing_clean_folder', 'folder_dir': folder_dir}
+        _write_json(payload, [report_path])
+        return report_path, payload
+
+    for path in sorted(glob.glob(os.path.join(folder_dir, '*.jsonl'))):
+        stats['files_seen'] += 1
+        rows, errors = _read_jsonl_records(path)
+        if errors:
+            stats['parse_error_files'].append({'path': path, 'errors': errors[:5]})
+            continue
+        changed = False
+        for row in rows:
+            classification = row.get('stage2_classification')
+            if not isinstance(classification, dict) or classification.get('classification_version') != CLASSIFICATION_VERSION or classification.get('semantic_version') != SEMANTIC_SCHEMA_VERSION:
+                row['stage2_classification'] = _build_selected_article_classification(row)
+                stats['rows_reclassified'] += 1
+                changed = True
+        sidecar_path = f'{path}.classification.json'
+        sidecar_missing = not os.path.exists(sidecar_path)
+        if changed:
+            _write_jsonl(rows, [path])
+            stats['files_updated'] += 1
+            stats['updated_files'].append(path)
+        if changed or sidecar_missing:
+            _write_json(_build_selected_articles_classification_summary(rows, path), [sidecar_path])
+            stats['sidecars_written'] += 1
+            if sidecar_missing and not changed:
+                stats['sidecar_only_files'].append(path)
+
+    payload = {
+        **stats,
+        'status': 'ok',
+        'files_with_parse_errors': len(stats['parse_error_files']),
+    }
+    _write_json(payload, [report_path])
+    return report_path, payload
+
+
+def _bootstrap_corpus_dedup_registry(registry: dict, clean_base: str, target_folders: list[str] | None = None):
+    bootstrap_scope = sorted(set(target_folders or DEDUP_TARGET_FOLDERS) & set(DEDUP_TARGET_FOLDERS))
+    for folder in bootstrap_scope:
         folder_dir = _output_paths(clean_base, folder, '')[0]
         if not os.path.isdir(folder_dir):
             continue
@@ -2778,12 +2964,13 @@ def _bootstrap_corpus_dedup_registry(registry: dict, clean_base: str):
                     registry['bootstrap_records'] += 1
 
 
-def run_full_refine(force_rebuild: bool = False):
+def run_full_refine(force_rebuild: bool = False, folders: list[str] | None = None):
     global LINK_FETCH_CACHE, LINK_RUNTIME_STATS
 
     LINK_FETCH_CACHE = {}
     LINK_RUNTIME_STATS = _new_link_runtime_stats()
 
+    target_folders = list(folders or FOLDERS)
     results = []
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     final_clean_base = os.path.join(CLEAN_BASE, 'production')
@@ -2791,23 +2978,28 @@ def run_full_refine(force_rebuild: bool = False):
     run_mode = 'force_rebuild' if force_rebuild else 'incremental'
     if force_rebuild:
         processed_index = {}
-        _reset_output_tree(final_clean_base)
-        _reset_output_tree(final_q_base)
+        if target_folders == list(FOLDERS):
+            _reset_output_tree(final_clean_base)
+            _reset_output_tree(final_q_base)
+        else:
+            for folder in target_folders:
+                shutil.rmtree(_output_paths(final_clean_base, folder, '')[0], ignore_errors=True)
+                shutil.rmtree(_output_paths(final_q_base, folder, '')[0], ignore_errors=True)
         processed_index_meta = _current_index_meta()
     else:
         processed_index, processed_index_meta = _load_processed_index()
-        if processed_index_meta != _current_index_meta():
-            processed_index = {}
-            processed_index_meta = _current_index_meta()
+
+    current_index_meta = _current_index_meta()
+    processed_index_meta_matches = processed_index_meta == current_index_meta
 
     total_exceptions = 0
     hard_fail_issues = []
     report_only_issues = []
     corpus_dedup_registry = _new_corpus_dedup_registry()
     if not force_rebuild:
-        _bootstrap_corpus_dedup_registry(corpus_dedup_registry, final_clean_base)
+        _bootstrap_corpus_dedup_registry(corpus_dedup_registry, final_clean_base, target_folders=target_folders)
 
-    for folder in FOLDERS:
+    for folder in target_folders:
         raw_dir = _resolve_raw_dir(folder)
         if not os.path.exists(raw_dir):
             issue = {
@@ -2842,7 +3034,10 @@ def run_full_refine(force_rebuild: bool = False):
             idx_key = f"{folder}/{rel_path}".replace('\\', '/')
             sig = _file_sig(f)
             prev_sig = processed_index.get(idx_key)
-            if (not force_rebuild) and prev_sig == sig and any(os.path.exists(p) for p in (clean_paths + q_paths)):
+            has_clean_output = any(os.path.exists(p) for p in clean_paths)
+            has_quarantine_output = any(os.path.exists(p) for p in q_paths)
+            outputs_ready = has_quarantine_output or (has_clean_output and _classification_sidecar_exists(ext, folder, clean_paths))
+            if (not force_rebuild) and processed_index_meta_matches and prev_sig == sig and outputs_ready:
                 skipped_count += 1
                 continue
 
@@ -3238,9 +3433,23 @@ def _parse_args():
         action='store_true',
         help='Ignore incremental processed_index, reset canonical clean/quarantine outputs, and rebuild from upstream Stage1 inputs.',
     )
+    parser.add_argument(
+        '--folders',
+        default='',
+        help='Comma-separated Stage2 folder subset to process (for example: market/news/selected_articles,text/blog).',
+    )
+    parser.add_argument(
+        '--repair-selected-articles-clean',
+        action='store_true',
+        help='Backfill row-level stage2_classification and *.classification.json sidecars for existing clean selected_articles JSONL outputs.',
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = _parse_args()
-    run_full_refine(force_rebuild=args.force_rebuild)
+    if args.repair_selected_articles_clean:
+        report_path, _payload = repair_selected_articles_clean_classification()
+        print(f'Selected articles clean classification repair report: {report_path}')
+    else:
+        run_full_refine(force_rebuild=args.force_rebuild, folders=_parse_folder_targets(args.folders))

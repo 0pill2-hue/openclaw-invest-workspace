@@ -1,7 +1,7 @@
 # Stage1 Rulebook & Repro
 
 status: CANONICAL (stage contract / reproducible orchestration spec)  
-updated_at: 2026-03-09 KST  
+updated_at: 2026-03-12 KST  
 ops companion: `docs/invest/stage1/RUNBOOK.md`
 
 ## 문서 역할
@@ -45,6 +45,7 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
   - `--profile <profile>`
 - 지원 profile:
   - `daily_full`
+  - `selected_articles_naver_only`
   - `rss_fast`
   - `telegram_fast`
   - `blog_fast`
@@ -57,7 +58,8 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
 ### 3.2 profile별 정확한 실행 스크립트
 | profile | ordered scripts |
 | --- | --- |
-| `daily_full` | `stage01_fetch_stock_list.py` → `stage01_fetch_ohlcv.py` → `stage01_fetch_supply.py` → `stage01_fetch_us_ohlcv.py` → `stage01_fetch_macro_fred.py` → `stage01_fetch_global_macro.py` → `stage01_fetch_news_rss.py` → `stage01_build_news_url_index.py` → `stage01_collect_selected_news_articles.py` → `stage01_fetch_dart_disclosures.py` → `stage01_collect_premium_startale_channel_auth.py` → `stage01_collect_link_sidecars.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `daily_full` | `stage01_fetch_stock_list.py` → `stage01_fetch_ohlcv.py` → `stage01_fetch_supply.py` → `stage01_fetch_us_ohlcv.py` → `stage01_fetch_macro_fred.py` → `stage01_fetch_global_macro.py` → `stage01_fetch_news_rss.py` → `stage01_build_news_url_index.py` → `stage01_collect_selected_news_articles_naver.py` → `stage01_fetch_dart_disclosures.py` → `stage01_collect_premium_startale_channel_auth.py` → `stage01_collect_link_sidecars.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `selected_articles_naver_only` | `stage01_collect_selected_news_articles_naver.py` |
 | `rss_fast` | `stage01_fetch_news_rss.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
 | `telegram_fast` | `stage01_scrape_telegram_launchd.py` → `stage01_collect_link_sidecars.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
 | `blog_fast` | `stage01_scrape_all_posts_v2.py` → `stage01_collect_link_sidecars.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
@@ -65,7 +67,7 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
 | `kr_supply_intraday` | `stage01_fetch_supply.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
 | `us_ohlcv_daily` | `stage01_fetch_us_ohlcv.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
 | `dart_fast` | `stage01_fetch_dart_disclosures.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
-| `news_backfill` | `stage01_fetch_news_rss.py` → `stage01_build_news_url_index.py` → `stage01_collect_selected_news_articles.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
+| `news_backfill` | `stage01_fetch_news_rss.py` → `stage01_build_news_url_index.py` → `stage01_sync_raw_to_db.py` → `stage01_update_coverage_manifest.py` |
 
 ### 3.3 fallback 계약
 다음 스크립트는 primary 실패 시 fallback script를 순서대로 시도한다.
@@ -96,15 +98,10 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
   - `GUARDIAN_MAX_MONTHS` default `48`
   - `GUARDIAN_MAX_PAGES_PER_SLICE` default `1`
   - `GUARDIAN_PAGE_SIZE` default `50`
-- selected articles
-  - `NEWS_SELECTED_TARGET_DATE=2016-01-01`
-  - `NEWS_SELECTED_MIN_KEYWORD_HITS` default `0`
-  - `NEWS_SELECTED_MAX_ARTICLES` default `600`
-  - `NEWS_SELECTED_MAX_ATTEMPTS` default `5000`
-  - `NEWS_SELECTED_YEARLY_QUOTA` default `50`
-  - `NEWS_SELECTED_SKIP_EXISTING` default `1`
-  - `NEWS_SELECTED_EXCLUDED_DOMAINS` default `bloomberg.com,wsj.com`
-  - `NEWS_SELECTED_EXCLUDED_URL_PATTERNS` default `/graphics/,/video/`
+- note
+  - `news_backfill`은 현재 live `selected_articles/` writer를 포함하지 않는다.
+  - live `selected_articles/` 갱신은 `daily_full` 또는 `selected_articles_naver_only`의 `stage01_collect_selected_news_articles_naver.py`만 canonical이다.
+  - generic `stage01_collect_selected_news_articles.py` 직접 실행은 explicit `--input-index`가 있는 수동/debug lane으로만 취급한다.
 
 ---
 
@@ -121,7 +118,7 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
 - `invest/stages/stage1/outputs/raw/qualitative/kr/dart/*.csv`
 - `invest/stages/stage1/outputs/raw/qualitative/market/rss/*.json`
 - `invest/stages/stage1/outputs/raw/qualitative/market/news/url_index/*.jsonl`
-- `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl`
+- `invest/stages/stage1/outputs/raw/qualitative/market/news/selected_articles/*.jsonl` (`selected_articles_*.jsonl` live files are canonical; `selected_articles_merged_summary.json` is derived-only)
 - `invest/stages/stage1/outputs/raw/qualitative/text/{telegram,blog,premium}/**/*`
 - `invest/stages/stage1/outputs/raw/qualitative/link_enrichment/text/{blog,telegram,premium/startale}/**/*.json`
 - Telegram attachment artifact
@@ -296,6 +293,8 @@ Stage1 실행 provenance는 최소 아래가 남아야 한다.
   - DART: `corp_code/corp_name/report_nm/rcept_no/rcept_dt` (+ 가능하면 `stock_code`)
   - RSS: item-level `title + datetime/published + url`
   - selected_articles: `url + title + published_date|published_at + body/summary`
+    - current canonical live writer lane: `stage01_collect_selected_news_articles_naver.py`
+    - generic collector direct write: manual/debug only with explicit `--input-index`
   - telegram/blog/premium markdown는 metadata line + body 구조를 유지
 
 ---
@@ -306,6 +305,7 @@ Stage1 실행 provenance는 최소 아래가 남아야 한다.
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile daily_full
 
 # cadence 분리 profile
+python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile selected_articles_naver_only
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile rss_fast
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile telegram_fast
 python3 invest/stages/stage1/scripts/stage01_daily_update.py --profile blog_fast

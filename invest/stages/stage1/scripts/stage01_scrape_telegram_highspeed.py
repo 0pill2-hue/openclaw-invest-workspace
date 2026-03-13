@@ -29,6 +29,7 @@ except ModuleNotFoundError:
 from invest.stages.common.stage_pdf_artifacts import (
     PAGE_MARKER_FORMAT,
     count_pdf_page_markers,
+    ensure_pdf_support_artifacts,
     extract_pdf_text_with_page_markers,
 )
 from pipeline_logger import append_pipeline_event
@@ -109,6 +110,10 @@ ATTACH_EXTRACT_ENABLED = os.environ.get('TELEGRAM_ATTACH_EXTRACT_ENABLED', '1').
 ATTACH_MAX_FILE_BYTES = int(os.environ.get('TELEGRAM_ATTACH_MAX_FILE_BYTES', str(15 * 1024 * 1024)))
 ATTACH_MAX_TEXT_CHARS = int(os.environ.get('TELEGRAM_ATTACH_MAX_TEXT_CHARS', '6000'))
 ATTACH_PDF_MAX_PAGES = int(os.environ.get('TELEGRAM_ATTACH_PDF_MAX_PAGES', '25'))
+ATTACH_RENDER_MAX_WIDTH = int(os.environ.get('TELEGRAM_ATTACH_RENDER_MAX_WIDTH', '1200'))
+ATTACH_HOT_WINDOW_DAYS = int(os.environ.get('TELEGRAM_ATTACH_HOT_WINDOW_DAYS', '31'))
+ATTACH_PDF_KEEP_ORIGINAL = os.environ.get('TELEGRAM_ATTACH_PDF_KEEP_ORIGINAL', '0').strip().lower() in ('1', 'true', 'yes')
+ATTACH_PDF_KEEP_BUNDLE = os.environ.get('TELEGRAM_ATTACH_PDF_KEEP_BUNDLE', '0').strip().lower() in ('1', 'true', 'yes')
 ATTACH_STORE_MAX_FILE_BYTES = int(os.environ.get('TELEGRAM_ATTACH_STORE_MAX_FILE_BYTES', str(50 * 1024 * 1024)))
 ATTACH_ARTIFACT_ROOT = STAGE1_DIR / 'outputs/raw/qualitative/attachments/telegram'
 ATTACH_BUCKET_COUNT = max(1, int(os.environ.get('TELEGRAM_ATTACH_BUCKET_COUNT', '128')))
@@ -657,6 +662,16 @@ def _extract_plain_text_doc(path: str) -> tuple[str, str]:
     return '', 'text_decode_failed'
 
 
+def _delete_original_after_decompose(path: Path) -> bool:
+    try:
+        if path.exists() and path.is_file():
+            path.unlink()
+            return True
+    except Exception:
+        return False
+    return False
+
+
 async def _persist_attachment_artifact(client, message, meta: dict, channel_meta: dict, stats: dict) -> dict:
     kind = str(meta.get('kind') or '')
     msg_id = int(getattr(message, 'id', 0) or 0)
@@ -820,6 +835,50 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
                         mapping_status='available_from_original',
                         extract_format='pdf_page_marked_text_v1',
                     )
+                    info = ensure_pdf_support_artifacts(
+                        stage1_dir=STAGE1_DIR,
+                        artifact_dir=artifact_dir,
+                        meta_path=meta_path,
+                        original_path=original_path,
+                        extract_path=extract_path,
+                        message_id=msg_id,
+                        message_date=payload.get('message_date', ''),
+                        max_pages=ATTACH_PDF_MAX_PAGES,
+                        max_text_chars=ATTACH_MAX_TEXT_CHARS,
+                        max_width=ATTACH_RENDER_MAX_WIDTH,
+                        hot_window_days=ATTACH_HOT_WINDOW_DAYS,
+                        keep_bundle=ATTACH_PDF_KEEP_BUNDLE,
+                    )
+                    pages = info.get('pages', []) if isinstance(info.get('pages'), list) else []
+                    payload['artifact_schema_version'] = max(3, int(payload.get('artifact_schema_version') or 0))
+                    payload['artifact_layout'] = 'bucketed_v3_flat'
+                    payload['pdf_manifest_path'] = str(info.get('manifest_rel_path') or '')
+                    payload['pdf_page_count'] = int(info.get('page_count') or 0)
+                    payload['pdf_text_pages'] = int(info.get('text_pages_written') or 0)
+                    payload['pdf_render_pages'] = int(info.get('rendered_pages_written') or 0)
+                    payload['pdf_page_text_status'] = str(info.get('text_status') or '')
+                    payload['pdf_page_render_status'] = str(info.get('render_status') or '')
+                    payload['pdf_quality_grade'] = str(info.get('quality_grade') or '')
+                    payload['compressed_bundle_path'] = str(info.get('compressed_bundle_path') or '')
+                    payload['compressed_bundle_status'] = str(info.get('compressed_bundle_status') or '')
+                    payload['compressed_bundle_reason'] = str(info.get('compressed_bundle_reason') or '')
+                    payload['human_review_window_active'] = bool(info.get('human_review_window_active'))
+                    payload['human_review_window_until'] = str(info.get('human_review_window_until') or '')
+                    stats['pdf_page_manifests_written'] = int(stats.get('pdf_page_manifests_written', 0)) + 1
+                    stats['pdf_page_text_files_written'] = int(stats.get('pdf_page_text_files_written', 0)) + sum(1 for page in pages if isinstance(page, dict) and str(page.get('text_rel_path') or '').strip())
+                    stats['pdf_page_render_files_written'] = int(stats.get('pdf_page_render_files_written', 0)) + sum(1 for page in pages if isinstance(page, dict) and str(page.get('render_rel_path') or '').strip())
+                    if str(info.get('compressed_bundle_status') or '') == 'ok':
+                        stats['pdf_bundle_ok'] = int(stats.get('pdf_bundle_ok', 0)) + 1
+                    else:
+                        stats['pdf_bundle_failed'] = int(stats.get('pdf_bundle_failed', 0)) + 1
+                    if not ATTACH_PDF_KEEP_ORIGINAL and _delete_original_after_decompose(original_path):
+                        payload['original_deleted_rel_path'] = payload.get('original_path', '')
+                        payload['original_path'] = ''
+                        result['original_path'] = ''
+                        payload['original_store_status'] = 'deleted_after_decompose'
+                        payload['original_store_reason'] = 'deleted_after_decompose'
+                        payload['original_deleted_after_decompose'] = True
+                        payload['original_deleted_at'] = datetime.now(timezone.utc).isoformat()
                 stats['attachments_text_extracted'] = int(stats.get('attachments_text_extracted', 0)) + 1
                 stats['attachments_text_files_written'] = int(stats.get('attachments_text_files_written', 0)) + 1
             else:

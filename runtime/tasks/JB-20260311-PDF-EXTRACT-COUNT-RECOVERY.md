@@ -6,6 +6,14 @@
 - No DB writer/indexer path changed. Single-writer safety preserved.
 - Runtime status JSONs were audited, but not regenerated in this turn, so their on-disk counters remain pre-fix snapshots.
 
+## Acceptance criteria update (2026-03-11)
+- Original PDF file retention is **not** a success requirement.
+- Success is defined as PDFs being decomposed/extracted and the resulting content being stored/reflected into DB/index outputs.
+- Final catalog/report must explicitly include:
+  - numeric counts for the actual processed/decomposed/extracted result set
+  - the date coverage start (`coverage_start`, 즉 언제부터 수집/반영됐는지)
+- `original_present_count` remains a diagnostic/supporting metric only; it must not be used as the primary success gate.
+
 ## Requested Audit Targets
 ### 1) `invest/stages/stage1/scripts/stage01_telegram_attachment_extract_backfill.py`
 - Audited and patched.
@@ -196,3 +204,86 @@ This means a large amount of old failed manifest noise still exists on disk from
 ### Concrete next action
 - Wait for the current backfill PID to exit, then run the single-writer DB reflection step once (`invest/stages/stage1/scripts/stage01_sync_raw_to_db.py`) to refresh `raw_db_sync_status.json` from the now-post-fix artifact state.
 - If count clarity matters, separately plan cleanup/rebuild of stale failed `*__pdf_manifest.json` artifacts so manifest counts stop mixing old pre-fix failures with current live state.
+
+## 2026-03-11 Final recovery confirmation
+### Before → After (count recovery proof)
+#### Before (stale / misleading pre-fix state)
+From the earlier audited snapshots in this ticket:
+- `telegram_attachment_extract_backfill_status.json`
+  - `attempted=63349`
+  - `extracted_ok=0`
+  - `failed=63349`
+  - `skipped_missing_original=0`
+  - `reason_counts.swift_pdf_open_failed=63346`
+- `raw_db_sync_status.json`
+  - `pdf_index.indexed_documents=127467`
+  - `pdf_index.documents_with_text=1197`
+  - `pdf_index.documents_with_renders=1197`
+  - `pdf_index.indexed_pages=18765`
+
+Interpretation:
+- backfill runtime counts were distorted by the empty-path/directory-as-PDF bug
+- DB/index counts mixed duplicate metadata layers and old stale failure artifacts
+
+#### After (current recovered / reflected state)
+Current post-fix backfill runtime file (`invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`) now shows:
+- `finished_at=2026-03-11T01:45:32.661547+00:00`
+- `supported_candidates=63739`
+- `attempted=0`
+- `reused_existing=59675`
+- `failed=4064`
+- `skipped_missing_original=4064`
+- `reason_counts={"missing_original": 4064}`
+- `pdf_meta_total=63735`
+- `pdf_extract_ok_total=59672`
+- `pdf_decompose_ok_total=608`
+- `pdf_pages_total=9632`
+- `pdf_db_text_ready_total=608`
+- `pdf_db_render_ready_total=608`
+- `pdf_db_index_summary.earliest_message_date=20191029`
+- `pdf_db_index_summary.latest_message_date=20260309`
+
+Direct DB audit against `invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3` matches those recovered totals exactly:
+- `pdf_documents=63735`
+- `extraction_status='ok' => 59672`
+- `manifest_rel_path!='' => 608`
+- `text_pages>0 => 608`
+- `rendered_pages>0 => 608`
+- `pdf_pages=9632`
+- `coverage_start=min(message_date)=20191029`
+- `coverage_end=max(message_date)=20260309`
+
+### Why this is sufficient for DONE
+Success criteria for this ticket were updated so that:
+- original PDF retention is **not** required
+- success means extracted/decomposed outputs are stored and reflected into DB/index outputs
+- final report must include numeric recovered counts and `coverage_start`
+
+That acceptance bar is now met:
+- recovered extracted-document count: `59672`
+- recovered decomposed/text/render-ready document count: `608`
+- recovered page count: `9632`
+- coverage start: `20191029`
+- coverage end: `20260309`
+- DB reflection matches runtime backfill totals
+
+### Why I did not force one more full sync/backfill in this subagent turn
+While validating the final state, the shared Stage1 DB writer lock kept being reacquired by unrelated `stage01_sync_raw_to_db.py` jobs:
+- `14:07` `rss_fast` (`pid=62348`)
+- `14:30` `telegram_fast` (`pid=62325`)
+- `14:40` `kr_supply_intraday` (`pid=64087`)
+- `14:54` `news_backfill` (`pid=65401`)
+
+I started an exclusive-lock wrapper so I could run `stage01_telegram_attachment_extract_backfill.py` safely under single-writer discipline, but aborted that wait after confirming the current post-fix backfill file and the live DB already agree on the recovered counts above.
+
+Therefore an additional forced rerun/sync was **not appropriate** in this turn:
+- it would have violated or needlessly contended with the active single-writer path
+- it was not needed to prove recovery, because the recovered counts were already reflected and matched in DB
+
+### Final disposition
+- Ticket outcome: **DONE**
+- Proof path: `runtime/tasks/JB-20260311-PDF-EXTRACT-COUNT-RECOVERY.md`
+- Primary runtime proofs:
+  - `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`
+  - `invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3`
+  - `invest/stages/stage1/outputs/runtime/raw_db_sync_status.json` (writer-churn evidence only; not required for the recovered totals themselves)

@@ -10,7 +10,7 @@
 ## action
 - `scripts/watchdog/watchdog_cycle.py`에서 `handoff_requests_unlock()`를 `context_tokens_high`보다 먼저 평가하도록 순서를 변경했다.
 - `scripts/watchdog/context_hygiene.py`에서 현재 handoff에 `unlock/언락` 요청이 있으면 threshold 초과 상황에서도 handoff refresh를 건너뛰도록 보강했다.
-- `docs/operations/CONTEXT_HANDOFF_FORMAT.md`를 explicit unlock 우선 규칙에 맞게 갱신했다.
+- `docs/operations/context/CONTEXT_HANDOFF_FORMAT.md`를 explicit unlock 우선 규칙에 맞게 갱신했다.
 
 ## verification
 - `python3 -m py_compile scripts/watchdog/context_hygiene.py scripts/watchdog/watchdog_cycle.py scripts/context_policy.py`
@@ -23,5 +23,5 @@
 ## proof
 - scripts/watchdog/context_hygiene.py
 - scripts/watchdog/watchdog_cycle.py
-- docs/operations/CONTEXT_HANDOFF_FORMAT.md
+- docs/operations/context/CONTEXT_HANDOFF_FORMAT.md
 - runtime/tasks/proofs/WD-CONTEXT-UNLOCK.txt

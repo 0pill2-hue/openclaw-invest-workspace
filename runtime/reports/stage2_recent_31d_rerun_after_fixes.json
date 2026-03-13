@@ -1,0 +1,476 @@
+{
+  "generated_at": "2026-03-08T18:29:15.746041",
+  "mode": "stage2_recent_31d_rerun_after_fixes",
+  "cutoff_date": "2026-02-05",
+  "tmp_stage2": "/var/folders/_x/vg8dcxsd21s7ml4p4wsrz2pw0000gn/T/stage2_rerun_31d_xoo_gk6j/stage2",
+  "input_stats": {
+    "csv_files": 6732,
+    "json_files": 408,
+    "jsonl_rows_kept": 22694,
+    "text_files": 40530
+  },
+  "refine_rc": 0,
+  "qc_rc": 0,
+  "refine_stdout_tail": "Full refinement report: /var/folders/_x/vg8dcxsd21s7ml4p4wsrz2pw0000gn/T/stage2_rerun_31d_xoo_gk6j/stage2/outputs/reports/qc/FULL_REFINE_REPORT_20260308_180335.md\nFull refinement report json: /var/folders/_x/vg8dcxsd21s7ml4p4wsrz2pw0000gn/T/stage2_rerun_31d_xoo_gk6j/stage2/outputs/reports/qc/FULL_REFINE_REPORT_20260308_180335.json\n",
+  "refine_stderr_tail": "",
+  "qc_stdout_tail": "Processing group kr_ohlcv: 2770 files (full processing)\nProcessing group kr_supply: 2770 files (full processing)\nProcessing group us_ohlcv: 508 files (full processing)\nReport generated: /private/var/folders/_x/vg8dcxsd21s7ml4p4wsrz2pw0000gn/T/stage2_rerun_31d_xoo_gk6j/stage2/outputs/reports/QC_REPORT_20260308_182915.md\nReport JSON: /private/var/folders/_x/vg8dcxsd21s7ml4p4wsrz2pw0000gn/T/stage2_rerun_31d_xoo_gk6j/stage2/outputs/reports/QC_REPORT_20260308_182915.json\n",
+  "qc_stderr_tail": "",
+  "qc_report": {
+    "validation_pass": true,
+    "hard_failures": 0,
+    "anomalies": 3115,
+    "report_only_anomalies": [
+      {
+        "group": "kr_ohlcv",
+        "file": "000020.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000040.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000050.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000070.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000080.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000087.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000100.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000105.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000120.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000140.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000145.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000150.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000155.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000157.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000180.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "0001A0.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "72.31%",
+        "clean": 18,
+        "quarantine": 47
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000210.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000215.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000220.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      },
+      {
+        "group": "kr_ohlcv",
+        "file": "000225.csv",
+        "type": "high_quarantine_ratio",
+        "ratio": "73.13%",
+        "clean": 18,
+        "quarantine": 49
+      }
+    ]
+  },
+  "refine_report": {
+    "verdict": "PASS",
+    "hard_fail_count": 0,
+    "report_only_count": 1,
+    "corpus_dedup": {
+      "bootstrap_files": 0,
+      "bootstrap_records": 0,
+      "registered_items": 42486,
+      "duplicate_items": 20640,
+      "rules": [
+        "canonical_url",
+        "title_date",
+        "content_fingerprint"
+      ],
+      "rule_reason_map": {
+        "canonical_url": "duplicate_canonical_url",
+        "title_date": "duplicate_title_date",
+        "content_fingerprint": "duplicate_content_fingerprint"
+      },
+      "scope": [
+        "market/news/selected_articles",
+        "text/blog",
+        "text/premium/startale",
+        "text/telegram"
+      ]
+    },
+    "reason_taxonomy": {
+      "quarantine_reason_groups": {
+        "selected_articles_invalid_row": [
+          "selected_articles_missing_url",
+          "selected_articles_missing_title",
+          "selected_articles_missing_published_date",
+          "selected_articles_effective_body_too_short",
+          "jsonl_parse_error:<Exception>",
+          "jsonl_row_not_object",
+          "empty_jsonl"
+        ],
+        "text_invalid_metadata": [
+          "blog_missing_required_metadata",
+          "telegram_missing_required_metadata",
+          "premium_missing_required_metadata"
+        ],
+        "text_body_quality": [
+          "text_too_short",
+          "blog_effective_body_empty",
+          "blog_effective_body_too_short",
+          "telegram_effective_body_empty",
+          "telegram_effective_body_too_short",
+          "premium_effective_body_empty_or_boilerplate",
+          "premium_effective_body_too_short"
+        ],
+        "text_link_body_fetch_failure": [
+          "blog_link_body_fetch_failed",
+          "telegram_link_body_fetch_failed",
+          "premium_link_body_fetch_failed"
+        ],
+        "premium_blocked_or_status": [
+          "premium_bad_status_<STATUS>",
+          "premium_paywall_or_blocked_reason"
+        ],
+        "qualitative_csv_or_json_invalid": [
+          "missing_required_columns:<cols>",
+          "invalid_rcept_dt",
+          "invalid_<date_column>",
+          "missing_report_nm",
+          "missing_rcept_no",
+          "missing_corp_or_stock_code",
+          "missing_title_body_url",
+          "empty_after_strip",
+          "rss_no_entries",
+          "rss_missing_required_fields(title/datetime/url)",
+          "empty_json",
+          "invalid_json"
+        ],
+        "corpus_duplicates": [
+          "duplicate_canonical_url",
+          "duplicate_title_date",
+          "duplicate_content_fingerprint",
+          "duplicate_rcept_no",
+          "duplicate_date_title",
+          "duplicate_<id_column>"
+        ],
+        "unexpected_processing_exception": [
+          "exception:<ExceptionType>:<message>"
+        ]
+      },
+      "reason_filter_taxonomy": {
+        "terminal": {
+          "description": "Stage2 terminal quarantine umbrella. Any invalid, duplicate, fetch_fail, blocked/status, or exception case ends in quarantine.",
+          "includes": [
+            "invalid",
+            "duplicate",
+            "fetch_fail",
+            "premium_blocked_or_status",
+            "unexpected_processing_exception"
+          ],
+          "quarantine": true
+        },
+        "max_available": {
+          "description": "Deterministically normalized record/file is kept in clean when minimum contract is satisfied; no separate max_available reason string is emitted.",
+          "quarantine": false
+        },
+        "duplicate": {
+          "description": "Duplicate detected after minimum contract check; quarantined with duplicate_* reason.",
+          "quarantine": true,
+          "reasons": [
+            "duplicate_canonical_url",
+            "duplicate_title_date",
+            "duplicate_content_fingerprint",
+            "duplicate_rcept_no",
+            "duplicate_date_title",
+            "duplicate_<id_column>"
+          ]
+        },
+        "invalid": {
+          "description": "Minimum contract, parse, metadata, or body-quality failure; quarantined.",
+          "quarantine": true,
+          "reasons": [
+            "selected_articles_missing_url",
+            "selected_articles_missing_title",
+            "selected_articles_missing_published_date",
+            "selected_articles_effective_body_too_short",
+            "jsonl_parse_error:<Exception>",
+            "jsonl_row_not_object",
+            "empty_jsonl",
+            "blog_missing_required_metadata",
+            "telegram_missing_required_metadata",
+            "premium_missing_required_metadata",
+            "text_too_short",
+            "blog_effective_body_empty",
+            "blog_effective_body_too_short",
+            "telegram_effective_body_empty",
+            "telegram_effective_body_too_short",
+            "premium_effective_body_empty_or_boilerplate",
+            "premium_effective_body_too_short",
+            "missing_required_columns:<cols>",
+            "invalid_rcept_dt",
+            "invalid_<date_column>",
+            "missing_report_nm",
+            "missing_rcept_no",
+            "missing_corp_or_stock_code",
+            "missing_title_body_url",
+            "empty_after_strip",
+            "rss_no_entries",
+            "rss_missing_required_fields(title/datetime/url)",
+            "empty_json",
+            "invalid_json"
+          ]
+        },
+        "fetch_fail": {
+          "description": "Link enrichment was attempted for short text but all candidate body fetches failed; quarantined.",
+          "quarantine": true,
+          "reasons": [
+            "blog_link_body_fetch_failed",
+            "telegram_link_body_fetch_failed",
+            "premium_link_body_fetch_failed"
+          ]
+        }
+      },
+      "report_issue_filters": {
+        "warn": [
+          "missing_input_folder(required=false)",
+          "zero_clean_optional_folder"
+        ],
+        "fail": [
+          "missing_input_folder(required=true)",
+          "folder_processing_exception",
+          "zero_clean_required_folder"
+        ]
+      },
+      "normalizable_clean_transforms": [
+        "canonicalize_url",
+        "normalize_title",
+        "normalize_date",
+        "drop_tracking_query_params",
+        "dedup_within_file_urls",
+        "optional_link_enrichment_when_short_and_enabled"
+      ],
+      "corpus_dedup_rules": [
+        {
+          "name": "canonical_url",
+          "duplicate_reason": "duplicate_canonical_url",
+          "description": "canonicalized URL exact match"
+        },
+        {
+          "name": "title_date",
+          "duplicate_reason": "duplicate_title_date",
+          "description": "normalized title + normalized date exact match"
+        },
+        {
+          "name": "content_fingerprint",
+          "duplicate_reason": "duplicate_content_fingerprint",
+          "description": "normalized effective body fingerprint match"
+        }
+      ],
+      "terminal_quarantine_reasons": {
+        "selected_articles_invalid_row": [
+          "selected_articles_missing_url",
+          "selected_articles_missing_title",
+          "selected_articles_missing_published_date",
+          "selected_articles_effective_body_too_short",
+          "jsonl_parse_error:<Exception>",
+          "jsonl_row_not_object",
+          "empty_jsonl"
+        ],
+        "text_invalid_metadata": [
+          "blog_missing_required_metadata",
+          "telegram_missing_required_metadata",
+          "premium_missing_required_metadata"
+        ],
+        "text_body_quality": [
+          "text_too_short",
+          "blog_effective_body_empty",
+          "blog_effective_body_too_short",
+          "telegram_effective_body_empty",
+          "telegram_effective_body_too_short",
+          "premium_effective_body_empty_or_boilerplate",
+          "premium_effective_body_too_short"
+        ],
+        "text_link_body_fetch_failure": [
+          "blog_link_body_fetch_failed",
+          "telegram_link_body_fetch_failed",
+          "premium_link_body_fetch_failed"
+        ],
+        "premium_blocked_or_status": [
+          "premium_bad_status_<STATUS>",
+          "premium_paywall_or_blocked_reason"
+        ],
+        "qualitative_csv_or_json_invalid": [
+          "missing_required_columns:<cols>",
+          "invalid_rcept_dt",
+          "invalid_<date_column>",
+          "missing_report_nm",
+          "missing_rcept_no",
+          "missing_corp_or_stock_code",
+          "missing_title_body_url",
+          "empty_after_strip",
+          "rss_no_entries",
+          "rss_missing_required_fields(title/datetime/url)",
+          "empty_json",
+          "invalid_json"
+        ],
+        "corpus_duplicates": [
+          "duplicate_canonical_url",
+          "duplicate_title_date",
+          "duplicate_content_fingerprint",
+          "duplicate_rcept_no",
+          "duplicate_date_title",
+          "duplicate_<id_column>"
+        ],
+        "unexpected_processing_exception": [
+          "exception:<ExceptionType>:<message>"
+        ]
+      },
+      "max_available_policy": {
+        "description": "Deterministically normalized record/file is kept in clean when minimum contract is satisfied; no separate max_available reason string is emitted.",
+        "quarantine": false
+      },
+      "warn_report_issue_types": [
+        "missing_input_folder(required=false)",
+        "zero_clean_optional_folder"
+      ],
+      "fail_report_issue_types": [
+        "missing_input_folder(required=true)",
+        "folder_processing_exception",
+        "zero_clean_required_folder"
+      ]
+    },
+    "link_enrichment": {
+      "enabled": true,
+      "url_raw_extracted_total": 2273,
+      "url_canonical_total": 2269,
+      "url_deduped_within_file": 4,
+      "url_cache_hits": 9,
+      "url_disallowed": 8,
+      "url_fetch_success": 1898,
+      "url_fetch_failure": 351,
+      "content_fingerprint_dedup": 0,
+      "enrichment_attempt_files": 1264,
+      "enrichment_applied_files": 1221,
+      "enrichment_promoted_files": 1221,
+      "enrichment_still_quarantined_files": 43,
+      "attachment_blocks_seen": 16,
+      "attachment_text_chars_total": 84422,
+      "corpus_dedup_registered_items": 0,
+      "corpus_dedup_duplicate_items": 0,
+      "corpus_dedup_bootstrap_files": 0,
+      "corpus_dedup_bootstrap_records": 0,
+      "deduped_url_total": 13
+    }
+  }
+}

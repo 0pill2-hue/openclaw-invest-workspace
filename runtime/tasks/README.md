@@ -6,7 +6,7 @@
 - auto-dispatch 상태: `runtime/tasks/auto_dispatch_status.json`
 - auto-dispatch 로그: `runtime/tasks/auto_dispatch.launchd.log`, `runtime/tasks/auto_dispatch_debug.log`
 - watchdog 로그: `runtime/tasks/watchdog.launchd.log`
-- 프로그램 총람: `docs/operations/PROGRAMS.md`
+- 프로그램 총람: `docs/operations/runtime/PROGRAMS.md`
 
 ## 초기 1회 절차
 1. `python3 scripts/tasks/db.py init`
@@ -22,6 +22,8 @@
 - 서브를 붙인 task는 callback deadline(`resume_due`)을 반드시 남긴다.
 - `DONE` 전이 시 stale blocker/pending review는 자동 정리하고, `BLOCKED`는 callback/runtime 대기 metadata만 남기지 않도록 정리한다.
 - deadline을 넘기면 watchdog이 무한 대기하지 않고 `BLOCKED`로 전환한다.
+- `BLOCKED` backlog도 parking lot로 방치하지 않는다. auto-dispatch/assign 경로와 watchdog recover가 주기적으로 재평가해서, watchdog성 timeout·retryable blocker·시간창 만료·선행 ticket 완료 같은 조건이 감지되면 `TODO/active`로 자동 requeue한다.
+- 진짜 blocker는 `blocked_reason`에 unblock 조건(선행 ticket, 시간창, 승인/의존성 등)이 드러나야 자동 재평가가 가능하다.
 - task의 제목/범위/완료조건이 바뀌면 새 task를 만들지 말고 같은 id에 `python3 scripts/tasks/db.py add --id ... --title ... --scope ...`로 즉시 갱신한다.
 - 작업 착수 첫 보고에는 canonical `ticket_id`를 함께 알린다. 여러 task가 걸려 있어도 현재 주 실행 ticket 1개를 먼저 명시한다.
 - watchdog은 `scripts/watchdog/watchdog_cycle.py`가 canonical 진입점이다.
@@ -42,6 +44,7 @@
 - 완료: `python3 scripts/tasks/db.py done --id JB-20260305-037 --proof "..."`
 - 차단: `python3 scripts/tasks/db.py block --id JB-20260305-037 --reason "..."`
 - 잘못 붙은 assignee 해제: `python3 scripts/tasks/db.py release --id JB-20260305-037`
+- blocked backlog 재평가/재큐잉: `python3 scripts/tasks/db.py requeue-blocked`
 - 서브 실행/콜백 대기 표시: `python3 scripts/tasks/db.py mark-phase --id JB-20260305-037 --phase subagent_running --child-session <session> --resume-due "2026-03-07 21:00:00"`
 - 중복/레거시 task 삭제: `python3 scripts/tasks/db.py remove --id JB-20260305-037`
 - fail-close 게이트: `python3 scripts/tasks/gate.py --ticket JB-20260305-037`

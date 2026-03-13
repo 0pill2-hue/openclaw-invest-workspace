@@ -1,7 +1,9 @@
 # JB-20260310-RAW-DB-PIPELINE
 
 - run_id: 20260310034225
-- status: DONE_CANDIDATE
+- status: TODO
+- updated_at: 2026-03-13 07:19 KST
+- backlog_reconcile: prior DONE_CANDIDATE superseded; Stage2 handoff proof is stale against 2026-03-11 deep audit and broader directive scope remains open
 
 ## current understanding/scope
 - 목표: Stage1 raw 파일 경로를 Stage2의 직접 입력 SSOT로 두지 않고, Stage1 DB archive를 기준으로 Stage2 refine/QC가 동작하도록 전환한다.
@@ -101,8 +103,14 @@
 - workspace에는 본 작업 이전부터 다른 수정 파일들이 존재한다.
   - 특히 일부 Stage1/Stage2 스크립트는 이미 dirty 상태였고, 본 작업은 DB archive 경로/문서 범위만 제한적으로 추가했다.
 
-## final recommended closure
-- DONE
-- 단, 아래 후속 2건은 별도 티켓 권장
-  1. collector direct-to-DB write 전환 (raw mirror 물리 축소/제거)
-  2. live corpus 기준 최초 sync 시간 측정 및 launchd timeout/profile 보정
+## 2026-03-13 backlog reconciliation
+- prior `DONE_CANDIDATE` 판단은 최소 이관안 구현/초기 smoke 기준으로는 맞았지만, 이후 증빙이 추가되면서 현재 backlog SSOT와 충돌한다.
+- `runtime/tasks/JB-20260311-STAGE1-RAW-DB-DEEP-AUDIT.md` 기준으로 `runtime/tasks/JB-20260310-RAW-DB-PIPELINE_stage2_handoff.md`의 page-count/page-row 계약은 stale이며, placeholder `pdf_pages` row 73건 divergence가 문서 정렬 없이 남아 있다.
+- directive `JB-20260310-RAW-DB-PIPELINE`도 여전히 IN_PROGRESS이고, 현재 task DB는 `TODO/main_resume`이므로 본 티켓은 닫지 않고 contract/doc 정렬 후 재판정이 맞다.
+- next action:
+  1. `JB-20260311-STAGE-CONTRACT-ALIGN`에서 Stage1 deep audit 결과를 기준으로 handoff contract 문서와 운영 규칙을 다시 맞춘다.
+  2. 그 다음 이 티켓을 `DONE`으로 닫을지, 문서 정렬 후속을 추가로 남길지 재판정한다.
+
+## current closure judgment
+- NOT_DONE
+- 최신 backlog 기준 상태: `TODO / main_resume`
