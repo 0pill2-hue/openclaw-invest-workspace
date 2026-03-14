@@ -17,6 +17,7 @@ TELEGRAM_ALLOWLIST_PATH = STAGE1_DIR / "inputs/config/telegram_channel_allowlist
 TELEGRAM_LAST_RUN_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_last_run_status.json"
 TELEGRAM_PUBLIC_FALLBACK_STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_public_fallback_status.json"
 TELEGRAM_ATTACHMENT_STATS_PATH = STAGE1_DIR / "outputs/runtime/telegram_attachment_extract_stats_latest.json"
+TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH = STAGE1_DIR / "outputs/runtime/stage1_attachment_recovery_summary.json"
 BLOG_LAST_RUN_STATUS_PATH = STAGE1_DIR / "outputs/runtime/blog_last_run_status.json"
 BLOG_BUDDIES_PATH = STAGE1_DIR / "outputs/master/naver_buddies_full.json"
 BLOG_TERMINAL_STATUS_PATH = STAGE1_DIR / "inputs/config/blog_terminal_status.json"
@@ -670,6 +671,35 @@ def validate_telegram_full_coverage() -> tuple[dict, dict | None]:
     return detail, failure
 
 
+def validate_telegram_attachment_recovery() -> tuple[dict, dict | None]:
+    summary = _load_runtime_status(TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH)
+    errors = []
+    if not summary or not summary.get("exists"):
+        errors.append("telegram_attachment_recovery_summary_missing")
+    stage_status = str((summary or {}).get("stage_status") or "미확인").strip()
+    completeness_status = str((summary or {}).get("completeness_status") or "미확인").strip()
+    ok = len(errors) == 0 and stage_status not in {"ERROR", "FAIL"}
+    detail = {
+        "source": "runtime/telegram_attachment_recovery",
+        "script": "invest/stages/stage1/scripts/stage01_telegram_attachment_extract_backfill.py",
+        "ok": ok,
+        "summary_path": str(TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH.relative_to(STAGE1_DIR)),
+        "stage_status": stage_status,
+        "completeness_status": completeness_status,
+        "completeness": (summary or {}).get("completeness") if isinstance(summary, dict) else None,
+        "recovery_lane": (summary or {}).get("recovery_lane") if isinstance(summary, dict) else None,
+        "retry_visibility": (summary or {}).get("retry_visibility") if isinstance(summary, dict) else None,
+        "delivery": (summary or {}).get("delivery") if isinstance(summary, dict) else None,
+        "errors": errors,
+    }
+    failure = None if ok else {
+        "source": "runtime/telegram_attachment_recovery",
+        "script": "invest/stages/stage1/scripts/stage01_telegram_attachment_extract_backfill.py",
+        "error": "; ".join(errors) if errors else f"stage_status={stage_status}",
+    }
+    return detail, failure
+
+
 def main():
     now_ts = time.time()
     details = []
@@ -690,11 +720,19 @@ def main():
     if telegram_failure is not None:
         failures.append(telegram_failure)
 
+    attachment_recovery_detail, attachment_recovery_failure = validate_telegram_attachment_recovery()
+    details.append(attachment_recovery_detail)
+    if attachment_recovery_failure is not None:
+        failures.append(attachment_recovery_failure)
+
     raw_tree_coverage = build_raw_tree_coverage(now_ts)
     ok = len(failures) == 0
     payload = {
         "timestamp": datetime.now().isoformat(),
         "ok": True if ok else False,
+        "stage_status": "PASS" if ok else "FAIL",
+        "completeness_status": attachment_recovery_detail.get("completeness_status"),
+        "attachment_recovery_stage_status": attachment_recovery_detail.get("stage_status"),
         "message": "post collection validation ok" if ok else f"post collection validation has {len(failures)} failed checks",
         "failed_count": len(failures),
         "mode": "stage1_raw_full_coverage",

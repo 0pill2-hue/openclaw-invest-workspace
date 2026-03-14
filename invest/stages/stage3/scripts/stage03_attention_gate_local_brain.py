@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Stage3 - Qualitative Axes Gate (LOCAL BRAIN ONLY)
+Stage3 - Qualitative Axes Gate (LOCAL SUPPORT ONLY, NON-CANONICAL)
 
 목적
-- Stage2 clean 기반 canonical intermediate corpus(`stage2_text_meta_records.jsonl`)를 읽어
+- Stage2 clean 기반 support corpus(`stage2_text_meta_records.jsonl`)를 읽어
   로컬모델 친화적인 짧은 chunk + focus_symbol 단위 claim-card를 만든다.
-- Stage3의 실질 평가 단위를 `(record_id, chunk_id, focus_symbol)`로 고정한다.
+- 이 스크립트는 Stage3 canonical qualitative writer가 아니며, external-primary 이전/주변의 support lane 용도만 가진다.
 - 최종 점수는 claim-card를 `(symbol, date, issue_cluster_id)`로 묶은 뒤 rule engine이 집계한다.
 - 감성/주목도(attention/sentiment) 축은 운영점수에서 제거한다.
 - remote/cloud 모델 사용을 금지하고, 로컬 정책 위반 시 FAIL-CLOSE 한다.

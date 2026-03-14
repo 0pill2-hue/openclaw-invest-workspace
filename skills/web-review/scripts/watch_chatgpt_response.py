@@ -564,6 +564,9 @@ def main():
             json_candidate = extract_json_candidate(last_assistant)
             jsonish = looks_like_jsonish_text(last_assistant)
             generation = generation_indicator(page, body)
+            if json_candidate and generation == 'pending_text_pattern' and stable_hash_polls >= 1:
+                result['generation_indicator_overridden'] = generation
+                generation = ''
             result['generation_indicator'] = generation
 
             pending_reason = ''

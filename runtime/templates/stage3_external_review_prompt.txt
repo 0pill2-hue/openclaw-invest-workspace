@@ -15,7 +15,7 @@ Each item attachment is intentionally compact. Expect the package to center on:
 
 Some items may also include `document_or_item_id` or other lineage fields. Missing extra metadata is normal; do not invent hidden fields. If `document_or_item_id` is absent, reuse `item_id` as the stable fallback value in your response.
 Treat each attachment as one analysis item, not as a stock sample.
-If an item is chatter, opinion, mixed, unknown, or has no symbol, preserve it instead of discarding it. Use `status` and `preservation_decision` to express uncertainty.
+If an item is chatter, opinion, mixed, unknown, or has no symbol, preserve it instead of discarding it. Use `status` for reviewability/outcome and `preservation_decision` for keep/merge/adjudication routing; they are not synonyms.
 If context is insufficient, mark `insufficient_context` instead of guessing.
 Normalize compact `source_kind` into a concise `source_family` in the response.
 Do not give portfolio advice, buy/sell opinions, or long prose.
@@ -35,6 +35,8 @@ Package baseline:
 - package_preparer: <package_preparer>
 - model_target: ChatGPT Thinking 5.4
 - review_mode: batch_scoring_mode
+- set `package_audit.expected_item_count` and `package_audit.returned_item_count` accurately
+- do not omit or duplicate any `item_id`
 
 What to do for EACH item:
 1. Read the attached item document.

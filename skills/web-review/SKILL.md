@@ -31,6 +31,8 @@ Use this skill when 주인님 wants an external **ChatGPT web flow**. Default mo
 
 ## Common orchestration rules
 - Prefer the local Playwright + Chrome cookie-injected session path first.
+- If a headless run lands on Cloudflare human verification (`잠시만 기다리십시오…`, `사람인지 확인하십시오`) or an otherwise blank challenge page, treat it as a browser-mode gate, not as selector/auth/project failure. Fail closed, keep guards intact, and retry with `--headful` before changing selectors or concluding the flow is broken.
+- Capture a screenshot/JSON proof on that failure path so the retry reason is explicit.
 - Use a fresh ChatGPT new chat for each request.
 - After capture, delete that chat so review threads do not accumulate.
 - Verify/select **Thinking 5.4** before sending unless 주인님 explicitly asked for another model.
@@ -55,9 +57,10 @@ Use this skill when 주인님 wants an external **ChatGPT web flow**. Default mo
 2. Keep package expression compact: `item_id`, `item_type`, `title`, `source_kind`, `published_at_utc`, `locator`, curated `source_text`, and one-line `minimal_operator_notes` are the center of gravity.
 3. Keep one canonical prompt/schema template in `runtime/templates/`; do **not** create per-run full prompt copies or `results_template` copies unless a debug exception is explicitly required.
 4. Use `runtime/templates/stage3_external_review_prompt.txt` and `runtime/templates/stage3_response_schema.json`; package attachments are the baseline, repo commit is provenance only.
-5. Partition mixed-item batches at **20-40 items** (default target = 30) and carry `partition_index`, `partition_count`, and `partial_failure.failed_item_ids` metadata so failed subsets can be repartitioned without rerunning the full package.
-6. Send via fresh chat with direct attachments and Thinking 5.4.
-7. Start the watcher instead of waiting in place.
+5. If source items have image evidence, attach the real image files together with the compact package so ChatGPT can inspect them directly; keep the per-item text in a compact bundle when needed to stay within the fresh-chat attachment budget.
+6. Partition mixed-item batches at **20-40 items** (default target = 30) and carry `partition_index`, `partition_count`, and `partial_failure.failed_item_ids` metadata so failed subsets can be repartitioned without rerunning the full package.
+7. Send via fresh chat with direct attachments and Thinking 5.4.
+8. Start the watcher instead of waiting in place.
 8. Capture JSON only and validate against the runtime schema.
 9. After capture, compact runtime outputs with `python3 scripts/stage3/compact_runtime_outputs.py <run_dir>` and keep only manifest/result/summary/card/proof-index as hot artifacts.
 10. Route malformed, partial, or high-ambiguity batches to Stage3 adjudication / exception review.
@@ -70,8 +73,10 @@ Use this skill when 주인님 wants an external **ChatGPT web flow**. Default mo
 - Retry/escalate stale or failed-apply events: `python3 scripts/escalate_unreported_watch_events.py --older-than-seconds 90`.
 
 ## Browser scripts
-- sender: `python3 scripts/send_chatgpt_new_chat_prompt.py --prompt-file <prompt.txt> [--attach-list-file <paths.txt>] --headful --screenshot <png>`
-- watcher: `python3 scripts/watch_chatgpt_response.py --url '<chat-url>' --poll-seconds 15 --timeout-seconds 900 --headful --delete-after --output-json <result.json> --record-unreported-queue --task-id <ticket> --event-id <stable-id> --callback-token <token> --screenshot <png>`
+- common wrapper: `python3 skills/web-review/scripts/ask_chatgpt.py --prompt-file <prompt.txt> [--attach-list-file <paths.txt>] --watch --require-json --headful --send-output-json <send.json> --watch-output-json <watch.json> --output-json <combined.json> --screenshot-base <prefix>` (default sender mode = project / 시스템트레이딩 프로젝트 내부)
+- sender core: `python3 skills/web-review/scripts/send_chatgpt_new_chat_prompt.py --prompt-file <prompt.txt> [--attach-list-file <paths.txt>] --headful --screenshot <png>`
+- project sender core: `python3 skills/web-review/scripts/send_chatgpt_project_prompt.py --prompt-file <prompt.txt> --headful --screenshot <png>`
+- watcher core: `python3 skills/web-review/scripts/watch_chatgpt_response.py --url '<chat-url>' --poll-seconds 15 --timeout-seconds 900 --headful --delete-after --output-json <result.json> --record-unreported-queue --task-id <ticket> --event-id <stable-id> --callback-token <token> --screenshot <png>`
 - cold raw debug opt-in only: append `--debug-save-raw` when a forensic copy is required; raw text will be written under `runtime/watch/raw/` instead of the hot watcher JSON.
 
 ## Human-facing overview docs

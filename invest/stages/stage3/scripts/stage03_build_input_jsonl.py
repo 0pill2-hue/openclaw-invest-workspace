@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Stage3 입력(JSONL) 생성기
+Stage3 external-primary support 입력(JSONL) 생성기
+- 이 스크립트는 Stage3 canonical scoring writer가 아니다.
 - Stage2 clean의 qualitative/signal 입력(DART/RSS/macro + telegram/blog/premium/selected_articles)을 읽어
-  Stage3 입력 포맷으로 정규화한다.
-- Telegram PDF는 Stage2 clean `text/telegram` 본문에 inline 승격된 상태를 그대로 Stage3에 인입한다.
+  external-primary package 준비용 support corpus를 정규화한다.
+- Telegram PDF는 Stage2 clean `text/telegram` 본문에 inline 승격된 상태를 그대로 Stage3 support 입력에 인입한다.
 - 중복/재전파(동일 본문 fingerprint) 문서는 제거한다.
 - 출력이 0건이어도 입력 파일은 생성한다(체인 경로 고정 목적).
 """
@@ -1045,7 +1046,7 @@ def _build_from_market_selected_articles(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Build Stage3 input JSONL from Stage2 clean artifacts")
+    p = argparse.ArgumentParser(description="Build Stage3 external-primary support input JSONL from Stage2 clean artifacts")
     p.add_argument("--out-jsonl", default=str(OUT_JSONL_DEFAULT))
     p.add_argument("--summary-json", default=str(OUT_SUMMARY_DEFAULT))
     p.add_argument("--text-lookback-days", type=int, default=0)
@@ -1171,7 +1172,7 @@ def main() -> int:
 
     summary_json.parent.mkdir(parents=True, exist_ok=True)
     summary = {
-        "stage": "stage3_input_build",
+        "stage": "stage3_external_primary_support_input_build",
         "semantic_schema_version": SEMANTIC_SCHEMA_VERSION,
         "semantic_fields": [
             "target_levels",
@@ -1229,9 +1230,9 @@ def main() -> int:
     summary_json.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    manifest_path = STAGE_ROOT / "outputs" / f"manifest_stage3_input_build_{ts}.json"
+    manifest_path = STAGE_ROOT / "outputs" / f"manifest_stage3_external_primary_support_input_build_{ts}.json"
     write_run_manifest(
-        run_type="stage3_input_build",
+        run_type="stage3_external_primary_support_input_build",
         params={
             "text_lookback_days": args.text_lookback_days,
             "telegram_max_files": args.telegram_max_files,

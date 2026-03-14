@@ -34,6 +34,7 @@ DAILY_UPDATE_STATUS_PATH = RUNTIME_ROOT / "daily_update_status.json"
 POST_COLLECTION_VALIDATE_PATH = RUNTIME_ROOT / "post_collection_validate.json"
 TELEGRAM_COLLECTOR_STATUS_PATH = RUNTIME_ROOT / "telegram_collector_status.json"
 TELEGRAM_ATTACHMENT_BACKFILL_STATUS_PATH = RUNTIME_ROOT / "telegram_attachment_extract_backfill_status.json"
+TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH = RUNTIME_ROOT / "stage1_attachment_recovery_summary.json"
 TELEGRAM_ATTACHMENT_STATS_PATH = RUNTIME_ROOT / "telegram_attachment_extract_stats_latest.json"
 US_OHLCV_STATUS_PATH = RUNTIME_ROOT / "us_ohlcv_status.json"
 NEWS_URL_INDEX_STATUS_PATH = RUNTIME_ROOT / "news_url_index_status.json"
@@ -545,6 +546,10 @@ def _telegram_attachment_scope() -> dict[str, Any]:
             if grade:
                 quality_grades[grade] += 1
 
+    recovery_summary = _load_json(TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH) if TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH.exists() else None
+    recovery_completeness = recovery_summary.get("completeness") if isinstance(recovery_summary, dict) and isinstance(recovery_summary.get("completeness"), dict) else None
+    recovery_lane = recovery_summary.get("recovery_lane") if isinstance(recovery_summary, dict) and isinstance(recovery_summary.get("recovery_lane"), dict) else None
+    retry_visibility = recovery_summary.get("retry_visibility") if isinstance(recovery_summary, dict) and isinstance(recovery_summary.get("retry_visibility"), dict) else None
     return {
         "artifact_root": _rel(TELEGRAM_ATTACHMENT_DIR),
         "artifact_root_exists": TELEGRAM_ATTACHMENT_DIR.exists(),
@@ -572,10 +577,17 @@ def _telegram_attachment_scope() -> dict[str, Any]:
         "latest_pdf_mtime_utc": datetime.fromtimestamp(latest_pdf, tz=timezone.utc).isoformat() if latest_pdf else None,
         "backfill_status_path": _rel(TELEGRAM_ATTACHMENT_BACKFILL_STATUS_PATH),
         "backfill_status": _load_json(TELEGRAM_ATTACHMENT_BACKFILL_STATUS_PATH) if TELEGRAM_ATTACHMENT_BACKFILL_STATUS_PATH.exists() else None,
+        "recovery_summary_path": _rel(TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH),
+        "recovery_summary": recovery_summary,
+        "stage_status": recovery_summary.get("stage_status") if isinstance(recovery_summary, dict) else None,
+        "completeness_status": recovery_summary.get("completeness_status") if isinstance(recovery_summary, dict) else None,
+        "completeness": recovery_completeness,
+        "recovery_lane": recovery_lane,
+        "retry_visibility": retry_visibility,
         "extract_stats_path": _rel(TELEGRAM_ATTACHMENT_STATS_PATH),
         "extract_stats": _load_json(TELEGRAM_ATTACHMENT_STATS_PATH) if TELEGRAM_ATTACHMENT_STATS_PATH.exists() else None,
         "auto_backfills_legacy_logs": True,
-        "note": "telegram attachment PDF cache is canonical Stage1 data. PDF는 bucketed flat artifact(meta/original/extracted/page_text/page_render/bundle)로 관리하고 채널/월별 집계를 같은 catalog에 남긴다.",
+        "note": "telegram attachment PDF cache is canonical Stage1 data. PDF는 bucketed flat artifact(meta/original/extracted/page_text/page_render/bundle)로 관리하고, compact recovery summary(stage1_attachment_recovery_summary.json)에서 completeness/stage status와 retry visibility를 함께 본다.",
     }
 
 
@@ -805,6 +817,7 @@ def _runtime_health() -> dict[str, Any]:
     daily = _load_json(DAILY_UPDATE_STATUS_PATH) or {}
     validate = _load_json(POST_COLLECTION_VALIDATE_PATH) or {}
     telegram = _load_json(TELEGRAM_COLLECTOR_STATUS_PATH)
+    telegram_attachment_recovery = _load_json(TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH)
     news_url_status = _load_json(NEWS_URL_INDEX_STATUS_PATH)
     news_selected_status = _load_json(NEWS_SELECTED_STATUS_PATH)
 
@@ -837,6 +850,11 @@ def _runtime_health() -> dict[str, Any]:
             "expected_path": _rel(TELEGRAM_COLLECTOR_STATUS_PATH),
             "exists": TELEGRAM_COLLECTOR_STATUS_PATH.exists(),
             "payload": telegram if isinstance(telegram, dict) else None,
+        },
+        "telegram_attachment_recovery": {
+            "expected_path": _rel(TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH),
+            "exists": TELEGRAM_ATTACHMENT_RECOVERY_SUMMARY_PATH.exists(),
+            "payload": telegram_attachment_recovery if isinstance(telegram_attachment_recovery, dict) else None,
         },
         "us_ohlcv_status": {
             "expected_path": _rel(US_OHLCV_STATUS_PATH),

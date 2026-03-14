@@ -1,0 +1,20 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "JB-20260313-GITIGNORE-AUDIT-AND-PUSH",
+  "status": "DONE",
+  "objective": "지금까지 작업분을 정리해 git add/commit/push 하고, 아직 tracked/untracked/generated 중 gitignore 누락이 더 있는지 찾아 반영",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/JB-20260313-GITIGNORE-AUDIT-AND-PUSH.md;.gitignore;git:commit_push_pending",
+  "touched_paths": [
+    "runtime/tasks/JB-20260313-GITIGNORE-AUDIT-AND-PUSH.md;.gitignore;git:commit_push_pending"
+  ],
+  "decisive_proof": "runtime/tasks/JB-20260313-GITIGNORE-AUDIT-AND-PUSH.md;.gitignore;git:commit_push_pending",
+  "proof_excerpt": "runtime/tasks/JB-20260313-GITIGNORE-AUDIT-AND-PUSH.md;.gitignore;git:commit_push_pending",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=JB-20260313-GITIGNORE-AUDIT-AND-PUSH",
+  "timestamps": {
+    "created_at": "2026-03-13 17:52:16",
+    "updated_at": "2026-03-13 17:52:16",
+    "closed_at": "2026-03-13 17:54:43"
+  },
+  "closed_by": ""
+}

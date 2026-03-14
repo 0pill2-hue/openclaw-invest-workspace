@@ -1,0 +1,20 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "JB-20260313-CHATGPT-PROJECT-CHAT-ROLLING",
+  "status": "DONE",
+  "objective": "시스템트레이딩 모델개발 프로젝트 내부 채팅을 최대 5개만 유지하고 6번째부터 자동 삭제하도록 sender 흐름에 반영",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/JB-20260313-CHATGPT-PROJECT-CHAT-ROLLING.md;runtime/tmp/chatgpt-project-rolling-delete-test-headful.json;runtime/tmp/chatgpt-project-rolling-delete-test-headful.png",
+  "touched_paths": [
+    "runtime/tasks/JB-20260313-CHATGPT-PROJECT-CHAT-ROLLING.md;runtime/tmp/chatgpt-project-rolling-delete-test-headful.json;runtime/tmp/chatgpt-project-rolling-delete-test-headful.png"
+  ],
+  "decisive_proof": "runtime/tasks/JB-20260313-CHATGPT-PROJECT-CHAT-ROLLING.md;runtime/tmp/chatgpt-project-rolling-delete-test-headful.json;runtime/tmp/chatgpt-project-rolling-delete-test-headful.png",
+  "proof_excerpt": "runtime/tasks/JB-20260313-CHATGPT-PROJECT-CHAT-ROLLING.md;runtime/tmp/chatgpt-project-rolling-delete-test-headful.json;runtime/tmp/chatgpt-project-rolling-delete-test-headful.png",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=JB-20260313-CHATGPT-PROJECT-CHAT-ROLLING",
+  "timestamps": {
+    "created_at": "2026-03-13 21:12:52",
+    "updated_at": "2026-03-13 21:31:35",
+    "closed_at": "2026-03-13 21:52:59"
+  },
+  "closed_by": "owner"
+}

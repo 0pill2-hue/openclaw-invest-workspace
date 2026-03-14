@@ -97,7 +97,7 @@
       "additionalProperties": false,
       "required": [
         "expected_item_count",
-        "received_item_count",
+        "returned_item_count",
         "item_type_counts",
         "source_family_counts",
         "attachment_integrity"
@@ -105,11 +105,8 @@
       "properties": {
         "expected_item_count": {
           "type": "integer",
-          "minimum": 1
-        },
-        "received_item_count": {
-          "type": "integer",
-          "minimum": 0
+          "minimum": 1,
+          "description": "Must equal the batch expected item count from the attached package."
         },
         "item_type_counts": {
           "type": "object",
@@ -132,6 +129,11 @@
             "partial",
             "fail"
           ]
+        },
+        "returned_item_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of item rows actually returned in `items`."
         }
       }
     },
@@ -474,7 +476,8 @@
             "ambiguous",
             "insufficient_context",
             "skipped"
-          ]
+          ],
+          "description": "Reviewability / scoring outcome only. Do not use this field as preservation routing."
         },
         "preservation_decision": {
           "type": "string",
@@ -484,7 +487,8 @@
             "merge_candidate",
             "needs_adjudication",
             "skipped"
-          ]
+          ],
+          "description": "Preservation / merge / adjudication routing only. Do not use this field as scoring outcome."
         },
         "primary_claim": {
           "type": "string"
@@ -536,7 +540,57 @@
         "timing": {
           "$ref": "#/$defs/timing"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "skipped"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "preservation_decision": {
+                "const": "skipped"
+              }
+            },
+            "required": [
+              "preservation_decision"
+            ]
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "preservation_decision": {
+                "const": "skipped"
+              }
+            },
+            "required": [
+              "preservation_decision"
+            ]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "skipped"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        }
+      ]
     },
     "summary": {
       "type": "object",

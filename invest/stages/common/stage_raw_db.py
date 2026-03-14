@@ -3,10 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -21,6 +22,7 @@ DEFAULT_RAW_ROOT = STAGE1_OUTPUTS_DIR / 'raw'
 DEFAULT_DB_DIR = STAGE1_OUTPUTS_DIR / 'db'
 DEFAULT_DB_PATH = DEFAULT_DB_DIR / 'stage1_raw_archive.sqlite3'
 SCHEMA_VERSION = 4
+STAGE2_COMPACT_MATERIALIZATION_PROFILE = 'stage2_compact_v1'
 
 
 @dataclass(frozen=True)
@@ -481,6 +483,7 @@ def materialize_snapshot_from_db(
     db_path: str | os.PathLike[str] | None = None,
     snapshot_root: str | os.PathLike[str],
     prefixes: Sequence[str] | None = None,
+    materialization_profile: str = '',
 ) -> dict:
     snapshot_root_path = Path(snapshot_root)
     raw_out_root = snapshot_root_path / 'raw'
@@ -488,12 +491,18 @@ def materialize_snapshot_from_db(
 
     file_count = 0
     total_bytes = 0
+    skipped_file_count = 0
+    skipped_total_bytes = 0
     with connect_raw_db(db_path, readonly=True) as conn:
         sync_id = get_meta(conn, 'last_sync_id', '')
         for row in iter_active_rows(conn, prefixes=prefixes):
             rel_path = str(row['rel_path'])
-            content = bytes(row['content'])
             size_bytes = int(row['size_bytes'])
+            if materialization_profile == STAGE2_COMPACT_MATERIALIZATION_PROFILE and _stage2_generated_residue_rel_path(rel_path):
+                skipped_file_count += 1
+                skipped_total_bytes += size_bytes
+                continue
+            content = bytes(row['content'])
             mtime_ns = int(row['mtime_ns'])
             target = raw_out_root / Path(rel_path)
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -508,6 +517,9 @@ def materialize_snapshot_from_db(
             'sync_id': sync_id,
             'file_count': file_count,
             'total_bytes': total_bytes,
+            'skipped_file_count': skipped_file_count,
+            'skipped_total_bytes': skipped_total_bytes,
+            'materialization_profile': materialization_profile or 'full',
             'prefixes': [p.strip('/').replace('\\', '/') for p in (prefixes or []) if p],
         }
         (snapshot_root_path / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -522,6 +534,58 @@ def _safe_symlink_replace(target: Path, link_path: Path) -> None:
 
 def _normalize_prefixes(prefixes: Sequence[str] | None = None) -> list[str]:
     return [p.strip('/').replace('\\', '/') for p in (prefixes or []) if p]
+
+
+def _stage2_generated_residue_rel_path(rel_path: str) -> bool:
+    rel = str(rel_path or '').strip('/').replace('\\', '/')
+    if not rel.startswith('qualitative/attachments/telegram/'):
+        return False
+    name = Path(rel).name.lower()
+    if name.endswith('__bundle.zip'):
+        return True
+    if '__page_' in name and name.endswith('.png'):
+        return True
+    return False
+
+
+def _parse_iso_datetime(raw: str) -> datetime | None:
+    s = str(raw or '').strip()
+    if not s:
+        return None
+    try:
+        return datetime.fromisoformat(s.replace('Z', '+00:00')).astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _env_int(name: str, default: int, *, minimum: int = 0) -> int:
+    raw = str(os.environ.get(name, '')).strip()
+    if not raw:
+        return max(minimum, default)
+    try:
+        value = int(raw)
+    except Exception:
+        return max(minimum, default)
+    return max(minimum, value)
+
+
+def _snapshot_sort_dt(snapshot_root: Path) -> datetime:
+    meta_dt = _parse_iso_datetime(str(_read_snapshot_meta(snapshot_root).get('materialized_at') or ''))
+    if meta_dt is not None:
+        return meta_dt
+    stem = snapshot_root.name.lstrip('.').split('__', 1)[0]
+    try:
+        return datetime.strptime(stem, '%Y%m%dT%H%M%SZ').replace(tzinfo=timezone.utc)
+    except Exception:
+        return datetime.fromtimestamp(0, tz=timezone.utc)
+
+
+def _delete_tree(path: Path) -> None:
+    if path.is_symlink() or path.is_file():
+        path.unlink(missing_ok=True)
+        return
+    if path.exists():
+        shutil.rmtree(path)
 
 
 def _read_snapshot_meta(snapshot_root: Path) -> dict:
@@ -553,6 +617,7 @@ def _snapshot_is_complete(
     *,
     expected_sync_id: str = '',
     prefixes: Sequence[str] | None = None,
+    materialization_profile: str = '',
 ) -> bool:
     if not snapshot_root.exists() or not snapshot_root.is_dir():
         return False
@@ -565,6 +630,9 @@ def _snapshot_is_complete(
         return False
     expected_prefixes = _normalize_prefixes(prefixes)
     if expected_prefixes and list(meta.get('prefixes') or []) != expected_prefixes:
+        return False
+    expected_profile = str(materialization_profile or '').strip()
+    if expected_profile and str(meta.get('materialization_profile') or '').strip() != expected_profile:
         return False
     return True
 
@@ -586,10 +654,16 @@ def _materialize_snapshot_atomically(
     snapshot_root: Path,
     expected_sync_id: str,
     prefixes: Sequence[str] | None = None,
+    materialization_profile: str = '',
 ) -> dict:
     timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
     staging_root = snapshot_root.parent / f'.{snapshot_root.name}__building__{timestamp}__pid{os.getpid()}'
-    meta = materialize_snapshot_from_db(db_path=db_path, snapshot_root=staging_root, prefixes=prefixes)
+    meta = materialize_snapshot_from_db(
+        db_path=db_path,
+        snapshot_root=staging_root,
+        prefixes=prefixes,
+        materialization_profile=materialization_profile,
+    )
     actual_sync_id = str(meta.get('sync_id', '')).strip()
     if expected_sync_id and actual_sync_id != expected_sync_id:
         preserved = _preserve_snapshot(staging_root, reason=f'unexpected_sync_{actual_sync_id or "missing"}')
@@ -600,6 +674,77 @@ def _materialize_snapshot_atomically(
         _preserve_snapshot(snapshot_root, reason='invalid')
     staging_root.rename(snapshot_root)
     return meta
+
+
+def _prune_stage2_mirror_snapshots(
+    *,
+    mirror_root_path: Path,
+    current_snapshot: Path,
+    prefixes: Sequence[str] | None = None,
+    materialization_profile: str = '',
+) -> dict:
+    snapshots_root = mirror_root_path / 'snapshots'
+    snapshots_root.mkdir(parents=True, exist_ok=True)
+    keep_latest = _env_int('STAGE2_DB_MIRROR_KEEP_LATEST', 2, minimum=1)
+    stale_incomplete_after = timedelta(hours=_env_int('STAGE2_DB_MIRROR_INCOMPLETE_MAX_AGE_HOURS', 12, minimum=1))
+    now = datetime.now(timezone.utc)
+
+    complete: list[tuple[datetime, Path]] = []
+    removed: list[dict] = []
+    current_resolved = current_snapshot.resolve() if current_snapshot.exists() else current_snapshot
+
+    for path in sorted(snapshots_root.iterdir()):
+        if not path.is_dir():
+            continue
+        is_current = False
+        try:
+            is_current = path.resolve() == current_resolved
+        except Exception:
+            is_current = False
+        is_complete = _snapshot_is_complete(
+            path,
+            prefixes=prefixes,
+            materialization_profile=materialization_profile,
+        )
+        sort_dt = _snapshot_sort_dt(path)
+        if is_complete:
+            complete.append((sort_dt, path))
+            continue
+        if is_current:
+            continue
+        if now - sort_dt >= stale_incomplete_after:
+            _delete_tree(path)
+            removed.append({'path': str(path), 'reason': 'stale_incomplete_or_legacy_snapshot'})
+
+    complete.sort(key=lambda item: item[0], reverse=True)
+    keep_paths = set()
+    for _, path in complete[:keep_latest]:
+        try:
+            keep_paths.add(path.resolve())
+        except Exception:
+            keep_paths.add(path)
+    keep_paths.add(current_resolved)
+
+    for _, path in complete:
+        try:
+            resolved = path.resolve()
+        except Exception:
+            resolved = path
+        if resolved in keep_paths:
+            continue
+        _delete_tree(path)
+        removed.append({'path': str(path), 'reason': 'overflow_complete_snapshot'})
+
+    status = {
+        'generated_at': _utc_now_iso(),
+        'materialization_profile': materialization_profile or 'full',
+        'keep_latest': keep_latest,
+        'stale_incomplete_max_age_hours': int(stale_incomplete_after.total_seconds() // 3600),
+        'current_snapshot': str(current_snapshot),
+        'removed': removed,
+    }
+    (mirror_root_path / 'retention_status.json').write_text(json.dumps(status, ensure_ascii=False, indent=2), encoding='utf-8')
+    return status
 
 
 def prepare_stage2_raw_input_root(
@@ -617,6 +762,7 @@ def prepare_stage2_raw_input_root(
     current_link = mirror_root_path / 'current'
     lock_path = mirror_root_path / '.prepare.lock'
     normalized_prefixes = _normalize_prefixes(prefixes)
+    materialization_profile = STAGE2_COMPACT_MATERIALIZATION_PROFILE
 
     with _advisory_lock(lock_path):
         with connect_raw_db(db_file, readonly=True) as conn:
@@ -625,17 +771,30 @@ def prepare_stage2_raw_input_root(
                 return ''
 
         snapshot_root = mirror_root_path / 'snapshots' / sync_id
-        if not _snapshot_is_complete(snapshot_root, expected_sync_id=sync_id, prefixes=normalized_prefixes):
+        if not _snapshot_is_complete(
+            snapshot_root,
+            expected_sync_id=sync_id,
+            prefixes=normalized_prefixes,
+            materialization_profile=materialization_profile,
+        ):
             _materialize_snapshot_atomically(
                 db_path=db_file,
                 snapshot_root=snapshot_root,
                 expected_sync_id=sync_id,
                 prefixes=normalized_prefixes,
+                materialization_profile=materialization_profile,
             )
 
         if not current_link.is_symlink() or os.readlink(current_link) != str(snapshot_root):
             current_link.parent.mkdir(parents=True, exist_ok=True)
             _safe_symlink_replace(snapshot_root, current_link)
+
+        _prune_stage2_mirror_snapshots(
+            mirror_root_path=mirror_root_path,
+            current_snapshot=snapshot_root,
+            prefixes=normalized_prefixes,
+            materialization_profile=materialization_profile,
+        )
 
     return str(current_link / 'raw')
 

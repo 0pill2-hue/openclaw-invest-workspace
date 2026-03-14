@@ -1,0 +1,20 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "JB-20260313-WEB-REVIEW-CLOUDFLARE-FALLBACK",
+  "status": "DONE",
+  "objective": "Cloudflare 사람확인 발생 시 headful fallback 운영 규칙을 web-review skill canonical 문서에 반영",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/JB-20260313-WEB-REVIEW-CLOUDFLARE-FALLBACK.md;skills/web-review/SKILL.md;docs/operations/skills/web-review.md",
+  "touched_paths": [
+    "runtime/tasks/JB-20260313-WEB-REVIEW-CLOUDFLARE-FALLBACK.md;skills/web-review/SKILL.md;docs/operations/skills/web-review.md"
+  ],
+  "decisive_proof": "runtime/tasks/JB-20260313-WEB-REVIEW-CLOUDFLARE-FALLBACK.md;skills/web-review/SKILL.md;docs/operations/skills/web-review.md",
+  "proof_excerpt": "runtime/tasks/JB-20260313-WEB-REVIEW-CLOUDFLARE-FALLBACK.md;skills/web-review/SKILL.md;docs/operations/skills/web-review.md",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=JB-20260313-WEB-REVIEW-CLOUDFLARE-FALLBACK",
+  "timestamps": {
+    "created_at": "2026-03-13 21:51:33",
+    "updated_at": "2026-03-13 21:51:33",
+    "closed_at": "2026-03-13 21:52:59"
+  },
+  "closed_by": "owner"
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "JB-20260314-WEBREVIEW-WRAPPER-ENTRYPOINT",
+  "status": "DONE",
+  "objective": "기존 Playwright/send/watch 코어 유지, 프로젝트 내부 공통 래퍼 추가, Stage3/web-review 호출 경로 최소 연동, 실행 테스트와 증빙 남기기",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/proofs/JB-20260313-STAGE3-IMAGE-AUTOMATION/project_wrapper_live_check_fixed_combined.json",
+  "touched_paths": [
+    "runtime/tasks/proofs/JB-20260313-STAGE3-IMAGE-AUTOMATION/project_wrapper_live_check_fixed_combined.json"
+  ],
+  "decisive_proof": "runtime/tasks/proofs/JB-20260313-STAGE3-IMAGE-AUTOMATION/project_wrapper_live_check_fixed_combined.json",
+  "proof_excerpt": "runtime/tasks/proofs/JB-20260313-STAGE3-IMAGE-AUTOMATION/project_wrapper_live_check_fixed_combined.json",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=JB-20260314-WEBREVIEW-WRAPPER-ENTRYPOINT",
+  "timestamps": {
+    "created_at": "2026-03-14 08:42:22",
+    "updated_at": "2026-03-14 09:59:14",
+    "closed_at": "2026-03-14 10:07:40"
+  },
+  "closed_by": "owner"
+}

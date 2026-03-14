@@ -95,6 +95,9 @@ contract source: `docs/invest/stage2/STAGE2_RULEBOOK_AND_REPRO.md`
   - `__meta__.link_enrichment_enabled`
   - `__meta__.live_link_fetch_enabled`
   - `__meta__.input_source`
+  - `__meta__.input_source_status`
+  - `__meta__.fallback_reason`
+  - `__meta__.fallback_scope`
   - `entries`
 - entry key: `"<folder>/<rel_path>"`
 - signature material
@@ -107,11 +110,22 @@ contract source: `docs/invest/stage2/STAGE2_RULEBOOK_AND_REPRO.md`
 - files
   - `outputs/reports/qc/FULL_REFINE_REPORT_<ts>.md`
   - `outputs/reports/qc/FULL_REFINE_REPORT_<ts>.json`
+  - `outputs/runtime/stage2_integrity_summary.json`
 - JSON keys
   - `generated_at`, `stage2_rule_version`, `run_mode`, `processed_index_policy`
-  - `incremental_signature`, `config_provenance`, `clean_base`, `quarantine_base`
+  - `incremental_signature`, `config_provenance`
+  - `input_source`, `input_source_status`, `fallback_reason`, `fallback_scope`, `input_source_policy`
+  - `origin_of_degradation`, `stage3_ready_status`
+  - `pdf_status_buckets`, `bounded_stop_visibility`, `legacy_join_visibility`, `handoff_completeness`
+  - `clean_base`, `quarantine_base`
   - `writer_policy`, `output_policy`, `quality_gate`, `results`, `totals`
   - `link_enrichment`, `telegram_pdf`, `reason_taxonomy`, `corpus_dedup`
+- `stage2_integrity_summary.json` 필수 key
+  - `input_source_status`
+  - `total_records_seen`, `total_records_clean`, `total_records_quarantine`
+  - `pdf_docs_seen`, `pdf_promoted_docs`, `pdf_bounded_docs`, `pdf_missing_docs`, `pdf_placeholder_only_docs`
+  - `lineage_unresolved_docs`
+  - `stage3_ready_status`
 
 ### QC
 - files
@@ -122,7 +136,28 @@ contract source: `docs/invest/stage2/STAGE2_RULEBOOK_AND_REPRO.md`
   - `anomaly_taxonomy`, `config_provenance`, `groups`, `totals`
   - `validation`, `anomalies`, `hard_failures`, `report_only_anomalies`
 
-## 6) 실행 옵션 (current)
+## 6) retention / residue policy (current)
+| class | path | current role | retention |
+| --- | --- | --- | --- |
+| hot | `outputs/clean/production/**` | downstream canonical clean corpus | current 10y rolling corpus 유지 |
+| hot | `outputs/quarantine/production/**` | quarantine evidence corpus | current 10y rolling corpus 유지 |
+| hot | `outputs/runtime/upstream_stage1_db_mirror/current/raw/**` | Stage1 raw DB의 stage-local compact mirror | current snapshot 1개 + fallback latest 1개 |
+| warm | `outputs/reports/qc/*` | refine/QC run report | 운영 증빙용, compact JSON/MD만 유지 |
+| warm | `outputs/logs/runtime/*` | launchd/runtime log | 저용량 관찰 로그, 필요 시만 확장 |
+| cold-delete-first | `outputs/runtime/upstream_stage1_db_mirror/snapshots/*` (non-current) | historical mirror copies | keep latest only, overflow snapshot 제거 |
+| cold-delete-first | `outputs/runtime/upstream_stage1_db_mirror/snapshots/.*__building__*` | interrupted/incomplete staging residue | stale > 12h cleanup |
+| cold-delete-first | mirror 내 `qualitative/attachments/telegram/**/*__page_*.png` | human-review render residue | compact mirror materialization에서 제외 |
+| cold-delete-first | mirror 내 `qualitative/attachments/telegram/**/*__bundle.zip` | convenience bundle residue | compact mirror materialization에서 제외 |
+
+### current implementation note
+- `prepare_stage2_raw_input_root()`는 `stage2_compact_v1` profile로 snapshot을 materialize한다.
+- compact profile은 Telegram attachment mirror에서 Stage2 refine에 필요 없는 `__page_*.png`, `__bundle.zip`을 제외한다.
+- snapshot retention env:
+  - `STAGE2_DB_MIRROR_KEEP_LATEST` (default `2`)
+  - `STAGE2_DB_MIRROR_INCOMPLETE_MAX_AGE_HOURS` (default `12`)
+- prune audit trail: `invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/retention_status.json`
+
+## 7) 실행 옵션 (current)
 ```bash
 # incremental refine
 python3 invest/stages/stage2/scripts/stage02_onepass_refine_full.py

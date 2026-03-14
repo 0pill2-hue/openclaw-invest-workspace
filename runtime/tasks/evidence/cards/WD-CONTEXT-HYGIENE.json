@@ -1,0 +1,20 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "WD-CONTEXT-HYGIENE",
+  "status": "DONE",
+  "objective": "context threshold 초과/current-task mismatch/context-handoff 검증 시 메인을 깨워 현재 step 완료 후 reset·재개까지 정리",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/evidence/cards/WD-CONTEXT-HYGIENE.json",
+  "touched_paths": [
+    "runtime/tasks/evidence/cards/WD-CONTEXT-HYGIENE.json"
+  ],
+  "decisive_proof": "runtime/tasks/evidence/cards/WD-CONTEXT-HYGIENE.json",
+  "proof_excerpt": "runtime/tasks/evidence/cards/WD-CONTEXT-HYGIENE.json",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=WD-CONTEXT-HYGIENE",
+  "timestamps": {
+    "created_at": "2026-03-10 23:41:13",
+    "updated_at": "2026-03-14 16:25:51",
+    "closed_at": "2026-03-14 16:26:38"
+  },
+  "closed_by": "owner"
+}

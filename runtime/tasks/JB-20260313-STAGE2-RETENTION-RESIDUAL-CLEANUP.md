@@ -1,0 +1,89 @@
+# JB-20260313-STAGE2-RETENTION-RESIDUAL-CLEANUP
+
+- ticket: JB-20260313-STAGE2-RETENTION-RESIDUAL-CLEANUP
+- status: DONE
+- checked_at: 2026-03-13 17:58 KST
+
+## landed
+- Stage2 `outputs/` 실측 집계와 hot/warm/cold 분류를 정리했다.
+  - actual top-level paths:
+    - `invest/stages/stage2/outputs/clean/production` → hot / canonical clean corpus / `1,770,316 KB`, `83,575 files`
+    - `invest/stages/stage2/outputs/quarantine/production` → hot / canonical quarantine corpus / `1,701,424 KB`, `9,514 files`
+    - `invest/stages/stage2/outputs/reports/qc` → warm / compact audit reports / `11,996 KB`, `45 files`
+    - `invest/stages/stage2/outputs/logs/runtime` → warm / low-volume runtime logs / `72 KB`, `5 files`
+    - `invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/current/raw/**` → hot / Stage2 local raw view of Stage1 DB 10y rolling corpus
+    - `invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/snapshots/*` → cold-delete-first / historical mirror copies
+    - `invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/snapshots/.*__building__*` + `.prepare.lock` → tmp/generated residue
+  - note: Stage2 자체 `outputs/db`, `outputs/generated`, `outputs/tmp` canonical dir는 현재 없고, 대응 범주는 `runtime/upstream_stage1_db_mirror/**` 안의 compact mirror / snapshot / building residue로 매핑된다.
+- Stage2 DB retention 방향을 “authoritative 10년 rolling은 Stage1 raw DB가 유지하고, Stage2는 그 10년 corpus의 compact current mirror만 보유”로 고정했다.
+- 주요 누적 원인을 식별했다.
+  - sample snapshot `snapshots/20260310T004644Z` = `10,204,920 KB`
+  - 그 중 `raw/qualitative/attachments/telegram` = `7,155,588 KB`
+  - attachment residue breakdown:
+    - `__page_*.png` = `5,751 files`, `2,255,957,335 bytes` → cold/delete-first
+    - `__bundle.zip` = `600 files`, `3,018,500,708 bytes` → cold/delete-first
+    - `__page_*.txt` = `5,576 files`, `11,640,837 bytes` → warm/fallback text evidence
+    - `__meta.json` = `63,734 files`, `58,594,632 bytes` → hot metadata
+    - `__pdf_manifest.json` = `30,464 files`, `25,351,459 bytes` → hot/warm structured fallback
+- 최소 구현 반영:
+  - `invest/stages/common/stage_raw_db.py`
+    - `stage2_compact_v1` materialization profile 추가
+    - Stage2 mirror materialize 시 `qualitative/attachments/telegram/**/__page_*.png`, `**/__bundle.zip` 제외
+    - snapshot completeness를 materialization profile까지 검사하도록 강화
+    - Stage2 mirror retention 자동화 추가:
+      - `STAGE2_DB_MIRROR_KEEP_LATEST` default `2`
+      - `STAGE2_DB_MIRROR_INCOMPLETE_MAX_AGE_HOURS` default `12`
+      - current snapshot 외 overflow complete snapshot 제거
+      - stale incomplete / legacy snapshot residue 제거
+      - prune audit trail: `invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/retention_status.json`
+- 문서 반영:
+  - `docs/invest/stage2/STAGE2_IMPLEMENTATION_CURRENT_SPEC.md`
+    - hot/warm/cold retention table 추가
+    - compact mirror / env / retention status path 명시
+  - `docs/invest/stage1/stage01_data_collection.md`
+    - Stage2 compact mirror가 review-only residue(`__page_*.png`, `__bundle.zip`)를 복제하지 않음을 명시
+    - authoritative source는 Stage1 raw DB/원본 raw path임을 명시
+- TTL/policy proposal 정리:
+  - DB 10년 rolling: authoritative는 Stage1 raw DB SSOT 유지, Stage2는 sync_id 기준 compact current mirror 유지
+  - raw hot: `current/raw/**`, `clean/**`, `quarantine/**`
+  - derived/generated cold: non-current snapshots, render png, bundle zip
+  - warm: reports/logs, manifest/page-text fallback
+
+## remaining
+- `outputs/reports/qc` / `outputs/logs/runtime` 자동 prune는 아직 코드화하지 않았다.
+  - 이유: 현재 실측이 각각 `11,996 KB`, `72 KB`로 저위험이라 이번 티켓에서는 blast radius 큰 runtime mirror 중복 제거를 우선했다.
+  - follow-up 방향: 필요 시 latest-N + age TTL(`reports 30~60d`, `logs 14~30d`) 스크립트 추가.
+- attachment legacy shadow(`.../msg_<id>/meta.json`, legacy pdf copies`)는 historical fallback 역할이 남아 있어 이번 티켓에서는 미삭제. 추후 “bucketed canonical exists → legacy shadow elide” 규칙을 별도 티켓으로 분리하는 것이 안전하다.
+
+## proof
+- inventory / size evidence
+  - `du -sk invest/stages/stage2/outputs/logs` → `72`
+  - `du -sk invest/stages/stage2/outputs/reports` → `11996`
+  - `du -sk invest/stages/stage2/outputs/clean` → `1770316`
+  - `du -sk invest/stages/stage2/outputs/quarantine` → `1701424`
+  - `find invest/stages/stage2/outputs/clean -type f | wc -l` → `83575`
+  - `find invest/stages/stage2/outputs/quarantine -type f | wc -l` → `9514`
+  - `find invest/stages/stage2/outputs/reports -type f | wc -l` → `45`
+  - `find invest/stages/stage2/outputs/logs -type f | wc -l` → `5`
+- snapshot accumulation evidence
+  - `find invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/snapshots -mindepth 1 -maxdepth 1 -type d | wc -l` → `16`
+  - `du -sk invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/snapshots/20260310T004644Z` → `10204920`
+  - `du -sk .../snapshots/.20260311T135155Z__building__20260311T141115Z__pid294` → `4642764`
+  - `du -sk .../snapshots/.20260312T153804Z__building__20260313T054935Z__pid27991` → `8133052`
+- attachment residue evidence
+  - `du -sk .../snapshots/20260310T004644Z/raw/qualitative/attachments/telegram` → `7155588`
+  - `find .../attachments/telegram -type f -name '*__page_*.png' | wc -l` → `5751`
+  - `find .../attachments/telegram -type f -name '*__bundle.zip' | wc -l` → `600`
+  - targeted python aggregation:
+    - `page_png bytes=2255957335`
+    - `bundle_zip bytes=3018500708`
+    - `page_txt bytes=11640837`
+    - `meta_json bytes=58594632`
+    - `manifest_json bytes=25351459`
+- implementation verification
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m py_compile invest/stages/common/stage_raw_db.py invest/stages/stage2/scripts/stage02_onepass_refine_full.py invest/stages/stage2/scripts/stage02_qc_cleaning_full.py` → pass
+- touched paths
+  - `invest/stages/common/stage_raw_db.py`
+  - `docs/invest/stage2/STAGE2_IMPLEMENTATION_CURRENT_SPEC.md`
+  - `docs/invest/stage1/stage01_data_collection.md`
+  - `runtime/tasks/JB-20260313-STAGE2-RETENTION-RESIDUAL-CLEANUP.md`

@@ -16,6 +16,7 @@ STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_collector_st
 HIGH_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_last_run_status.json"
 FALLBACK_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_public_fallback_status.json"
 ATTACH_BACKFILL_STATUS_PATH = ROOT / "invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json"
+ATTACH_BACKFILL_SUMMARY_PATH = ROOT / "invest/stages/stage1/outputs/runtime/stage1_attachment_recovery_summary.json"
 ALLOWLIST_PATH = ROOT / "invest/stages/stage1/inputs/config/telegram_channel_allowlist.txt"
 ENV_PATHS = [
     ROOT / "invest/stages/stage1/.env",
@@ -129,6 +130,20 @@ def _run_attachment_backfill(env: dict[str, str], postprocess_attempts: list[dic
     backfill_rc, backfill_attempt = _run("attachment_backfill", ATTACH_BACKFILL, env=env)
     postprocess_attempts.append(backfill_attempt)
     payload["attachment_backfill_ok"] = backfill_rc == 0
+    summary = _load_json(ATTACH_BACKFILL_SUMMARY_PATH)
+    status = _load_json(ATTACH_BACKFILL_STATUS_PATH)
+    payload["attachment_recovery"] = {
+        "status_path": str(ATTACH_BACKFILL_STATUS_PATH.relative_to(ROOT)),
+        "summary_path": str(ATTACH_BACKFILL_SUMMARY_PATH.relative_to(ROOT)),
+        "stage_status": summary.get("stage_status") or status.get("stage_status") or status.get("status"),
+        "completeness_status": summary.get("completeness_status") or status.get("completeness_status"),
+        "retry_count": ((summary.get("retry_visibility") or {}).get("retry_count")),
+        "last_retry_at": ((summary.get("retry_visibility") or {}).get("last_retry_at")),
+        "last_error": ((summary.get("retry_visibility") or {}).get("last_error")),
+        "selected_candidates": ((summary.get("recovery_lane") or {}).get("selected_candidates")),
+        "recovered_ok": ((summary.get("recovery_lane") or {}).get("recovered_ok")),
+        "failed": ((summary.get("recovery_lane") or {}).get("failed")),
+    }
     return backfill_rc
 
 
@@ -181,6 +196,7 @@ def main() -> int:
         "highspeed_status_path": str(HIGH_STATUS_PATH.relative_to(ROOT)),
         "public_fallback_status_path": str(FALLBACK_STATUS_PATH.relative_to(ROOT)),
         "attachment_backfill_status_path": str(ATTACH_BACKFILL_STATUS_PATH.relative_to(ROOT)),
+        "attachment_recovery_summary_path": str(ATTACH_BACKFILL_SUMMARY_PATH.relative_to(ROOT)),
     }
 
     if has_secret_env:

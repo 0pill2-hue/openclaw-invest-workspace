@@ -74,3 +74,30 @@ Stage3를 external ChatGPT Thinking 5.4 본선 + local prefilter/router 보조 �
   - `runtime/tmp/stage3_external_primary_runtime/batch_01_probe2/response_schema.json`
   - `runtime/tmp/stage3_external_primary_runtime/batch_01_probe2/item_index.csv`
   - `runtime/tmp/stage3_external_primary_runtime/batch_01_probe2/batch_01_probe2_prompt.txt`
+
+## Integration append (2026-03-14 KST)
+
+### browser E2E status
+- Stage3 external-primary `project/ChatGPT` full browser send/receive round-trip: **success 확인**
+- validated path: runtime package generation -> project sender attach/model guard -> ChatGPT response watch -> JSON parse/schema/integrity audit
+
+### landed in this subtask
+- `skills/web-review/scripts/send_chatgpt_project_prompt.py`
+  - project mode attachment upload + model guard + attachment visibility handling 연결
+- `runtime/tmp/stage3_external_chatgpt_batch_runner.py`
+  - watch 후 success 판정 경로(`complete`) 오류 수정
+
+### success proof
+- proof summary: `runtime/tasks/proofs/JB-20260313-STAGE3-EXTERNAL-PRIMARY-REDESIGN/project_e2e_20260314.md`
+- successful runtime batch: `runtime/tmp/stage3_external_primary_runtime/batch_project_e2e_20260314b/`
+- wrapper/send/watch:
+  - `runtime/tmp/stage3_external_batch_project_e2e_20260314b_wrapper_result.json`
+  - `runtime/tmp/stage3_external_batch_project_e2e_20260314b_send_result.json`
+  - `runtime/tmp/stage3_external_batch_project_e2e_20260314b_watch_result.json`
+- canonical outputs:
+  - `runtime/tmp/stage3_external_primary_runtime/batch_project_e2e_20260314b/canonical_audit.json`
+  - `runtime/tmp/stage3_external_primary_runtime/batch_project_e2e_20260314b/normalized_score_table.jsonl`
+
+### remaining / residual
+- project conversation generic `delete-after`는 아직 project-internal chat에서 안정적으로 동작하지 않아, 이번 검증 채팅 자체 자동삭제는 미완료
+- ad-hoc probe에서도 watcher fallback task가 생성될 수 있어, non-ticket validation 모드 분리가 후속 개선 포인트

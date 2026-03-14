@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / 'scripts') not in sys.path:
     sys.path.insert(0, str(ROOT / 'scripts'))
 
-from stage3.external_primary_runtime import iter_compaction_candidates
+from stage3.external_primary_runtime import iter_compaction_candidates, run_dir_has_forensic_hold
 
 
 def remove_empty_dirs(path: Path, *, stop_at: Path) -> None:
@@ -26,13 +26,14 @@ def remove_empty_dirs(path: Path, *, stop_at: Path) -> None:
 
 def compact_run_dir(run_dir: Path, *, mode: str, archive_root: Path | None, dry_run: bool) -> dict[str, object]:
     run_dir = run_dir.resolve()
-    candidates = list(iter_compaction_candidates(run_dir))
+    forensic_hold = run_dir_has_forensic_hold(run_dir)
+    candidates = [] if forensic_hold else list(iter_compaction_candidates(run_dir))
     archived: list[str] = []
     deleted: list[str] = []
     kept = sorted(str(p.relative_to(run_dir)) for p in run_dir.rglob('*') if p.is_file() and p not in candidates)
 
     archive_dir = None
-    if mode == 'archive':
+    if mode == 'archive' and not forensic_hold:
         base = archive_root.resolve() if archive_root else (run_dir.parent / '_archive').resolve()
         archive_dir = base / run_dir.name
         if not dry_run:
@@ -57,11 +58,13 @@ def compact_run_dir(run_dir: Path, *, mode: str, archive_root: Path | None, dry_
         'run_dir': str(run_dir),
         'mode': mode,
         'dry_run': dry_run,
+        'forensic_hold': forensic_hold,
         'candidate_count': len(candidates),
         'kept_files': kept,
         'archived_files': archived,
         'deleted_files': deleted,
         'archive_dir': str(archive_dir) if archive_dir else '',
+        'compaction_skipped_reason': 'forensic_hold' if forensic_hold else '',
     }
     return payload
 

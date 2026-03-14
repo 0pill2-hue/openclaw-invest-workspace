@@ -8,6 +8,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 CHECKPOINT = ROOT / "invest/stages/stage1/outputs/reports/data_quality/stage01_checkpoint_status.json"
 CHAIN_STATE = ROOT / "invest/stages/stage1/outputs/runtime/stage1234_chain_state.json"
+ATTACHMENT_RECOVERY_SUMMARY = ROOT / "invest/stages/stage1/outputs/runtime/stage1_attachment_recovery_summary.json"
 
 _CACHE: dict[str, Any] = {"signature": None, "payload": None}
 
@@ -75,12 +76,13 @@ def dataset_summary(dataset_id: str, detail: dict[str, Any], failures: list[str]
 
 
 def build_summary() -> dict[str, Any]:
-    signature = file_signature([CHECKPOINT, CHAIN_STATE])
+    signature = file_signature([CHECKPOINT, CHAIN_STATE, ATTACHMENT_RECOVERY_SUMMARY])
     if signature == _CACHE.get("signature") and _CACHE.get("payload") is not None:
         return _CACHE["payload"]
 
     checkpoint = safe_load_json(CHECKPOINT, {})
     chain_state = safe_load_json(CHAIN_STATE, {})
+    attachment_recovery = safe_load_json(ATTACHMENT_RECOVERY_SUMMARY, {})
     failures = [str(item) for item in checkpoint.get("failures", [])] if isinstance(checkpoint.get("failures"), list) else []
     details = checkpoint.get("details") if isinstance(checkpoint.get("details"), dict) else {}
 
@@ -107,6 +109,20 @@ def build_summary() -> dict[str, Any]:
             "detail": {
                 **chain_state,
                 "source": str(CHAIN_STATE.relative_to(ROOT)),
+            },
+        },
+        {
+            "id": "stage1_attachment_recovery",
+            "label": "Stage1 Attachment Recovery",
+            "status": "ok" if str(attachment_recovery.get('stage_status', '')).upper() == 'OK' else ("warn" if attachment_recovery else "warn"),
+            "summary": (
+                f"stage {attachment_recovery.get('stage_status', '미확인')} / "
+                f"completeness {attachment_recovery.get('completeness_status', '미확인')} / "
+                f"retry {((attachment_recovery.get('retry_visibility') or {}).get('retry_count', '미확인'))}"
+            ),
+            "detail": {
+                **attachment_recovery,
+                "source": str(ATTACHMENT_RECOVERY_SUMMARY.relative_to(ROOT)),
             },
         },
     ]
@@ -137,10 +153,12 @@ def build_summary() -> dict[str, Any]:
         "sources": {
             "checkpoint": str(CHECKPOINT.relative_to(ROOT)),
             "chain_state": str(CHAIN_STATE.relative_to(ROOT)),
+            "attachment_recovery": str(ATTACHMENT_RECOVERY_SUMMARY.relative_to(ROOT)),
         },
         "degraded_fields": [name for name, value in {
             "checkpoint": checkpoint,
             "chain_state": chain_state,
+            "attachment_recovery": attachment_recovery,
         }.items() if not value],
     }
     _CACHE["signature"] = signature

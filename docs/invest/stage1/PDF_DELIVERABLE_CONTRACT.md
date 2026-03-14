@@ -14,9 +14,11 @@
 ## Canonical artifacts
 1. Runtime status JSON
    - `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`
-2. Coverage catalog
+2. Compact operator summary JSON
+   - `invest/stages/stage1/outputs/runtime/stage1_attachment_recovery_summary.json`
+3. Coverage catalog
    - `invest/stages/stage1/outputs/raw/source_coverage_index.json`
-3. Structured DB summary embedded in runtime status
+4. Structured DB summary embedded in runtime status
    - `pdf_db_index_summary` (`documents_with_text`, `earliest_message_date`, `latest_message_date`)
 
 ## Metadata contract for page markers
@@ -32,7 +34,24 @@
   - neither available → keep plain text if present, mark `pdf_page_marked=false` and `pdf_page_mapping_status=missing_*`, do not fail the whole collector chain
 
 ## Required final deliverable fields
-최종 보고서/카탈로그 stanz​​a는 아래 필드를 **명시적으로** 가져야 한다.
+최종 보고서/카탈로그 stanza는 아래 필드를 **명시적으로** 가져야 한다.
+
+### Compact operator summary contract
+`stage1_attachment_recovery_summary.json`는 아래 top-level/operator-facing 필드를 반드시 가져야 한다.
+- `stage_status` (`OK|WARN|ERROR`)
+- `completeness_status` (`COMPLETE|PARTIAL_RECOVERY|DEGRADED|UNRECOVERABLE`)
+- `completeness.collected_total`
+- `completeness.recovered_from_manifest`
+- `completeness.original_present`
+- `completeness.missing_original`
+- `completeness.missing_manifest`
+- `completeness.placeholder_only`
+- `completeness.recoverable_missing_artifact`
+- `completeness.bounded_by_cap`
+- `completeness.unrecoverable_missing`
+- `retry_visibility.retry_count`
+- `retry_visibility.last_retry_at`
+- `retry_visibility.last_error`
 
 | Final field | Canonical source | Notes |
 | --- | --- | --- |
@@ -42,7 +61,7 @@
 | `page_marked_total` | `telegram_attachment_extract_backfill_status.json -> pdf_page_marked_total` (fallback: `pdf_db_page_marked_total`) | page-marked durable extracted text count |
 | `page_mapping_missing_total` | `telegram_attachment_extract_backfill_status.json -> pdf_page_mapping_missing_total` (fallback: `pdf_db_page_mapping_missing_total`) | explicit missing-page-mapping count that stayed plain-text-only |
 | `coverage_start` | ISO date derived from `pdf_db_index_summary.earliest_message_date`; fallback: `source_coverage_index.sources.telegram.scope.attachment_artifacts.earliest_message_date` | **PDF-specific coverage start only** |
-| `proof_paths` | paths to runtime status JSON, coverage catalog JSON, and final report artifact | required for auditability |
+| `proof_paths` | paths to runtime status JSON, compact recovery summary JSON, coverage catalog JSON, and final report artifact | required for auditability |
 
 ## Coverage-start rule
 - `coverage_start`는 **generic telegram markdown corpus**가 아니라 **PDF deliverable scope** 기준이어야 한다.

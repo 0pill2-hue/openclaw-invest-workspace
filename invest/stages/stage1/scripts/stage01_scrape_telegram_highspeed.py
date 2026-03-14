@@ -310,6 +310,9 @@ def _new_attachment_stats() -> dict:
         'attachments_original_saved': 0,
         'attachments_original_failed': 0,
         'attachments_text_files_written': 0,
+        'attachments_pdf_total': 0,
+        'attachments_pdf_saved': 0,
+        'attachments_pdf_skipped_or_failed': 0,
         'reason_counts': {},
     }
 
@@ -526,6 +529,17 @@ def _describe_media(message) -> tuple[list[str], dict]:
         'kind': '',
     }
 
+    def _extract_filename_from_doc_attrs(document_obj):
+        attrs = getattr(document_obj, 'attributes', None)
+        if not attrs:
+            return ''
+        for attr in attrs:
+            # Telethon uses DocumentAttributeFilename
+            name = getattr(attr, 'file_name', None)
+            if isinstance(name, str) and name.strip():
+                return name.strip()
+        return ''
+
     fobj = getattr(message, 'file', None)
     if fobj:
         name = str(getattr(fobj, 'name', '') or '')
@@ -534,17 +548,25 @@ def _describe_media(message) -> tuple[list[str], dict]:
             size = int(getattr(fobj, 'size', 0) or 0)
         except Exception:
             size = 0
+    else:
+        doc_obj = getattr(message, 'document', None)
+        name = str(_extract_filename_from_doc_attrs(doc_obj) or '') if doc_obj else ''
+        mime = str(getattr(doc_obj, 'mime_type', '') or '').lower()
+        try:
+            size = int(getattr(doc_obj, 'size', 0) or 0)
+        except Exception:
+            size = 0
 
-        meta['name'] = name
-        meta['mime'] = mime
-        meta['size'] = size
+    meta['name'] = name
+    meta['mime'] = mime
+    meta['size'] = size
 
-        if name:
-            lines.append(f"[FILE_NAME] {name}")
-        if mime:
-            lines.append(f"[MIME] {mime}")
-        if size:
-            lines.append(f"[FILE_SIZE] {size}")
+    if name:
+        lines.append(f"[FILE_NAME] {name}")
+    if mime:
+        lines.append(f"[MIME] {mime}")
+    if size:
+        lines.append(f"[FILE_SIZE] {size}")
 
     ext = Path(meta.get('name') or '').suffix.lower()
     mime = meta.get('mime') or ''
@@ -730,6 +752,8 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
         return result
 
     stats['attachments_total'] = int(stats.get('attachments_total', 0)) + 1
+    if kind == 'pdf':
+        stats['attachments_pdf_total'] = int(stats.get('attachments_pdf_total', 0)) + 1
 
     original_saved = False
     store_reason = ''
@@ -881,6 +905,8 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
                         payload['original_deleted_at'] = datetime.now(timezone.utc).isoformat()
                 stats['attachments_text_extracted'] = int(stats.get('attachments_text_extracted', 0)) + 1
                 stats['attachments_text_files_written'] = int(stats.get('attachments_text_files_written', 0)) + 1
+                if kind == 'pdf':
+                    stats['attachments_pdf_saved'] = int(stats.get('attachments_pdf_saved', 0)) + 1
             else:
                 result['reason'] = reason or f'empty_text:{kind}'
                 payload['extraction_status'] = 'failed'
@@ -895,6 +921,9 @@ async def _persist_attachment_artifact(client, message, meta: dict, channel_meta
                     )
                 stats['attachments_failed'] = int(stats.get('attachments_failed', 0)) + 1
                 _bump_reason(stats, result['reason'])
+
+    if kind == 'pdf' and result.get('reason') not in ('ok',):
+        stats['attachments_pdf_skipped_or_failed'] = int(stats.get('attachments_pdf_skipped_or_failed', 0)) + 1
 
     _write_json_file(meta_path, payload)
     stats['attachments_meta_written'] = int(stats.get('attachments_meta_written', 0)) + 1
@@ -1319,7 +1348,10 @@ async def main():
             f"targeted={channels_targeted} channels={channels_collected} failed={failed_count} "
             f"result={final_state} incremental={int(INCREMENTAL_ONLY)} force_full={int(FORCE_FULL_BACKFILL)} target_years={_target_years} "
             f"attach_text_msgs={int(attach_stats.get('messages_with_attach_text', 0))} "
-            f"attach_fail={int(attach_stats.get('attachments_failed', 0))}"
+            f"attach_fail={int(attach_stats.get('attachments_failed', 0))} "
+            f"attach_pdf_total={int(attach_stats.get('attachments_pdf_total', 0))} "
+            f"attach_pdf_saved={int(attach_stats.get('attachments_pdf_saved', 0))} "
+            f"attach_pdf_skipped_or_failed={int(attach_stats.get('attachments_pdf_skipped_or_failed', 0))}"
         ),
     )
 

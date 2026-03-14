@@ -65,6 +65,8 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
   - `invest/stages/stage1/outputs/runtime/daily_update_status.json`
   - `invest/stages/stage1/outputs/runtime/daily_update_<profile>_status.json`
   - `invest/stages/stage1/outputs/runtime/post_collection_validate.json`
+  - `invest/stages/stage1/outputs/runtime/telegram_attachment_extract_backfill_status.json`
+  - `invest/stages/stage1/outputs/runtime/stage1_attachment_recovery_summary.json`
   - `invest/stages/stage1/outputs/runtime/pipeline_events.jsonl`
 - reports
   - `invest/stages/stage1/outputs/reports/data_quality/stage01_checkpoint_status.json`
@@ -87,6 +89,33 @@ ops companion: `docs/invest/stage1/RUNBOOK.md`
 - script: `stage01_post_collection_validate.py`
 - output: `post_collection_validate.json`
 - 기준: source별 min_count/freshness/zero-byte/runtime status/full coverage
+- gate summary top-level fields
+  - `stage_status`: gate PASS/FAIL
+  - `completeness_status`: Telegram attachment completeness (`COMPLETE|PARTIAL_RECOVERY|DEGRADED|UNRECOVERABLE`)
+  - `attachment_recovery_stage_status`: attachment recovery lane runtime health (`OK|WARN|ERROR`)
+
+### attachment recovery compact summary
+- script: `stage01_telegram_attachment_extract_backfill.py`
+- output: `stage1_attachment_recovery_summary.json`
+- required top-level fields
+  - `stage_status`
+  - `completeness_status`
+  - `completeness.collected_total`
+  - `completeness.recovered_from_manifest`
+  - `completeness.original_present`
+  - `completeness.missing_original`
+  - `completeness.missing_manifest`
+  - `completeness.placeholder_only`
+  - `completeness.recoverable_missing_artifact`
+  - `completeness.bounded_by_cap`
+  - `completeness.unrecoverable_missing`
+  - `retry_visibility.retry_count`
+  - `retry_visibility.last_retry_at`
+  - `retry_visibility.last_error`
+- Stage2 handoff completeness는 아래 3개 산출물을 합성해 계산한다.
+  - `stage01_checkpoint_status.json`
+  - `source_coverage_index.json`
+  - `stage1_attachment_recovery_summary.json`
 
 ## 7) PASS / FAIL
 - 아래 중 하나면 Stage1 FAIL

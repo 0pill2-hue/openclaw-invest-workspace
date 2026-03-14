@@ -24,6 +24,7 @@
 - `docs/operations/OPERATIONS_BOOK.md`
 - `python3 scripts/tasks/db.py summary --top 5 --recent 5`
 - `python3 scripts/directives/db.py summary --top 5 --recent 5`
+- `runtime/context-handoff.md` (fresh session/reset/cutover에서는 current-task보다 먼저)
 - `runtime/current-task.md`
 - `python3 scripts/tasks/db.py evidence-search --limit 5` (canonical only)
 
@@ -47,7 +48,7 @@
 - TASKS SSOT: `runtime/tasks/tasks.db` + `python3 scripts/tasks/db.py`
 - DIRECTIVES SSOT: `runtime/directives/directives.db` + `python3 scripts/directives/db.py`
 - `runtime/current-task.md` 필수 필드: `ticket_id`, `directive_ids`, `current_goal`, `last_completed_step`, `next_action`, `touched_paths`, `latest_proof`
-- `runtime/context-handoff.md`는 reset/cutover 직후에만 읽는 짧은 인계 카드다.
+- `runtime/context-handoff.md`는 reset/cutover 직후에 읽는 짧은 인계 카드이며, fresh session에서는 **읽기 생략 금지**다.
 - 닫힌 task는 `proof`가 canonical evidence card(`runtime/tasks/evidence/cards/...`)를 가리켜야 한다.
 - raw 증거 검색은 `python3 scripts/tasks/db.py evidence-search --include-raw ...` 처럼 명시 opt-in으로만 수행한다.
 

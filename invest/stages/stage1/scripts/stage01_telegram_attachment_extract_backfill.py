@@ -34,6 +34,7 @@ TELEGRAM_TEXT_ROOT = STAGE1_DIR / "outputs/raw/qualitative/text/telegram"
 RAW_OUTPUT_ROOT = STAGE1_DIR / "outputs/raw"
 DB_PATH = STAGE1_DIR / "outputs/db/stage1_raw_archive.sqlite3"
 STATUS_PATH = STAGE1_DIR / "outputs/runtime/telegram_attachment_extract_backfill_status.json"
+SUMMARY_PATH = STAGE1_DIR / "outputs/runtime/stage1_attachment_recovery_summary.json"
 ENV_PATHS = [
     STAGE1_DIR / ".env",
     Path.home() / ".config/invest/invest_autocollect.env",
@@ -218,6 +219,179 @@ def _read_json(path: Path) -> dict:
         return data if isinstance(data, dict) else {}
     except Exception:
         return {}
+
+
+def _top_reason(reason_counts: dict, *, prefix: str = "") -> str:
+    if not isinstance(reason_counts, dict):
+        return ""
+    rows: list[tuple[int, str]] = []
+    for key, value in reason_counts.items():
+        name = str(key or "").strip()
+        if not name:
+            continue
+        if prefix and not name.startswith(prefix):
+            continue
+        try:
+            count = int(value or 0)
+        except Exception:
+            count = 0
+        rows.append((count, name))
+    if not rows:
+        return ""
+    rows.sort(key=lambda item: (-item[0], item[1]))
+    return rows[0][1]
+
+
+def _collect_pdf_completeness_breakdown() -> dict:
+    payload = {
+        "collected_total": 0,
+        "recovered_from_manifest": 0,
+        "original_present": 0,
+        "missing_original": 0,
+        "missing_manifest": 0,
+        "placeholder_only": 0,
+        "recoverable_missing_artifact": 0,
+        "bounded_by_cap": 0,
+        "unrecoverable_missing": 0,
+        "original_deleted_after_decompose": 0,
+        "manifest_present": 0,
+        "extract_ready": 0,
+        "canonical_ready": 0,
+    }
+    for meta_path, meta in _iter_canonical_pdf_meta_entries():
+        payload["collected_total"] += 1
+        original_path = _infer_original_path(meta, meta_path)
+        original_present = bool(original_path and original_path.exists() and original_path.is_file())
+        manifest_present = _pdf_manifest_ready(meta)
+        extract_ready = bool(str(meta.get("extract_path") or "").strip())
+        deleted_after_decompose = _is_deleted_after_decompose(meta)
+        status_name = _pdf_status_taxonomy_from_meta(meta)
+
+        if original_present:
+            payload["original_present"] += 1
+        else:
+            payload["missing_original"] += 1
+            if deleted_after_decompose:
+                payload["original_deleted_after_decompose"] += 1
+            if manifest_present:
+                payload["recovered_from_manifest"] += 1
+        if manifest_present:
+            payload["manifest_present"] += 1
+        else:
+            payload["missing_manifest"] += 1
+        if extract_ready:
+            payload["extract_ready"] += 1
+        if manifest_present or extract_ready:
+            payload["canonical_ready"] += 1
+
+        if status_name == "placeholder_only":
+            payload["placeholder_only"] += 1
+        elif status_name == "recoverable_missing_artifact":
+            payload["recoverable_missing_artifact"] += 1
+        elif status_name == "bounded_by_cap":
+            payload["bounded_by_cap"] += 1
+
+        if (not original_present) and (not manifest_present) and (not extract_ready):
+            payload["unrecoverable_missing"] += 1
+    return payload
+
+
+def _completeness_status_from_breakdown(breakdown: dict) -> str:
+    collected_total = int(breakdown.get("collected_total") or 0)
+    missing_original = int(breakdown.get("missing_original") or 0)
+    recovered_from_manifest = int(breakdown.get("recovered_from_manifest") or 0)
+    missing_manifest = int(breakdown.get("missing_manifest") or 0)
+    placeholder_only = int(breakdown.get("placeholder_only") or 0)
+    recoverable_missing_artifact = int(breakdown.get("recoverable_missing_artifact") or 0)
+    bounded_by_cap = int(breakdown.get("bounded_by_cap") or 0)
+    unrecoverable_missing = int(breakdown.get("unrecoverable_missing") or 0)
+
+    if collected_total <= 0:
+        return "UNRECOVERABLE"
+    if unrecoverable_missing > 0:
+        return "UNRECOVERABLE"
+    if (
+        missing_original > 0
+        and recovered_from_manifest == missing_original
+        and missing_manifest == 0
+        and placeholder_only == 0
+        and recoverable_missing_artifact == 0
+        and bounded_by_cap == 0
+    ):
+        return "PARTIAL_RECOVERY"
+    if missing_manifest > 0 or placeholder_only > 0 or recoverable_missing_artifact > 0 or bounded_by_cap > 0:
+        return "DEGRADED"
+    return "COMPLETE"
+
+
+def _build_attachment_recovery_summary(*, payload: dict, previous_summary: dict | None = None) -> dict:
+    previous_summary = previous_summary if isinstance(previous_summary, dict) else {}
+    breakdown = _collect_pdf_completeness_breakdown()
+    stage_status = str(payload.get("status") or "WARN").strip().upper() or "WARN"
+    completeness_status = _completeness_status_from_breakdown(breakdown)
+    recovery_reason_counts = payload.get("reason_counts") if isinstance(payload.get("reason_counts"), dict) else {}
+    recovery_last_error = _top_reason(recovery_reason_counts, prefix="telegram_recovery_")
+    if not recovery_last_error and int(payload.get("telegram_recovery_failed") or 0) > 0:
+        recovery_last_error = "telegram_recovery_failed_without_reason"
+    if not recovery_last_error and int(payload.get("telegram_recovery_skipped") or 0) > 0:
+        recovery_last_error = _telegram_recovery_disabled_reason()
+
+    previous_retry_visibility = previous_summary.get("retry_visibility") if isinstance(previous_summary.get("retry_visibility"), dict) else {}
+    previous_retry_count = int(previous_retry_visibility.get("retry_count") or 0)
+    attempted_now = int(payload.get("telegram_recovery_attempted") or 0)
+    selected_now = int(payload.get("telegram_recovery_candidates_selected") or 0)
+    retry_ran = attempted_now > 0 or selected_now > 0
+    retry_count = previous_retry_count + (1 if retry_ran else 0)
+    finished_at = str(payload.get("finished_at") or payload.get("saved_at") or "")
+    last_retry_at = finished_at if retry_ran else str(previous_retry_visibility.get("last_retry_at") or "")
+    last_error = recovery_last_error or str(previous_retry_visibility.get("last_error") or "")
+    last_error_at = finished_at if recovery_last_error else str(previous_retry_visibility.get("last_error_at") or "")
+
+    return {
+        "saved_at": finished_at,
+        "status_path": _rel_stage1_path(STATUS_PATH),
+        "stage_status": stage_status,
+        "completeness_status": completeness_status,
+        "completeness": breakdown,
+        "delivery": {
+            "pdf_meta_total": int(payload.get("pdf_meta_total") or 0),
+            "pdf_extract_ok_total": int(payload.get("pdf_extract_ok_total") or 0),
+            "pdf_decompose_ok_total": int(payload.get("pdf_decompose_ok_total") or 0),
+            "pdf_canonical_ready_total": int(payload.get("pdf_canonical_ready_total") or 0),
+            "pdf_page_marked_total": int(payload.get("pdf_page_marked_total") or 0),
+            "pdf_page_mapping_missing_total": int(payload.get("pdf_page_mapping_missing_total") or 0),
+            "pdf_bounded_by_cap_total": int(payload.get("pdf_bounded_by_cap_total") or 0),
+            "pdf_recoverable_missing_artifact_total": int(payload.get("pdf_recoverable_missing_artifact_total") or 0),
+            "pdf_placeholder_only_total": int(payload.get("pdf_placeholder_only_total") or 0),
+            "pdf_original_present_total": int(payload.get("pdf_original_present_total") or 0),
+            "pdf_missing_original_total": int(payload.get("pdf_missing_original_total") or 0),
+            "pdf_manifest_present_total": int(payload.get("pdf_manifest_present_total") or 0),
+            "pdf_db_status": str(payload.get("pdf_db_status") or "missing"),
+            "pdf_progress_basis": str(payload.get("pdf_progress_basis") or ""),
+            "pdf_accounting_basis": str(payload.get("pdf_accounting_basis") or ""),
+        },
+        "recovery_lane": {
+            "selected_candidates": selected_now,
+            "pending_candidates_total": int(payload.get("telegram_recovery_missing_meta_total") or 0),
+            "attempted": attempted_now,
+            "recovered_ok": int(payload.get("telegram_recovery_ok") or 0),
+            "failed": int(payload.get("telegram_recovery_failed") or 0),
+            "skipped": int(payload.get("telegram_recovery_skipped") or 0),
+            "bytes": int(payload.get("telegram_recovery_bytes") or 0),
+            "top_error": recovery_last_error,
+        },
+        "retry_visibility": {
+            "retry_count": retry_count,
+            "last_retry_at": last_retry_at,
+            "last_error": last_error,
+            "last_error_at": last_error_at,
+        },
+        "proof_paths": {
+            "runtime_status": _rel_stage1_path(STATUS_PATH),
+            "compact_summary": _rel_stage1_path(SUMMARY_PATH),
+            "pdf_db_path": _rel_stage1_path(DB_PATH),
+        },
+    }
 
 
 def _rel_stage1_path(path: Path) -> str:
@@ -1869,7 +2043,15 @@ def main() -> int:
         "duration_sec": round((finished_at - started_at).total_seconds(), 3),
         "status": status,
     }
+    previous_summary = _read_json(SUMMARY_PATH)
+    summary_payload = _build_attachment_recovery_summary(payload=payload, previous_summary=previous_summary)
+    payload["stage_status"] = summary_payload["stage_status"]
+    payload["completeness_status"] = summary_payload["completeness_status"]
+    payload["completeness"] = summary_payload["completeness"]
+    payload["recovery_lane"] = summary_payload["recovery_lane"]
+    payload["retry_visibility"] = summary_payload["retry_visibility"]
     _write_json(STATUS_PATH, payload)
+    _write_json(SUMMARY_PATH, summary_payload)
 
     error_summary = [f"{k}:{v}" for k, v in sorted(stats["reason_counts"].items(), key=lambda kv: (-kv[1], kv[0]))[:20]]
     append_pipeline_event(
@@ -1878,6 +2060,7 @@ def main() -> int:
         count=int(payload["pdf_decompose_ok_total"]),
         errors=error_summary,
         note=(
+            f"stage_status={payload['stage_status']} completeness_status={payload['completeness_status']} "
             f"progress_basis={payload['pdf_progress_basis']} db_docs={payload['pdf_meta_total']} "
             f"db_extract_ok={payload['pdf_extract_ok_total']} db_manifest={payload['pdf_decompose_ok_total']} db_pages={payload['pdf_pages_total']} "
             f"recover_ok={stats['telegram_recovery_ok']} recover_failed={stats['telegram_recovery_failed']} "

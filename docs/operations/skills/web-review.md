@@ -27,6 +27,7 @@
 
 ## 운영 메모
 - fresh chat + direct attachment 우선
+- headless 실행이 Cloudflare 사람확인(`잠시만 기다리십시오…`, `사람인지 확인하십시오`)에 걸리면 selector/auth 문제로 오진하지 말고 fail-closed 후 screenshot/JSON 증빙을 남긴 뒤 `--headful`로 재시도
 - current UI 기준 fresh chat당 약 20파일 이하 유지, mixed-item batch는 **20-40 items**(default target 30) 범위에서 partition metadata와 함께 분할
 - 기본 모델은 **Thinking 5.4**
 - 응답은 JSON-only 회수

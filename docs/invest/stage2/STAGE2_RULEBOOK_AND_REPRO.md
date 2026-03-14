@@ -27,7 +27,7 @@ implementation spec: `docs/invest/stage2/STAGE2_IMPLEMENTATION_CURRENT_SPEC.md`
   - `invest/stages/stage1/outputs/db/stage1_raw_archive.sqlite3`
 - Stage2 runtime mirror root (logical raw path)
   - `invest/stages/stage2/outputs/runtime/upstream_stage1_db_mirror/current/raw`
-- DB archive 부재 시 fallback
+- DB archive 부재 시 fallback (명시적 degraded opt-in 필요)
   - `invest/stages/stage2/inputs/upstream_stage1/raw`
 
 ## 3) 입력 최소 스키마 계약
@@ -62,6 +62,20 @@ implementation spec: `docs/invest/stage2/STAGE2_IMPLEMENTATION_CURRENT_SPEC.md`
 - Telegram PDF는 별도 corpus를 만들지 않고 `text/telegram` clean 본문에 inline 승격
 - dedup은 corpus-level로 적용(대상 folder: selected_articles/blog/telegram/premium)
 - processed index 기반 incremental을 기본으로 한다.
+- refine report top-level은 아래 필드를 반드시 명시한다.
+  - `input_source`
+  - `input_source_status`
+  - `fallback_reason`
+  - `fallback_scope`
+  - `pdf_status_buckets` (`promoted`, `bounded_by_cap`, `recoverable_missing_artifact`, `placeholder_only`, `extractor_unavailable`, `parse_failed`, `lineage_mismatch`, `diagnostics_only`)
+  - `bounded_stop_visibility` (`declared_page_count_total`, `indexed_page_rows_total`, `materialized_text_pages_total`, `materialized_render_pages_total`, `placeholder_page_rows_total`, `bounded_by_cap_docs`, `bounded_pages_total`)
+  - `legacy_join_visibility` (`join_strategy`, `join_confidence`, `lineage_status`)
+  - `handoff_completeness` (`raw_checkpoint_status`, `source_coverage_status`, `attachment_recovery_status`, `placeholder_ratio`, `recoverable_missing_ratio`, `severe_missing_ratio`, `handoff_status`)
+  - `origin_of_degradation`
+  - `stage3_ready_status`
+- operator-facing runtime summary는 `invest/stages/stage2/outputs/runtime/stage2_integrity_summary.json` 이 canonical 이다.
+- lineage `weak` 또는 `unresolved`는 `diagnostics_only` bucket 우선으로 집계한다(명시적 message-id mismatch는 `lineage_mismatch`).
+- `input_source=stage1_raw_files`는 기본 정상 경로가 아니라 **degraded raw fallback** 이며, `input_source_status=degraded_raw_files_fallback_opt_in`일 때만 허용된다.
 
 구현 세부(우선순위, exact reason taxonomy, threshold 값, signature 구성)는 구현 spec를 따른다.
 

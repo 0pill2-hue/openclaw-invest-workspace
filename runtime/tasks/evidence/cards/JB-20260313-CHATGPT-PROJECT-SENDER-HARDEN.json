@@ -1,0 +1,20 @@
+{
+  "schema_version": "evidence_card_v1",
+  "ticket_id": "JB-20260313-CHATGPT-PROJECT-SENDER-HARDEN",
+  "status": "DONE",
+  "objective": "시스템트레이딩 모델개발 프로젝트 URL/ID를 고정하고 프로젝트 내부 채팅 URL 검증 실패 시 성공 처리 금지",
+  "result": "DONE",
+  "final_summary": "runtime/tasks/JB-20260313-CHATGPT-PROJECT-SENDER-HARDEN.md;skills/web-review/scripts/send_chatgpt_project_prompt.py;runtime/tmp/chatgpt-project-hi-hardened.png",
+  "touched_paths": [
+    "runtime/tasks/JB-20260313-CHATGPT-PROJECT-SENDER-HARDEN.md;skills/web-review/scripts/send_chatgpt_project_prompt.py;runtime/tmp/chatgpt-project-hi-hardened.png"
+  ],
+  "decisive_proof": "runtime/tasks/JB-20260313-CHATGPT-PROJECT-SENDER-HARDEN.md;skills/web-review/scripts/send_chatgpt_project_prompt.py;runtime/tmp/chatgpt-project-hi-hardened.png",
+  "proof_excerpt": "runtime/tasks/JB-20260313-CHATGPT-PROJECT-SENDER-HARDEN.md;skills/web-review/scripts/send_chatgpt_project_prompt.py;runtime/tmp/chatgpt-project-hi-hardened.png",
+  "index_pointer": "runtime/tasks/evidence/proof-index.jsonl#ticket_id=JB-20260313-CHATGPT-PROJECT-SENDER-HARDEN",
+  "timestamps": {
+    "created_at": "2026-03-13 19:58:04",
+    "updated_at": "2026-03-13 19:58:04",
+    "closed_at": "2026-03-13 20:00:16"
+  },
+  "closed_by": ""
+}

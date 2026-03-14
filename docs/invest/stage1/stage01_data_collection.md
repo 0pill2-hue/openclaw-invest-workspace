@@ -26,6 +26,7 @@ updated_at: 2026-03-12 KST
   - 예: `signal/kr/ohlcv/005930.csv`
   - 예: `qualitative/text/telegram/channel_a/msg_123.md`
 - Stage2는 DB snapshot을 stage-local runtime mirror로 materialize한 뒤 기존 정제 로직을 수행한다.
+- Stage2 mirror는 `stage2_compact_v1` profile을 사용한다: `qualitative/attachments/telegram/**` 중 Stage2 refine에 직접 쓰지 않는 `__page_*.png`, `__bundle.zip`은 mirror에서 제외하고, current snapshot + fallback latest 1개만 유지한다.
 - row-level 최소 메타:
   - `rel_path`
   - `content`
@@ -313,6 +314,7 @@ Source: https://...
   - 새 PDF 또는 rerun 시 원본 bytes가 있으면 `msg_<id>__extracted.txt`를 page-marked single text(`pdf_page_marked=true`, `extract_format=pdf_page_marked_text_v1`)로 저장한다.
   - original PDF를 영구 보관할 필요는 없다. 이미 `pdf_manifest/pages[]`가 있으면 original이 삭제된 뒤에도 manifest page text로 aggregate extracted text를 재구성할 수 있다.
   - original도 manifest page text도 없으면 기존 plain text를 유지하되 `pdf_page_marked=false`, `pdf_page_mapping_status=missing_*`로 명시한다. 이 경우 backfill scope는 여기서 종료되며 corpus를 삭제/실패 처리하지 않는다.
+  - Stage2 compact mirror는 review-only residue(`__page_*.png`, `__bundle.zip`)를 복제하지 않는다. authoritative artifact가 필요하면 Stage1 raw DB/원본 raw path를 조회한다.
 
 ### 4.8 Premium markdown
 - script: `stage01_collect_premium_startale_channel_auth.py`

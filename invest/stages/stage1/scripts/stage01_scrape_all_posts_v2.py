@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import os
 import random
@@ -25,8 +26,65 @@ UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML,
 
 POST_LINK_RE = re.compile(r"https?://blog\.naver\.com/PostView\.naver\?[^\"'\s<]+")
 LOGNO_RE = re.compile(r"logNo=(\d+)")
+IMG_SRC_RE = re.compile(r"<img\b[^>]*\s+src=([\'\"])(.*?)\1", re.I)
+IMG_DATA_SRC_RE = re.compile(r"<img\b[^>]*\s+data-src=([\'\"])(.*?)\1", re.I)
+IMG_DATA_ORIGINAL_RE = re.compile(r"<img\b[^>]*\s+data-original=([\'\"])(.*?)\1", re.I)
+IMG_SRCSET_RE = re.compile(r'<img\b[^>]*\s+srcset=([\'\"])(.*?)\1', re.I)
+IMG_URL_RE = re.compile(r'"(https?://[^"\s]+?\.(?:png|jpg|jpeg|gif|webp|bmp|svg|tiff|tif|avif|webp)(?:[^"\s]*)?)"', re.I)
+OG_IMAGE_RE = re.compile(r'<meta\s+property=["\'][^"\']*og:image[^"\']*["\']\s+content=["\']([^"\']+)["\']', re.I)
+PDF_LINK_HREF_RE = re.compile(r'<a\b[^>]+href=([\'\"])(.*?)\1', re.I)
+PDF_URL_RE = re.compile(r'''https?://[^"'\s<>()\[\]{}]+\.pdf(?:[?#][^"'\s<>()\[\]{}]*)?''', re.I)
+IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg", ".tiff", ".tif", ".avif", ".ico"}
 DEFAULT_BLOG_TARGET_DATE = "2016-01-01"
 PERSISTENT_TERMINAL_CAUSES = {"empty-posts", "404"}
+
+BLOG_ATTACH_ARTIFACT_ROOT = ROOT / "invest/stages/stage1/outputs/raw/qualitative/attachments/blog"
+BLOG_IMAGE_DOWNLOAD_ENABLED = os.environ.get("BLOG_IMAGE_DOWNLOAD_ENABLED", "0").strip().lower() in {"1", "true", "yes", "on"}
+BLOG_PDF_DOWNLOAD_ENABLED = os.environ.get("BLOG_PDF_DOWNLOAD_ENABLED", "0").strip().lower() in {"1", "true", "yes", "on"}
+try:
+    BLOG_IMAGE_MAX_PER_POST = max(0, int(os.environ.get("BLOG_IMAGE_MAX_PER_POST", "12").strip() or "12"))
+except Exception:
+    BLOG_IMAGE_MAX_PER_POST = 12
+try:
+    BLOG_IMAGE_MAX_BYTES = max(1024, int(os.environ.get("BLOG_IMAGE_MAX_BYTES", str(8 * 1024 * 1024)).strip() or str(8 * 1024 * 1024)))
+except Exception:
+    BLOG_IMAGE_MAX_BYTES = 8 * 1024 * 1024
+try:
+    BLOG_IMAGE_MAX_TOTAL_BYTES_PER_POST = max(1024, int(os.environ.get("BLOG_IMAGE_MAX_TOTAL_BYTES_PER_POST", str(32 * 1024 * 1024)).strip() or str(32 * 1024 * 1024)))
+except Exception:
+    BLOG_IMAGE_MAX_TOTAL_BYTES_PER_POST = 32 * 1024 * 1024
+try:
+    BLOG_IMAGE_BUCKET_COUNT = max(1, int(os.environ.get("BLOG_IMAGE_BUCKET_COUNT", "128").strip() or "128"))
+except Exception:
+    BLOG_IMAGE_BUCKET_COUNT = 128
+try:
+    BLOG_IMAGE_EXT_TIMEOUT_SEC = max(1, int(os.environ.get("BLOG_IMAGE_EXT_TIMEOUT_SEC", "18").strip() or "18"))
+except Exception:
+    BLOG_IMAGE_EXT_TIMEOUT_SEC = 18
+try:
+    BLOG_IMAGE_DOWNLOAD_RETRIES = max(0, int(os.environ.get("BLOG_IMAGE_DOWNLOAD_RETRIES", "1").strip() or "1"))
+except Exception:
+    BLOG_IMAGE_DOWNLOAD_RETRIES = 1
+try:
+    BLOG_PDF_MAX_PER_POST = max(0, int(os.environ.get("BLOG_PDF_MAX_PER_POST", "5").strip() or "5"))
+except Exception:
+    BLOG_PDF_MAX_PER_POST = 5
+try:
+    BLOG_PDF_MAX_BYTES = max(1024, int(os.environ.get("BLOG_PDF_MAX_BYTES", str(24 * 1024 * 1024)).strip() or str(24 * 1024 * 1024)))
+except Exception:
+    BLOG_PDF_MAX_BYTES = 24 * 1024 * 1024
+try:
+    BLOG_PDF_MAX_TOTAL_BYTES_PER_POST = max(1024, int(os.environ.get("BLOG_PDF_MAX_TOTAL_BYTES_PER_POST", str(96 * 1024 * 1024)).strip() or str(96 * 1024 * 1024)))
+except Exception:
+    BLOG_PDF_MAX_TOTAL_BYTES_PER_POST = 96 * 1024 * 1024
+try:
+    BLOG_PDF_EXT_TIMEOUT_SEC = max(1, int(os.environ.get("BLOG_PDF_EXT_TIMEOUT_SEC", "24").strip() or "24"))
+except Exception:
+    BLOG_PDF_EXT_TIMEOUT_SEC = 24
+try:
+    BLOG_PDF_DOWNLOAD_RETRIES = max(0, int(os.environ.get("BLOG_PDF_DOWNLOAD_RETRIES", "1").strip() or "1"))
+except Exception:
+    BLOG_PDF_DOWNLOAD_RETRIES = 1
 
 
 def _resolve_target_date(raw_target_date: Optional[str], target_years: int) -> str:
@@ -118,6 +176,470 @@ def _http_get_with_retry(url: str, timeout: int = 20, retries: int = 2, retry_sl
     if last_err is not None:
         raise last_err
     raise RuntimeError("http_get_with_retry_failed")
+
+
+def _safe_path_component(value: str, fallback: str = "item") -> str:
+    raw = str(value or "").strip()
+    cleaned = re.sub(r"[^A-Za-z0-9._-]", "_", raw)
+    cleaned = re.sub(r"_+", "_", cleaned).strip("._")
+    return cleaned[:160] or fallback
+
+
+def _to_rel_stage1_path(path_or_value) -> str:
+    try:
+        target = Path(path_or_value)
+        return str(target.relative_to(ROOT)).replace("\\", "/")
+    except Exception:
+        text = str(path_or_value)
+        return text.replace("\\", "/")
+
+
+def _image_url_digest(url: str) -> str:
+    raw = str(url or "").strip().encode("utf-8")
+    if not raw:
+        return ""
+    return hashlib.sha1(raw).hexdigest()[:12]
+
+
+def _normalize_img_url(src: str) -> str:
+    if not src:
+        return ""
+    u = src.strip()
+    if u.startswith("data:"):
+        return ""
+    if u.startswith("//"):
+        return f"https:{u}"
+    if u.startswith("/"):
+        return urljoin("https://m.blog.naver.com", u)
+    return u
+
+
+def _extract_image_urls(html: str, max_count: int = 0) -> list[str]:
+    found: list[str] = []
+    seen: set[str] = set()
+
+    for pattern in (IMG_SRC_RE, IMG_DATA_SRC_RE, IMG_DATA_ORIGINAL_RE):
+        for m in pattern.finditer(html or ""):
+            val = _normalize_img_url(m.group(2) if len(m.groups()) >= 2 else "")
+            if not val:
+                continue
+            low = val.lower()
+            if low in seen:
+                continue
+            seen.add(low)
+            found.append(val)
+
+    for m in IMG_SRCSET_RE.finditer(html or ""):
+        raw = m.group(2) if len(m.groups()) >= 2 else ""
+        for seg in (raw or "").split(","):
+            seg_parts = seg.strip().split()
+            if not seg_parts:
+                continue
+            piece = seg_parts[0]
+            if not piece:
+                continue
+            lower = piece.lower()
+            if not (lower.startswith("http://") or lower.startswith("https://") or lower.startswith("//")):
+                continue
+            val = _normalize_img_url(piece)
+            if not val:
+                continue
+            low = val.lower()
+            if low in seen:
+                continue
+            seen.add(low)
+            found.append(val)
+
+    for m in OG_IMAGE_RE.finditer(html or ""):
+        val = _normalize_img_url(m.group(1) if m.groups() else "")
+        if not val:
+            continue
+        low = val.lower()
+        if low in seen:
+            continue
+        seen.add(low)
+        found.append(val)
+
+    for m in IMG_URL_RE.finditer(html or ""):
+        val = _normalize_img_url(m.group(1) if m.groups() else "")
+        if not val:
+            continue
+        low = val.lower()
+        if low in seen:
+            continue
+        seen.add(low)
+        found.append(val)
+
+    if not found:
+        return []
+
+    if max_count <= 0:
+        max_count = max(1, BLOG_IMAGE_MAX_PER_POST)
+    return found[:max_count]
+
+
+def _looks_like_pdf(url: str) -> bool:
+    if not url:
+        return False
+    p = urlparse(url)
+    path = (p.path or "").lower()
+    if path.endswith(".pdf"):
+        return True
+    if ".pdf" in path:
+        return True
+    q = (p.query or "").lower()
+    if not q:
+        return False
+    for k, v_list in parse_qs(q, keep_blank_values=True).items():
+        if any((str(v or "").lower().endswith(".pdf") or str(v or "").lower() == "pdf") for v in (v_list or [])):
+            return True
+    return False
+
+
+def _extract_pdf_urls(html: str, max_count: int = 0) -> list[str]:
+    found: list[str] = []
+    seen: set[str] = set()
+
+    for m in PDF_LINK_HREF_RE.finditer(html or ""):
+        val = _normalize_img_url(m.group(2) if len(m.groups()) >= 2 else "")
+        if not val or not _looks_like_pdf(val):
+            continue
+        low = val.lower()
+        if low in seen:
+            continue
+        seen.add(low)
+        found.append(val)
+
+    for m in PDF_URL_RE.finditer(html or ""):
+        val = _normalize_img_url(m.group(0))
+        if not val:
+            continue
+        low = val.lower()
+        if low in seen:
+            continue
+        seen.add(low)
+        found.append(val)
+
+    if not found:
+        return []
+
+    if max_count <= 0:
+        max_count = max(1, BLOG_PDF_MAX_PER_POST)
+    return found[:max_count]
+
+
+def _image_ext_from_url(url: str, content_type: str = "") -> str:
+    p = urlparse(url)
+    path = (p.path or "").lower()
+    for ext in IMAGE_EXTS:
+        if path.endswith(ext):
+            return ext
+
+    ct = (content_type or "").lower()
+    if "image/" in ct:
+        token = ct.split(";")[0].strip()
+        if token == "image/jpeg":
+            return ".jpg"
+        if token.startswith("image/"):
+            maybe = token.split("/", 1)[1]
+            if maybe:
+                return f".{maybe.replace('jpeg', 'jpg')}"
+
+    return ".img"
+
+
+def _build_blog_attachment_paths(buddy_slug: str, log_no: str, kind: str) -> tuple[Path, Path]:
+    bucket_count = max(1, BLOG_IMAGE_BUCKET_COUNT)
+    try:
+        num = int(log_no)
+    except Exception:
+        num = 0
+    width = max(1, len(str(max(1, bucket_count - 1))))
+    bucket = f"bucket_{num % bucket_count:0{width}d}"
+    safe_kind = str(kind or "artifact").strip() or "artifact"
+    artifact_dir = BLOG_ATTACH_ARTIFACT_ROOT / _safe_path_component(buddy_slug) / bucket
+    manifest_name = f"msg_{_safe_path_component(log_no, fallback='0000')}__{safe_kind}_meta.json"
+    return artifact_dir, artifact_dir / manifest_name
+
+
+def _build_blog_image_paths(buddy_slug: str, log_no: str) -> tuple[Path, Path]:
+    return _build_blog_attachment_paths(buddy_slug, log_no, "images")
+
+
+def _download_blog_image(url: str, artifact_dir: Path, index: int) -> tuple[str, int, str, str]:
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+
+    reason = ""
+    data: bytes | None = None
+    ctype = ""
+    for attempt in range(BLOG_IMAGE_DOWNLOAD_RETRIES + 1):
+        try:
+            req = Request(
+                url,
+                headers={"User-Agent": UA, "Referer": "https://m.blog.naver.com/"},
+            )
+            with urlopen(req, timeout=BLOG_IMAGE_EXT_TIMEOUT_SEC) as resp:
+                ctype = str(resp.headers.get("Content-Type", "")).lower()
+                data = resp.read(BLOG_IMAGE_MAX_BYTES + 1)
+            break
+        except Exception as e:  # noqa: BLE001
+            reason = str(e)
+            if attempt >= BLOG_IMAGE_DOWNLOAD_RETRIES:
+                break
+            _sleep_with_jitter(0.5)
+
+    if data is None:
+        return "", 0, ctype, reason or "download_failed"
+
+    if len(data) > BLOG_IMAGE_MAX_BYTES:
+        return "", 0, ctype, "file_too_large"
+
+    ext = _image_ext_from_url(url, ctype)
+    if not ext.startswith("."):
+        ext = f".{ext}"
+
+    digest = _image_url_digest(url)
+    suffix = f"{digest}{ext}" if digest else f"{int(index):04d}__post_image{ext}"
+    file_name = f"msg_{int(index):04d}__{suffix}"
+    image_path = artifact_dir / file_name
+
+    # if collision exists, append index suffix and avoid overwriting existing payload
+    if image_path.exists():
+        file_name = f"msg_{int(index):04d}__{int(time.time())}__{suffix}"
+        image_path = artifact_dir / file_name
+
+    image_path.write_bytes(data)
+    return str(image_path), len(data), ctype, ""
+
+
+def _download_blog_pdf(url: str, artifact_dir: Path, index: int) -> tuple[str, int, str, str]:
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+
+    reason = ""
+    data: bytes | None = None
+    ctype = ""
+    for attempt in range(BLOG_PDF_DOWNLOAD_RETRIES + 1):
+        try:
+            req = Request(
+                url,
+                headers={"User-Agent": UA, "Referer": "https://m.blog.naver.com/"},
+            )
+            with urlopen(req, timeout=BLOG_PDF_EXT_TIMEOUT_SEC) as resp:
+                ctype = str(resp.headers.get("Content-Type", "")).lower()
+                data = resp.read(BLOG_PDF_MAX_BYTES + 1)
+            break
+        except Exception as e:  # noqa: BLE001
+            reason = str(e)
+            if attempt >= BLOG_PDF_DOWNLOAD_RETRIES:
+                break
+            _sleep_with_jitter(0.5)
+
+    if data is None:
+        return "", 0, ctype, reason or "download_failed"
+
+    if len(data) > BLOG_PDF_MAX_BYTES:
+        return "", 0, ctype, "file_too_large"
+
+    if not data.lstrip().startswith(b"%PDF-") and "application/pdf" not in ctype:
+        return "", 0, ctype, "not_pdf_content"
+
+    digest = _image_url_digest(url)
+    suffix = f"{digest}.pdf" if digest else f"{int(index):04d}__post_pdf.pdf"
+    file_name = f"msg_{int(index):04d}__{suffix}"
+    pdf_path = artifact_dir / file_name
+
+    if pdf_path.exists():
+        file_name = f"msg_{int(index):04d}__{int(time.time())}__{suffix}"
+        pdf_path = artifact_dir / file_name
+
+    pdf_path.write_bytes(data)
+    return str(pdf_path), len(data), ctype, ""
+
+
+def _collect_blog_images(
+    buddy_slug: str,
+    log_no: str,
+    post_url: str,
+    html: str,
+    download_enabled: Optional[bool] = None,
+) -> tuple[list[dict], Optional[Path]]:
+    if html is None:
+        html = ""
+    urls = _extract_image_urls(html)
+    if not urls:
+        return [], None
+
+    artifact_dir, manifest_path = _build_blog_image_paths(buddy_slug, log_no)
+    image_items: list[dict] = []
+    if download_enabled is None:
+        download_enabled = bool(BLOG_IMAGE_DOWNLOAD_ENABLED)
+
+    total_saved = 0
+    total_bytes = 0
+    manifest_status_counts: dict[str, int] = {}
+
+    for idx, img_url in enumerate(urls, start=1):
+        item = {
+            "index": idx,
+            "source_url": img_url,
+            "source_digest": _image_url_digest(img_url),
+            "status": "queued",
+        }
+        if download_enabled:
+            if total_bytes >= BLOG_IMAGE_MAX_TOTAL_BYTES_PER_POST:
+                item["status"] = "skipped_total_cap"
+                item["error"] = "post_total_bytes_cap_reached"
+            else:
+                try:
+                    saved_path, size, ctype, err = _download_blog_image(img_url, artifact_dir, idx)
+                    if err:
+                        item["status"] = "failed"
+                        item["error"] = err
+                    elif size > 0 and saved_path:
+                        expected_bytes = total_bytes + size
+                        if expected_bytes > BLOG_IMAGE_MAX_TOTAL_BYTES_PER_POST:
+                            item["status"] = "skipped_total_cap"
+                            item["error"] = "post_total_bytes_cap_reached"
+                        else:
+                            item["status"] = "saved"
+                            item["artifact_path"] = _to_rel_stage1_path(saved_path)
+                            item["artifact_abs_path"] = saved_path
+                            item["size_bytes"] = size
+                            item["content_type"] = ctype
+                            total_saved += 1
+                            total_bytes = expected_bytes
+                    else:
+                        item["status"] = "empty"
+                except Exception as e:
+                    item["status"] = "failed"
+                    item["error"] = str(e)
+        else:
+            item["status"] = "reference_only"
+
+        manifest_status_counts[item["status"]] = int(manifest_status_counts.get(item["status"], 0)) + 1
+        image_items.append(item)
+
+    manifest = {
+        "artifact_schema_version": 2,
+        "artifact_layout": "blog_bucketed_v2",
+        "post_url": post_url,
+        "captured_at": _utc_now().isoformat(),
+        "buddy": str(buddy_slug),
+        "log_no": str(log_no),
+        "contract": {
+            "max_per_post": BLOG_IMAGE_MAX_PER_POST,
+            "max_bytes_per_post": BLOG_IMAGE_MAX_TOTAL_BYTES_PER_POST,
+            "max_bytes_per_file": BLOG_IMAGE_MAX_BYTES,
+            "bucket_count": BLOG_IMAGE_BUCKET_COUNT,
+            "download_enabled": bool(download_enabled),
+            "download_retries": BLOG_IMAGE_DOWNLOAD_RETRIES,
+        },
+        "images": image_items,
+        "totals": {
+            "found": len(urls),
+            "saved": total_saved,
+            "bytes": total_bytes,
+            "status_counts": manifest_status_counts,
+        },
+    }
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return image_items, manifest_path
+
+
+def _collect_blog_pdfs(
+    buddy_slug: str,
+    log_no: str,
+    post_url: str,
+    html: str,
+    download_enabled: Optional[bool] = None,
+) -> tuple[list[dict], Optional[Path]]:
+    if html is None:
+        html = ""
+    urls = _extract_pdf_urls(html)
+    if not urls:
+        return [], None
+
+    artifact_dir, manifest_path = _build_blog_attachment_paths(buddy_slug, log_no, "pdf")
+    pdf_items: list[dict] = []
+    if download_enabled is None:
+        download_enabled = bool(BLOG_PDF_DOWNLOAD_ENABLED)
+
+    total_saved = 0
+    total_bytes = 0
+    manifest_status_counts: dict[str, int] = {}
+
+    for idx, pdf_url in enumerate(urls, start=1):
+        item = {
+            "index": idx,
+            "source_url": pdf_url,
+            "source_digest": _image_url_digest(pdf_url),
+            "status": "queued",
+        }
+        if download_enabled:
+            if total_bytes >= BLOG_PDF_MAX_TOTAL_BYTES_PER_POST:
+                item["status"] = "skipped_total_cap"
+                item["error"] = "post_total_bytes_cap_reached"
+            else:
+                try:
+                    saved_path, size, ctype, err = _download_blog_pdf(pdf_url, artifact_dir, idx)
+                    if err:
+                        item["status"] = "failed"
+                        item["error"] = err
+                    elif size > 0 and saved_path:
+                        expected_bytes = total_bytes + size
+                        if expected_bytes > BLOG_PDF_MAX_TOTAL_BYTES_PER_POST:
+                            item["status"] = "skipped_total_cap"
+                            item["error"] = "post_total_bytes_cap_reached"
+                        else:
+                            item["status"] = "saved"
+                            item["artifact_path"] = _to_rel_stage1_path(saved_path)
+                            item["artifact_abs_path"] = saved_path
+                            item["size_bytes"] = size
+                            item["content_type"] = ctype
+                            total_saved += 1
+                            total_bytes = expected_bytes
+                    else:
+                        item["status"] = "empty"
+                except Exception as e:
+                    item["status"] = "failed"
+                    item["error"] = str(e)
+        else:
+            item["status"] = "reference_only"
+
+        manifest_status_counts[item["status"]] = int(manifest_status_counts.get(item["status"], 0)) + 1
+        pdf_items.append(item)
+
+    manifest = {
+        "artifact_schema_version": 2,
+        "artifact_layout": "blog_bucketed_v2",
+        "post_url": post_url,
+        "captured_at": _utc_now().isoformat(),
+        "buddy": str(buddy_slug),
+        "log_no": str(log_no),
+        "contract": {
+            "max_per_post": BLOG_PDF_MAX_PER_POST,
+            "max_bytes_per_post": BLOG_PDF_MAX_TOTAL_BYTES_PER_POST,
+            "max_bytes_per_file": BLOG_PDF_MAX_BYTES,
+            "bucket_count": BLOG_IMAGE_BUCKET_COUNT,
+            "download_enabled": bool(download_enabled),
+            "download_retries": BLOG_PDF_DOWNLOAD_RETRIES,
+        },
+        "pdfs": pdf_items,
+        "totals": {
+            "found": len(urls),
+            "saved": total_saved,
+            "bytes": total_bytes,
+            "status_counts": manifest_status_counts,
+        },
+    }
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return pdf_items, manifest_path
+
+
 
 
 def _strip_html(text: str) -> str:
@@ -373,6 +895,16 @@ def run(
 
     errors: list[str] = []
     post_saved = 0
+    images_total = 0
+    images_saved = 0
+    images_failed = 0
+    images_skipped = 0
+    image_manifests = 0
+    pdf_total = 0
+    pdf_saved = 0
+    pdf_failed = 0
+    pdf_skipped = 0
+    pdf_manifests = 0
     buddy_done = 0
     buddy_results: list[dict] = []
 
@@ -389,6 +921,12 @@ def run(
         short_body_count = 0
         picked: list[tuple[str, str]] = []
         page_error = ""
+        buddy_images_total = 0
+        buddy_images_saved = 0
+        buddy_images_skipped = 0
+        buddy_pdf_total = 0
+        buddy_pdf_saved = 0
+        buddy_pdf_skipped = 0
 
         try:
             seen_logno = set()
@@ -480,16 +1018,93 @@ def run(
 
                     now = datetime.now().isoformat(timespec="seconds")
                     date_line = f"PublishedDate: {post_date}" if post_date else "PublishedDate: 미확인"
-                    out_path.write_text(
-                        (
-                            f"# {title}\n\n"
-                            f"Date: {now}\n"
-                            f"{date_line}\n"
-                            f"Source: {mobile_url}\n\n"
-                            f"{body}\n"
-                        ),
-                        encoding="utf-8",
+
+                    image_items, image_manifest_path = _collect_blog_images(
+                        bid,
+                        log_no,
+                        mobile_url,
+                        post_html,
                     )
+                    pdf_items, pdf_manifest_path = _collect_blog_pdfs(
+                        bid,
+                        log_no,
+                        mobile_url,
+                        post_html,
+                    )
+
+                    images_total += len(image_items)
+                    buddy_images_total += len(image_items)
+                    if image_items:
+                        image_manifests += 1
+                    for one in image_items:
+                        status = str(one.get("status") or "").lower()
+                        if status == "saved":
+                            images_saved += 1
+                            buddy_images_saved += 1
+                        elif status == "failed":
+                            images_failed += 1
+                            images_skipped += 1
+                            buddy_images_skipped += 1
+                        elif status in {
+                            "reference_only",
+                            "empty",
+                            "skipped_total_cap",
+                            "file_too_large",
+                            "download_failed",
+                        }:
+                            images_skipped += 1
+                            buddy_images_skipped += 1
+
+                    pdf_total += len(pdf_items)
+                    buddy_pdf_total += len(pdf_items)
+                    if pdf_items:
+                        pdf_manifests += 1
+                    for one in pdf_items:
+                        status = str(one.get("status") or "").lower()
+                        if status == "saved":
+                            pdf_saved += 1
+                            buddy_pdf_saved += 1
+                        elif status == "failed":
+                            pdf_failed += 1
+                            pdf_skipped += 1
+                            buddy_pdf_skipped += 1
+                        elif status in {
+                            "reference_only",
+                            "empty",
+                            "skipped_total_cap",
+                            "file_too_large",
+                            "download_failed",
+                            "not_pdf_content",
+                        }:
+                            pdf_skipped += 1
+                            buddy_pdf_skipped += 1
+
+                    out_lines = [
+                        f"# {title}\n\n",
+                        f"Date: {now}\n",
+                        f"{date_line}\n",
+                        f"Source: {mobile_url}\n",
+                    ]
+                    if image_items:
+                        saved_count = sum(1 for item in image_items if str(item.get("status") or "") == "saved")
+                        skipped_count = len(image_items) - saved_count
+                        out_lines.append(f"Images: {len(image_items)} captured\n")
+                        out_lines.append(f"ImagesSummary: saved={saved_count} skipped={skipped_count}\n")
+                        if image_manifest_path is not None:
+                            rel_manifest = str(image_manifest_path.relative_to(ROOT))
+                            out_lines.append(f"ImageManifest: {rel_manifest}\n")
+                    if pdf_items:
+                        saved_count = sum(1 for item in pdf_items if str(item.get("status") or "") == "saved")
+                        skipped_count = len(pdf_items) - saved_count
+                        out_lines.append(f"PDFs: {len(pdf_items)} captured\n")
+                        out_lines.append(f"PDFSummary: saved={saved_count} skipped={skipped_count}\n")
+                        if pdf_manifest_path is not None:
+                            rel_manifest = str(pdf_manifest_path.relative_to(ROOT))
+                            out_lines.append(f"PDFManifest: {rel_manifest}\n")
+                    out_lines.append("\n")
+                    out_lines.append(f"{body}\n")
+
+                    out_path.write_text("".join(out_lines), encoding="utf-8")
                     post_saved += 1
                     saved_for_buddy += 1
 
@@ -528,6 +1143,12 @@ def run(
                     "picked_count": len(picked),
                     "saved_count": saved_for_buddy,
                     "short_body_count": short_body_count,
+                    "images_total": buddy_images_total,
+                    "images_saved": buddy_images_saved,
+                    "images_skipped_or_failed": buddy_images_skipped,
+                    "pdf_total": buddy_pdf_total,
+                    "pdf_saved": buddy_pdf_saved,
+                    "pdf_skipped_or_failed": buddy_pdf_skipped,
                 }
             )
             buddy_done += 1
@@ -543,6 +1164,14 @@ def run(
                     "picked_count": len(picked),
                     "saved_count": saved_for_buddy,
                     "short_body_count": short_body_count,
+                    "images_total": buddy_images_total,
+                    "images_saved": buddy_images_saved,
+                    "images_failed": images_failed,
+                    "images_skipped_or_failed": buddy_images_skipped,
+                    "pdf_total": buddy_pdf_total,
+                    "pdf_saved": buddy_pdf_saved,
+                    "pdf_failed": pdf_failed,
+                    "pdf_skipped_or_failed": buddy_pdf_skipped,
                     "error": str(e),
                 }
             )
@@ -574,6 +1203,16 @@ def run(
         "buddies_target": len(buddies),
         "buddies_done": buddy_done,
         "posts_saved": post_saved,
+        "images_total": images_total,
+        "images_saved": images_saved,
+        "images_failed": images_failed,
+        "images_manifests": image_manifests,
+        "images_skipped_or_failed": images_skipped,
+        "pdf_total": pdf_total,
+        "pdf_saved": pdf_saved,
+        "pdf_failed": pdf_failed,
+        "pdf_manifests": pdf_manifests,
+        "pdf_skipped_or_failed": pdf_skipped,
         "max_posts_per_buddy": max_posts_per_buddy,
         "max_pages_per_buddy": max_pages_per_buddy,
         "target_date": target_dt.isoformat(),
@@ -584,6 +1223,8 @@ def run(
         "all_buddies_covered": buddy_done == total_buddies and not uncovered_causes if total_buddies else False,
         "buddy_results": buddy_results,
         "errors": errors[:2000],
+        "blog_image_download_enabled": bool(BLOG_IMAGE_DOWNLOAD_ENABLED),
+        "blog_pdf_download_enabled": bool(BLOG_PDF_DOWNLOAD_ENABLED),
     }
     try:
         _persist_terminal_registry_entries(buddy_results)
@@ -603,7 +1244,9 @@ def run(
         count=post_saved,
         errors=errors[:20],
         note=(
-            f"buddies={len(buddies)} done={buddy_done} posts={post_saved} "
+            f"buddies={len(buddies)} done={buddy_done} posts={post_saved} images={images_total} "
+            f"images_saved={images_saved} manifests={image_manifests} "
+            f"pdf={pdf_total} pdf_saved={pdf_saved} pdf_manifests={pdf_manifests} "
             f"max_posts_per_buddy={max_posts_per_buddy} max_pages_per_buddy={max_pages_per_buddy} "
             f"target_date={target_dt.isoformat()} backoff_hours={backoff_hours} "
             f"next_allowed_at={(next_allowed_at.isoformat() if next_allowed_at else '')} "
@@ -616,6 +1259,16 @@ def run(
         "buddies_target": len(buddies),
         "buddies_done": buddy_done,
         "posts_saved": post_saved,
+        "images_total": images_total,
+        "images_saved": images_saved,
+        "images_failed": images_failed,
+        "images_manifests": image_manifests,
+        "images_skipped_or_failed": images_skipped,
+        "pdf_total": pdf_total,
+        "pdf_saved": pdf_saved,
+        "pdf_failed": pdf_failed,
+        "pdf_manifests": pdf_manifests,
+        "pdf_skipped_or_failed": pdf_skipped,
         "max_posts_per_buddy": max_posts_per_buddy,
         "max_pages_per_buddy": max_pages_per_buddy,
         "target_date": target_dt.isoformat(),
@@ -624,6 +1277,8 @@ def run(
         "uncovered_causes": uncovered_causes,
         "status_file": str(BLOG_LAST_RUN_STATUS_PATH.relative_to(ROOT)),
         "errors": errors,
+        "blog_image_download_enabled": bool(BLOG_IMAGE_DOWNLOAD_ENABLED),
+        "blog_pdf_download_enabled": bool(BLOG_PDF_DOWNLOAD_ENABLED),
     }
 
 
